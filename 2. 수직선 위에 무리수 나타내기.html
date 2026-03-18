@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>중3 수학: 실수의 연속성과 무리수 작도</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --primary: #2c3e50; --accent: #e74c3c; --success: #27ae60; --bg: #f8f9fa; }
+        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #eaeff1; margin: 0; padding: 20px; }
+        .container { max-width: 950px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .section { border-bottom: 2px solid #eee; padding: 25px 0; }
+        .section:last-child { border-bottom: none; }
+        h1 { text-align: center; color: var(--primary); margin-bottom: 30px; }
+        h2 { color: #34495e; font-size: 1.3em; margin-bottom: 15px; }
+        canvas { background: #fff; border: 1px solid #ccc; border-radius: 8px; width: 100%; display: block; margin: 15px 0; }
+        .controls { display: flex; gap: 10px; flex-wrap: wrap; background: var(--bg); padding: 15px; border-radius: 10px; margin: 10px 0; align-items: center; }
+        input, select, button { padding: 8px 12px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; }
+        input[type="number"] { width: 65px; }
+        button { background: #3498db; color: white; border: none; cursor: pointer; transition: 0.3s; font-weight: bold; }
+        button:hover { background: #2980b9; }
+        .action-btn { background: var(--accent); }
+        .action-btn:hover { background: #c0392b; }
+        .msg { font-weight: bold; margin: 10px 0; min-height: 20px; font-size: 0.95em; }
+        .hint { color: #7f8c8d; font-size: 0.85em; margin-bottom: 5px; }
+        .quiz { margin-top: 30px; }
+        .quiz:first-of-type { margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="capture-area">
+    <h1>📐 무리수 수직선 작도 통합 활동지</h1>
+    
+    <div style="text-align: right; margin-bottom: 20px; background: #e8f4fd; padding: 15px; border-radius: 8px; display: inline-block; float: right;">
+        <label style="font-weight:bold;">학번: </label><input type="text" id="stuId" placeholder="예: 30101" style="width:80px; margin-right: 15px;">
+        <label style="font-weight:bold;">이름: </label><input type="text" id="stuName" placeholder="홍길동" style="width:100px;">
+    </div>
+    <div style="clear: both;"></div>
+
+    <div class="section">
+        <h2>1. 개념 확인: 원을 이용한 무리수 표시</h2>
+        <p>직각삼각형의 빗변이 원의 반지름이 되어 수직선으로 내려오는 과정을 확인해 보세요.</p>
+        <div class="controls">
+            <button onclick="playSimple(0, 1, 1, 1, '√2')">√2 그리기 (0에서 오른쪽)</button>
+            <button onclick="playSimple(1, 2, 1, -1, '1-√5')">1-√5 그리기 (1에서 왼쪽)</button>
+        </div>
+        <canvas id="basicCanvas" width="900" height="280"></canvas>
+    </div>
+
+    <div class="section">
+        <h2>2. 실전 문제 해결: 직접 작도하기</h2>
+
+        <div class="quiz">
+            <p><strong>[문제 1]</strong> 수직선 위에 <b>-1 + √5</b>를 나타내 보세요.</p>
+            <div class="controls">
+                시작점: <input type="number" id="q1_b" value="0">
+                밑변: <input type="number" id="q1_w" value="1" min="1">
+                높이: <input type="number" id="q1_h" value="1" min="1">
+                방향: <select id="q1_d"><option value="1">오른쪽(+)</option><option value="-1">왼쪽(-)</option></select>
+                <button class="action-btn" onclick="checkQuiz(1)">확인 및 그리기</button>
+            </div>
+            <div id="q1_msg" class="msg"></div>
+            <canvas id="q1Canvas" width="900" height="280"></canvas>
+        </div>
+
+        <div class="quiz">
+            <p><strong>[문제 2]</strong> 수직선 위에 <b>2 - √10</b>을 나타내 보세요.</p>
+            <div class="controls">
+                시작점: <input type="number" id="q2_b" value="0">
+                밑변: <input type="number" id="q2_w" value="1" min="1">
+                높이: <input type="number" id="q2_h" value="1" min="1">
+                방향: <select id="q2_d"><option value="1">오른쪽(+)</option><option value="-1">왼쪽(-)</option></select>
+                <button class="action-btn" onclick="checkQuiz(2)">확인 및 그리기</button>
+            </div>
+            <div id="q2_msg" class="msg"></div>
+            <canvas id="q2Canvas" width="900" height="280"></canvas>
+        </div>
+
+        <div class="quiz">
+            <p><strong>[문제 3]</strong> 수직선 위에 <b>-3 + √8</b>을 나타내 보세요.</p>
+            <div class="controls">
+                시작점: <input type="number" id="q3_b" value="0">
+                밑변: <input type="number" id="q3_w" value="1" min="1">
+                높이: <input type="number" id="q3_h" value="1" min="1">
+                방향: <select id="q3_d"><option value="1">오른쪽(+)</option><option value="-1">왼쪽(-)</option></select>
+                <button class="action-btn" onclick="checkQuiz(3)">확인 및 그리기</button>
+            </div>
+            <div id="q3_msg" class="msg"></div>
+            <canvas id="q3Canvas" width="900" height="280"></canvas>
+        </div>
+
+        <div class="quiz">
+            <p><strong>[문제 4]</strong> 수직선 위에 <b>√13</b>을 나타내 보세요.</p>
+            <div class="hint">* 힌트: 어떤 두 정수의 제곱을 더해야 13이 될까요? 시작점은 0으로 고정합니다.</div>
+            <div class="controls">
+                시작점: <span style="font-weight:bold; padding:0 10px;">0</span>
+                밑변: <input type="number" id="q4_w" value="1" min="1">
+                높이: <input type="number" id="q4_h" value="1" min="1">
+                방향: <span style="font-weight:bold; padding:0 10px;">오른쪽(+)</span>
+                <button class="action-btn" onclick="checkQuiz(4)">확인 및 그리기</button>
+            </div>
+            <div id="q4_msg" class="msg"></div>
+            <canvas id="q4Canvas" width="900" height="280"></canvas>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>3. 심화: 고정관념 깨기!</h2>
+        <div class="quiz">
+            <p><strong>[문제 5]</strong> 수직선 위에 <b>1 + √2/2</b> 를 나타내 보세요.</p>
+            <div class="hint">* 힌트: 직각삼각형의 변의 길이가 반드시 자연수일 필요는 없습니다. 소수(예: 0.5)를 입력하여 제곱의 합을 맞추어 보세요!</div>
+            <div class="controls">
+                시작점: <input type="number" id="q5_b" value="1">
+                밑변: <input type="number" id="q5_w" value="1" step="0.5" min="0.5">
+                높이: <input type="number" id="q5_h" value="1" step="0.5" min="0.5">
+                방향: <select id="q5_d"><option value="1">오른쪽(+)</option><option value="-1">왼쪽(-)</option></select>
+                <button class="action-btn" onclick="checkQuiz(5)">확인 및 그리기</button>
+            </div>
+            <div id="q5_msg" class="msg"></div>
+            <canvas id="q5Canvas" width="900" height="300"></canvas>
+        </div>
+    </div>
+
+    <div style="text-align:center; padding: 30px 10px 10px 10px;">
+        <button onclick="submitToDrive()" style="background:var(--success); font-size: 20px; padding: 15px 50px; width:100%; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">제출하기</button>
+        <div id="submitStatus" class="msg" style="margin-top: 15px; font-size: 1.1em;"></div>
+    </div>
+</div>
+
+<script>
+    // 선생님의 Google Apps Script 웹 앱 URL을 여기에 넣어주세요.
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxQBKFW8Mpq_Qw3lEWQmJXxMDnT_MaI0djfoyrJGdW67W0xZ3kjLnk006onbL3bDtNDpA/exec"; 
+    const SCALE = 70; // 1눈금을 70px로 확대
+
+    function drawAxis(ctx, canvas, offset = 0) {
+        const cy = canvas.height - 60;
+        const cx = canvas.width / 2 + offset;
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        
+        ctx.strokeStyle = "#eaeff1"; ctx.lineWidth = 1;
+        // 0.5 단위도 미세하게 보일 수 있도록 그리드 간격을 조정할 수 있으나, 가독성을 위해 1단위 유지
+        for(let x=cx%SCALE; x<canvas.width; x+=SCALE){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
+        for(let y=cy%SCALE; y<canvas.height; y+=SCALE){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+        for(let y=cy%SCALE; y>=0; y-=SCALE){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); }
+        
+        ctx.strokeStyle = "#333"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke();
+        
+        ctx.textAlign = "center"; ctx.font = "bold 15px Arial";
+        ctx.fillStyle = "#333";
+        for(let i=-12; i<=12; i++) {
+            let x = cx + i * SCALE;
+            ctx.beginPath(); ctx.moveTo(x, cy-6); ctx.lineTo(x, cy+6); ctx.stroke();
+            ctx.fillText(i, x, cy+25);
+        }
+        return {cx, cy};
+    }
+
+    function animate(ctx, canvas, base, w, h, dir, label, offset=0, callback) {
+        let progress = 0;
+        function frame() {
+            const {cx, cy} = drawAxis(ctx, canvas, offset);
+            const bx = cx + base * SCALE;
+            const rw = w * SCALE * dir;
+            const rh = h * SCALE;
+            const r = Math.sqrt(w*w + h*h) * SCALE;
+
+            ctx.strokeStyle="#3498db"; ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(bx, cy); ctx.lineTo(bx+rw, cy); ctx.lineTo(bx+rw, cy-rh); ctx.stroke();
+            
+            let p1 = Math.min(progress/0.5, 1);
+            ctx.strokeStyle="#e67e22"; ctx.beginPath(); ctx.moveTo(bx, cy); ctx.lineTo(bx+rw*p1, cy-rh*p1); ctx.stroke();
+
+            if(progress > 0.5) {
+                let p2 = (progress-0.5)/0.5;
+                
+                ctx.save();
+                ctx.globalAlpha = 0.15 * p2;
+                ctx.fillStyle = "#3498db";
+                ctx.beginPath(); ctx.arc(bx, cy, r, 0, Math.PI, true); ctx.fill();
+                ctx.restore();
+
+                let startAng = Math.atan2(-h, w*dir);
+                let endAng = dir === 1 ? 0 : -Math.PI;
+
+                let currAng = startAng + (endAng - startAng) * p2;
+                
+                ctx.setLineDash([5,5]); ctx.strokeStyle= "#27ae60"; ctx.lineWidth=3;
+                ctx.beginPath(); ctx.arc(bx, cy, r, startAng, currAng, dir===-1); ctx.stroke();
+                ctx.setLineDash([]);
+
+                let dx = bx + r * Math.cos(currAng);
+                let dy = cy + r * Math.sin(currAng); 
+                
+                ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.arc(dx, dy, 6, 0, 7); ctx.fill();
+                
+                if(p2>=1) { 
+                    ctx.fillStyle="#2c3e50"; 
+                    ctx.font="bold 18px Arial"; 
+                    ctx.fillText(label, dx, cy-18); 
+                }
+            }
+            
+            if(progress < 1) { 
+                progress += 0.004; 
+                requestAnimationFrame(frame); 
+            } else if(callback) {
+                callback({bx, rw, rh, r});
+            }
+        }
+        frame();
+    }
+
+    function playSimple(b, w, h, d, l) {
+        const ctx = document.getElementById('basicCanvas').getContext('2d');
+        animate(ctx, ctx.canvas, b, w, h, d, l);
+    }
+
+    function checkQuiz(n) {
+        const ctx = document.getElementById('q'+n+'Canvas').getContext('2d');
+        const msg = document.getElementById('q'+n+'_msg');
+        let b, w, h, d, label, correct = false;
+
+        if(n === 1) {
+            b = parseFloat(document.getElementById('q1_b').value); w = parseFloat(document.getElementById('q1_w').value); h = parseFloat(document.getElementById('q1_h').value); d = parseInt(document.getElementById('q1_d').value);
+            if(b===-1 && (w*w+h*h===5) && d===1) { correct = true; label = "-1+√5"; } else { msg.innerHTML = "<span style='color:red;'>❌ 다시 확인해보세요. 시작점 -1, 빗변제곱 5, 방향 오른쪽(+)</span>"; }
+        } else if(n === 2) {
+            b = parseFloat(document.getElementById('q2_b').value); w = parseFloat(document.getElementById('q2_w').value); h = parseFloat(document.getElementById('q2_h').value); d = parseInt(document.getElementById('q2_d').value);
+            if(b===2 && (w*w+h*h===10) && d===-1) { correct = true; label = "2-√10"; } else { msg.innerHTML = "<span style='color:red;'>❌ 다시 확인해보세요. 시작점 2, 빗변제곱 10, 방향 왼쪽(-)</span>"; }
+        } else if(n === 3) {
+            b = parseFloat(document.getElementById('q3_b').value); w = parseFloat(document.getElementById('q3_w').value); h = parseFloat(document.getElementById('q3_h').value); d = parseInt(document.getElementById('q3_d').value);
+            if(b===-3 && (w*w+h*h===8) && d===1) { correct = true; label = "-3+√8"; } else { msg.innerHTML = "<span style='color:red;'>❌ 다시 확인해보세요. 시작점 -3, 빗변제곱 8, 방향 오른쪽(+)</span>"; }
+        } else if(n === 4) {
+            b = 0; d = 1; w = parseFloat(document.getElementById('q4_w').value); h = parseFloat(document.getElementById('q4_h').value);
+            if((w===2 && h===3) || (w===3 && h===2)) { correct = true; label = "√13"; } else { msg.innerHTML = "<span style='color:red;'>❌ 두 정수의 제곱의 합이 13이 되는 밑변과 높이의 조합을 찾아보세요.</span>"; }
+        } else if(n === 5) {
+            // 심화 문제 로직: b=1, w=0.5, h=0.5 일 때 빗변의 제곱은 0.5가 됨
+            b = parseFloat(document.getElementById('q5_b').value); 
+            w = parseFloat(document.getElementById('q5_w').value); 
+            h = parseFloat(document.getElementById('q5_h').value); 
+            d = parseInt(document.getElementById('q5_d').value);
+            
+            // 소수점 연산 오차 방지를 위해 차이가 매우 작은지 확인하거나 정확히 0.5인지 확인
+            if(b === 1 && Math.abs((w*w + h*h) - 0.5) < 0.001 && d === 1) { 
+                correct = true; label = "1+√2/2"; 
+                msg.innerHTML = "<span style='color:green;'>✅ 대단합니다! 밑변과 높이가 0.5일 때 빗변이 √0.5, 즉 √2/2가 됨을 정확히 찾아내셨습니다!</span>";
+            } else { 
+                msg.innerHTML = "<span style='color:red;'>❌ 다시 확인해보세요. 시작점은 1, 밑변과 높이의 제곱의 합이 0.5가 되어야 합니다. (힌트: 0.5를 활용해 보세요!)</span>"; 
+            }
+        }
+
+        if(correct && n !== 5) {
+            msg.innerHTML = "<span style='color:green;'>✅ 정답입니다! 애니메이션을 확인해 보세요.</span>";
+            animate(ctx, ctx.canvas, b, w, h, d, label);
+        } else if (correct && n === 5) {
+            animate(ctx, ctx.canvas, b, w, h, d, label);
+        }
+    }
+
+    async function submitToDrive() {
+        const name = document.getElementById('stuName').value;
+        const id = document.getElementById('stuId').value;
+        if(!name || !id) { alert("⚠️ 학번과 이름을 정확히 입력해주세요!"); window.scrollTo(0, 0); return; }
+
+        const status = document.getElementById('submitStatus');
+        status.innerHTML = "<span style='color:#f39c12;'>⏳ 화면을 캡처하여 서버로 전송 중입니다... 잠시만 기다려주세요.</span>";
+
+        try {
+            const canvas = await html2canvas(document.getElementById('capture-area'), { scale: 1.5 });
+            fetch(GAS_URL, {
+                method: "POST", mode: "no-cors",
+                body: JSON.stringify({ filename: id + "_" + name + ".png", image: canvas.toDataURL("image/png") })
+            }).then(() => { status.innerHTML = "<span style='color:green;'>✅ 성공적으로 제출되었습니다! 선생님 드라이브를 확인해 보세요.</span>"; });
+        } catch (error) {
+            status.innerHTML = "<span style='color:red;'>❌ 전송 중 오류가 발생했습니다.</span>";
+        }
+    }
+
+    window.onload = () => {
+        const canvases = ['basicCanvas', 'q1Canvas', 'q2Canvas', 'q3Canvas', 'q4Canvas', 'q5Canvas'];
+        canvases.forEach(id => {
+            const cvs = document.getElementById(id);
+            if(cvs) drawAxis(cvs.getContext('2d'), cvs);
+        });
+    };
+</script>
+</body>
+</html>
