@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문자와 일상 언어의 공통점과 차이점</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background-color: #f0f4f8; padding: 20px; color: #333; margin: 0; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: relative; }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 28px; }
+        .student-info { display: flex; gap: 10px; margin-bottom: 30px; }
+        .student-info input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        .section-title { font-size: 18px; font-weight: bold; color: #2980b9; margin-bottom: 15px; border-bottom: 2px solid #2980b9; padding-bottom: 5px; }
+        .example-box { background-color: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #3498db; }
+        .question { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; }
+        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 15px; transition: border-color 0.3s; }
+        input[type="text"]:focus, textarea:focus { outline: none; border-color: #3498db; }
+        .submit-btn { width: 100%; padding: 15px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; margin-top: 20px; }
+        .submit-btn:hover { background-color: #219653; }
+        .math-expr { font-weight: bold; color: #e74c3c; font-size: 16px; }
+
+        /* 새로 추가된 로딩 화면 스타일 */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* 반투명 어두운 배경 */
+            display: none; /* 평소에는 숨겨둠 */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            color: white;
+            text-align: center;
+        }
+        .spinner {
+            border: 6px solid rgba(255, 255, 255, 0.3);
+            border-top: 6px solid #3498db; /* 파란색 스피너 */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-text { font-size: 20px; font-weight: bold; line-height: 1.5; }
+        .loading-subtext { font-size: 14px; color: #ccc; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="loadingOverlay" data-html2canvas-ignore="true">
+    <div class="spinner"></div>
+    <div class="loading-text">화면을 PDF로 변환하여 제출 중입니다.<br>잠시만 기다려주세요!</div>
+    <div class="loading-subtext">인터넷 환경에 따라 3~5초 정도 소요될 수 있습니다.</div>
+</div>
+
+<div class="container" id="capture-area">
+    <h1>문자와 일상 언어의 공통점과 차이점</h1>
+    
+    <form id="worksheetForm">
+        <div class="student-info">
+            <input type="text" name="grade" placeholder="학년" required>
+            <input type="text" name="class" placeholder="반" required>
+            <input type="text" name="number" placeholder="번호" required>
+            <input type="text" name="name" placeholder="이름" required>
+        </div>
+
+        <div class="section-title">활동 1. 문자를 일상 언어로 표현하기</div>
+        <div class="example-box">
+            <p><strong>[예시] <span class="math-expr">2x + 1</span></strong></p>
+            <ul>
+                <li>어떤 수 x의 2배에 1을 더한 값</li>
+                <li>시속 2km로 x시간 동안 걷고 1km를 더 걸었을 때, 전체 이동 거리</li>
+                <li>팔 굽혀 펴기를 x회씩 2번 반복하고 1회 더 했을 때, 전체 팔 굽혀 펴기의 횟수</li>
+            </ul>
+        </div>
+
+        <div class="question">
+            <label>1. 위 예시를 참고하여 <span class="math-expr">2x + 1</span>로 나타낼 수 있는 새로운 상황을 하나 만들어 보세요.</label>
+            <input type="text" name="q_2x_plus_1" placeholder="예: 한 개에 x원인 사탕 2개와 1원짜리 봉투를 샀을 때의 총 가격" required>
+        </div>
+
+        <div class="question">
+            <label>2. 식 <span class="math-expr">500n</span>에 해당하는 상황을 일상 언어로 써보세요.</label>
+            <input type="text" name="q_500n" placeholder="예: 500원짜리 아이스크림 n개의 가격" required>
+        </div>
+
+        <div class="question">
+            <label>3. 식 <span class="math-expr">6ab</span>에 해당하는 상황을 일상 언어로 써보세요.</label>
+            <input type="text" name="q_6ab" placeholder="예: 가로가 a, 세로가 b인 직사각형 6개의 넓이 합" required>
+        </div>
+
+        <div class="question">
+            <label>4. 식 <span class="math-expr">12÷a</span> (a분의 12)에 해당하는 상황을 일상 언어로 써보세요.</label>
+            <input type="text" name="q_12_over_a" placeholder="예: 12개의 사탕을 a명의 친구에게 똑같이 나누어 줄 때 한 명이 받는 개수" required>
+        </div>
+
+        <div class="section-title" style="margin-top: 40px;">활동 2. 공통점과 차이점 찾기</div>
+        
+        <div class="question">
+            <label>문자와 일상 언어의 공통점은 무엇일까요?</label>
+            <textarea name="common" rows="3" placeholder="예: 어떤 의미나 상황을 전달하기 위해 사용된다." required></textarea>
+        </div>
+
+        <div class="question">
+            <label>문자와 일상 언어의 차이점은 무엇일까요?</label>
+            <textarea name="diff" rows="3" placeholder="예: 문자는 수학적 기호를 사용하여 더 간결하게 표현한다." required></textarea>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn" data-html2canvas-ignore="true">제출하기</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('worksheetForm').addEventListener('submit', async function(e) {
+        e.preventDefault(); 
+        
+        // ★ 선생님의 웹 앱 URL을 반드시 여기에 붙여넣어 주세요! ★
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwrtOqbSrB5D4lypohZ2neJcJBr4-7yO8IWjTlXlkm0GIJlNH73ao6ZBu6mwH6ciR-SZA/exec';
+        
+        if(scriptURL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+            alert('구글 앱스 스크립트 URL이 연결되지 않았습니다. 코드를 확인해주세요.');
+            return;
+        }
+
+        const overlay = document.getElementById('loadingOverlay');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // 1. 제출 시작 시 로딩 화면 띄우기 및 버튼 비활성화
+        overlay.style.display = 'flex';
+        submitBtn.disabled = true;
+
+        try {
+            // 2. 화면(container)을 캡처하여 캔버스로 만들기 (로딩 화면은 ignore 속성 덕분에 캡처 안 됨)
+            const captureArea = document.getElementById('capture-area');
+            const canvas = await html2canvas(captureArea, { scale: 2 }); 
+            
+            // 3. 캡처한 이미지를 PDF로 변환
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = 210; 
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            
+            const imgData = canvas.toDataURL('image/png');
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            
+            // 4. PDF를 Base64 문자열로 변환
+            const pdfBase64 = pdf.output('datauristring').split(',')[1];
+
+            // 5. 서버로 보낼 데이터 준비
+            const formData = new FormData(this);
+            formData.append('pdfBase64', pdfBase64); 
+
+            // 6. 구글 앱스 스크립트로 전송
+            const response = await fetch(scriptURL, { method: 'POST', body: formData});
+            
+            if (response.ok) {
+                alert('성공적으로 제출되었습니다. 참 잘했어요!');
+                this.reset(); // 성공하면 입력칸 초기화
+            } else {
+                throw new Error('Network response was not ok.');
+            }
+        } catch (error) {
+            console.error('Error!', error.message);
+            alert('제출에 실패했습니다. 인터넷 연결을 확인해주세요.');
+        } finally {
+            // 7. 모든 과정이 끝나면(성공/실패 무관) 로딩 화면 끄기 및 버튼 원상복구
+            overlay.style.display = 'none';
+            submitBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
