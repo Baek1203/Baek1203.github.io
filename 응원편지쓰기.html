@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리 아이 첫 시험 응원 편지</title>
+    <style>
+        /* 기본 배경 및 폰트 설정 */
+        body { 
+            font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; 
+            background-color: #f4f7f6; 
+            padding: 20px; 
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        /* 폼 컨테이너 디자인 (스마트폰 화면에도 잘 맞도록 설정) */
+        .container { 
+            width: 100%;
+            max-width: 500px; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); 
+        }
+        
+        h2 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-top: 0;
+        }
+        
+        p.description { 
+            color: #7f8c8d; 
+            font-size: 0.95em; 
+            text-align: center; 
+            margin-bottom: 25px; 
+            line-height: 1.5;
+        }
+        
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        
+        label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 8px; 
+            color: #34495e; 
+        }
+        
+        input[type="text"], textarea { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-family: inherit; 
+            font-size: 1em;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+        
+        textarea { 
+            resize: vertical; 
+            height: 250px; 
+        }
+        
+        /* 글자 수 표시 영역 디자인 */
+        .char-count { 
+            text-align: right; 
+            font-size: 0.85em; 
+            color: #95a5a6; 
+            margin-top: 8px; 
+        }
+        
+        /* 300자 초과 시 나타날 경고 스타일 */
+        .char-count.over { 
+            color: #e74c3c; 
+            font-weight: bold; 
+        }
+        
+        /* 제출 버튼 디자인 */
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background-color: #3498db; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 1.1em; 
+            cursor: pointer; 
+            font-weight: bold; 
+            transition: background-color 0.3s ease;
+        }
+        
+        button:hover { 
+            background-color: #2980b9; 
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>💌 첫 시험 응원 편지</h2>
+        <p class="description">중학교 첫 시험을 앞둔 아이에게<br>따뜻한 응원의 메시지를 남겨주세요.<br>(분량 차이를 줄이기 위해 <strong>300자 내외</strong>를 권장합니다.)</p>
+
+        <form id="cheerForm">
+            <div class="form-group">
+                <label for="studentName">아이 이름</label>
+                <input type="text" id="studentName" name="studentName" placeholder="예: 홍길동" required>
+            </div>
+
+            <div class="form-group">
+                <label for="letterContent">응원 편지 내용</label>
+                <textarea id="letterContent" name="letterContent" placeholder="아이에게 전하고 싶은 따뜻한 한마디를 적어주세요." required></textarea>
+                
+                <div class="char-count" id="countWrapper">
+                    <span id="currentCount">0</span> / 권장 300자
+                </div>
+            </div>
+
+            <button type="submit">편지 제출하기</button>
+        </form>
+    </div>
+
+<script>
+    const textarea = document.getElementById('letterContent');
+    const countDisplay = document.getElementById('currentCount');
+    const countWrapper = document.getElementById('countWrapper');
+    const form = document.getElementById('cheerForm');
+    const submitButton = form.querySelector('button');
+
+    // 글자 수 카운팅 로직
+    textarea.addEventListener('input', function() {
+        const currentLength = this.value.length;
+        countDisplay.textContent = currentLength;
+        if (currentLength > 300) {
+            countWrapper.classList.add('over');
+        } else {
+            countWrapper.classList.remove('over');
+        }
+    });
+
+    // 구글 시트로 데이터 전송 로직
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // 버튼 비활성화 (중복 제출 방지)
+        submitButton.disabled = true;
+        submitButton.textContent = '제출 중...';
+
+        const formData = {
+            studentName: document.getElementById('studentName').value,
+            letterContent: document.getElementById('letterContent').value
+        };
+
+        // 앱스 스크립트 웹 앱 URL (여기에 복사한 URL을 붙여넣으세요)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyAOeKO65n8AP3Dmv6L5f1l_NK9TqhSO0VPFGne8okR_nnX4JModBNyd8RxvTE-kyP8dg/exec';
+
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors', // CORS 정책 우회
+            cache: 'no-cache',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+        .then(() => {
+            alert('응원 편지가 성공적으로 전달되었습니다! 감사합니다.');
+            form.reset();
+            countDisplay.textContent = '0';
+            submitButton.disabled = false;
+            submitButton.textContent = '편지 제출하기';
+        })
+        .catch(error => {
+            console.error('Error!', error.message);
+            alert('제출 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+            submitButton.disabled = false;
+            submitButton.textContent = '편지 제출하기';
+        });
+    });
+</script>
+</body>
+</html>
