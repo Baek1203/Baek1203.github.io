@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>수학 연금술사</title>
+    <title>수학 연금술사 (밸런스 및 UI 패치 버전)</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
@@ -24,15 +24,19 @@
         #intro-stars-text { font-size: 40px; color: #ffeb3b; margin-top: 10px; letter-spacing: 5px; }
 
         #viewport { position: relative; width: 100vw; height: 100vh; overflow: hidden; display: none; }
-        #game-container { position: absolute; width: 3000px; height: 3000px; background-color: var(--main-bg); background-image: linear-gradient(#2a2a4e 2px, transparent 2px), linear-gradient(90deg, #2a2a4e 2px, transparent 2px); background-size: 100px 100px; transform-origin: 0 0; will-change: transform; }
+        
+        /* 맵 크기를 2000px로 축소 */
+        #game-container { position: absolute; width: 2000px; height: 2000px; background-color: #0d1117; background-image: url('./night_forest.png'); background-repeat: repeat; background-size: 512px 512px; transform-origin: 0 0; will-change: transform; }
         
         .player { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; border: 3px solid white; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: opacity 0.3s; }
         .player.success { opacity: 0.3; border-color: gold; z-index: 10; }
         
         .item { position: absolute; padding: 10px 15px; background: white; color: black; border-radius: 10px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 0 #ccc; transform: translate(-50%, -50%); z-index: 15; white-space: nowrap; border: 2px solid #ddd; }
-        .alchemy-zone { position: absolute; left: 1500px; top: 1500px; transform: translate(-50%, -50%); width: 300px; height: 300px; background: rgba(78, 204, 163, 0.15); border: 4px dashed var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; z-index: 5; text-align: center; }
         
-        .obstacle { position: absolute; background: #333; border: 2px solid #555; display: flex; align-items: center; justify-content: center; color: #888; font-weight: bold; font-size: 18px; z-index: 6; border-radius: 10px; box-shadow: inset 0 0 20px #000; }
+        /* 연금술 솥 위치를 새로운 중앙(1000px)으로 변경 */
+        .alchemy-zone { position: absolute; left: 1000px; top: 1000px; transform: translate(-50%, -50%); width: 300px; height: 300px; background: rgba(78, 204, 163, 0.15); border: 4px dashed var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; z-index: 5; text-align: center; }
+        
+        .obstacle { position: absolute; background: #333; border: 2px solid #555; display: flex; align-items: center; justify-content: center; color: #888; font-weight: bold; font-size: 18px; z-index: 6; border-radius: 10px; box-shadow: 10px 10px 20px rgba(0,0,0,0.6); }
         .terrain-slow { position: absolute; background: rgba(128, 0, 128, 0.2); border: 2px dashed purple; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-weight: bold; font-size: 24px; z-index: 4; border-radius: 40% 60% 70% 30%; }
 
         #ui-layer { position: fixed; top: 15px; left: 15px; pointer-events: none; z-index: 100; display: none; width: calc(100vw - 30px); }
@@ -44,7 +48,8 @@
         #inventory { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; pointer-events: auto; max-width: 70vw; }
         .inv-card { padding: 5px 12px; background: #eee; color: black; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; min-height: 40px; }
 
-        #joystick { position: fixed; bottom: 50px; left: 50px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%; touch-events: auto; z-index: 100; display: none; }
+        /* 조이스틱 위치를 오른쪽으로 변경 */
+        #joystick { position: fixed; bottom: 50px; right: 50px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%; touch-events: auto; z-index: 100; display: none; }
         #stick { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; background: rgba(255,255,255,0.5); border-radius: 50%; pointer-events: none; }
 
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; box-sizing: border-box; text-align: center; overflow-y: auto; }
@@ -65,7 +70,7 @@
 
 <div id="login-screen" class="screen">
     <h1>수학 연금술사</h1>
-    <p style="color:#aaa; margin-bottom:30px;">※숫자 아이템을 조합하여 목표 수를 만들어 보아요.</p>
+    <p style="color:#aaa; margin-bottom:30px;">※ 진행자는 '진행자'라고 입력하세요.</p>
     <input type="text" id="player-name" placeholder="선생님 성함 입력" autocomplete="off">
     <button class="btn-primary" onclick="joinGame()">입장하기</button>
 </div>
@@ -90,8 +95,6 @@
         <button class="btn-primary" style="background:#555; color:white;" onclick="adminResetAll()">전체 데이터 초기화</button>
         <button class="btn-primary" id="btn-admin-start" onclick="adminStartNextRound()">1라운드 시작하기</button>
     </div>
-    
-    <p style="color:#aaa; font-size:14px; margin-bottom:10px;">※ 다른 선생님들이 접속하기 전, 초기화를 꼭 눌러주세요.</p>
     
     <table id="admin-leaderboard">
         <thead><tr><th>이름</th><th>성공 여부</th><th>누적 점수</th></tr></thead>
@@ -146,20 +149,21 @@
 </div>
 
 <script>
-    // --- 1. Firebase 초기화 ---
-const firebaseConfig = {
-  apiKey: "AIzaSyBi3sK9t35f5_UcbP04o50oNKiH0csj3xQ",
-  authDomain: "math-project-cb553.firebaseapp.com",
-  databaseURL: "https://math-project-cb553-default-rtdb.firebaseio.com",
-  projectId: "math-project-cb553",
-  storageBucket: "math-project-cb553.firebasestorage.app",
-  messagingSenderId: "474736262315",
-  appId: "1:474736262315:web:60cabe15876341698c0bee"
-};
+    // --- 1. Firebase 초기화 (선생님 키로 변경 필수!) ---
+    const firebaseConfig = {
+      apiKey: "AIzaSyBi3sK9t35f5_UcbP04o50oNKiH0csj3xQ",
+      authDomain: "math-project-cb553.firebaseapp.com",
+      databaseURL: "https://math-project-cb553-default-rtdb.firebaseio.com",
+      projectId: "math-project-cb553",
+      storageBucket: "math-project-cb553.firebasestorage.app",
+      messagingSenderId: "474736262315",
+      appId: "1:474736262315:web:60cabe15876341698c0bee"
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const MAP_SIZE = 3000;
+    // 맵 크기 축소 (3000 -> 2000)
+    const MAP_SIZE = 2000;
     const BASE_SPEED = 5;
     const ROUND_TIME = 90;
     const INTERMISSION_TIME = 10;
@@ -179,17 +183,19 @@ const firebaseConfig = {
     let playersData = {};
     let currentRoundObj = null;
 
+    // 장애물 좌표 및 크기 축소 (기존 대비 약 2/3)
     const obstacles = [
-        { x: 500, y: 800, w: 600, h: 100, label: "통행금지" },
-        { x: 2000, y: 500, w: 100, h: 800, label: "거대한 벽" },
-        { x: 800, y: 2200, w: 800, h: 150, label: "깊은 구덩이" }
+        { x: 350, y: 550, w: 400, h: 80, label: "통행금지" },
+        { x: 1350, y: 350, w: 80, h: 550, label: "거대한 벽" },
+        { x: 550, y: 1450, w: 550, h: 100, label: "깊은 구덩이" }
     ];
 
+    // 늪지대 좌표 및 크기 축소 (기존 대비 약 2/3)
     const terrains = [
-        { x: 1800, y: 1800, w: 600, h: 600, round: 2, label: "끈적한 늪" },
-        { x: 400, y: 1200, w: 500, h: 800, round: 3, label: "끈적한 늪" },
-        { x: 1200, y: 400, w: 800, h: 400, round: 4, label: "끈적한 늪" },
-        { x: 1000, y: 2400, w: 1000, h: 500, round: 5, label: "수학의 늪" }
+        { x: 1200, y: 1200, w: 400, h: 400, round: 2, label: "끈적한 늪" },
+        { x: 250, y: 800, w: 350, h: 550, round: 3, label: "끈적한 늪" },
+        { x: 800, y: 250, w: 550, h: 250, round: 4, label: "끈적한 늪" },
+        { x: 650, y: 1600, w: 650, h: 350, round: 5, label: "수학의 늪" }
     ];
 
     const roundConfigs = {
@@ -248,9 +254,10 @@ const firebaseConfig = {
         } else {
             document.getElementById('waiting-screen').style.display = 'flex';
             
+            // 시작 좌표를 새로운 맵 중앙(1000, 1000) 주변으로 변경
             do {
-                myPos.x = 1500 + (Math.random() * 800 - 400);
-                myPos.y = 1500 + (Math.random() * 800 - 400);
+                myPos.x = 1000 + (Math.random() * 600 - 300);
+                myPos.y = 1000 + (Math.random() * 600 - 300);
             } while (isCollidingWithObstacle(myPos.x, myPos.y));
 
             playerRef = db.ref('players/' + myId);
@@ -313,7 +320,8 @@ const firebaseConfig = {
             allPlayersRef.update(updates);
             itemsRef.remove();
             
-            for(let i=0; i<15; i++) spawnSingleItemAdmin(r);
+            // 라운드 시작 시 스폰량을 15개 -> 10개로 하향
+            for(let i=0; i<10; i++) spawnSingleItemAdmin(r);
 
             gameStateRef.set({ status: 'intro', round: r, time: INTRO_TIME });
             clearInterval(adminInterval);
@@ -326,7 +334,7 @@ const firebaseConfig = {
         do {
             sx = Math.random()*(MAP_SIZE-200)+100;
             sy = Math.random()*(MAP_SIZE-200)+100;
-        } while (isCollidingWithObstacle(sx, sy) || Math.hypot(sx - 1500, sy - 1500) < 250); 
+        } while (isCollidingWithObstacle(sx, sy) || Math.hypot(sx - 1000, sy - 1000) < 200); // 솥 접근 제한 좌표 변경
         
         let it = generateItem(roundNum);
         itemsRef.push({ ...it, x: sx, y: sy });
@@ -349,9 +357,9 @@ const firebaseConfig = {
                 
                 itemsRef.once('value').then(itemSnap => {
                     const currentItems = itemSnap.val() || {};
-                    if(Object.keys(currentItems).length < 60) {
-                        spawnSingleItemAdmin(state.round);
-                        spawnSingleItemAdmin(state.round);
+                    // 아이템 최대 유지 개수를 25개로 축소 및 생성 확률 하향 (50%)
+                    if(Object.keys(currentItems).length < 25) {
+                        if(Math.random() < 0.5) spawnSingleItemAdmin(state.round);
                     }
                 });
                 
@@ -571,7 +579,9 @@ const firebaseConfig = {
                 updateInventoryUI();
             }
         });
-        if (Math.hypot(myPos.x - 1500, myPos.y - 1500) < 150) openModal();
+        
+        // 솥 충돌 좌표 기준을 1000px로 변경
+        if (Math.hypot(myPos.x - 1000, myPos.y - 1000) < 150) openModal();
     }
 
     function updateInventoryUI() {
