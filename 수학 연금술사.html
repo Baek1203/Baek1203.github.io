@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>수학 연금술사 (KaTeX & 다이내믹 지형 버전)</title>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        :root { --main-bg: #1a1a2e; --accent: #4ecca3; --danger: #ff4757; }
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Pretendard', sans-serif; color: white; touch-action: none; user-select: none; }
+        
+        .screen { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--main-bg); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .screen h1 { color: gold; font-size: 36px; text-shadow: 2px 2px #000; margin-bottom: 10px; }
+        
+        #player-name { padding: 15px; font-size: 20px; border-radius: 8px; border: none; text-align: center; margin-bottom: 20px; outline: none; }
+        .btn-primary { padding: 15px 40px; background: var(--accent); color: #000; font-size: 20px; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-primary:active { transform: scale(0.95); }
+
+        #intro-screen { background: rgba(0, 0, 0, 0.85); z-index: 2500; }
+        #intro-round-text { font-size: 60px; color: var(--accent); font-weight: bold; margin: 0; text-shadow: 0 0 20px var(--accent); }
+        #intro-stars-text { font-size: 40px; color: #ffeb3b; margin-top: 10px; letter-spacing: 5px; }
+
+        #viewport { position: relative; width: 100vw; height: 100vh; overflow: hidden; display: none; }
+        #game-container { position: absolute; width: 3000px; height: 3000px; background-color: var(--main-bg); background-image: linear-gradient(#2a2a4e 2px, transparent 2px), linear-gradient(90deg, #2a2a4e 2px, transparent 2px); background-size: 100px 100px; transform-origin: 0 0; will-change: transform; }
+        
+        .player { position: absolute; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: bold; border: 3px solid white; transform: translate(-50%, -50%); z-index: 20; box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: opacity 0.3s; }
+        .player.success { opacity: 0.3; border-color: gold; z-index: 10; }
+        
+        .item { position: absolute; padding: 10px 15px; background: white; color: black; border-radius: 10px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 0 #ccc; transform: translate(-50%, -50%); z-index: 15; white-space: nowrap; border: 2px solid #ddd; }
+        .alchemy-zone { position: absolute; left: 1500px; top: 1500px; transform: translate(-50%, -50%); width: 300px; height: 300px; background: rgba(78, 204, 163, 0.15); border: 4px dashed var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 20px; z-index: 5; text-align: center; }
+        
+        .obstacle { position: absolute; background: #333; border: 2px solid #555; display: flex; align-items: center; justify-content: center; color: #888; font-weight: bold; font-size: 18px; z-index: 6; border-radius: 10px; box-shadow: inset 0 0 20px #000; }
+        .terrain-slow { position: absolute; background: rgba(128, 0, 128, 0.2); border: 2px dashed purple; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.4); font-weight: bold; font-size: 24px; z-index: 4; border-radius: 40% 60% 70% 30%; }
+
+        #ui-layer { position: fixed; top: 15px; left: 15px; pointer-events: none; z-index: 100; display: none; width: calc(100vw - 30px); }
+        .ui-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        #target-display { font-size: 24px; color: gold; font-weight: bold; text-shadow: 2px 2px #000; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px; border: 2px solid gold; }
+        #stars-display { color: #ffeb3b; font-size: 20px; margin-top: 5px; }
+        #timer-display { font-size: 32px; font-weight: bold; color: white; background: rgba(255,71,87,0.8); padding: 10px 20px; border-radius: 8px; border: 2px solid white; }
+        
+        #inventory { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 5px; pointer-events: auto; max-width: 70vw; }
+        .inv-card { padding: 5px 12px; background: #eee; color: black; border-radius: 6px; font-weight: bold; font-size: 16px; cursor: pointer; border: 2px solid #ccc; display: flex; align-items: center; justify-content: center; min-height: 40px; }
+
+        #joystick { position: fixed; bottom: 50px; left: 50px; width: 120px; height: 120px; background: rgba(255,255,255,0.15); border-radius: 50%; touch-events: auto; z-index: 100; display: none; }
+        #stick { position: absolute; left: 35px; top: 35px; width: 50px; height: 50px; background: rgba(255,255,255,0.5); border-radius: 50%; pointer-events: none; }
+
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 1000; padding: 20px; box-sizing: border-box; text-align: center; overflow-y: auto; }
+        .calc-area { margin-top: 20px; min-height: 60px; background: #333; border-radius: 10px; padding: 15px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+        
+        #expression-preview { font-size: 32px; margin-top: 20px; min-height: 80px; border-bottom: 2px solid white; color: gold; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; padding-bottom: 10px; }
+        .token-chunk { display: inline-block; background: #444; border: 2px solid var(--accent); padding: 5px 15px; border-radius: 8px; color: white; box-shadow: 0 4px 0 #222; }
+
+        table { width: 80%; max-width: 600px; margin: 20px auto; border-collapse: collapse; background: rgba(255,255,255,0.1); }
+        th, td { padding: 12px; border: 1px solid #555; font-size: 18px; }
+        th { background: rgba(0,0,0,0.5); color: gold; }
+
+        #admin-panel { background: #222; border: 3px solid var(--danger); }
+        .admin-controls { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen" class="screen">
+    <h1>수학 연금술사</h1>
+    <p style="color:#aaa; margin-bottom:30px;">※ 진행자는 '진행자'라고 입력하세요.</p>
+    <input type="text" id="player-name" placeholder="선생님 성함 입력" autocomplete="off">
+    <button class="btn-primary" onclick="joinGame()">입장하기</button>
+</div>
+
+<div id="waiting-screen" class="screen" style="display:none;">
+    <h1>대기실</h1>
+    <p style="font-size: 20px;">진행자가 게임을 시작할 때까지 잠시만 기다려주세요...</p>
+    <div style="margin-top: 30px;" id="waiting-players">접속자 불러오는 중...</div>
+</div>
+
+<div id="intro-screen" class="screen" style="display:none;">
+    <h1 id="intro-round-text">ROUND 1</h1>
+    <div id="intro-desc-text" style="color:white; font-size:24px; margin-top:10px;"></div>
+    <div id="intro-stars-text">★</div>
+</div>
+
+<div id="admin-screen" class="screen" style="display:none;" id="admin-panel">
+    <h1 style="color:var(--danger)">👑 진행자 컨트롤 패널</h1>
+    <p id="admin-status" style="font-size: 20px;">현재 상태: 대기 중</p>
+    
+    <div class="admin-controls">
+        <button class="btn-primary" style="background:#555; color:white;" onclick="adminResetAll()">전체 데이터 초기화</button>
+        <button class="btn-primary" id="btn-admin-start" onclick="adminStartNextRound()">1라운드 시작하기</button>
+    </div>
+    
+    <p style="color:#aaa; font-size:14px; margin-bottom:10px;">※ 다른 선생님들이 접속하기 전, 초기화를 꼭 눌러주세요.</p>
+    
+    <table id="admin-leaderboard">
+        <thead><tr><th>이름</th><th>성공 여부</th><th>누적 점수</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div id="intermission-screen" class="screen" style="display:none;">
+    <h1 id="intermission-title">라운드 종료!</h1>
+    <p style="font-size:24px; color:var(--accent);">잠시 후 다음 라운드가 시작됩니다.</p>
+    <h2 id="intermission-timer" style="color:white; font-size: 40px; margin: 10px 0;">10</h2>
+    <table id="score-table">
+        <thead><tr><th>순위</th><th>이름</th><th>라운드 점수</th><th>누적 점수</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<div id="viewport">
+    <div id="game-container">
+        <div class="alchemy-zone">🧪 연금술 솥<br>(중앙)</div>
+    </div>
+</div>
+
+<div id="ui-layer">
+    <div class="ui-header">
+        <div>
+            <div id="target-display">목표: <span id="target-num" style="color:white;">10</span></div>
+            <div id="stars-display">★</div>
+        </div>
+        <div id="timer-display">90</div>
+    </div>
+    <div id="inventory"></div>
+</div>
+<div id="joystick"><div id="stick"></div></div>
+
+<div id="modal">
+    <h2>🧪 연금술 조합실</h2>
+    <div class="calc-area" id="modal-cards"></div>
+    <div class="calc-area">
+        <button class="inv-card" onclick="addOp('+')">+</button>
+        <button class="inv-card" onclick="addOp('-')">-</button>
+        <button class="inv-card" onclick="addOp('*')">×</button>
+        <button class="inv-card" onclick="addOp('/')">÷</button>
+        <button class="inv-card" onclick="addOp('(')">(</button>
+        <button class="inv-card" onclick="addOp(')')">)</button>
+    </div>
+    <div id="expression-preview"></div>
+    <button class="btn-primary" style="margin-top:20px;" onclick="submitAlchemy()">조합 확인</button>
+    <button class="btn-primary" style="margin-top:20px; background:#555; color:white; margin-left:10px;" onclick="clearExpression()">지우기</button>
+    <br>
+    <button onclick="closeModal()" style="background:none; border:none; color:#ccc; margin-top:20px; font-size:18px; cursor:pointer;">필드로 돌아가기 🔙</button>
+</div>
+
+<script>
+    // --- 1. Firebase 초기화 ---
+const firebaseConfig = {
+  apiKey: "AIzaSyBi3sK9t35f5_UcbP04o50oNKiH0csj3xQ",
+  authDomain: "math-project-cb553.firebaseapp.com",
+  databaseURL: "https://math-project-cb553-default-rtdb.firebaseio.com",
+  projectId: "math-project-cb553",
+  storageBucket: "math-project-cb553.firebasestorage.app",
+  messagingSenderId: "474736262315",
+  appId: "1:474736262315:web:60cabe15876341698c0bee"
+};
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const MAP_SIZE = 3000;
+    const BASE_SPEED = 5;
+    const ROUND_TIME = 90;
+    const INTERMISSION_TIME = 10;
+    const INTRO_TIME = 3;
+
+    let myId = "";
+    let isAdmin = false;
+    let myPos = { x: 0, y: 0 };
+    let myInventory = [];
+    let equationTokens = [];
+    
+    let isMoving = false, isModalOpen = false;
+    let moveVector = { x: 0, y: 0 };
+    let currentSpeed = BASE_SPEED;
+    
+    let playerRef, allPlayersRef, itemsRef, gameStateRef;
+    let playersData = {};
+    let currentRoundObj = null;
+
+    const obstacles = [
+        { x: 500, y: 800, w: 600, h: 100, label: "통행금지" },
+        { x: 2000, y: 500, w: 100, h: 800, label: "거대한 벽" },
+        { x: 800, y: 2200, w: 800, h: 150, label: "깊은 구덩이" }
+    ];
+
+    const terrains = [
+        { x: 1800, y: 1800, w: 600, h: 600, round: 2, label: "끈적한 늪" },
+        { x: 400, y: 1200, w: 500, h: 800, round: 3, label: "끈적한 늪" },
+        { x: 1200, y: 400, w: 800, h: 400, round: 4, label: "끈적한 늪" },
+        { x: 1000, y: 2400, w: 1000, h: 500, round: 5, label: "수학의 늪" }
+    ];
+
+    const roundConfigs = {
+        1: { target: 10, stars: "★", desc: "초보 연금술사 (기초)" },
+        2: { target: 15, stars: "★★", desc: "견습 연금술사 (거듭제곱)" },
+        3: { target: 20, stars: "★★★", desc: "숙련 연금술사 (삼각비)" },
+        4: { target: 24, stars: "★★★★", desc: "수석 연금술사 (극한)" },
+        5: { target: 30, stars: "★★★★★★★★★★", desc: "대마법사 (현대대수학)" }
+    };
+
+    function generateItem(round) {
+        const val = Math.floor(Math.random() * 6) + 1;
+        let text = "";
+        
+        if (round === 1) {
+            text = [`${val+3} - 3`, `\\frac{${val*2}}{2}`, `${val+1} - 1`, `\\frac{${val*3}}{3}`][Math.floor(Math.random()*4)];
+        } else if (round === 2) {
+            text = [`\\frac{\\sqrt{${val*val*4}}}{\\sqrt{4}}`, `${val}^1`, `|- ${val}|`, `\\sqrt{${val*val}}`][Math.floor(Math.random()*4)];
+        } else if (round === 3) {
+            text = [`\\sin(30^\\circ) \\times ${val*2}`, `\\cos(60^\\circ) \\times ${val*2}`, `\\log_2(${Math.pow(2,val)})`, `\\frac{\\sqrt{${val*val*9}}}{\\sqrt{9}}`][Math.floor(Math.random()*4)];
+        } else if (round === 4) {
+            const arr = [`\\lim_{x \\to ${val}} x`, `{}_{${val+1}}\\mathrm{C}_1 - 1`, `\\log_{10}(${Math.pow(10,val)})`];
+            if(val <= 3) arr.push(`${val}!`);
+            text = arr[Math.floor(Math.random()*arr.length)];
+        } else if (round === 5) {
+            const univItems = {
+                1: ["\\chi(\\text{Torus}) + 1", "|Z(S_6)|", "\\det(I)", "0!"],
+                2: ["[S_3 : A_3]", "[S_{12} : A_{12}]", "\\dim_{\\mathbb{R}}(\\mathbb{C})"],
+                3: ["\\dim(\\mathbb{R}^3)", "o((1\\ 2\\ 3))", "\\frac{|S_3|}{2}"],
+                4: ["o((1\\ 2)(3\\ 4)) + 2", "[\\mathbb{Q}(\\sqrt{2},\\sqrt{3}) : \\mathbb{Q}]"],
+                5: ["o((1\\ 2\\ 3\\ 4\\ 5))", "\\dim(P_4(x))"],
+                6: ["|S_3|", "o((1\\ 2)(3\\ 4\\ 5))"]
+            };
+            const list = univItems[val] || [`\\frac{|S_3|}{${6/val}}`]; 
+            text = list[Math.floor(Math.random() * list.length)];
+        }
+        return { text, val };
+    }
+
+    function joinGame() {
+        const nameInput = document.getElementById('player-name').value.trim();
+        if (!nameInput) return alert("이름을 입력해주세요!");
+        
+        myId = nameInput;
+        document.getElementById('login-screen').style.display = 'none';
+
+        gameStateRef = db.ref('gameState');
+        allPlayersRef = db.ref('players');
+        itemsRef = db.ref('items');
+
+        if (myId === "진행자") {
+            isAdmin = true;
+            document.getElementById('admin-screen').style.display = 'flex';
+            db.ref('players/진행자').remove(); 
+            initAdmin();
+        } else {
+            document.getElementById('waiting-screen').style.display = 'flex';
+            
+            do {
+                myPos.x = 1500 + (Math.random() * 800 - 400);
+                myPos.y = 1500 + (Math.random() * 800 - 400);
+            } while (isCollidingWithObstacle(myPos.x, myPos.y));
+
+            playerRef = db.ref('players/' + myId);
+            playerRef.set({ x: myPos.x, y: myPos.y, score: 0, roundScore: 0, hasSucceeded: false });
+
+            renderMapStatics();
+            listenToGameState();
+            requestAnimationFrame(gameLoop);
+        }
+
+        allPlayersRef.on('value', (snapshot) => {
+            playersData = snapshot.val() || {};
+            if (playersData["진행자"]) delete playersData["진행자"];
+
+            if (isAdmin) updateAdminLeaderboard();
+            else updateFieldPlayers();
+            
+            if(document.getElementById('waiting-screen').style.display === 'flex') {
+                document.getElementById('waiting-players').innerText = `현재 접속자: ${Object.keys(playersData).length}명`;
+            }
+        });
+    }
+
+    function adminResetAll() {
+        if(confirm("모든 데이터를 삭제하시겠습니까? (연수 시작 전 권장)")) {
+            db.ref('players').remove();
+            db.ref('items').remove();
+            gameStateRef.set({ status: 'waiting', round: 1, time: 0 });
+            alert("초기화 완료!");
+        }
+    }
+
+    let adminInterval;
+    function initAdmin() {
+        gameStateRef.set({ status: 'waiting', round: 1, time: 0 });
+        gameStateRef.on('value', snap => {
+            const state = snap.val();
+            if(!state) return;
+            document.getElementById('admin-status').innerText = `상태: ${state.status} | 라운드: ${state.round} | 남은 시간: ${state.time}초`;
+            
+            const btn = document.getElementById('btn-admin-start');
+            btn.disabled = (state.status === 'playing' || state.status === 'intermission' || state.status === 'intro');
+            if(state.status === 'waiting') btn.innerText = "1라운드 시작하기";
+            else if (state.status === 'intro') btn.innerText = "인트로 중...";
+            else if (state.status === 'playing') btn.innerText = "게임 진행 중...";
+            else if (state.status === 'ended') { btn.innerText = "게임 종료 (초기화)"; btn.disabled = false; }
+        });
+    }
+
+    function adminStartNextRound() {
+        gameStateRef.once('value').then(snap => {
+            let r = snap.val().round;
+            if(snap.val().status === 'ended') r = 1; 
+            
+            let updates = {};
+            for(let key in playersData) {
+                updates[`${key}/hasSucceeded`] = false;
+                updates[`${key}/roundScore`] = 0;
+            }
+            allPlayersRef.update(updates);
+            itemsRef.remove();
+            
+            for(let i=0; i<15; i++) spawnSingleItemAdmin(r);
+
+            gameStateRef.set({ status: 'intro', round: r, time: INTRO_TIME });
+            clearInterval(adminInterval);
+            adminInterval = setInterval(adminTick, 1000);
+        });
+    }
+
+    function spawnSingleItemAdmin(roundNum) {
+        let sx, sy;
+        do {
+            sx = Math.random()*(MAP_SIZE-200)+100;
+            sy = Math.random()*(MAP_SIZE-200)+100;
+        } while (isCollidingWithObstacle(sx, sy) || Math.hypot(sx - 1500, sy - 1500) < 250); 
+        
+        let it = generateItem(roundNum);
+        itemsRef.push({ ...it, x: sx, y: sy });
+    }
+
+    function adminTick() {
+        gameStateRef.once('value').then(snap => {
+            let state = snap.val();
+            
+            if (state.status === 'intro') {
+                state.time--;
+                if(state.time <= 0) {
+                    state.status = 'playing';
+                    state.time = ROUND_TIME;
+                }
+                gameStateRef.set(state);
+            }
+            else if(state.status === 'playing') {
+                state.time--;
+                
+                itemsRef.once('value').then(itemSnap => {
+                    const currentItems = itemSnap.val() || {};
+                    if(Object.keys(currentItems).length < 60) {
+                        spawnSingleItemAdmin(state.round);
+                        spawnSingleItemAdmin(state.round);
+                    }
+                });
+                
+                let allSucceeded = true, playerCount = 0;
+                for(let k in playersData) {
+                    playerCount++;
+                    if(!playersData[k].hasSucceeded) allSucceeded = false;
+                }
+                if(playerCount === 0) allSucceeded = false;
+
+                if(state.time <= 0 || allSucceeded) {
+                    state.status = 'intermission';
+                    state.time = INTERMISSION_TIME;
+                }
+                gameStateRef.set(state);
+            } 
+            else if (state.status === 'intermission') {
+                state.time--;
+                if(state.time <= 0) {
+                    if(state.round >= 5) {
+                        state.status = 'ended';
+                        clearInterval(adminInterval);
+                        gameStateRef.set(state);
+                    } else {
+                        state.round++;
+                        gameStateRef.set(state);
+                        adminStartNextRound();
+                    }
+                } else {
+                    gameStateRef.set(state);
+                }
+            }
+        });
+    }
+
+    function updateAdminLeaderboard() {
+        const tbody = document.querySelector('#admin-leaderboard tbody');
+        tbody.innerHTML = "";
+        for(let k in playersData) {
+            let p = playersData[k];
+            tbody.innerHTML += `<tr><td>${k}</td><td>${p.hasSucceeded ? '✅' : '❌'}</td><td>${p.score || 0}</td></tr>`;
+        }
+    }
+
+    function listenToGameState() {
+        gameStateRef.on('value', snap => {
+            const state = snap.val();
+            if(!state) return;
+            currentRoundObj = roundConfigs[state.round];
+
+            const wScreen = document.getElementById('waiting-screen');
+            const iScreen = document.getElementById('intermission-screen');
+            const introScreen = document.getElementById('intro-screen');
+            const gameUI = document.getElementById('ui-layer');
+            const joystick = document.getElementById('joystick');
+            const viewport = document.getElementById('viewport');
+
+            if (state.status === 'intro') {
+                wScreen.style.display = 'none'; iScreen.style.display = 'none';
+                viewport.style.display = 'block'; gameUI.style.display = 'none'; joystick.style.display = 'none';
+                closeModal();
+                
+                introScreen.style.display = 'flex';
+                document.getElementById('intro-round-text').innerText = `ROUND ${state.round}`;
+                document.getElementById('intro-desc-text').innerText = currentRoundObj.desc;
+                document.getElementById('intro-stars-text').innerText = currentRoundObj.stars;
+                renderDynamicTerrains(state.round); 
+            }
+            else if (state.status === 'playing') {
+                introScreen.style.display = 'none';
+                gameUI.style.display = 'block'; joystick.style.display = 'block';
+                
+                document.getElementById('target-num').innerText = currentRoundObj.target;
+                document.getElementById('stars-display').innerText = currentRoundObj.stars;
+                document.getElementById('timer-display').innerText = state.time;
+                
+                if(playersData[myId] && playersData[myId].hasSucceeded) {
+                    document.getElementById('timer-display').innerText = "성공! 대기중";
+                    document.getElementById('timer-display').style.background = "gold";
+                } else {
+                    document.getElementById('timer-display').style.background = "rgba(255,71,87,0.8)";
+                }
+
+                if(!itemsRef.listening) {
+                    itemsRef.listening = true;
+                    itemsRef.on('value', renderItems);
+                }
+            } 
+            else if (state.status === 'intermission' || state.status === 'ended') {
+                introScreen.style.display = 'none'; viewport.style.display = 'none';
+                gameUI.style.display = 'none'; joystick.style.display = 'none';
+                closeModal(); 
+                
+                iScreen.style.display = 'flex';
+                document.getElementById('intermission-title').innerText = state.status === 'ended' ? "최종 결과" : `${state.round}라운드 종료!`;
+                document.getElementById('intermission-timer').innerText = state.status === 'ended' ? "" : state.time;
+                
+                renderLeaderboard();
+                myInventory = []; 
+                updateInventoryUI();
+            }
+        });
+    }
+
+    function renderMapStatics() {
+        const container = document.getElementById('game-container');
+        obstacles.forEach(ob => {
+            const div = document.createElement('div');
+            div.className = 'obstacle';
+            div.style.left = ob.x + 'px'; div.style.top = ob.y + 'px';
+            div.style.width = ob.w + 'px'; div.style.height = ob.h + 'px';
+            div.innerText = ob.label;
+            container.appendChild(div);
+        });
+    }
+
+    function renderDynamicTerrains(roundNum) {
+        document.querySelectorAll('.terrain-slow').forEach(t => t.remove());
+        const container = document.getElementById('game-container');
+        terrains.forEach(t => {
+            if(t.round <= roundNum) {
+                const div = document.createElement('div');
+                div.className = 'terrain-slow';
+                div.style.left = t.x + 'px'; div.style.top = t.y + 'px';
+                div.style.width = t.w + 'px'; div.style.height = t.h + 'px';
+                div.innerText = t.label;
+                container.appendChild(div);
+            }
+        });
+    }
+
+    function isCollidingWithObstacle(px, py) {
+        for (let ob of obstacles) {
+            if (px + 25 > ob.x && px - 25 < ob.x + ob.w && py + 25 > ob.y && py - 25 < ob.y + ob.h) return true;
+        }
+        return false;
+    }
+
+    function checkTerrainEffect(px, py) {
+        let slow = false;
+        if(currentRoundObj) {
+            const r = parseInt(document.getElementById('intro-round-text').innerText.replace('ROUND ','')) || 1;
+            terrains.forEach(t => {
+                if(t.round <= r && px > t.x && px < t.x + t.w && py > t.y && py < t.y + t.h) {
+                    slow = true;
+                }
+            });
+        }
+        currentSpeed = slow ? BASE_SPEED * 0.4 : BASE_SPEED;
+    }
+
+    function updateFieldPlayers() {
+        if(isAdmin) return;
+        document.querySelectorAll('.player').forEach(p => p.remove());
+        for (let id in playersData) {
+            const p = playersData[id];
+            const div = document.createElement('div');
+            div.className = `player ${p.hasSucceeded ? 'success' : ''}`;
+            div.style.left = p.x + 'px'; div.style.top = p.y + 'px';
+            div.innerText = id;
+            if(id === myId) {
+                div.style.background = "var(--accent)"; div.style.color = "#000"; div.style.zIndex = "25";
+            } else {
+                div.style.background = "var(--danger)";
+            }
+            document.getElementById('game-container').appendChild(div);
+        }
+    }
+
+    function renderItems(snapshot) {
+        const items = snapshot.val() || {};
+        document.querySelectorAll('.item').forEach(i => i.remove());
+        for (let key in items) {
+            const it = items[key];
+            const div = document.createElement('div');
+            div.className = 'item'; div.id = key;
+            div.style.left = it.x + 'px'; div.style.top = it.y + 'px';
+            
+            katex.render(it.text, div, { throwOnError: false, displayMode: false });
+            
+            div.dataset.val = it.val; div.dataset.text = it.text;
+            document.getElementById('game-container').appendChild(div);
+        }
+    }
+
+    function gameLoop() {
+        if (!isAdmin && isMoving && !isModalOpen && (!playersData[myId] || !playersData[myId].hasSucceeded)) {
+            let nextX = myPos.x + moveVector.x * currentSpeed;
+            let nextY = myPos.y + moveVector.y * currentSpeed;
+            nextX = Math.max(25, Math.min(MAP_SIZE - 25, nextX));
+            nextY = Math.max(25, Math.min(MAP_SIZE - 25, nextY));
+
+            if (!isCollidingWithObstacle(nextX, myPos.y)) myPos.x = nextX;
+            if (!isCollidingWithObstacle(myPos.x, nextY)) myPos.y = nextY;
+
+            playerRef.set(Object.assign({}, playersData[myId], { x: myPos.x, y: myPos.y }));
+        }
+        
+        if(!isAdmin) {
+            checkTerrainEffect(myPos.x, myPos.y);
+            const screenW = window.innerWidth, screenH = window.innerHeight;
+            let camX = Math.max(0, Math.min(MAP_SIZE - screenW, myPos.x - screenW / 2));
+            let camY = Math.max(0, Math.min(MAP_SIZE - screenH, myPos.y - screenH / 2));
+            document.getElementById('game-container').style.transform = `translate(${-camX}px, ${-camY}px)`;
+            
+            if (!isModalOpen && playersData[myId] && !playersData[myId].hasSucceeded) checkCollision();
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function checkCollision() {
+        document.querySelectorAll('.item').forEach(it => {
+            const itX = parseFloat(it.style.left), itY = parseFloat(it.style.top);
+            if (Math.hypot(myPos.x - itX, myPos.y - itY) < 40) {
+                itemsRef.child(it.id).remove();
+                myInventory.push({ text: it.dataset.text, val: it.dataset.val });
+                updateInventoryUI();
+            }
+        });
+        if (Math.hypot(myPos.x - 1500, myPos.y - 1500) < 150) openModal();
+    }
+
+    function updateInventoryUI() {
+        const inv = document.getElementById('inventory');
+        inv.innerHTML = "";
+        myInventory.forEach(itemObj => {
+            const card = document.createElement('div');
+            card.className = 'inv-card'; 
+            katex.render(itemObj.text, card, { throwOnError: false });
+            inv.appendChild(card);
+        });
+    }
+
+    const joystick = document.getElementById('joystick'), stick = document.getElementById('stick');
+    joystick.addEventListener('touchstart', () => isMoving = true);
+    window.addEventListener('touchend', () => { isMoving = false; stick.style.left = '35px'; stick.style.top = '35px'; });
+    window.addEventListener('touchmove', (e) => {
+        if (!isMoving) return;
+        const rect = joystick.getBoundingClientRect(), touch = e.touches[0];
+        const x = touch.clientX - rect.left - 60, y = touch.clientY - rect.top - 60;
+        const angle = Math.atan2(y, x), dist = Math.min(45, Math.hypot(x, y));
+        stick.style.left = (35 + Math.cos(angle) * dist) + 'px'; stick.style.top = (35 + Math.sin(angle) * dist) + 'px';
+        moveVector.x = Math.cos(angle); moveVector.y = Math.sin(angle);
+    }, { passive: false });
+
+    function openModal() {
+        if (isModalOpen) return;
+        isModalOpen = true; isMoving = false;
+        stick.style.left = '35px'; stick.style.top = '35px';
+        document.getElementById('modal').style.display = 'block';
+        
+        const cardsDiv = document.getElementById('modal-cards');
+        cardsDiv.innerHTML = "";
+        myInventory.forEach((itemObj) => {
+            const btn = document.createElement('button');
+            btn.className = 'inv-card'; 
+            katex.render(itemObj.text, btn, { throwOnError: false });
+            btn.onclick = () => { addToken(itemObj.text, itemObj.val, false); btn.style.opacity = '0.3'; btn.onclick = null; };
+            cardsDiv.appendChild(btn);
+        });
+        clearExpression();
+    }
+
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+        isModalOpen = false;
+        myPos.y += 200; 
+        if(playerRef) playerRef.update({ x: myPos.x, y: myPos.y });
+    }
+
+    function addOp(op) { addToken(op, op, true); }
+    function addToken(text, val, isOp) { equationTokens.push({ text, val, isOp }); updatePreview(); }
+    function clearExpression() { equationTokens = []; updatePreview(); openModal(); }
+    
+    function updatePreview() { 
+        const preview = document.getElementById('expression-preview');
+        preview.innerHTML = "";
+        equationTokens.forEach(t => {
+            const span = document.createElement('span');
+            if(t.isOp) {
+                span.innerText = t.text === '*' ? '×' : (t.text === '/' ? '÷' : t.text);
+                span.style.margin = "0 5px";
+            } else {
+                span.className = 'token-chunk';
+                katex.render(t.text, span, { throwOnError: false });
+            }
+            preview.appendChild(span);
+        });
+    }
+
+    function submitAlchemy() {
+        try {
+            let evalStr = equationTokens.map(t => t.val).join(' ').replace(/×/g, '*').replace(/÷/g, '/');
+            const result = eval(evalStr);
+            if (result === currentRoundObj.target) {
+                gameStateRef.once('value').then(snap => {
+                    const timeLeft = snap.val().time || 0;
+                    const rScore = 100 + (timeLeft * 2); 
+                    const cScore = (playersData[myId].score || 0) + rScore;
+                    
+                    playerRef.update({ hasSucceeded: true, roundScore: rScore, score: cScore });
+                    alert(`🎉 완벽합니다! (+${rScore}점)`);
+                    closeModal();
+                });
+            } else {
+                alert("실패! 계산 결과: " + result); clearExpression();
+            }
+        } catch(e) { alert("완성되지 않은 식입니다."); clearExpression(); }
+    }
+
+    function renderLeaderboard() {
+        const tbody = document.querySelector('#score-table tbody');
+        tbody.innerHTML = "";
+        
+        const sorted = Object.keys(playersData).map(k => ({ name: k, ...playersData[k] })).sort((a,b) => b.score - a.score);
+        
+        sorted.forEach((p, index) => {
+            tbody.innerHTML += `
+                <tr style="background: ${p.name === myId ? 'rgba(78, 204, 163, 0.3)' : 'transparent'}">
+                    <td>${index + 1}</td>
+                    <td>${p.name} ${p.hasSucceeded ? '✅' : ''}</td>
+                    <td style="color:var(--accent)">+${p.roundScore || 0}</td>
+                    <td style="color:gold; font-weight:bold;">${p.score || 0}</td>
+                </tr>`;
+        });
+    }
+
+    window.addEventListener("beforeunload", () => {
+        if (!isAdmin && playerRef) playerRef.remove();
+    });
+</script>
+</body>
+</html>
