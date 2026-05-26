@@ -41,10 +41,13 @@
     </div>
   </div>
 
-  <script type="module">
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    // 💡 [추가됨] 인증(Auth) 모듈 불러오기
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
+    // --- Firebase 초기화 (선생님의 API 키로 모두 채워주세요) ---
     const firebaseConfig = {
       apiKey: "AIzaSyAY8cm0KXfLJmWRBazURC8tKBV1Kvi3fs0",
       authDomain: "math-tuter-123.firebaseapp.com",
@@ -55,6 +58,7 @@
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app); // 💡 [추가됨] auth 초기화
     const db = getFirestore(app);
     const CLASS_APP_ID = "math-tutor-class";
 
@@ -69,15 +73,13 @@
     ];
 
     let allStudents = [];
-    let currentClass = '1'; // 기본 선택 반
+    let currentClass = '1';
 
-    // 1. 헤더 렌더링
     const tableHeader = document.getElementById('tableHeader');
     const headerBeforeSurvival = PROBLEM_TYPES.map(type => 
       `<th class="p-4 text-center whitespace-nowrap text-sm" title="${type.name}">${type.icon} ${type.name}</th>`
     ).join('');
     
-    // 기존 헤더 사이에 카테고리 헤더 끼워넣기
     tableHeader.innerHTML = `
       <th class="p-4 text-center whitespace-nowrap">번호</th>
       <th class="p-4 whitespace-nowrap">이름</th>
@@ -85,7 +87,6 @@
       <th class="p-4 text-center whitespace-nowrap text-emerald-300 font-black">🔥 서바이벌 최고점</th>
     `;
 
-    // 2. 반 선택 탭 렌더링
     const classTabs = document.getElementById('classTabs');
     const classes = ['1', '2', '3', '4', '테스트'];
     
@@ -105,7 +106,6 @@
       renderTable();
     };
 
-    // 3. 학생 데이터 렌더링
     function renderTable() {
       const tbody = document.getElementById('studentTableBody');
       const filtered = allStudents.filter(s => s.gradeClass === currentClass);
@@ -118,7 +118,6 @@
       tbody.innerHTML = filtered.map(student => {
         const progress = student.progress || {};
 
-        // 카테고리별 달성도 HTML
         const progressHtml = PROBLEM_TYPES.map(type => {
           let completed = 0;
           for(let i=0; i<type.count; i++) {
@@ -152,31 +151,38 @@
       }).join('');
     }
 
-    // 4. Firestore 실시간 연동
-    const studentsRef = collection(db, 'artifacts', CLASS_APP_ID, 'public', 'data', 'students');
-    onSnapshot(studentsRef, (snapshot) => {
-      const loaded = [];
-      snapshot.forEach(doc => {
-        const parts = doc.id.split('-');
-        if (parts.length >= 3) {
-          loaded.push({
-            id: doc.id,
-            gradeClass: parts[0],
-            studentNum: parseInt(parts[1], 10) || 0,
-            name: parts[2],
-            progress: doc.data().progress || {}
-          });
-        }
-      });
-      // 번호순 정렬
-      loaded.sort((a, b) => a.studentNum - b.studentNum);
-      allStudents = loaded;
+    // 💡 [수정됨] 익명 로그인 성공 후에만 데이터를 불러오도록 변경
+    signInAnonymously(auth).then(() => {
+      console.log("대시보드 익명 로그인 성공!");
+      const studentsRef = collection(db, 'artifacts', CLASS_APP_ID, 'public', 'data', 'students');
       
-      renderTabs();
-      renderTable();
-    }, (error) => {
-      console.error("데이터 동기화 실패:", error);
-      document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="9" class="p-10 text-center text-red-500 font-bold">데이터를 불러오는데 실패했습니다. 권한이나 설정(API Key)을 확인해주세요.</td></tr>`;
+      onSnapshot(studentsRef, (snapshot) => {
+        const loaded = [];
+        snapshot.forEach(doc => {
+          const parts = doc.id.split('-');
+          if (parts.length >= 3) {
+            loaded.push({
+              id: doc.id,
+              gradeClass: parts[0],
+              studentNum: parseInt(parts[1], 10) || 0,
+              name: parts[2],
+              progress: doc.data().progress || {}
+            });
+          }
+        });
+        loaded.sort((a, b) => a.studentNum - b.studentNum);
+        allStudents = loaded;
+        
+        renderTabs();
+        renderTable();
+      }, (error) => {
+        console.error("데이터 동기화 실패:", error);
+        document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="9" class="p-10 text-center text-red-500 font-bold">데이터를 불러오는데 실패했습니다. Firestore 보안 규칙을 확인해주세요.</td></tr>`;
+      });
+
+    }).catch((error) => {
+      console.error("로그인 실패:", error);
+      document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="9" class="p-10 text-center text-red-500 font-bold">인증에 실패했습니다. Firebase API 설정값을 모두 정확히 입력했는지 확인해주세요.</td></tr>`;
     });
 
   </script>
