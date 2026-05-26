@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일차방정식 교사용 대시보드</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 font-sans min-h-screen p-6 md:p-10">
+
+  <div class="max-w-7xl mx-auto">
+    <div class="flex justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm">
+      <div>
+        <h1 class="text-3xl font-extrabold text-gray-800 flex items-center">
+          <span class="text-4xl mr-3">👨‍🏫</span> 교사용 통합 대시보드
+        </h1>
+        <p class="text-gray-500 mt-2">학생들의 카테고리별 달성도와 서바이벌 최고 기록을 확인하세요.</p>
+      </div>
+    </div>
+
+    <div id="classTabs" class="flex space-x-2 mb-6 bg-white p-2 rounded-2xl shadow-sm w-fit">
+      </div>
+
+    <div class="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-200">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr id="tableHeader" class="bg-slate-800 text-white">
+              <th class="p-4 text-center whitespace-nowrap">번호</th>
+              <th class="p-4 whitespace-nowrap">이름</th>
+              <th class="p-4 text-center whitespace-nowrap text-emerald-300 font-black">🔥 서바이벌 최고점</th>
+            </tr>
+          </thead>
+          <tbody id="studentTableBody" class="divide-y divide-gray-200">
+            <tr>
+              <td colspan="9" class="p-10 text-center text-gray-500 font-bold">데이터를 불러오는 중입니다...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAY8cm0KXfLJmWRBazURC8tKBV1Kvi3fs0",
+      authDomain: "math-tuter-123.firebaseapp.com",
+      projectId: "math-tuter-123",
+      storageBucket: "math-tuter-123.firebasestorage.app",
+      messagingSenderId: "92282817056",
+      appId: "1:92282817056:web:527c0cc123cde15cd34a45"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const CLASS_APP_ID = "math-tutor-class";
+
+    // --- 카테고리 및 문제 개수 정보 ---
+    const PROBLEM_TYPES = [
+      { id: 'num_age', name: '수/나이', icon: '🔢', count: 3 },
+      { id: 'price_qty', name: '가격/수량', icon: '💰', count: 5 },
+      { id: 'surplus_ratio', name: '과부족/비례', icon: '🍎', count: 3 },
+      { id: 'geometry_work', name: '도형/일', icon: '📐', count: 3 },
+      { id: 'speed_1', name: '거속시(왕복)', icon: '🚶', count: 3 },
+      { id: 'speed_2', name: '거속시(마주보기)', icon: '🚂', count: 3 }
+    ];
+
+    let allStudents = [];
+    let currentClass = '1'; // 기본 선택 반
+
+    // 1. 헤더 렌더링
+    const tableHeader = document.getElementById('tableHeader');
+    const headerBeforeSurvival = PROBLEM_TYPES.map(type => 
+      `<th class="p-4 text-center whitespace-nowrap text-sm" title="${type.name}">${type.icon} ${type.name}</th>`
+    ).join('');
+    
+    // 기존 헤더 사이에 카테고리 헤더 끼워넣기
+    tableHeader.innerHTML = `
+      <th class="p-4 text-center whitespace-nowrap">번호</th>
+      <th class="p-4 whitespace-nowrap">이름</th>
+      ${headerBeforeSurvival}
+      <th class="p-4 text-center whitespace-nowrap text-emerald-300 font-black">🔥 서바이벌 최고점</th>
+    `;
+
+    // 2. 반 선택 탭 렌더링
+    const classTabs = document.getElementById('classTabs');
+    const classes = ['1', '2', '3', '4', '테스트'];
+    
+    function renderTabs() {
+      classTabs.innerHTML = classes.map(c => {
+        const isSelected = c === currentClass;
+        const label = c === '테스트' ? '테스트 계정' : `${c}반`;
+        const activeClass = "bg-blue-600 text-white shadow-md";
+        const inactiveClass = "text-gray-600 hover:bg-gray-100";
+        return `<button onclick="window.changeClass('${c}')" class="px-6 py-3 rounded-xl font-bold text-lg transition ${isSelected ? activeClass : inactiveClass}">${label}</button>`;
+      }).join('');
+    }
+    
+    window.changeClass = (c) => {
+      currentClass = c;
+      renderTabs();
+      renderTable();
+    };
+
+    // 3. 학생 데이터 렌더링
+    function renderTable() {
+      const tbody = document.getElementById('studentTableBody');
+      const filtered = allStudents.filter(s => s.gradeClass === currentClass);
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="p-10 text-center text-gray-500 font-bold">해당 반에 등록된 학생 데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(student => {
+        const progress = student.progress || {};
+
+        // 카테고리별 달성도 HTML
+        const progressHtml = PROBLEM_TYPES.map(type => {
+          let completed = 0;
+          for(let i=0; i<type.count; i++) {
+            if (progress[`${type.id}-${i}`]) completed++;
+          }
+          const isAllDone = completed === type.count;
+          const barColor = isAllDone ? 'bg-green-500' : 'bg-blue-400';
+          const textColor = isAllDone ? 'text-green-600' : 'text-gray-500';
+          const percent = (completed / type.count) * 100;
+          
+          return `
+            <td class="p-4 text-center">
+              <div class="flex flex-col items-center">
+                <span class="text-sm font-bold ${textColor}">${completed} / ${type.count}</span>
+                <div class="w-16 h-2 bg-gray-200 rounded-full mt-1.5 overflow-hidden">
+                  <div class="h-full ${barColor}" style="width: ${percent}%"></div>
+                </div>
+              </div>
+            </td>
+          `;
+        }).join('');
+
+        return `
+          <tr class="hover:bg-blue-50 transition">
+            <td class="p-4 text-center font-bold text-gray-700">${student.studentNum}</td>
+            <td class="p-4 font-bold text-blue-900">${student.name}</td>
+            ${progressHtml}
+            <td class="p-4 text-center font-black text-xl text-emerald-600">${progress.testHighScore || 0}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 4. Firestore 실시간 연동
+    const studentsRef = collection(db, 'artifacts', CLASS_APP_ID, 'public', 'data', 'students');
+    onSnapshot(studentsRef, (snapshot) => {
+      const loaded = [];
+      snapshot.forEach(doc => {
+        const parts = doc.id.split('-');
+        if (parts.length >= 3) {
+          loaded.push({
+            id: doc.id,
+            gradeClass: parts[0],
+            studentNum: parseInt(parts[1], 10) || 0,
+            name: parts[2],
+            progress: doc.data().progress || {}
+          });
+        }
+      });
+      // 번호순 정렬
+      loaded.sort((a, b) => a.studentNum - b.studentNum);
+      allStudents = loaded;
+      
+      renderTabs();
+      renderTable();
+    }, (error) => {
+      console.error("데이터 동기화 실패:", error);
+      document.getElementById('studentTableBody').innerHTML = `<tr><td colspan="9" class="p-10 text-center text-red-500 font-bold">데이터를 불러오는데 실패했습니다. 권한이나 설정(API Key)을 확인해주세요.</td></tr>`;
+    });
+
+  </script>
+</body>
+</html>
