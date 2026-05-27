@@ -308,6 +308,111 @@
             color: #667eea;
         }
 
+        /* 실습 페이지 요소 스타일 */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .download-btn {
+            background-color: #48bb78;
+        }
+
+        .gemini-btn {
+            background-color: #4285f4;
+        }
+
+        .prompt-section {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .prompt-section h4 {
+            color: #4a5568;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prompt-text {
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #edf2f7;
+            font-family: inherit;
+            font-size: 0.95em;
+            line-height: 1.6;
+            color: #2d3748;
+            white-space: pre-wrap;
+            word-break: keep-all;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .copy-btn {
+            background: #edf2f7;
+            border: 1px solid #cbd5e1;
+            color: #4a5568;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .toast-msg {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 2000;
+        }
+
+        .toast-msg.show {
+            opacity: 1;
+            visibility: visible;
+            bottom: 100px;
+        }
+
         /* ==========================================================================
            중요: 모바일 환경 최적화 미디어 쿼리 (화면 가로 768px 이하 대응)
            ========================================================================== */
@@ -372,6 +477,15 @@
 
             .thank-you-slide .slide-title {
                 font-size: 2.5em;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+                justify-content: center;
             }
 
             .navigation {
@@ -707,16 +821,78 @@
             </div>
         </div>
 
-        <!-- Slide 11: Thank You -->
+        <!-- Slide 11: Practice (실습) -->
+        <div class="slide">
+            <div class="slide-header">
+                <h2 class="slide-title">실습: AI 플랫폼 활용하기</h2>
+                <p class="slide-subtitle">제공된 자료와 예시 프롬프트를 활용해 직접 실습해 보세요.</p>
+            </div>
+            <div class="slide-content">
+                <div class="action-buttons">
+                    <a href="https://drive.google.com/file/d/11nMBuIC_aEDLgsjJbtrOkKi5EvS5UT14/view?usp=sharing" target="_blank" class="action-btn download-btn">
+                        📥 지도서 파일 일부 다운로드
+                    </a>
+                    <a href="https://gemini.google.com/" target="_blank" class="action-btn gemini-btn">
+                        ✨ Gemini 바로가기
+                    </a>
+                </div>
+
+                <div class="prompt-section">
+                    <h4>
+                        예시 프롬프트 (기본)
+                        <button class="copy-btn" onclick="copyToClipboard(this, 'prompt1')">복사하기</button>
+                    </h4>
+                    <div class="prompt-text" id="prompt1">중학교 1학년 수학 정다면체 단원에서 각 정다각형이 평면에서 한 꼭짓점에 모여있다가, 입체로 만들어지는 시뮬레이션을 만들고 싶어.
+
+예를 들어 정삼각형이 유저가 선택한 개수(1개~6개) 만큼 한 꼭짓점에 모이도록 하는 화면이 있으면 좋겠고, '접기' 버튼을 누르면 유저가 선택한 개수의 정삼각형들이 접혀서 입체도형의 일부가 되는 애니메이션을 보여주면 좋겠어.
+
+이런 시뮬레이션이 가능한 웹 앱을 만들려고 하는데 html과 js를 이용한 코드를 만들어줘.</div>
+                </div>
+
+                <div class="prompt-section">
+                    <h4>
+                        개선된 프롬프트 (AI 최적화 구조)
+                        <button class="copy-btn" onclick="copyToClipboard(this, 'prompt2')">복사하기</button>
+                    </h4>
+                    <div class="prompt-text" id="prompt2">[역할]
+당신은 뛰어난 에듀테크 프론트엔드 개발자이자 3D 인터랙티브 웹 앱 제작자입니다.
+
+[요구사항]
+중학교 1학년 수학 '정다면체' 단원 학습을 위한 3D 시뮬레이션 웹 앱을 단일 HTML 파일(HTML, CSS, JS 포함)로 작성해주세요. 3D 구현을 위해 Three.js 라이브러리(CDN)를 사용해야 합니다.
+
+[핵심 기능 및 UI]
+1. 화면 레이아웃: 좌측에는 컨트롤 패널, 우측에는 3D 캔버스 영역을 배치해주세요.
+2. 도형 및 개수 선택 (컨트롤 패널):
+   - '정삼각형', '정사각형', '정오각형' 중 하나를 선택하는 버튼이나 드롭다운.
+   - 한 꼭짓점에 모일 다각형의 개수(1개~6개)를 조절하는 슬라이더. (도형별로 수학적으로 가능한 최대 개수만 선택되도록 제한)
+3. 2D 초기 렌더링:
+   - 선택한 다각형들이 평면(바닥) 상에서 한 꼭짓점을 공유하며 부채꼴 모양으로 펼쳐진 상태로 화면에 나타나야 합니다.
+4. 3D 접기 애니메이션:
+   - '접기' 버튼을 누르면, 펼쳐져 있던 다각형들이 지정된 이면각에 맞추어 3차원 입체 형태로 부드럽게 접히는 애니메이션을 구현해주세요.
+   - '펼치기' 버튼을 누르면 다시 평면 상태로 돌아가야 합니다.
+5. 상호작용:
+   - 사용자가 마우스 드래그 및 휠을 이용해 3D 캔버스를 회전, 확대/축소할 수 있도록 OrbitControls를 적용해주세요.
+
+[코드 조건]
+- 교사와 학생이 사용하기 쉽도록 UI를 깔끔하고 직관적으로 디자인해주세요.
+- 각 함수와 핵심 로직에 초보자도 이해할 수 있는 상세한 주석을 달아주세요.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Thank You -->
         <div class="slide thank-you-slide">
             <h1 class="slide-title">감사합니다</h1>
             <p class="slide-subtitle" style="margin-top: 30px; font-size: 1.3em;">질문이 있으시면 언제든지 문의해 주세요</p>
         </div>
     </div>
 
+    <!-- 토스트 메시지 -->
+    <div id="toastMessage" class="toast-msg">프롬프트가 클립보드에 복사되었습니다!</div>
+
     <div class="navigation">
         <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">◀ 이전</button>
-        <span class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">11</span></span>
+        <span class="slide-counter"><span id="currentSlide">1</span> / <span id="totalSlides">12</span></span>
         <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">다음 ▶</button>
     </div>
 
@@ -751,6 +927,40 @@
             if (e.key === 'ArrowLeft') changeSlide(-1);
             if (e.key === 'ArrowRight') changeSlide(1);
         });
+
+        // 프롬프트 복사 함수
+        function copyToClipboard(btnElement, elementId) {
+            const textToCopy = document.getElementById(elementId).innerText;
+            
+            // iFrame 환경을 고려하여 textarea를 활용한 복사 방법 사용
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            // 화면 밖으로 숨김
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+            document.body.appendChild(textarea);
+            
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            // 버튼 텍스트 임시 변경
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "✓ 복사 완료";
+            btnElement.style.background = "#e2e8f0";
+            
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.background = "";
+            }, 2000);
+
+            // 토스트 알림 띄우기
+            const toast = document.getElementById('toastMessage');
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
 
         // Initialize
         showSlide(0);
