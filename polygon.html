@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정다면체 원리 탐구: 정삼각형 접기</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f4f8; font-family: 'Malgun Gothic', sans-serif; }
+        #ui-container {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            pointer-events: auto; z-index: 10;
+        }
+        h2 { margin: 0 0 10px 0; font-size: 1.2rem; color: #333; }
+        .hint { font-size: 0.85rem; color: #666; margin-bottom: 15px; }
+        .control-group { margin-bottom: 15px; }
+        label { font-weight: bold; margin-right: 10px; color: #555; }
+        select, button {
+            padding: 8px 12px; font-size: 1rem;
+            border: 1px solid #ccc; border-radius: 6px;
+            cursor: pointer; outline: none;
+        }
+        button {
+            background-color: #4CAF50; color: white; border: none;
+            transition: background 0.3s; width: 100%; font-weight: bold;
+        }
+        button:hover { background-color: #45a049; }
+        button:disabled { background-color: #999; cursor: not-allowed; }
+        
+        #toast {
+            position: fixed; bottom: 40px; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(0, 0, 0, 0.8); color: white;
+            padding: 15px 25px; border-radius: 8px;
+            font-size: 1.1rem; font-weight: bold; text-align: center;
+            opacity: 0; pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20; white-space: nowrap;
+        }
+        #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="ui-container">
+        <h2>정삼각형 모으기</h2>
+        <div class="hint">💡 마우스 좌클릭으로 회전, 우클릭으로 화면을 이동합니다.</div>
+        <div class="control-group">
+            <label for="triangle-count">삼각형 개수:</label>
+            <select id="triangle-count">
+                <option value="1">1개 (60°)</option>
+                <option value="2">2개 (120°)</option>
+                <option value="3" selected>3개 (180°)</option>
+                <option value="4">4개 (240°)</option>
+                <option value="5">5개 (300°)</option>
+                <option value="6">6개 (360°)</option>
+            </select>
+        </div>
+        <button id="fold-btn">접기 (입체로 만들기)</button>
+    </div>
+
+    <div id="toast">알림 메시지</div>
+
+    <script>
+        // 1. 기본 환경 및 카메라 설정
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        
+        function resetCamera() {
+            camera.position.set(0, -3.5, 4.5);
+            if (controls) {
+                controls.target.set(0, 0, 0); // 언제나 무게중심인 (0,0,0)을 바라봄
+                controls.update();
+            }
+        }
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. 마우스/터치 컨트롤 추가
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; 
+        controls.dampingFactor = 0.05;
+        controls.enablePan = true; // ★ 우클릭 시점 이동 기능 활성화 상태 유지
+
+        resetCamera();
+
+        // 3. 조명 추가
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 5, 5);
+        scene.add(dirLight);
+
+        let mesh, wireframe, material;
+        let currentCount = 3;
+        let isFolded = false;
+        
+        let animState = null; 
+        let animTime = 0;
+        let animationTarget = 0;
+        let animationProgress = 0;
+
+        // 4. 도형 및 윤곽선 생성 함수
+        function setupShape(count) {
+            if (mesh) { scene.remove(mesh); scene.remove(wireframe); }
+            
+            const geometry = new THREE.BufferGeometry();
+            const vertices = new Float32Array((count + 2) * 3);
+            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+            
+            const indices = [];
+            for (let i = 1; i <= count; i++) {
+                indices.push(0, i, i + 1);
+            }
+            geometry.setIndex(indices);
+            
+            material = new THREE.MeshLambertMaterial({ 
+                color: 0xffd700, 
+                side: THREE.DoubleSide, 
+                transparent: true, 
+                opacity: 0.9,
+                polygonOffset: true,
+                polygonOffsetFactor: 1,
+                polygonOffsetUnits: 1
+            });
+            mesh = new THREE.Mesh(geometry, material);
+
+            // 윤곽선 구성
+            const wireframeGeo = new THREE.BufferGeometry();
+            wireframeGeo.setAttribute('position', geometry.attributes.position);
+            const wireIndices = [];
+            for(let i = 1; i <= count; i++) {
+                wireIndices.push(0, i);     
+                wireIndices.push(i, i + 1); 
+            }
+            wireIndices.push(0, count + 1); 
+
+            wireframeGeo.setIndex(wireIndices);
+            const lineMat = new THREE.LineBasicMaterial({ color: 0x222222, linewidth: 2 });
+            wireframe = new THREE.LineSegments(wireframeGeo, lineMat);
+
+            scene.add(mesh);
+            scene.add(wireframe);
+
+            // 매 생성시 변환값 초기화
+            mesh.position.set(0, 0, 0);
+            mesh.rotation.set(0, 0, 0);
+            wireframe.position.set(0, 0, 0);
+            wireframe.rotation.set(0, 0, 0);
+
+            updateVertices(count, 0); 
+        }
+
+        // 5. 정점 위치 계산 및 무게중심 원점 매칭 함수 (★핵심 변경 구간)
+        function updateVertices(count, progress) {
+            const positions = mesh.geometry.attributes.position.array;
+            const sideLength = 1.5;
+
+            // 가상공간에 임시 정점 계산 리스트 생성
+            let centerZ = 0;
+            if (count >= 3 && count <= 5) {
+                centerZ = Math.sqrt(1 - Math.pow(1 / (2 * Math.sin(Math.PI / count)), 2)) * sideLength * progress;
+            }
+            
+            const tempVerts = [];
+            tempVerts.push({ x: 0, y: 0, z: centerZ }); // 가상의 중심점(꼭짓점)
+
+            for (let i = 0; i <= count; i++) {
+                const flatAngle = i * (Math.PI / 3);
+                let x = Math.cos(flatAngle) * sideLength;
+                let y = Math.sin(flatAngle) * sideLength;
+                let z = 0;
+
+                if (count >= 3 && count <= 5) {
+                    const R = sideLength / (2 * Math.sin(Math.PI / count));
+                    const foldedAngle = i * (2 * Math.PI / count);
+                    const foldedX = Math.cos(foldedAngle) * R;
+                    const foldedY = Math.sin(foldedAngle) * R;
+                    
+                    x = x + (foldedX - x) * progress;
+                    y = y + (foldedY - y) * progress;
+                } 
+                else if (count === 2 && i === 2) {
+                    const v3 = new THREE.Vector3(x, y, 0);
+                    const axisAngle = Math.PI / 3; 
+                    const axis = new THREE.Vector3(Math.cos(axisAngle), Math.sin(axisAngle), 0).normalize();
+                    v3.applyAxisAngle(axis, progress * Math.PI);
+                    x = v3.x; y = v3.y; z = v3.z;
+                }
+                tempVerts.push({ x: x, y: y, z: z });
+            }
+
+            // 모든 점의 평균 좌표(무게중심) 구하기
+            let sumX = 0, sumY = 0, sumZ = 0;
+            const totalPoints = tempVerts.length;
+            for(let i = 0; i < totalPoints; i++) {
+                sumX += tempVerts[i].x;
+                sumY += tempVerts[i].y;
+                sumZ += tempVerts[i].z;
+            }
+            const centroidX = sumX / totalPoints;
+            const centroidY = sumY / totalPoints;
+            const centroidZ = sumZ / totalPoints;
+
+            // 실제 메쉬 버퍼에는 모든 좌표에서 무게중심을 뺀 값을 대입 -> 도형 중심이 항상 (0,0,0)에 고정됨
+            for(let i = 0; i < totalPoints; i++) {
+                const idx = i * 3;
+                positions[idx]     = tempVerts[i].x - centroidX;
+                positions[idx + 1] = tempVerts[i].y - centroidY;
+                positions[idx + 2] = tempVerts[i].z - centroidZ;
+            }
+            
+            mesh.geometry.attributes.position.needsUpdate = true;
+            mesh.geometry.computeVertexNormals();
+            wireframe.geometry.attributes.position.needsUpdate = true;
+        }
+
+        setupShape(currentCount);
+
+        // 6. 토스트 메시지 제어
+        const toast = document.getElementById('toast');
+        let toastTimeout;
+        function showToast(msg) {
+            toast.innerText = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, 3500);
+        }
+
+        // 개수 변경 시 이벤트
+        document.getElementById('triangle-count').addEventListener('change', (e) => {
+            currentCount = parseInt(e.target.value);
+            isFolded = false;
+            animationProgress = 0;
+            animState = null;
+            
+            resetCamera(); 
+
+            material.color.setHex(0xffd700);
+            document.getElementById('fold-btn').innerText = '접기 (입체로 만들기)';
+            document.getElementById('fold-btn').disabled = false;
+            toast.classList.remove('show');
+            setupShape(currentCount);
+        });
+
+        // 7. '접기' 버튼 클릭 이벤트
+        document.getElementById('fold-btn').addEventListener('click', () => {
+            if (animState) return; 
+
+            const btn = document.getElementById('fold-btn');
+
+            if (currentCount === 1) {
+                animState = 'shake';
+                animTime = 0;
+                btn.disabled = true;
+            } else if (currentCount === 2) {
+                animState = 'fold2';
+                animTime = 0;
+                btn.disabled = true;
+            } else if (currentCount === 6) {
+                animState = 'color6';
+                animTime = 0;
+                btn.disabled = true;
+            } else {
+                isFolded = !isFolded;
+                animationTarget = isFolded ? 1 : 0;
+                animState = 'fold345';
+                btn.innerText = isFolded ? '펼치기' : '접기 (입체로 만들기)';
+                toast.classList.remove('show');
+            }
+        });
+
+        // 8. 메인 렌더링 및 애니메이션 루프
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update(); 
+
+            // [수정] 1개일 때: 무게중심이 (0,0,0)이므로 rotation.z가 무게중심을 축으로 자연스럽게 작동합니다.
+            if (animState === 'shake') {
+                animTime += 0.02;
+                const shake = Math.sin(animTime * 30) * 0.15; // 회전 진동폭
+                mesh.rotation.z = shake;
+                wireframe.rotation.z = shake;
+                if (animTime > 1) {
+                    mesh.rotation.z = 0;
+                    wireframe.rotation.z = 0;
+                    animState = null;
+                    document.getElementById('fold-btn').disabled = false;
+                    showToast("삼각형이 한 개만 있으면 접을 수 없습니다.");
+                }
+            } 
+            else if (animState === 'fold2') {
+                animTime += 0.015;
+                let foldProgress = Math.sin(animTime * Math.PI); 
+                updateVertices(2, foldProgress);
+                if (animTime >= 1) {
+                    updateVertices(2, 0);
+                    animState = null;
+                    document.getElementById('fold-btn').disabled = false;
+                    showToast("두 개일 때는 완전히 접히게 되어 입체도형이 될 수 없습니다.");
+                }
+            } 
+            else if (animState === 'color6') {
+                animTime += 0.04;
+                let intensity = Math.sin(animTime * Math.PI);
+                material.color.setRGB(1, 0.84 - 0.84 * intensity, 0); 
+                if (animTime >= 1) {
+                    material.color.setHex(0xffd700);
+                    animState = null;
+                    document.getElementById('fold-btn').disabled = false;
+                    showToast("여분의 각이 없어서(360°) 평면이 되므로 접을 수 없습니다.");
+                }
+            } 
+            else if (animState === 'fold345') {
+                if (Math.abs(animationProgress - animationTarget) > 0.001) {
+                    animationProgress += (animationTarget - animationProgress) * 0.1;
+                    updateVertices(currentCount, animationProgress);
+                } else {
+                    animationProgress = animationTarget; 
+                    updateVertices(currentCount, animationProgress);
+                    animState = null; 
+                    if(isFolded) showToast("입체의 한 꼭짓점이 완성되었습니다!");
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
