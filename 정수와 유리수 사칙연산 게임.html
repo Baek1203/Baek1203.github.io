@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사칙계산 마스터</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'] }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" id="MathJax-script" async></script>
+
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --bg: #F0F4F8;
+            --card: #FFFFFF;
+            --btn: #2ecc71;
+            --danger: #e74c3c;
+            --info: #3498db;
+        }
+        body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: var(--bg); margin: 0; color: #333; }
+        h1, h2, h3 { margin: 0 0 10px 0; }
+        button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        input { padding: 12px; border: 2px solid #e1e4e8; border-radius: 8px; font-size: 16px; width: 100%; box-sizing: border-box; }
+        input:focus { border-color: var(--primary); outline: none; }
+        
+        /* 화면 전환(숨김/표시) 완벽 제어 */
+        .view { display: none !important; }
+        .active-view { display: block !important; }
+        /* 교사용 뷰가 활성화되었을 때만 flex를 적용 */
+        #teacher-view.active-view { display: flex !important; flex-direction: column; height: 100vh; overflow: hidden; padding: 15px; box-sizing: border-box; }
+        #student-view.active-view { display: block !important; padding: 20px; box-sizing: border-box; }
+
+        /* 홈 화면 (메인 메뉴) */
+        #home-view { max-width: 450px; margin: 80px auto; background: var(--card); padding: 40px 30px; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); text-align: center; }
+        .home-title { font-size: 28px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .home-subtitle { color: #5c6c7c; margin-bottom: 30px; font-size: 16px; }
+        
+        .login-btn { display: block; width: 100%; padding: 16px; margin-bottom: 15px; font-size: 18px; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .login-btn:active { transform: translateY(2px); box-shadow: none; }
+        .btn-teacher { background: #4A90E2; }
+        .btn-student { background: #F39C12; }
+        
+        /* 입력 폼 영역 */
+        .input-group { margin: 20px 0; display: none; text-align: left; background: #f8f9fa; padding: 20px; border-radius: 12px; border: 1px solid #e9ecef; }
+        .input-group h3 { font-size: 16px; color: #2c3e50; margin-bottom: 12px; border-bottom: 2px solid #ddd; padding-bottom: 8px; }
+        .input-group input { margin-bottom: 12px; }
+        .warning-text { color: var(--danger); font-size: 13px; font-weight: bold; margin-top: -5px; margin-bottom: 12px; display: block; }
+
+        /* 교사용 화면 구성요소 */
+        #teacher-view header { background: var(--primary); color: white; padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .room-info { font-size: 22px; font-weight: bold; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 8px; }
+        
+        .control-panel { background: #e0c3fc; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 15px; flex-shrink: 0; position: relative; }
+        .numbers-display { font-size: 28px; font-weight: bold; background: white; display: inline-block; padding: 8px 25px; border-radius: 10px; margin: 5px 0; }
+        .btn-danger { background: var(--danger); color: white; padding: 8px 15px; position: absolute; top: 15px; right: 15px; font-size: 14px; }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; flex-grow: 1; min-height: 0; margin-bottom: 10px; }
+        .student-card { background: var(--card); padding: 15px; border-radius: 12px; border-top: 6px solid #9b59b6; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+        .student-header { display: flex; justify-content: space-between; font-size: 18px; font-weight: bold; border-bottom: 1px dashed #ccc; padding-bottom: 5px; }
+        
+        .realtime-formula { flex-grow: 1; font-size: 32px; font-weight: bold; color: #2c3e50; background: #f8f9fa; margin: 10px 0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-align: center; overflow-x: auto; word-break: break-all; padding: 5px; min-height: 80px; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; color: white; }
+        .status-typing { background: #f39c12; }
+        .status-submitted { background: var(--btn); }
+        
+        .score-panel { display: flex; gap: 5px; border-top: 1px dashed #eee; padding-top: 10px; }
+        .score-panel input { padding: 8px; text-align: center; font-size: 14px; flex: 1; min-width: 0; }
+        .score-panel button { color: white; padding: 8px; font-size: 13px; border-radius: 4px; flex: 1; }
+        .btn-add-score { background: #e67e22; }
+        .btn-edit-score { background: var(--info); }
+
+        /* 학생용 화면 */
+        #student-view { max-width: 500px; margin: 0 auto; }
+        .status-message { text-align: center; padding: 12px; background: #fff3cd; color: #856404; font-weight: bold; border-radius: 8px; margin-bottom: 20px; font-size: 16px; }
+        .formula-display { background: white; min-height: 80px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: var(--primary); border: 2px solid var(--primary); border-radius: 12px; margin-bottom: 20px; padding: 10px; word-break: break-all; }
+        
+        .card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 15px; }
+        .card-btn { padding: 15px 0; font-size: 24px; font-weight: bold; border-radius: 10px; background: white; border: 2px solid #ddd; box-shadow: 0 4px 0 #ccc; color: #333; display: flex; align-items: center; justify-content: center; }
+        .card-btn:active { transform: translateY(4px); box-shadow: none; }
+        .card-num { border-color: #3498db; color: #2980b9; }
+        .card-op { border-color: #e74c3c; color: #c0392b; background: #fdf5f5; }
+        .card-bracket { border-color: #9b59b6; color: #8e44ad; }
+        
+        .action-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 20px; }
+        .action-btn { padding: 15px; font-size: 20px; color: white; border-radius: 10px; }
+        .btn-delete { background: #95a5a6; box-shadow: 0 4px 0 #7f8c8d; }
+        .btn-submit { background: var(--btn); box-shadow: 0 4px 0 #219a52; }
+        .btn-delete:active, .btn-submit:active { transform: translateY(4px); box-shadow: none; }
+        .locked { opacity: 0.5; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="home-view" class="view active-view">
+        <div class="home-title">🔢 사칙계산 마스터</div>
+        <div class="home-subtitle">원하는 메뉴를 선택해 주세요.</div>
+        
+        <button class="login-btn btn-teacher" onclick="showTeacherLogin()">👩‍🏫 교사 전용: 방 만들기 / 접속하기</button>
+        <div id="teacher-login-form" class="input-group">
+            <h3>🔒 교사 인증 및 방 관리</h3>
+            <span class="warning-text">* 학생은 이 메뉴에 진입할 수 없습니다.</span>
+            <input type="password" id="teacher-password" placeholder="교사 인증 암호 입력">
+            <input type="text" id="create-room-id" placeholder="접속할 방 이름 입력" style="text-transform: uppercase;">
+            <button class="login-btn btn-teacher" style="padding:12px; font-size:16px; margin-bottom:0;" onclick="startTeacher()">인증 후 방 개설(접속)</button>
+        </div>
+
+        <button class="login-btn btn-student" onclick="showStudentLogin()">📱 학생 전용: 게임 입장하기</button>
+        <div id="student-login-form" class="input-group">
+            <h3>✏️ 학생 게임 입장</h3>
+            <input type="text" id="join-room-id" placeholder="선생님이 알려주신 방 이름" style="text-transform: uppercase;">
+            <input type="text" id="join-name" placeholder="자신의 이름 입력 (예: 홍길동)">
+            <button class="login-btn btn-student" style="padding:12px; font-size:16px; margin-bottom:0;" onclick="startStudent()">입장하기</button>
+        </div>
+    </div>
+
+    <div id="teacher-view" class="view">
+        <header>
+            <h1>👨‍🏫 실시간 교사용 대시보드</h1>
+            <div class="room-info">방 이름: <span id="display-room-id">대기중...</span></div>
+        </header>
+        
+        <div class="control-panel">
+            <h3>현재 라운드 제시 수</h3>
+            <div class="numbers-display" id="teacher-numbers">새 라운드를 시작해주세요.</div><br>
+            <button class="login-btn btn-teacher" style="width:auto; padding: 10px 30px; display:inline-block; margin-top:5px; font-size:16px;" onclick="generateNewRound()">새 라운드 시작 (무작위 생성)</button>
+            <button class="btn-danger" onclick="resetEntireRoom()">⚠️ 방 전체 초기화</button>
+        </div>
+
+        <div class="dashboard" id="teacher-dashboard">
+            </div>
+    </div>
+
+    <div id="student-view" class="view">
+        <div class="status-message" id="student-status">선생님이 숫자를 뽑을 때까지 기다려주세요.</div>
+        <div class="formula-display" id="student-formula">식을 만들어보세요</div>
+        
+        <div id="cards-area" class="locked">
+            <h3>숫자 카드</h3>
+            <div class="card-grid" id="number-cards-container"></div>
+
+            <h3>연산 및 괄호 카드</h3>
+            <div class="card-grid">
+                <button class="card-btn card-op" onclick="addToken('+')">+</button>
+                <button class="card-btn card-op" onclick="addToken('-')">-</button>
+                <button class="card-btn card-op" onclick="addToken('×')">×</button>
+                <button class="card-btn card-op" onclick="addToken('÷')">÷</button>
+            </div>
+            <div class="card-grid">
+                <button class="card-btn card-bracket" onclick="addToken('(')">(</button>
+                <button class="card-btn card-bracket" onclick="addToken(')')">)</button>
+                <button class="card-btn card-bracket" onclick="addToken('{')">{</button>
+                <button class="card-btn card-bracket" onclick="addToken('}')">}</button>
+                <button class="card-btn card-bracket" onclick="addToken('[')">[</button>
+                <button class="card-btn card-bracket" onclick="addToken(']')">]</button>
+            </div>
+
+            <div class="action-grid">
+                <button class="action-btn btn-delete" onclick="deleteToken()">지우기</button>
+                <button class="action-btn btn-submit" onclick="submitFormula()">제출하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ⚠️ 필수 설정: 복사한 선생님의 Firebase 프로젝트 정보를 여기에 넣으세요! ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDZdfyesp7Z3l84kWYG59UXuVk04SJ3AKM",
+  authDomain: "math-game-20260602.firebaseapp.com",
+  databaseURL: "https://math-game-20260602-default-rtdb.firebaseio.com",
+  projectId: "math-game-20260602",
+  storageBucket: "math-game-20260602.firebasestorage.app",
+  messagingSenderId: "105937945023",
+  appId: "1:105937945023:web:099de34b4a6ce5694b610a"
+};
+        
+        let database = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+        } catch (error) {
+            console.error("Firebase 초기화 에러:", error);
+        }
+
+        let roomId = ""; 
+        let myName = "";
+        let myFormula = [];
+        let isLocked = true;
+
+        const TEACHER_PASSWORD = "djwpqhekskdmsdhsmf"; 
+
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => {
+                v.classList.remove('active-view');
+            });
+            document.getElementById(viewId).classList.add('active-view');
+        }
+
+        function showTeacherLogin() {
+            document.getElementById('teacher-login-form').style.display = 'block';
+            document.getElementById('student-login-form').style.display = 'none';
+        }
+
+        function showStudentLogin() {
+            document.getElementById('student-login-form').style.display = 'block';
+            document.getElementById('teacher-login-form').style.display = 'none';
+        }
+
+        function convertToLaTeX(formulaArr, isCard = false) {
+            if(!formulaArr || formulaArr.length === 0) return '';
+            return formulaArr.map(token => {
+                let result = token;
+                let isNegative = token.startsWith('-');
+                let cleanToken = isNegative ? token.substring(1) : token;
+
+                if (cleanToken.includes('/')) {
+                    const [num, den] = cleanToken.split('/');
+                    result = `\\frac{${num}}{${den}}`;
+                    if (isNegative) result = `-${result}`;
+                } else if (token === '×') return '\\times ';
+                else if (token === '÷') return '\\div ';
+                else if (token === '[') return '\\left[';
+                else if (token === ']') return '\\right]';
+                else if (token === '{') return '\\left\\{';
+                else if (token === '}') return '\\right\\}';
+                else if (token === '(') return '\\left(';
+                else if (token === ')') return '\\right)';
+
+                if (isNegative && !isCard) {
+                    return `\\left(${result}\\right)`;
+                }
+                return result;
+            }).join(' ');
+        }
+
+        function commitMathRender() {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise();
+            }
+        }
+
+        /* ================= 교사용 로직 (데이터 보존 패치) ================= */
+        function startTeacher() {
+            if (!database || firebaseConfig.databaseURL.includes("YOUR_FIREBASE")) {
+                alert("⚠️ Firebase 설정이 아직 완료되지 않았습니다!\n\n코드 상단(203번째 줄 부근)의 'firebaseConfig' 변수 안에 선생님의 Realtime Database 정보를 먼저 정확하게 채워넣으셔야 정상적으로 연동이 시작됩니다.");
+                return;
+            }
+
+            const pwd = document.getElementById('teacher-password').value;
+            const inputRoom = document.getElementById('create-room-id').value.trim().toUpperCase();
+            
+            if(pwd !== TEACHER_PASSWORD) {
+                alert("교사 인증 암호가 일치하지 않습니다.");
+                return;
+            }
+            if(!inputRoom) {
+                alert("방 이름을 입력해주세요.");
+                return;
+            }
+
+            roomId = inputRoom;
+
+            // 💡 데이터 덮어쓰기(set)를 제거하여 기존 데이터를 완벽히 유지하며 대시보드 화면으로 전환합니다.
+            switchView('teacher-view');
+            document.getElementById('display-room-id').innerText = roomId;
+
+            // 실시간 데이터베이스 연결 연동 시작
+            database.ref(`rooms/${roomId}/students`).on('value', (snapshot) => {
+                const studentsData = snapshot.val() || {};
+                updateTeacherDashboard(studentsData);
+            });
+            
+            database.ref(`rooms/${roomId}/numbers`).on('value', (snapshot) => {
+                const numbers = snapshot.val() || [];
+                if (numbers.length > 0) {
+                    const latexInner = numbers.map(n => convertToLaTeX([n], true)).join(' \\, , \\, ');
+                    document.getElementById('teacher-numbers').innerHTML = `\\( ${latexInner} \\)`;
+                    commitMathRender();
+                } else {
+                    document.getElementById('teacher-numbers').innerHTML = '새 라운드를 시작해주세요.';
+                }
+            });
+        }
+
+        function generateNewRound() {
+            const count = Math.random() < 0.5 ? 3 : 4;
+            const newNumbers = [];
+            const fractionPool = ['1/2', '1/3', '2/3', '1/4', '3/4', '2/5', '3/2'];
+            const decimalPool = ['0.5', '1.5', '2.5'];
+            
+            for(let i=0; i<count; i++) {
+                let type = Math.floor(Math.random() * 3);
+                let sign = Math.random() < 0.5 ? 1 : -1;
+                let numStr = "";
+                
+                if (type === 0) numStr = (Math.floor(Math.random() * 9) + 1).toString();
+                else if (type === 1) numStr = decimalPool[Math.floor(Math.random() * decimalPool.length)];
+                else numStr = fractionPool[Math.floor(Math.random() * fractionPool.length)];
+                
+                newNumbers.push(sign === -1 ? "-" + numStr : numStr);
+            }
+
+            database.ref(`rooms/${roomId}/numbers`).set(newNumbers);
+            
+            database.ref(`rooms/${roomId}/students`).once('value', (snapshot) => {
+                const students = snapshot.val() || {};
+                for (let name in students) {
+                    database.ref(`rooms/${roomId}/students/${name}`).update({
+                        formula: [], status: 'typing', result: ''
+                    });
+                }
+            });
+        }
+
+        // 💡 오직 이 버튼을 눌렀을 때만 방 데이터가 리셋됩니다!
+        function resetEntireRoom() {
+            if(confirm("🚨 경고: 현재 방의 모든 데이터(숫자카드, 학생 점수, 수식 기록)를 완전히 삭제하고 초기화하시겠습니까?")) {
+                database.ref(`rooms/${roomId}`).set({ numbers: [], students: {} });
+            }
+        }
+
+        function updateTeacherDashboard(studentsData) {
+            const board = document.getElementById('teacher-dashboard');
+            board.innerHTML = '';
+
+            for (let name in studentsData) {
+                const data = studentsData[name];
+                const formulaArr = data.formula || [];
+                
+                const displayFormula = formulaArr.length > 0 
+                    ? `\\(${convertToLaTeX(formulaArr, false)}\\)` 
+                    : '<span style="font-size:18px; color:#aaa;">입력 대기중</span>';
+                    
+                const totalScore = data.totalScore || 0;
+                const statusHtml = data.status === 'typing' 
+                    ? `<span class="status-badge status-typing">입력 중</span>` 
+                    : `<span class="status-badge status-submitted">제출 완료</span>`;
+                
+                const resultHtml = data.status === 'submitted' 
+                    ? `<div style="font-size:16px;"><b>결과:</b> \\(${data.result || ''}\\)</div>` 
+                    : `<div style="font-size:14px; color:#aaa;">미제출</div>`;
+
+                board.innerHTML += `
+                    <div class="student-card">
+                        <div class="student-header">
+                            <span>${name} <span style="color:#e67e22; font-size:14px;">(${totalScore}점)</span></span>
+                            ${statusHtml}
+                        </div>
+                        <div class="realtime-formula">${displayFormula}</div>
+                        ${resultHtml}
+                        <div class="score-panel">
+                            <input type="number" id="score-${name}" placeholder="+점수">
+                            <button class="btn-add-score" onclick="addScore('${name}', ${totalScore})">추가</button>
+                            <button class="btn-edit-score" onclick="editScore('${name}')">수정</button>
+                        </div>
+                    </div>
+                `;
+            }
+            commitMathRender();
+        }
+
+        function addScore(name, currentScore) {
+            const scoreInput = document.getElementById(`score-${name}`);
+            const points = parseInt(scoreInput.value);
+            if (!isNaN(points)) {
+                database.ref(`rooms/${roomId}/students/${name}`).update({ totalScore: currentScore + points });
+                scoreInput.value = '';
+            }
+        }
+
+        function editScore(name) {
+            const newScoreStr = prompt(`${name} 학생의 변경할 새 점수를 직접 입력하세요:`);
+            if(newScoreStr !== null && newScoreStr.trim() !== '') {
+                const newScore = parseInt(newScoreStr);
+                if(!isNaN(newScore)) {
+                    database.ref(`rooms/${roomId}/students/${name}`).update({ totalScore: newScore });
+                } else {
+                    alert("숫자만 입력 가능합니다.");
+                }
+            }
+        }
+
+        /* ================= 학생용 로직 ================= */
+        function startStudent() {
+            if (!database || firebaseConfig.databaseURL.includes("YOUR_FIREBASE")) {
+                alert("⚠️ Firebase 설정이 완료되지 않았습니다!");
+                return;
+            }
+
+            const inputRoomId = document.getElementById('join-room-id').value.trim().toUpperCase();
+            myName = document.getElementById('join-name').value.trim();
+
+            if (!inputRoomId || !myName) {
+                alert('방 이름과 자신의 이름을 모두 입력해주세요.');
+                return;
+            }
+            roomId = inputRoomId;
+            switchView('student-view');
+
+            const studentRef = database.ref(`rooms/${roomId}/students/${myName}`);
+            studentRef.once('value', (snapshot) => {
+                if (!snapshot.exists()) {
+                    studentRef.set({ formula: [], status: 'typing', result: '', totalScore: 0 });
+                }
+            });
+
+            database.ref(`rooms/${roomId}`).on('value', (snapshot) => {
+                const roomData = snapshot.val() || {};
+                const numbers = roomData.numbers || [];
+                const myData = roomData.students ? roomData.students[myName] : null;
+
+                if (numbers.length === 0) {
+                    document.getElementById('student-status').innerText = '선생님이 게임을 시작하실 때까지 기다려주세요.';
+                    document.getElementById('number-cards-container').innerHTML = '';
+                    document.getElementById('student-formula').innerText = '대기 중...';
+                    document.getElementById('cards-area').classList.add('locked');
+                    return;
+                }
+
+                if (myData) {
+                    myFormula = myData.formula || [];
+                    
+                    if (myFormula.length > 0) {
+                        document.getElementById('student-formula').innerHTML = `\\(${convertToLaTeX(myFormula, false)}\\)`;
+                    } else {
+                        document.getElementById('student-formula').innerText = '식을 조립하세요';
+                    }
+
+                    if (myData.status === 'submitted') {
+                        isLocked = true;
+                        document.getElementById('cards-area').classList.add('locked');
+                        document.getElementById('student-status').innerText = '제출 완료! 선생님의 평가를 기다리세요.';
+                        document.getElementById('student-status').style.background = '#e2e3e5';
+                        document.getElementById('student-status').style.color = '#383d41';
+                    } else {
+                        isLocked = false;
+                        document.getElementById('cards-area').classList.remove('locked');
+                        document.getElementById('student-status').innerText = '숫자와 기호를 클릭하여 식을 만드세요!';
+                        document.getElementById('student-status').style.background = '#d4edda';
+                        document.getElementById('student-status').style.color = '#155724';
+                    }
+                }
+
+                const numContainer = document.getElementById('number-cards-container');
+                numContainer.innerHTML = '';
+                numbers.forEach(num => {
+                    const cardLatex = convertToLaTeX([num], true);
+                    numContainer.innerHTML += `<button class="card-btn card-num" onclick="addToken('${num}')">\\(${cardLatex}\\)</button>`;
+                });
+                commitMathRender();
+            });
+        }
+
+        function addToken(token) {
+            if (isLocked) return;
+            myFormula.push(token);
+            database.ref(`rooms/${roomId}/students/${myName}`).update({ formula: myFormula });
+        }
+
+        function deleteToken() {
+            if (isLocked || myFormula.length === 0) return;
+            myFormula.pop();
+            database.ref(`rooms/${roomId}/students/${myName}`).update({ formula: myFormula });
+        }
+
+        function submitFormula() {
+            if (isLocked || myFormula.length === 0) return;
+            const result = evaluateMath(myFormula);
+            database.ref(`rooms/${roomId}/students/${myName}`).update({
+                status: 'submitted', result: result
+            });
+        }
+
+        function evaluateMath(formulaArray) {
+            if(formulaArray.length === 0) return '0';
+            let expr = formulaArray.map(t => {
+                if(t === '×') return '*';
+                if(t === '÷') return '/';
+                return t;
+            }).join('');
+            expr = expr.replace(/\[/g, '(').replace(/\]/g, ')').replace(/\{/g, '(').replace(/\}/g, ')');
+            
+            try {
+                if(!/^[0-9+\-*/().\s]+$/.test(expr)) return '오류';
+                let res = eval(expr);
+                return Number.isInteger(res) ? res.toString() : res.toFixed(2);
+            } catch(e) {
+                return '오류';
+            }
+        }
+    </script>
+</body>
+</html>
