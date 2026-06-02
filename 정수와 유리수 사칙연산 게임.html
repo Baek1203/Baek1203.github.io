@@ -109,7 +109,7 @@
             <span class="warning-text">* 학생은 이 메뉴에 진입할 수 없습니다.</span>
             <input type="password" id="teacher-password" placeholder="교사 인증 암호 입력">
             <input type="text" id="create-room-id" placeholder="접속할 방 이름 입력" style="text-transform: uppercase;">
-            <button class="login-btn btn-teacher" style="padding:12px; font-size:16px; margin-bottom:0;" onclick="startTeacher()">인증 후 방 개설(접속)</button>
+            <button class="login-btn btn-teacher" style="padding:12px; font-size:16px; margin-bottom:0;" onclick="startTeacher()">인증 후 방 개설/접속</button>
         </div>
 
         <button class="login-btn btn-student" onclick="showStudentLogin()">📱 학생 전용: 게임 입장하기</button>
@@ -171,15 +171,15 @@
 
     <script>
         // --- ⚠️ 필수 설정: 복사한 선생님의 Firebase 프로젝트 정보를 여기에 넣으세요! ---
-const firebaseConfig = {
-  apiKey: "AIzaSyDZdfyesp7Z3l84kWYG59UXuVk04SJ3AKM",
-  authDomain: "math-game-20260602.firebaseapp.com",
-  databaseURL: "https://math-game-20260602-default-rtdb.firebaseio.com",
-  projectId: "math-game-20260602",
-  storageBucket: "math-game-20260602.firebasestorage.app",
-  messagingSenderId: "105937945023",
-  appId: "1:105937945023:web:099de34b4a6ce5694b610a"
-};
+        const firebaseConfig = {
+          apiKey: "AIzaSyDZdfyesp7Z3l84kWYG59UXuVk04SJ3AKM",
+          authDomain: "math-game-20260602.firebaseapp.com",
+          databaseURL: "https://math-game-20260602-default-rtdb.firebaseio.com",
+          projectId: "math-game-20260602",
+          storageBucket: "math-game-20260602.firebasestorage.app",
+          messagingSenderId: "105937945023",
+          appId: "1:105937945023:web:099de34b4a6ce5694b610a"
+        };
         
         let database = null;
         try {
@@ -194,7 +194,7 @@ const firebaseConfig = {
         let myFormula = [];
         let isLocked = true;
 
-        const TEACHER_PASSWORD = "djwpqhekskdmsdhsmf"; 
+        const TEACHER_PASSWORD = "1234"; 
 
         function switchView(viewId) {
             document.querySelectorAll('.view').forEach(v => {
@@ -213,28 +213,35 @@ const firebaseConfig = {
             document.getElementById('teacher-login-form').style.display = 'none';
         }
 
+        // 🛠️ 버그 패치완료된 수식 LaTeX 변환기
         function convertToLaTeX(formulaArr, isCard = false) {
             if(!formulaArr || formulaArr.length === 0) return '';
             return formulaArr.map(token => {
+                // 1. 단순 연산자 카드 및 괄호 기호가 먼저 왔을 때의 매칭 예외 처리 (실시간 입력 깨짐 방지)
+                if (token === '-') return '-'; 
+                if (token === '×') return '\\times ';
+                if (token === '÷') return '\\div ';
+                if (token === '[') return '['; 
+                if (token === ']') return ']';
+                if (token === '{') return '\\{';
+                if (token === '}') return '\\}';
+                if (token === '(') return '(';
+                if (token === ')') return ')';
+
                 let result = token;
                 let isNegative = token.startsWith('-');
                 let cleanToken = isNegative ? token.substring(1) : token;
 
+                // 분수 카드 기호 LaTeX 처리
                 if (cleanToken.includes('/')) {
                     const [num, den] = cleanToken.split('/');
                     result = `\\frac{${num}}{${den}}`;
                     if (isNegative) result = `-${result}`;
-                } else if (token === '×') return '\\times ';
-                else if (token === '÷') return '\\div ';
-                else if (token === '[') return '\\left[';
-                else if (token === ']') return '\\right]';
-                else if (token === '{') return '\\left\\{';
-                else if (token === '}') return '\\right\\}';
-                else if (token === '(') return '\\left(';
-                else if (token === ')') return '\\right)';
+                }
 
+                // 2. 음수 '숫자 카드' 자체일 때만 가독성을 위해 괄호를 자동으로 감싸줌
                 if (isNegative && !isCard) {
-                    return `\\left(${result}\\right)`;
+                    return `(${result})`; 
                 }
                 return result;
             }).join(' ');
@@ -246,7 +253,7 @@ const firebaseConfig = {
             }
         }
 
-        /* ================= 교사용 로직 (데이터 보존 패치) ================= */
+        /* ================= 교사용 로직 ================= */
         function startTeacher() {
             if (!database || firebaseConfig.databaseURL.includes("YOUR_FIREBASE")) {
                 alert("⚠️ Firebase 설정이 아직 완료되지 않았습니다!\n\n코드 상단(203번째 줄 부근)의 'firebaseConfig' 변수 안에 선생님의 Realtime Database 정보를 먼저 정확하게 채워넣으셔야 정상적으로 연동이 시작됩니다.");
@@ -267,11 +274,9 @@ const firebaseConfig = {
 
             roomId = inputRoom;
 
-            // 💡 데이터 덮어쓰기(set)를 제거하여 기존 데이터를 완벽히 유지하며 대시보드 화면으로 전환합니다.
             switchView('teacher-view');
             document.getElementById('display-room-id').innerText = roomId;
 
-            // 실시간 데이터베이스 연결 연동 시작
             database.ref(`rooms/${roomId}/students`).on('value', (snapshot) => {
                 const studentsData = snapshot.val() || {};
                 updateTeacherDashboard(studentsData);
@@ -319,9 +324,8 @@ const firebaseConfig = {
             });
         }
 
-        // 💡 오직 이 버튼을 눌렀을 때만 방 데이터가 리셋됩니다!
         function resetEntireRoom() {
-            if(confirm("🚨 경고: 현재 방의 모든 데이터(숫자카드, 학생 점수, 수식 기록)를 완전히 삭제하고 초기화하시겠습니까?")) {
+            if(confirm("🚨 경고: 현재 방의 모든 데이터를 완전히 초기화하시겠습니까?")) {
                 database.ref(`rooms/${roomId}`).set({ numbers: [], students: {} });
             }
         }
