@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수학시간에 하는 워들 게임</title>
+    <!-- 화려한 폭죽 이펙트를 위한 라이브러리 추가 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: '맑은 고딕', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        /* 메인 게임 레이아웃 (좌측 보드, 우측 패널) */
+        #game-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        /* 좌측 보드 영역 */
+        #board-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px; /* 보드와 설정칸 사이의 간격 추가 */
+        }
+
+        #board {
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+        .row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 5px;
+        }
+        .tile {
+            width: 65px;
+            height: 65px;
+            border: 2px solid #d3d6da;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: white;
+            color: black;
+            box-sizing: border-box;
+        }
+
+        /* 우측 패널 (키보드) */
+        #right-panel {
+            display: flex;
+            flex-direction: column;
+            width: 280px;
+        }
+
+        /* 교사용 설정 박스 */
+        #teacher-setup {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 345px; /* 보드의 너비와 알맞게 조절 */
+            box-sizing: border-box;
+        }
+        #teacher-setup h3 {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #495057;
+            text-align: center;
+        }
+        #word-input {
+            padding: 10px;
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 5px;
+            border: 2px solid #ced4da;
+            border-radius: 5px;
+        }
+        #set-word-btn {
+            background-color: #4dabf7;
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #set-word-btn:hover {
+            background-color: #3bc9db;
+        }
+
+        /* 색상 클래스 */
+        .green { background-color: #6aaa64 !important; color: white !important; border-color: #6aaa64 !important; }
+        .yellow { background-color: #c9b458 !important; color: white !important; border-color: #c9b458 !important; }
+        .gray { background-color: #787c7e !important; color: white !important; border-color: #787c7e !important; }
+
+        /* 세로형 키보드 스타일 */
+        #keyboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        #alpha-keys {
+            display: grid;
+            grid-template-rows: repeat(13, 1fr); /* 13줄 */
+            grid-auto-flow: column; /* 세로로 먼저 채움 (A~M, N~Z) */
+            gap: 5px;
+        }
+        #action-keys {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .key {
+            background-color: #d3d6da;
+            border: none;
+            border-radius: 4px;
+            padding: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 40px;
+        }
+        .key:active {
+            background-color: #adb5bd;
+        }
+        .key.large {
+            flex: 1;
+            font-size: 1rem;
+            background-color: #adb5bd;
+            color: white;
+        }
+        
+        /* 메시지 박스 스타일 */
+        #message-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .message {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        /* 정답 시 타일 점프 애니메이션 */
+        @keyframes jump {
+            0%, 20% { transform: translateY(0); }
+            40% { transform: translateY(-22px); }
+            50% { transform: translateY(0); }
+            60% { transform: translateY(-11px); }
+            80% { transform: translateY(0); }
+            100% { transform: translateY(0); }
+        }
+        .win-animation {
+            animation: jump 0.6s ease-in-out;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>📝 수학시간에 하는 워들 게임</h1>
+    <p class="subtitle">5글자 영어 단어를 6번 안에 맞춰보세요!</p>
+    
+    <div id="message-container"></div>
+
+    <div id="game-wrapper">
+        <!-- 좌측: 게임 보드 및 교사 설정 -->
+        <div id="board-panel">
+            <div id="board"></div>
+            
+            <!-- 교사용 단어 설정 (우측에서 좌측 하단으로 이동) -->
+            <div id="teacher-setup">
+                <h3>🔒 선생님 전용 설정</h3>
+                <!-- 비식별 처리 및 영어 알파벳만 입력되도록 oninput 정규식 추가 -->
+                <input type="password" id="word-input" maxlength="5" placeholder="정답 5글자" oninput="this.value = this.value.replace(/[^a-zA-Z]/g, '')">
+                <button id="set-word-btn" onclick="setNewTargetWord()">단어 설정 및 초기화</button>
+            </div>
+        </div>
+
+        <!-- 우측: 키보드 패널 -->
+        <div id="right-panel">
+            <!-- 세로형 키보드 -->
+            <div id="keyboard-container">
+                <div id="alpha-keys"></div>
+                <div id="action-keys">
+                    <button class="key large" onclick="handleInput('ENTER')">입력 (ENTER)</button>
+                    <button class="key large" onclick="handleInput('⌫')">지우기 (⌫)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 기본 정답 단어
+        let TARGET_WORD = "SMILE"; 
+
+        const rows = 6;
+        const cols = 5;
+        let currentRow = 0;
+        let currentCol = 0;
+        let gameOver = false;
+
+        // 메시지 표시 함수
+        function showMessage(text, duration = 3000) {
+            const container = document.getElementById('message-container');
+            const msgElement = document.createElement('div');
+            msgElement.className = 'message';
+            msgElement.innerText = text;
+            container.appendChild(msgElement);
+
+            setTimeout(() => {
+                msgElement.style.opacity = '0';
+                setTimeout(() => {
+                    msgElement.remove();
+                }, 500);
+            }, duration);
+        }
+
+        // 교사용 단어 변경 및 게임 초기화 함수
+        function setNewTargetWord() {
+            const inputField = document.getElementById("word-input");
+            const newWord = inputField.value.toUpperCase();
+
+            // 5글자 영문자인지 검사
+            const regex = /^[A-Z]{5}$/;
+            if (!regex.test(newWord)) {
+                showMessage("❌ 5글자의 영어 알파벳만 입력해주세요!");
+                return;
+            }
+
+            // 단어 설정 및 초기화
+            TARGET_WORD = newWord;
+            inputField.value = ""; // 입력창 비우기
+            showMessage("✨ 새로운 단어가 설정되었습니다! 게임을 시작하세요.", 4000);
+            
+            resetGame();
+        }
+
+        // 게임 보드 및 변수 초기화
+        function resetGame() {
+            currentRow = 0;
+            currentCol = 0;
+            gameOver = false;
+
+            // 보드 타일 비우기
+            const tiles = document.querySelectorAll(".tile");
+            tiles.forEach(tile => {
+                tile.innerText = "";
+                tile.className = "tile"; // 색상 클래스 초기화
+            });
+
+            // 키보드 색상 초기화
+            const keys = document.querySelectorAll(".key");
+            keys.forEach(key => {
+                key.classList.remove("green", "yellow", "gray");
+            });
+        }
+
+        // 게임 보드 생성
+        const board = document.getElementById("board");
+        for (let r = 0; r < rows; r++) {
+            let row = document.createElement("div");
+            row.className = "row";
+            for (let c = 0; c < cols; c++) {
+                let tile = document.createElement("div");
+                tile.id = r.toString() + "-" + c.toString();
+                tile.className = "tile";
+                row.appendChild(tile);
+            }
+            board.appendChild(row);
+        }
+
+        // A-Z 세로 2줄 키보드 생성
+        const alphaKeysContainer = document.getElementById("alpha-keys");
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        
+        alphabet.forEach(key => {
+            let keyButton = document.createElement("button");
+            keyButton.innerText = key;
+            keyButton.id = "key-" + key;
+            keyButton.className = "key";
+            keyButton.addEventListener("click", () => handleInput(key));
+            alphaKeysContainer.appendChild(keyButton);
+        });
+
+        // 물리적 키보드 입력 처리
+        document.addEventListener("keyup", (e) => {
+            // 교사용 입력칸(비밀번호칸)에 포커스가 있을 때는 게임 입력 무시 및 엔터키 처리
+            if (document.activeElement.id === "word-input") {
+                if (e.key === "Enter") {
+                    setNewTargetWord();
+                }
+                return;
+            }
+            
+            if (gameOver) return;
+            let code = e.code;
+            if (code >= "KeyA" && code <= "KeyZ") {
+                handleInput(code.replace("Key", ""));
+            } else if (code === "Enter") {
+                handleInput("ENTER");
+            } else if (code === "Backspace") {
+                handleInput("⌫");
+            }
+        });
+
+        // 입력 처리 로직
+        function handleInput(key) {
+            if (gameOver) return;
+
+            if (key === "⌫") {
+                if (currentCol > 0) {
+                    currentCol--;
+                    let tile = document.getElementById(currentRow.toString() + "-" + currentCol.toString());
+                    tile.innerText = "";
+                }
+            } else if (key === "ENTER") {
+                if (currentCol === cols) {
+                    checkGuess();
+                } else {
+                    showMessage("단어 5글자를 모두 채워주세요!");
+                }
+            } else { // 알파벳 입력
+                if (currentCol < cols) {
+                    let tile = document.getElementById(currentRow.toString() + "-" + currentCol.toString());
+                    tile.innerText = key;
+                    currentCol++;
+                }
+            }
+        }
+
+        // 정답 확인 로직
+        function checkGuess() {
+            let guess = "";
+            let tileElements = [];
+
+            for (let c = 0; c < cols; c++) {
+                let tile = document.getElementById(currentRow.toString() + "-" + c.toString());
+                guess += tile.innerText;
+                tileElements.push(tile);
+            }
+
+            let targetArray = TARGET_WORD.split("");
+            let guessArray = guess.split("");
+            let tileColors = ["gray", "gray", "gray", "gray", "gray"];
+
+            for (let i = 0; i < cols; i++) {
+                if (guessArray[i] === targetArray[i]) {
+                    tileColors[i] = "green";
+                    targetArray[i] = null;
+                }
+            }
+
+            for (let i = 0; i < cols; i++) {
+                if (tileColors[i] === "green") continue;
+                
+                let targetIndex = targetArray.indexOf(guessArray[i]);
+                if (targetIndex !== -1) {
+                    tileColors[i] = "yellow";
+                    targetArray[targetIndex] = null;
+                }
+            }
+
+            for (let i = 0; i < cols; i++) {
+                setTimeout(() => {
+                    tileElements[i].classList.add(tileColors[i]);
+                    updateKeyboardColor(guessArray[i], tileColors[i]);
+                }, i * 200);
+            }
+
+            setTimeout(() => {
+                if (guess === TARGET_WORD) {
+                    // 1. 타일이 하나씩 통통 튀는 애니메이션
+                    tileElements.forEach((tile, index) => {
+                        setTimeout(() => {
+                            tile.classList.add("win-animation");
+                        }, index * 100);
+                    });
+                    
+                    // 2. 화면 가득 폭죽 터지는 이펙트
+                    fireConfetti();
+                    
+                    showMessage("축하합니다! 정답을 맞췄어요! 🎉", 5000);
+                    gameOver = true;
+                } else if (currentRow === rows - 1) {
+                    showMessage("아쉽네요! 정답은 " + TARGET_WORD + " 였습니다! 😢", 5000);
+                    gameOver = true;
+                } else {
+                    currentRow++;
+                    currentCol = 0;
+                }
+            }, 1200);
+        }
+
+        // 폭죽 이펙트 실행 함수
+        function fireConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                // 양쪽에서 팡팡 터지는 효과
+                confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                }));
+                confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                }));
+            }, 250);
+        }
+
+        // 키보드 색상 업데이트
+        function updateKeyboardColor(letter, color) {
+            let keyBtn = document.getElementById("key-" + letter);
+            if (!keyBtn) return;
+            
+            if (keyBtn.classList.contains("green")) return;
+            if (keyBtn.classList.contains("yellow") && color === "gray") return;
+
+            keyBtn.classList.remove("green", "yellow", "gray");
+            keyBtn.classList.add(color);
+        }
+    </script>
+</body>
+</html>
