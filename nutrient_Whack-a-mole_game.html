@@ -109,6 +109,9 @@
   .rank1{ color:#D4A017; font-weight:700; }
   .empty{ text-align:center; color:#999; padding:20px 0; }
 </style>
+<!-- Firebase SDK (compat 버전) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div id="app">
@@ -171,7 +174,20 @@
 
 <script>
 (function(){
-  const LB_KEY = 'nutrition-mole-leaderboard';
+  // ===== Firebase 설정 =====
+  // Firebase 콘솔(https://console.firebase.google.com) > 프로젝트 설정 > 내 앱에서
+  // 웹 앱을 추가하면 아래 값들을 받을 수 있어요. 아래 값을 본인 프로젝트 값으로 교체하세요.
+  const firebaseConfig = {
+    apiKey: "AIzaSyAcQmT4f8zP1L153PojICdiuZ-d-N2aL6U",
+    authDomain: "math-fly-catch.firebaseapp.com",
+    projectId: "math-fly-catch",
+    storageBucket: "math-fly-catch.firebasestorage.app",
+    messagingSenderId: "748954569516",
+    appId: "1:748954569516:web:c474da7f087530f39b7a89"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const scoresRef = db.collection('score_nutrient_mole');
 
   // 라운드 구성: prompt + 정답 항목 + 오답 항목(다른 라운드 항목에서 자동 차용)
   const ROUNDS = [
@@ -308,17 +324,21 @@
   }
 
   async function saveScore(name, sc){
-    let list = [];
     try{
-      const res = await window.storage.get(LB_KEY, true);
-      if(res && res.value){ list = JSON.parse(res.value); }
-    }catch(e){ list = []; }
-    list.push({name, score:sc, date:new Date().toISOString()});
-    list.sort((a,b)=>b.score-a.score);
-    list = list.slice(0,50);
-    try{
-      await window.storage.set(LB_KEY, JSON.stringify(list), true);
-    }catch(e){ console.error('leaderboard save failed', e); }
+      const docRef = scoresRef.doc(name); // 닉네임을 문서 ID로 사용해 플레이어당 1개 기록만 유지
+      await db.runTransaction(async (tx) => {
+        const doc = await tx.get(docRef);
+        if(!doc.exists || sc > doc.data().score){
+          tx.set(docRef, {
+            name: name,
+            score: sc,
+            date: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+      });
+    }catch(e){
+      console.error('leaderboard save failed', e);
+    }
   }
 
   async function renderBoard(){
@@ -326,14 +346,17 @@
     el.innerHTML = '<p class="empty">불러오는 중...</p>';
     let list = [];
     try{
-      const res = await window.storage.get(LB_KEY, true);
-      if(res && res.value){ list = JSON.parse(res.value); }
-    }catch(e){ list = []; }
+      const snapshot = await scoresRef.orderBy('score','desc').limit(10).get();
+      snapshot.forEach(doc => list.push(doc.data()));
+    }catch(e){
+      console.error('leaderboard load failed', e);
+      el.innerHTML = '<p class="empty">순위표를 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>';
+      return;
+    }
     if(!list.length){
       el.innerHTML = '<p class="empty">아직 기록이 없어요. 첫 번째 도전자가 되어보세요!</p>';
       return;
     }
-    list.sort((a,b)=>b.score-a.score);
     let rows = list.slice(0,10).map((row,i)=>{
       const isMe = row.name===nickname;
       return '<tr class="'+(isMe?'me':'')+'"><td class="'+(i===0?'rank1':'')+'">'+(i+1)+'</td><td>'+escapeHtml(row.name)+'</td><td>'+row.score+'점</td></tr>';
