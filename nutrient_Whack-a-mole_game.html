@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>영양소 두더지잡기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EAF6E9;
+    --ink:#25402B;
+    --coral:#FF6B54;
+    --coral-dark:#E24E37;
+    --teal:#1FAFA0;
+    --teal-dark:#0E8A7D;
+    --gold:#FFC145;
+    --dirt:#8C5A3C;
+    --dirt-dark:#6B4025;
+    --grass:#3C9A5C;
+    --grass-dark:#2E7846;
+    --card:#FFFFFF;
+    --shadow: 0 8px 0 rgba(107,64,37,0.25);
+  }
+  *{box-sizing:border-box;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--ink);
+    font-family:'Noto Sans KR','Malgun Gothic',sans-serif; min-height:100%; }
+  .display{ font-family:'Gaegu','Comic Sans MS',cursive; }
+  #app{ max-width:720px; margin:0 auto; padding:20px 16px 60px; min-height:100vh; }
+  .grassband{ height:14px; border-radius:8px;
+    background: repeating-linear-gradient(90deg, var(--grass) 0 38px, var(--grass-dark) 38px 40px);
+    margin-bottom:18px; }
+  h1.title{ font-size:1.9rem; text-align:center; margin:6px 0 2px; color:var(--dirt-dark);
+    text-shadow: 2px 2px 0 var(--gold); }
+  p.subtitle{ text-align:center; color:#5c7a63; margin:0 0 22px; font-size:0.92rem;}
+  .screen{ display:none; }
+  .screen.active{ display:block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;} }
+
+  .card{ background:var(--card); border-radius:20px; padding:24px 20px;
+    box-shadow: var(--shadow); border:3px solid var(--dirt-dark); }
+  .rules{ background:#FFF; border-radius:14px; padding:14px 16px; margin:16px 0; border:2px dashed var(--teal);}
+  .rules li{ margin-bottom:6px; line-height:1.5; font-size:0.92rem; }
+
+  input#nickname{ width:100%; padding:14px 16px; border-radius:12px; border:2px solid #DCEBD9;
+    font-size:1.05rem; font-family:inherit; margin:14px 0; background:#FBFFF9; }
+  input#nickname:focus{ outline:3px solid var(--teal); border-color:var(--teal);}
+
+  button{ font-family:'Gaegu','Comic Sans MS',cursive; cursor:pointer; border:none; }
+  .btn-primary{ width:100%; padding:16px; font-size:1.25rem; border-radius:14px;
+    background:var(--coral); color:#fff; box-shadow:0 6px 0 var(--coral-dark); transition: transform .08s ease; }
+  .btn-primary:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--coral-dark);}
+  .btn-primary:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+  .btn-secondary{ width:100%; padding:12px; font-size:1.05rem; border-radius:12px; margin-top:10px;
+    background:var(--teal); color:#fff; box-shadow:0 5px 0 var(--teal-dark); }
+  .btn-secondary:active{ transform:translateY(3px); box-shadow:0 2px 0 var(--teal-dark);}
+  .btn-secondary:focus-visible{ outline:3px solid var(--ink); outline-offset:2px; }
+  .btn-ghost{ width:100%; padding:10px; font-size:.95rem; border-radius:10px; margin-top:8px;
+    background:transparent; color:var(--ink); border:2px solid #DDD; }
+
+  /* --- Game screen --- */
+  .topbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;}
+  .pill{ background:var(--ink); color:#fff; padding:8px 14px; border-radius:999px; font-size:0.9rem; }
+  .stat{ font-family:'Gaegu',cursive; font-size:1.3rem; font-weight:700; padding:6px 16px; border-radius:999px; }
+  .stat.time{ color:var(--coral-dark); background:#fff; border:2px solid var(--coral); }
+  .stat.score{ color:var(--teal-dark); background:#fff; border:2px solid var(--teal); }
+
+  .promptbar{ background:var(--gold); border-radius:14px; padding:12px 16px; margin-bottom:12px;
+    text-align:center; font-weight:700; font-size:1.05rem; border:2px solid #E8A800; }
+  .promptbar.flash{ animation: flash .4s ease; }
+  @keyframes flash{ 0%{transform:scale(0.95);} 60%{transform:scale(1.03);} 100%{transform:scale(1);} }
+
+  .field{ position:relative; height:380px; border-radius:18px; overflow:hidden; margin-bottom:14px;
+    background: linear-gradient(#BFE6C4, #9ED7A6);
+    border:4px solid var(--grass-dark); }
+  .field::before{ content:''; position:absolute; inset:0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0 18px, transparent 18px 36px); }
+
+  .mole{ position:absolute; transform:translate(-50%,-50%) scale(0);
+    min-width:78px; padding:10px 8px; border-radius:50%/40%; text-align:center;
+    background: radial-gradient(circle at 35% 30%, #C98A55, var(--dirt) 70%);
+    border:3px solid var(--dirt-dark); color:#fff; font-size:0.82rem; font-weight:700; line-height:1.2;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+    animation: pop-up .18s ease forwards;
+  }
+  @keyframes pop-up{ to{ transform:translate(-50%,-50%) scale(1); } }
+  .mole.hit{ animation: hit-away .25s ease forwards; }
+  @keyframes hit-away{ to{ transform:translate(-50%,-50%) scale(0) rotate(25deg); opacity:0; } }
+  .mole:focus-visible{ outline:3px solid #fff; outline-offset:2px; }
+
+  .popfx{ position:absolute; transform:translate(-50%,-50%); font-weight:700; font-size:1.1rem;
+    pointer-events:none; animation: floatup .6s ease forwards; }
+  @keyframes floatup{ from{opacity:1; transform:translate(-50%,-50%) translateY(0);} to{opacity:0; transform:translate(-50%,-50%) translateY(-40px);} }
+  .popfx.ok{ color:var(--teal-dark); }
+  .popfx.bad{ color:var(--coral-dark); }
+
+  /* --- Result --- */
+  .resultscore{ text-align:center; font-size:2.6rem; font-weight:700; color:var(--teal-dark); margin:10px 0 4px; }
+  .resultsub{ text-align:center; color:#5c7a63; font-size:0.9rem; margin-bottom:6px;}
+
+  /* --- Leaderboard --- */
+  table{ width:100%; border-collapse:collapse; margin-top:10px; }
+  th,td{ padding:8px 6px; text-align:left; font-size:0.92rem; border-bottom:1px solid #eee; }
+  th{ color:var(--teal-dark); }
+  tr.me{ background:#FFF7DF; font-weight:700; }
+  .rank1{ color:#D4A017; font-weight:700; }
+  .empty{ text-align:center; color:#999; padding:20px 0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="grassband"></div>
+  <h1 class="title display">🐹 영양소 두더지잡기</h1>
+  <p class="subtitle">중1 기술·가정 영양 단원 총정리 — 빠르게 잡고 빠르게 기억해요!</p>
+
+  <!-- Screen 1: 시작 -->
+  <section id="screen-start" class="screen active">
+    <div class="card">
+      <h2 class="display" style="margin-top:0;">🌱 게임 방법</h2>
+      <ul class="rules">
+        <li>🎯 위에 뜨는 <b>문제(제시어)</b>에 맞는 두더지만 빠르게 클릭하세요.</li>
+        <li>❌ 관련 없는 두더지를 클릭하면 <b>점수가 깎여요.</b></li>
+        <li>🔄 문제는 8초마다 자동으로 바뀌어요. 계속 집중!</li>
+        <li>⏱️ 제한시간 <b>60초</b> 동안 최대한 높은 점수를 만들어보세요.</li>
+      </ul>
+      <label for="nickname" style="font-weight:700;">닉네임을 입력하세요</label>
+      <input id="nickname" type="text" maxlength="14" placeholder="예: 양현중 1반 김성은">
+      <button class="btn-primary" id="btn-start">🐹 두더지잡기 시작!</button>
+      <button class="btn-secondary" id="btn-show-board-1">🏆 순위표 보기</button>
+    </div>
+  </section>
+
+  <!-- Screen 2: 게임 -->
+  <section id="screen-game" class="screen">
+    <div class="topbar">
+      <span class="pill" id="game-nick"></span>
+      <span class="stat time" id="time-display">⏱️ 60초</span>
+      <span class="stat score" id="score-display">⭐ 0점</span>
+    </div>
+    <div class="promptbar" id="promptbar"></div>
+    <div class="field" id="field"></div>
+  </section>
+
+  <!-- Screen 3: 결과 -->
+  <section id="screen-result" class="screen">
+    <div class="card">
+      <h2 class="display" style="margin-top:0; text-align:center;">🎉 게임 종료!</h2>
+      <p class="resultsub" id="result-nick"></p>
+      <div class="resultscore" id="result-score">0점</div>
+      <p class="resultsub" id="result-detail"></p>
+      <button class="btn-secondary" id="btn-show-board-2">🏆 순위표 보기</button>
+      <button class="btn-primary" id="btn-retry" style="margin-top:10px;">🔁 다시 도전하기</button>
+    </div>
+  </section>
+
+  <!-- Screen 4: 순위표 -->
+  <section id="screen-board" class="screen">
+    <div class="card">
+      <h2 class="display" style="margin-top:0;">🏆 순위표 (전체 참가자)</h2>
+      <p style="font-size:0.82rem; color:#999; margin-top:-6px;">※ 닉네임과 점수는 다른 참가자에게도 공개돼요.</p>
+      <div id="board-content"><p class="empty">불러오는 중...</p></div>
+      <button class="btn-ghost" id="btn-back-home">◀ 처음으로</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  const LB_KEY = 'nutrition-mole-leaderboard';
+
+  // 라운드 구성: prompt + 정답 항목 + 오답 항목(다른 라운드 항목에서 자동 차용)
+  const ROUNDS = [
+    { prompt:'🍚 탄수화물이 풍부한 식품을 잡아라!', correct:['밥','빵','감자','국수','설탕'] },
+    { prompt:'🍗 단백질이 풍부한 식품을 잡아라!', correct:['고기','생선','달걀','두부','콩'] },
+    { prompt:'🧈 지방이 풍부한 식품을 잡아라!', correct:['버터','식용유','견과류','삼겹살','마요네즈'] },
+    { prompt:'🥛 무기질(칼슘·철분)이 풍부한 식품을 잡아라!', correct:['우유','멸치','미역','치즈','시금치'] },
+    { prompt:'🥕 비타민이 풍부한 식품을 잡아라!', correct:['당근','귤','토마토','파프리카','브로콜리'] },
+    { prompt:'🔥 열량(에너지)을 내는 영양소를 잡아라!', correct:['탄수화물','단백질','지방'] },
+    { prompt:'⚙️ 몸의 기능을 조절하는 영양소를 잡아라!', correct:['무기질','비타민','물'] },
+    { prompt:'🦴 뼈와 치아 건강에 중요한 식품을 잡아라!', correct:['우유','멸치','치즈','두부'] },
+  ];
+  // 전체 항목 풀(오답 후보 생성용)
+  const ALL_ITEMS = Array.from(new Set(ROUNDS.flatMap(r=>r.correct)));
+
+  let nickname='';
+  let score=0;
+  let timeLeft=60;
+  let mainTimer=null, roundTimer=null, spawnTimer=null;
+  let currentRound=0;
+  let activeMoles=[];
+
+  const $ = id => document.getElementById(id);
+  const screens = ['screen-start','screen-game','screen-result','screen-board'];
+  function showScreen(id){ screens.forEach(s => $(s).classList.toggle('active', s===id)); }
+
+  function pickWrongItems(correctList, n){
+    const pool = ALL_ITEMS.filter(it => !correctList.includes(it));
+    const shuffled = pool.sort(()=>Math.random()-0.5);
+    return shuffled.slice(0, n);
+  }
+
+  function setRound(idx){
+    currentRound = idx % ROUNDS.length;
+    const r = ROUNDS[currentRound];
+    const bar = $('promptbar');
+    bar.textContent = r.prompt;
+    bar.classList.remove('flash'); void bar.offsetWidth; bar.classList.add('flash');
+  }
+
+  function spawnMole(){
+    const field = $('field');
+    const r = ROUNDS[currentRound];
+    const wrongPool = pickWrongItems(r.correct, 4);
+    const isCorrect = Math.random() < 0.5;
+    const label = isCorrect
+      ? r.correct[Math.floor(Math.random()*r.correct.length)]
+      : wrongPool[Math.floor(Math.random()*wrongPool.length)] || r.correct[0];
+
+    const mole = document.createElement('button');
+    mole.className = 'mole';
+    mole.textContent = label;
+    const fw = field.clientWidth, fh = field.clientHeight;
+    const x = 60 + Math.random()*(fw-120);
+    const y = 50 + Math.random()*(fh-100);
+    mole.style.left = x+'px';
+    mole.style.top = y+'px';
+    mole.dataset.correct = isCorrect ? '1' : '0';
+
+    const timeoutId = setTimeout(()=>removeMole(mole,false), 950);
+
+    mole.addEventListener('click', ()=>{
+      clearTimeout(timeoutId);
+      const good = ROUNDS[currentRound].correct.includes(mole.textContent);
+      handleHit(mole, good, x, y);
+    });
+
+    field.appendChild(mole);
+    activeMoles.push(mole);
+  }
+
+  function removeMole(mole){
+    if(!mole.isConnected) return;
+    mole.classList.add('hit');
+    setTimeout(()=>{ mole.remove(); }, 260);
+    activeMoles = activeMoles.filter(m=>m!==mole);
+  }
+
+  function popFx(text, cls, x, y){
+    const field = $('field');
+    const fx = document.createElement('div');
+    fx.className = 'popfx '+cls;
+    fx.textContent = text;
+    fx.style.left = x+'px';
+    fx.style.top = y+'px';
+    field.appendChild(fx);
+    setTimeout(()=>fx.remove(), 650);
+  }
+
+  function handleHit(mole, good, x, y){
+    if(good){
+      score += 10;
+      popFx('+10', 'ok', x, y);
+    } else {
+      score = Math.max(0, score-5);
+      popFx('-5', 'bad', x, y);
+    }
+    $('score-display').textContent = '⭐ '+score+'점';
+    removeMole(mole);
+  }
+
+  function fmtTime(t){ return '⏱️ '+t+'초'; }
+
+  function startGame(){
+    nickname = $('nickname').value.trim();
+    if(!nickname){ $('nickname').focus(); return; }
+    $('game-nick').textContent = '👤 '+nickname;
+    score = 0; timeLeft = 60; currentRound = 0; activeMoles = [];
+    $('score-display').textContent = '⭐ 0점';
+    $('time-display').textContent = fmtTime(timeLeft);
+    $('field').innerHTML = '';
+    setRound(0);
+    showScreen('screen-game');
+
+    clearInterval(mainTimer); clearInterval(roundTimer); clearInterval(spawnTimer);
+    mainTimer = setInterval(()=>{
+      timeLeft--;
+      $('time-display').textContent = fmtTime(timeLeft);
+      if(timeLeft<=0) endGame();
+    }, 1000);
+    roundTimer = setInterval(()=> setRound(currentRound+1), 8000);
+    spawnTimer = setInterval(spawnMole, 700);
+  }
+
+  async function endGame(){
+    clearInterval(mainTimer); clearInterval(roundTimer); clearInterval(spawnTimer);
+    activeMoles.forEach(m=>m.remove());
+    activeMoles = [];
+    $('result-nick').textContent = nickname+'님의 결과';
+    $('result-score').textContent = score+'점';
+    $('result-detail').textContent = '60초 동안 열심히 잡았어요! 🐹';
+    showScreen('screen-result');
+    await saveScore(nickname, score);
+  }
+
+  async function saveScore(name, sc){
+    let list = [];
+    try{
+      const res = await window.storage.get(LB_KEY, true);
+      if(res && res.value){ list = JSON.parse(res.value); }
+    }catch(e){ list = []; }
+    list.push({name, score:sc, date:new Date().toISOString()});
+    list.sort((a,b)=>b.score-a.score);
+    list = list.slice(0,50);
+    try{
+      await window.storage.set(LB_KEY, JSON.stringify(list), true);
+    }catch(e){ console.error('leaderboard save failed', e); }
+  }
+
+  async function renderBoard(){
+    const el = $('board-content');
+    el.innerHTML = '<p class="empty">불러오는 중...</p>';
+    let list = [];
+    try{
+      const res = await window.storage.get(LB_KEY, true);
+      if(res && res.value){ list = JSON.parse(res.value); }
+    }catch(e){ list = []; }
+    if(!list.length){
+      el.innerHTML = '<p class="empty">아직 기록이 없어요. 첫 번째 도전자가 되어보세요!</p>';
+      return;
+    }
+    list.sort((a,b)=>b.score-a.score);
+    let rows = list.slice(0,10).map((row,i)=>{
+      const isMe = row.name===nickname;
+      return '<tr class="'+(isMe?'me':'')+'"><td class="'+(i===0?'rank1':'')+'">'+(i+1)+'</td><td>'+escapeHtml(row.name)+'</td><td>'+row.score+'점</td></tr>';
+    }).join('');
+    el.innerHTML = '<table><thead><tr><th>순위</th><th>닉네임</th><th>점수</th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  $('btn-start').addEventListener('click', startGame);
+  $('nickname').addEventListener('keydown', e=>{ if(e.key==='Enter') startGame(); });
+  $('btn-retry').addEventListener('click', ()=> showScreen('screen-start'));
+  $('btn-show-board-1').addEventListener('click', ()=>{ showScreen('screen-board'); renderBoard(); });
+  $('btn-show-board-2').addEventListener('click', ()=>{ showScreen('screen-board'); renderBoard(); });
+  $('btn-back-home').addEventListener('click', ()=> showScreen('screen-start'));
+
+})();
+</script>
+</body>
+</html>
