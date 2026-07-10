@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>렌주룰 오목 · 학급 대국실 (Firebase)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950:#fbf1da; --ink-900:#fffdf8; --ink-800:#ffffff;
+    --wood-500:#e2842e; --wood-300:#ffb457; --wood-100:#8a5a2b;
+    --gold:#b5850f; --cream:#3c352c; --cream-dim:#9b8f7a;
+    --black-win:#c65a3f; --white-win:#3f9166; --line:#b9a37e;
+    --vote:#4fa8d8; --forbid:#c65a3f; --paper:#fdf9f0; --border:#e6d7b8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle, #ecdfc0 1.4px, transparent 1.6px) 0 0/24px 24px,
+      radial-gradient(1200px 700px at 50% -10%, #fff7e3 0%, var(--paper) 60%);
+    color:var(--cream); font-family:'Jua', 'Noto Sans KR', sans-serif;
+    min-height:100vh; display:flex; align-items:flex-start; justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .wrap{ width:100%; max-width:600px; }
+  h1.brand{
+    font-family:'Jua', sans-serif; font-weight:400; font-size:24px;
+    letter-spacing:0.01em; margin:0 0 4px; color:var(--wood-100);
+    display:flex; align-items:center; gap:10px;
+  }
+  h1.brand .dot{ width:20px;height:20px;border-radius:48% 52% 45% 55%/55% 48% 52% 45%;
+    background:radial-gradient(circle at 35% 30%, #57504a, #2b2621 70%);
+    border:1.5px solid #1f1a15; box-shadow:1px 2px 0 rgba(138,90,43,.25); }
+  .tagline{ font-size:13px; color:var(--cream-dim); margin-bottom:20px; letter-spacing:0.02em; }
+  .card{ background:linear-gradient(180deg, var(--ink-800), var(--ink-900));
+    border:2px solid var(--border); border-radius:18px 22px 20px 16px; padding:20px;
+    box-shadow:4px 5px 0 rgba(201,169,120,.18); }
+  .card + .card{ margin-top:16px; }
+  label{ display:block; font-size:13px; color:var(--cream-dim); margin-bottom:6px; letter-spacing:.02em; }
+  input[type=text], input[type=password], input[type=number]{
+    width:100%; padding:11px 13px; border-radius:10px; border:2px solid var(--border);
+    background:var(--ink-950); color:var(--cream); font-size:16px;
+    font-family:'Jua', sans-serif; font-weight:700; outline:none;
+  }
+  textarea{
+    width:100%; padding:11px 13px; border-radius:10px; border:2px solid var(--border);
+    background:var(--ink-950); color:var(--cream); font-size:15px; font-family:'Jua', sans-serif;
+    outline:none; resize:vertical; min-height:130px; line-height:1.6;
+  }
+  select{
+    width:100%; padding:11px 13px; border-radius:10px; border:2px solid var(--border);
+    background:var(--ink-950); color:var(--cream); font-size:15px; font-family:'Jua', sans-serif; outline:none;
+  }
+  input:focus, select:focus, textarea:focus{ border-color:var(--gold); }
+  button{ font-family:'Jua', sans-serif; font-weight:700; font-size:15px;
+    border:2px solid transparent; border-radius:20px 8px 20px 8px; padding:11px 15px; cursor:pointer;
+    transition:transform .12s ease, filter .12s ease; }
+  button:disabled{ opacity:.45; cursor:not-allowed; }
+  button:active{ transform:scale(0.97) rotate(-0.5deg); }
+  .btn-primary{ background:linear-gradient(180deg, var(--wood-300), var(--wood-500)); color:#4a2a05;
+    border-color:#c9701f; box-shadow:2px 3px 0 rgba(201,112,31,.35); }
+  .btn-primary:hover{ filter:brightness(1.06); }
+  .btn-ghost{ background:#fffefa; color:var(--cream); border:2px solid var(--border); }
+  .btn-ghost:hover{ filter:brightness(0.97); border-color:var(--gold); }
+  .btn-danger{ background:#fff1ec; color:#a8492c; border:2px solid #e2916f; }
+  .btn-danger:hover{ background:#ffe4d8; }
+  .btn-small{ padding:7px 11px; font-size:13px; }
+  .btn-tiny{ padding:4px 9px; font-size:12px; }
+  .section-title{ font-family:'Jua', sans-serif; font-weight:700; font-size:16px; color:var(--wood-100); margin:0 0 12px; }
+  .hint{ font-size:12px; color:var(--cream-dim); margin-top:8px; line-height:1.6; }
+  .row{ display:flex; gap:10px; }
+  .row > *{ flex:1; }
+  .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap; }
+  .room-chip{ font-family:'Jua', sans-serif; font-weight:700; font-size:13.5px; background:var(--ink-950);
+    border:2px solid var(--border); border-radius:10px; padding:6px 10px; color:var(--wood-100); }
+  .role-chip{ font-size:12px; padding:5px 9px; border-radius:20px; border:1.5px solid var(--border); }
+  .role-chip.teacher{ background:rgba(181,133,15,.13); color:var(--gold); border-color:rgba(181,133,15,.4); }
+  .role-chip.student{ background:rgba(79,168,216,.13); color:#1f6fa3; border-color:rgba(79,168,216,.4); }
+  .live-chip{ font-size:11px; padding:4px 8px; border-radius:20px; background:rgba(63,145,102,.13); color:var(--white-win); border:1px solid rgba(63,145,102,.4); }
+  .live-dot{ display:inline-block; width:6px;height:6px;border-radius:50%; background:var(--white-win); margin-right:5px; animation:pulse 1.4s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  .assign-line{ font-size:12.5px; color:var(--cream-dim); text-align:center; margin-bottom:10px; }
+  .status-line{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; justify-content:center; }
+  .stone-mini{ width:13px;height:13px;border-radius:48% 52% 45% 55%/55% 48% 52% 45%; display:inline-block; }
+  .stone-mini.black{ background:radial-gradient(circle at 35% 30%, #57504a,#2b2621 70%); border:1px solid #1f1a15; }
+  .stone-mini.white{ background:radial-gradient(circle at 35% 30%, #fff,#f0e6cf 75%); border:1px solid var(--wood-100);}
+  .board-wrap{ background:#fffaf0;
+    border:3px dashed #e2c98a; border-radius:16px; padding:14px; box-shadow: 0 10px 24px -14px rgba(138,90,43,.35); }
+  svg{ width:100%; height:auto; display:block; touch-action:manipulation; }
+  .msg-banner{ text-align:center; font-family:'Jua', sans-serif; font-weight:700; font-size:16px;
+    padding:11px; border-radius:12px 6px 12px 6px; margin-bottom:14px; }
+  .msg-banner.win-black{ background:rgba(198,90,63,.13); color:var(--black-win); border:1.5px solid rgba(198,90,63,.4); }
+  .msg-banner.win-white{ background:rgba(63,145,102,.13); color:var(--white-win); border:1.5px solid rgba(63,145,102,.4); }
+  .msg-banner.draw{ background:rgba(181,133,15,.13); color:var(--gold); border:1.5px solid rgba(181,133,15,.4); }
+  .msg-banner.wait{ background:rgba(181,133,15,.1); color:var(--gold); border:1.5px solid rgba(181,133,15,.32); }
+  .msg-banner.vote{ background:rgba(79,168,216,.13); color:#1f6fa3; border:1.5px solid rgba(79,168,216,.4); }
+  .foul-toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+    background:#fff1ec; border:2px solid #e2916f; color:#a8492c; padding:12px 18px; border-radius:14px 6px 14px 6px;
+    font-size:14px; font-weight:700; font-family:'Jua', sans-serif; box-shadow:3px 4px 0 rgba(198,90,63,.2); z-index:50; max-width:90vw; text-align:center;
+    animation: fadeUp .18s ease; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateX(-50%) translateY(8px);} to{opacity:1; transform:translateX(-50%) translateY(0);} }
+  .rules-box{ font-size:12.5px; color:var(--cream-dim); line-height:1.75; margin-top:8px; }
+  .rules-box b{ color:var(--wood-100); }
+  .footer-note{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:20px; line-height:1.7; }
+  .settings-grid{ display:flex; gap:10px; align-items:flex-end; }
+  .settings-grid > div{ flex:1; }
+  .teacher-panel{ margin-top:14px; }
+  .stat-row{ display:flex; gap:10px; margin-top:12px; }
+  .stat-box{ flex:1; background:var(--ink-950); border:2px solid var(--border); border-radius:12px; padding:10px 12px; text-align:center; }
+  .stat-box .num{ font-family:'Jua', sans-serif; font-size:22px; font-weight:700; color:var(--wood-100); }
+  .stat-box .lbl{ font-size:11px; color:var(--cream-dim); margin-top:2px; }
+  .controls{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .controls > *{ flex:1; min-width:120px; }
+  hr.sep{ border:none; border-top:2px dashed var(--border); margin:16px 0; }
+  code.inline{ background:var(--ink-950); border:1.5px solid var(--border); border-radius:6px; padding:1px 6px; font-family:'Jua', sans-serif; font-weight:700; font-size:12px; color:var(--wood-100); }
+  .slot-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:8px; margin-top:6px; }
+  .slot-btn{ text-align:left; font-size:13px; padding:10px 12px; border-radius:10px; border:2px solid var(--border); background:var(--ink-950); color:var(--cream); }
+  .slot-open:hover{ border-color:var(--gold); }
+  .slot-taken{ background:#f2ece0; color:#a99b80; }
+  .slot-mine{ background:rgba(181,133,15,.15); border-color:var(--gold); color:var(--wood-100); font-weight:700; }
+  .class-item{ background:var(--ink-950); border:2px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .class-item .meta{ font-size:11.5px; color:var(--cream-dim); margin-top:2px; }
+  .roster-row{ display:flex; justify-content:space-between; align-items:center; padding:6px 2px; border-bottom:1.5px dashed var(--border); font-size:13px; }
+  .roster-row:last-child{ border-bottom:none; }
+  .tag-joined{ font-size:11px; color:var(--white-win); margin-right:8px; }
+  .tag-empty{ font-size:11px; color:var(--cream-dim); margin-right:8px; }
+  .roster-panel{ max-height:220px; overflow:auto; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">설정을 불러오는 중...</div>
+
+<script type="module">
+/* ======================================================================
+   Firebase 설정 — Firebase 콘솔(https://console.firebase.google.com)에서
+   프로젝트를 만들고 아래 값을 반드시 채워 넣어야 앱이 동작합니다.
+   1) Build > Authentication > Sign-in method > "익명" 사용 설정
+   2) Build > Realtime Database > 데이터베이스 만들기
+   3) 프로젝트 설정 > 일반 > 앱 추가(웹) > 아래 firebaseConfig 값 붙여넣기
+   4) Realtime Database > 규칙 탭에 채팅에서 안내한 최신 보안 규칙 붙여넣기
+====================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAcQmT4f8zP1L153PojICdiuZ-d-N2aL6U",
+  authDomain: "math-fly-catch.firebaseapp.com",
+  databaseURL: "https://math-fly-catch-default-rtdb.firebaseio.com",
+  projectId: "math-fly-catch",
+  storageBucket: "math-fly-catch.firebasestorage.app",
+  messagingSenderId: "748954569516",
+  appId: "1:748954569516:web:c474da7f087530f39b7a89"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, update, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const NEEDS_SETUP = firebaseConfig.apiKey === "YOUR_API_KEY";
+
+/* ============ 상수 ============ */
+const TEACHER_PASSWORD = 'Rhcdlwlrhsktjdi';
+const SIZE = 15;
+const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+const DEFAULT_TIME_LIMIT = 15;
+
+/* ============ 전역 상태 ============ */
+const S = {
+  screen: 'home',       // setup | home | classManage | roomCreate | teacher | studentPick | student
+  myId: null,
+  authReady: false,
+  name: '',
+  role: null,            // 'teacher' | 'student'
+  roomKey: '',
+  core: null,
+  votes: {},
+  claims: {},
+  classesIndex: {},      // { classKey: {className, roster, updatedAt} } (교사용 캐시)
+  openRooms: {},         // { roomKey: core } (학생 참가 화면에 표시할, 현재 개설된 방 목록)
+  classRosterCache: {},  // 현재 방/선택화면에 쓰는 명단 {번호: 이름} (정적, 자주 안 바뀜)
+  editingClassKey: null,
+  teacherAuthed: false,
+  teacherSelected: null, // 교사가 확정 전에 선택한 자리 {r,c}
+  unsub: [],
+  resolving: false,
+  ticker: null,
+};
+
+let app, auth, db;
+
+/* ============ 오목판 / 렌주룰 로직 ============ */
+function idx(r,c){ return r*SIZE+c; }
+function boardArrayFromSparse(sparse){
+  const arr = new Array(SIZE*SIZE).fill(0);
+  if(sparse){ Object.keys(sparse).forEach(k=>{ arr[parseInt(k)] = sparse[k]; }); }
+  return arr;
+}
+function getCell(board,r,c){
+  if(r<0||r>=SIZE||c<0||c>=SIZE) return 'E';
+  const v = board[idx(r,c)];
+  return v===0 ? '_' : (v===1 ? 'X' : 'O');
+}
+function runLength(board,r,c,dr,dc,sym){
+  let cnt=1;
+  for(let s=1;;s++){ if(getCell(board,r+dr*s,c+dc*s)===sym) cnt++; else break; }
+  for(let s=1;;s++){ if(getCell(board,r-dr*s,c-dc*s)===sym) cnt++; else break; }
+  return cnt;
+}
+function checkWinAt(board,r,c,color){
+  const sym = color===1?'X':'O';
+  for(const [dr,dc] of DIRS){
+    const len = runLength(board,r,c,dr,dc,sym);
+    if(color===1){ if(len===5) return true; } else { if(len>=5) return true; }
+  }
+  return false;
+}
+function checkOverline(board,r,c){
+  for(const [dr,dc] of DIRS){ if(runLength(board,r,c,dr,dc,'X')>=6) return true; }
+  return false;
+}
+function lineString9(board,r,c,dr,dc){
+  let s=''; for(let o=-4;o<=4;o++) s += getCell(board,r+dr*o,c+dc*o); return s;
+}
+function uniqueFourPoints(board,r,c){
+  const set = new Set();
+  for(const [dr,dc] of DIRS){
+    const str = lineString9(board,r,c,dr,dc);
+    for(let S0=0;S0<=4;S0++){
+      const win = str.substr(S0,5);
+      if(win.length<5) continue;
+      const xCount = (win.match(/X/g)||[]).length;
+      const blank = win.indexOf('_');
+      if(xCount===4 && blank!==-1 && !win.includes('O') && !win.includes('E')){
+        const off = (S0+blank)-4;
+        set.add((r+dr*off)+','+(c+dc*off));
+      }
+    }
+  }
+  return set;
+}
+function openThreeDirCount(board,r,c){
+  const patterns = ['_XXX__','__XXX_','_XX_X_','_X_XX_'];
+  let count=0;
+  for(const [dr,dc] of DIRS){
+    const str = lineString9(board,r,c,dr,dc);
+    let found=false;
+    for(let S0=0;S0<=3;S0++){
+      const win = str.substr(S0,6);
+      if(win.length<6) continue;
+      if(patterns.includes(win)){ found=true; break; }
+    }
+    if(found) count++;
+  }
+  return count;
+}
+function isForbiddenForBlack(board,r,c){
+  if(checkWinAt(board,r,c,1)) return null;
+  if(checkOverline(board,r,c)) return '장목(6목 이상)';
+  const fours = uniqueFourPoints(board,r,c);
+  if(fours.size>=2) return '사사(4-4)';
+  const threeDirs = openThreeDirCount(board,r,c);
+  if(threeDirs>=2) return '삼삼(3-3)';
+  return null;
+}
+function cellForbiddenIfBlackPlays(board,r,c){
+  if(board[idx(r,c)]!==0) return null;
+  const nb = board.slice();
+  nb[idx(r,c)] = 1;
+  return isForbiddenForBlack(nb,r,c);
+}
+function colorLabel(n){ return n===1 ? '흑' : '백'; }
+function controllerLabel(room, colorNum){ return colorNum===room.studentColor ? '학생팀' : '교사'; }
+
+/* ============ Firebase 초기화 ============ */
+function bootFirebase(){
+  if(NEEDS_SETUP){ S.screen='setup'; render(); return; }
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+  onAuthStateChanged(auth, user=>{
+    if(user){ S.myId = user.uid; S.authReady = true; if(S.screen==='home'){ render(); refreshOpenRooms(); } }
+  });
+  // 세션(탭) 단위 로그인 유지: 같은 브라우저의 다른 탭과 로그인을 공유하지 않도록 하여
+  // 한 브라우저에서 여러 탭으로 여러 학생을 테스트해도 각 탭이 서로 다른 사용자로 인식되게 함.
+  setPersistence(auth, browserSessionPersistence)
+    .then(()=> signInAnonymously(auth))
+    .catch(err=>{ toast('로그인 실패: ' + err.message); });
+}
+
+/* ============ 경로 헬퍼 ============ */
+function coreRef(key){ return ref(db, `rooms/${key}/core`); }
+function votesRef(key){ return ref(db, `rooms/${key}/votes`); }
+function claimsRef(key){ return ref(db, `rooms/${key}/claims`); }
+function roomRef(key){ return ref(db, `rooms/${key}`); }
+function myVoteRef(key){ return ref(db, `rooms/${key}/votes/${S.myId}`); }
+function classRef(key){ return ref(db, `classes/${key}`); }
+function classesRootRef(){ return ref(db, 'classes'); }
+
+function sanitizeKey(s){
+  return (s||'').toString().trim().replace(/\s+/g,'_').replace(/["'\\\/.#$\[\]]/g,'').slice(0,80);
+}
+function freshCorePayload(teacherId, teacherName, roomLabel, classKey, timeLimit, studentColor){
+  const sc = studentColor===2 ? 2 : 1;
+  return {
+    roomLabel, classKey, teacherId, teacherName,
+    turn: 1, status: 'waiting', winner: 0, lastMove: -1,
+    timeLimitSec: timeLimit || DEFAULT_TIME_LIMIT,
+    turnStartedAt: 0, round: 1,
+    studentColor: sc, teacherColor: sc===1?2:1,
+    updatedAt: Date.now()
+  };
+}
+function parseRosterText(text){
+  const lines = (text||'').split('\n').map(l=>l.trim()).filter(l=>l.length>0);
+  const roster = {};
+  for(const line of lines){
+    let no, name;
+    if(line.includes(',')){
+      const parts = line.split(',').map(s=>s.trim());
+      no = parts[0]; name = parts.slice(1).join(' ');
+    } else {
+      const parts = line.split(/\s+/);
+      no = parts[0]; name = parts.slice(1).join(' ');
+    }
+    no = sanitizeKey(no);
+    if(!no || !name) continue;
+    roster[no] = name;
+  }
+  return roster;
+}
+function rosterToText(roster){
+  const keys = Object.keys(roster||{}).sort((a,b)=>{
+    const na = parseInt(a), nb = parseInt(b);
+    if(!isNaN(na) && !isNaN(nb)) return na-nb;
+    return a.localeCompare(b);
+  });
+  return keys.map(k=>`${k} ${roster[k]}`).join('\n');
+}
+function sortedRosterKeys(roster){
+  return Object.keys(roster||{}).sort((a,b)=>{
+    const na = parseInt(a), nb = parseInt(b);
+    if(!isNaN(na) && !isNaN(nb)) return na-nb;
+    return a.localeCompare(b);
+  });
+}
+
+/* ============ 실시간 리스너 부착/해제 ============ */
+function attachRoomListeners(key){
+  detachRoomListeners();
+  const u1 = onValue(coreRef(key), snap=>{
+    const newCore = snap.val();
+    if(S.teacherSelected && (!newCore || newCore.status!=='playing' || newCore.turn!==newCore.teacherColor)){
+      S.teacherSelected = null;
+    }
+    S.core = newCore; render();
+  });
+  const u2 = onValue(votesRef(key), snap=>{ S.votes = snap.val()||{}; render(); });
+  const u3 = onValue(claimsRef(key), snap=>{ S.claims = snap.val()||{}; render(); });
+  S.unsub = [u1,u2,u3];
+}
+function detachRoomListeners(){
+  S.unsub.forEach(fn=>{ try{ fn(); }catch(e){} });
+  S.unsub = [];
+}
+
+/* ============ 화면 흐름 ============ */
+function render(){
+  const app = document.getElementById('app');
+  if(S.screen==='setup'){ app.innerHTML = renderSetup(); return; }
+  if(S.screen==='home'){ app.innerHTML = renderHome(); bindHome(); return; }
+  if(S.screen==='classManage'){ app.innerHTML = renderClassManage(); bindClassManage(); return; }
+  if(S.screen==='roomCreate'){ app.innerHTML = renderRoomCreate(); bindRoomCreate(); return; }
+  if(S.screen==='teacher'){
+    const prevPanel = document.querySelector('.roster-panel');
+    const prevScrollTop = prevPanel ? prevPanel.scrollTop : 0;
+    app.innerHTML = renderTeacher();
+    bindTeacher();
+    const newPanel = document.querySelector('.roster-panel');
+    if(newPanel) newPanel.scrollTop = prevScrollTop;
+    return;
+  }
+  if(S.screen==='studentPick'){ app.innerHTML = renderStudentPick(); bindStudentPick(); return; }
+  if(S.screen==='student'){ app.innerHTML = renderStudent(); bindStudent(); return; }
+}
+
+function renderSetup(){
+  return `
+    <h1 class="brand"><span class="dot"></span>Firebase 설정이 필요합니다</h1>
+    <div class="card">
+      <div class="section-title">아직 firebaseConfig가 비어있습니다</div>
+      <div class="rules-box">
+        이 파일 상단의 <code class="inline">firebaseConfig</code> 객체에 본인의 Firebase 프로젝트 설정값을 채워 넣어야 합니다.<br><br>
+        1) Firebase 콘솔에서 프로젝트를 만들고 <b>Realtime Database</b>를 활성화하세요.<br>
+        2) <b>Authentication → 익명 로그인</b>을 켜세요.<br>
+        3) 웹 앱을 추가해 나오는 설정값을 복사해 붙여넣으세요.<br>
+        4) Realtime Database 규칙을 안내받은 대로 설정하세요.<br><br>
+        설정을 마친 뒤 저장하고 새로고침하세요.
+      </div>
+    </div>
+  `;
+}
+
+function renderHome(){
+  const roomKeys = Object.keys(S.openRooms||{}).sort((a,b)=>{
+    const ra = S.openRooms[a], rb = S.openRooms[b];
+    return (rb.updatedAt||0) - (ra.updatedAt||0);
+  });
+  const statusLabel = st => st==='waiting' ? '대기중' : (st==='playing' ? '진행중' : '종료');
+  const roomList = roomKeys.length===0
+    ? `<div class="hint">현재 개설된 방이 없습니다. 선생님이 방을 열면 여기에 표시됩니다.</div>`
+    : `<div class="slot-grid">${roomKeys.map(key=>{
+        const r = S.openRooms[key];
+        return `<button class="slot-btn slot-open" data-room="${escapeAttr(key)}">${escapeHtml(r.roomLabel)} · ${statusLabel(r.status)}</button>`;
+      }).join('')}</div>`;
+
+  return `
+    <h1 class="brand"><span class="dot"></span>렌주룰 오목 · 학급 대국실</h1>
+    <div class="tagline">우리 모두 힘을 합쳐 선생님을 이겨라!</div>
+
+    <div class="card">
+      <div class="section-title">교사</div>
+      <input id="t-pw" type="password" placeholder="암호 입력">
+      <div class="row" style="margin-top:12px">
+        <button class="btn-ghost" id="btn-manage-classes">학급(명단) 관리</button>
+        <button class="btn-primary" id="btn-open-room">게임 방 열기</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">학생 · 참가하기</div>
+      ${roomList}
+      <button class="btn-ghost btn-small" style="width:100%;margin-top:10px" id="btn-refresh-rooms">방 목록 새로고침</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">진행 방식</div>
+      <div class="rules-box">
+        · 학생팀 차례에는 각자 원하는 자리를 클릭해 투표하고, 시간 안에는 언제든 다시 클릭해 선택을 바꿀 수 있습니다.<br>
+        · 각 자리에는 투표 비율(%)이 실시간으로 표시됩니다.<br>
+        · 제한시간이 끝나면 최다 득표 자리에 자동 착수됩니다 (동률이면 무작위).<br>
+        · 렌주룰 금수(장목·삼삼·사사)는 항상 흑돌에 적용됩니다.
+      </div>
+    </div>
+    <div class="footer-note">학급/방 데이터는 이름으로 저장되어 같은 이름을 아는 사람은 누구나 들어올 수 있습니다. 학급마다 겹치지 않는 이름을 사용하세요.</div>
+  `;
+}
+function bindHome(){
+  document.getElementById('btn-manage-classes').onclick = ()=>{
+    const pw = document.getElementById('t-pw').value;
+    if(pw !== TEACHER_PASSWORD){ toast('교사 암호가 올바르지 않습니다.'); return; }
+    S.teacherAuthed = true;
+    enterClassManage();
+  };
+  document.getElementById('btn-open-room').onclick = ()=>{
+    const pw = document.getElementById('t-pw').value;
+    if(pw !== TEACHER_PASSWORD){ toast('교사 암호가 올바르지 않습니다.'); return; }
+    S.teacherAuthed = true;
+    enterRoomCreate();
+  };
+  document.querySelectorAll('[data-room]').forEach(btn=>{
+    btn.onclick = ()=>joinRoomStudent(btn.getAttribute('data-room'));
+  });
+  const rr = document.getElementById('btn-refresh-rooms');
+  if(rr) rr.onclick = refreshOpenRooms;
+}
+
+/* ============ 학급(명단) 관리 ============ */
+async function enterClassManage(){
+  S.screen = 'classManage';
+  render();
+  S.classesIndex = await loadClassesIndex();
+  render();
+}
+async function loadClassesIndex(){
+  try{
+    const snap = await get(classesRootRef());
+    return snap.exists() ? snap.val() : {};
+  }catch(e){ toast('학급 목록을 불러오지 못했습니다.'); return {}; }
+}
+async function refreshClassesIndex(){
+  S.classesIndex = await loadClassesIndex();
+  toast('학급 목록을 새로고침했습니다.');
+  render();
+}
+function sortedClassKeys(){
+  const keys = Object.keys(S.classesIndex||{});
+  return keys.sort((a,b)=>{
+    const oa = S.classesIndex[a].order, ob = S.classesIndex[b].order;
+    if(oa!=null && ob!=null) return oa-ob;
+    if(oa!=null) return -1;
+    if(ob!=null) return 1;
+    return (S.classesIndex[a].updatedAt||0) - (S.classesIndex[b].updatedAt||0);
+  });
+}
+async function moveClass(key, direction){
+  const keys = sortedClassKeys();
+  const idx = keys.indexOf(key);
+  const swapIdx = idx + direction;
+  if(swapIdx < 0 || swapIdx >= keys.length) return;
+  // 순서값이 없던 기존 학급들도 이 기회에 현재 정렬 순서대로 순서값을 확정해 둠
+  const updates = {};
+  keys.forEach((k,i)=>{ updates[`${k}/order`] = i; });
+  const a = updates[`${key}/order`], b = updates[`${keys[swapIdx]}/order`];
+  updates[`${key}/order`] = b;
+  updates[`${keys[swapIdx]}/order`] = a;
+  await update(classesRootRef(), updates);
+  S.classesIndex = await loadClassesIndex();
+  render();
+}
+function nextClassOrder(){
+  const vals = Object.values(S.classesIndex||{}).map(c=>c.order).filter(v=>typeof v==='number');
+  return vals.length ? Math.max(...vals)+1 : 0;
+}
+async function refreshOpenRooms(){
+  try{
+    const classesSnap = await get(classesRootRef());
+    const classes = classesSnap.exists() ? classesSnap.val() : {};
+    const keys = Object.keys(classes);
+    const results = {};
+    await Promise.all(keys.map(async key=>{
+      try{
+        const coreSnap = await get(coreRef(key));
+        if(coreSnap.exists()){ results[key] = coreSnap.val(); }
+      }catch(e){ /* 개별 방 조회 실패는 무시 */ }
+    }));
+    S.openRooms = results;
+  }catch(e){
+    S.openRooms = {};
+  }
+  if(S.screen==='home') render();
+}
+function renderClassManage(){
+  const editing = S.editingClassKey && S.classesIndex[S.editingClassKey];
+  const formTitle = editing ? `"${escapeHtml(editing.className)}" 수정 중` : '새 학급 만들기';
+  const classNameVal = editing ? editing.className : '';
+  const rosterVal = editing ? rosterToText(editing.roster) : '';
+  const keys = sortedClassKeys();
+
+  const list = keys.length===0 ? `<div class="hint">아직 등록된 학급이 없습니다.</div>` : keys.map((key,i)=>{
+    const c = S.classesIndex[key];
+    const cnt = Object.keys(c.roster||{}).length;
+    return `
+      <div class="class-item">
+        <div style="display:flex;flex-direction:column;gap:2px;flex:none;">
+          <button class="btn-ghost btn-tiny" data-move-up="${key}" ${i===0?'disabled':''}>▲</button>
+          <button class="btn-ghost btn-tiny" data-move-down="${key}" ${i===keys.length-1?'disabled':''}>▼</button>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:700;">${escapeHtml(c.className)}</div>
+          <div class="meta">${cnt}명 등록됨</div>
+        </div>
+        <div class="row" style="flex:none;gap:6px;">
+          <button class="btn-ghost btn-tiny" data-edit="${key}">수정</button>
+          <button class="btn-ghost btn-tiny" data-delete="${key}">삭제</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:19px;"><span class="dot"></span>학급(명단) 관리</h1>
+      <button class="btn-ghost btn-small" id="btn-back-home">홈으로</button>
+    </div>
+    <div class="card">
+      <div class="section-title">${formTitle}</div>
+      <label>학급 이름</label>
+      <input id="cm-classname" type="text" placeholder="예: 1학년 1반" maxlength="30" value="${escapeAttr(classNameVal)}">
+      <div style="height:10px"></div>
+      <label>명단 (한 줄에 "번호 이름")</label>
+      <textarea id="cm-roster" placeholder="1 김민준&#10;2 이서연&#10;3 박도윤">${escapeHtml(rosterVal)}</textarea>
+      <div class="hint">쉼표(1,김민준)로 구분해도 됩니다. 저장하면 기존 내용을 덮어씁니다.</div>
+      <div class="row" style="margin-top:12px">
+        ${editing ? `<button class="btn-ghost" id="btn-cancel-edit">새로 만들기로 전환</button>` : ''}
+        <button class="btn-primary" id="btn-save-class">저장</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="top-bar" style="margin-bottom:12px;">
+        <div class="section-title" style="margin:0;">등록된 학급 목록</div>
+        <button class="btn-ghost btn-small" id="btn-refresh-classes">새로고침</button>
+      </div>
+      ${list}
+    </div>
+  `;
+}
+function bindClassManage(){
+  document.getElementById('btn-back-home').onclick = ()=>{ S.screen='home'; S.editingClassKey=null; render(); refreshOpenRooms(); };
+  document.getElementById('btn-save-class').onclick = saveClass;
+  const cancelBtn = document.getElementById('btn-cancel-edit');
+  if(cancelBtn) cancelBtn.onclick = ()=>{ S.editingClassKey=null; render(); toast('새 학급 만들기 화면으로 전환했습니다.'); };
+  const refreshBtn = document.getElementById('btn-refresh-classes');
+  if(refreshBtn) refreshBtn.onclick = refreshClassesIndex;
+  document.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.onclick = ()=>{ S.editingClassKey = btn.getAttribute('data-edit'); render(); };
+  });
+  document.querySelectorAll('[data-delete]').forEach(btn=>{
+    btn.onclick = ()=>deleteClass(btn.getAttribute('data-delete'));
+  });
+  document.querySelectorAll('[data-move-up]').forEach(btn=>{
+    btn.onclick = ()=>moveClass(btn.getAttribute('data-move-up'), -1);
+  });
+  document.querySelectorAll('[data-move-down]').forEach(btn=>{
+    btn.onclick = ()=>moveClass(btn.getAttribute('data-move-down'), 1);
+  });
+}
+async function saveClass(){
+  const nameRaw = document.getElementById('cm-classname').value.trim();
+  const rosterText = document.getElementById('cm-roster').value;
+  if(!nameRaw){ toast('학급 이름을 입력해 주세요.'); return; }
+  const newKey = sanitizeKey(nameRaw);
+  if(!newKey){ toast('학급 이름을 다시 입력해 주세요.'); return; }
+  const roster = parseRosterText(rosterText);
+  if(Object.keys(roster).length===0){ toast('명단을 확인해 주세요. 예: 1 김민준'); return; }
+
+  const originalKey = S.editingClassKey;
+  const existing = originalKey ? S.classesIndex[originalKey] : null;
+  const order = (existing && existing.order!=null) ? existing.order : nextClassOrder();
+
+  await set(classRef(newKey), { className: nameRaw, roster, order, updatedAt: Date.now() });
+  if(originalKey && originalKey !== newKey){
+    // 이름이 바뀌어 키가 달라진 경우, 기존 항목이 중복으로 남지 않도록 정리
+    await remove(classRef(originalKey));
+  }
+  toast('학급이 저장되었습니다.');
+  S.editingClassKey = null;
+  S.classesIndex = await loadClassesIndex();
+  render();
+}
+async function deleteClass(key){
+  const c = S.classesIndex[key];
+  const ok = confirm(`"${c ? c.className : key}" 학급을 삭제할까요? 이 학급으로 열린 방이 있다면 방 자체는 남아있을 수 있습니다.`);
+  if(!ok) return;
+  await remove(classRef(key));
+  if(S.editingClassKey===key) S.editingClassKey=null;
+  S.classesIndex = await loadClassesIndex();
+  render();
+}
+
+/* ============ 게임 방 열기 ============ */
+async function enterRoomCreate(){
+  S.screen = 'roomCreate';
+  render();
+  S.classesIndex = await loadClassesIndex();
+  render();
+}
+function renderRoomCreate(){
+  const keys = Object.keys(S.classesIndex||{});
+  if(keys.length===0){
+    return `
+      <div class="top-bar">
+        <h1 class="brand" style="font-size:19px;"><span class="dot"></span>게임 방 열기</h1>
+        <button class="btn-ghost btn-small" id="btn-back-home">홈으로</button>
+      </div>
+      <div class="card">
+        <div class="hint">등록된 학급이 없습니다. 먼저 학급(명단)을 만들어 주세요.</div>
+        <button class="btn-primary" style="width:100%;margin-top:12px" id="btn-go-manage">학급 관리로 이동</button>
+      </div>
+    `;
+  }
+  const options = keys.map(key=>{
+    const c = S.classesIndex[key];
+    const cnt = Object.keys(c.roster||{}).length;
+    return `<option value="${key}">${escapeHtml(c.className)} (${cnt}명)</option>`;
+  }).join('');
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:19px;"><span class="dot"></span>게임 방 열기</h1>
+      <button class="btn-ghost btn-small" id="btn-back-home">홈으로</button>
+    </div>
+    <div class="card">
+      <label>학급 선택</label>
+      <select id="rc-class">${options}</select>
+      <div style="height:10px"></div>
+      <label>교사 이름</label>
+      <input id="rc-teacher-name" type="text" placeholder="예: 우중T" maxlength="14">
+      <div style="height:10px"></div>
+      <div class="row">
+        <div>
+          <label>학생 투표 제한시간(초)</label>
+          <select id="rc-time">
+            <option value="10">10초</option>
+            <option value="15" selected>15초</option>
+            <option value="30">30초</option>
+            <option value="60">60초</option>
+          </select>
+        </div>
+        <div>
+          <label>학생팀 색</label>
+          <select id="rc-color">
+            <option value="1">흑 (선공)</option>
+            <option value="2">백 (후공)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:14px" id="btn-launch">방 열기</button>
+      <div class="hint">이미 이 학급으로 연 방이 있다면 이어서 진행합니다.</div>
+    </div>
+  `;
+}
+function bindRoomCreate(){
+  document.getElementById('btn-back-home').onclick = ()=>{ S.screen='home'; render(); refreshOpenRooms(); };
+  const goManage = document.getElementById('btn-go-manage');
+  if(goManage) goManage.onclick = enterClassManage;
+  const launch = document.getElementById('btn-launch');
+  if(launch) launch.onclick = openGameRoom;
+}
+async function openGameRoom(){
+  const classKey = document.getElementById('rc-class').value;
+  if(!classKey){ toast('학급을 선택해 주세요.'); return; }
+  const teacherName = document.getElementById('rc-teacher-name').value.trim() || '선생님';
+  const timeLimit = Math.max(10, Math.min(600, parseInt(document.getElementById('rc-time').value)||15));
+  const studentColor = parseInt(document.getElementById('rc-color').value)===2 ? 2 : 1;
+  const cls = S.classesIndex[classKey];
+  if(!S.authReady){ toast('로그인 중입니다. 잠시 후 다시 시도해 주세요.'); return; }
+
+  const existingSnap = await get(coreRef(classKey));
+  if(existingSnap.exists()){
+    await update(coreRef(classKey), { teacherName, teacherId: S.myId });
+  } else {
+    await set(coreRef(classKey), freshCorePayload(S.myId, teacherName, cls.className, classKey, timeLimit, studentColor));
+  }
+
+  S.roomKey = classKey;
+  S.role = 'teacher';
+  S.classRosterCache = cls.roster || {};
+  attachRoomListeners(classKey);
+  S.screen = 'teacher';
+  startTicker();
+  render();
+}
+
+/* ============ 학생: 방 입장 → 명단에서 선택 ============ */
+async function joinRoomStudent(key){
+  if(!key){ toast('참가할 방을 선택해 주세요.'); return; }
+  if(!S.authReady){ toast('로그인 중입니다. 잠시 후 다시 시도해 주세요.'); return; }
+
+  const coreSnap = await get(coreRef(key));
+  if(!coreSnap.exists()){ toast('해당 방을 찾을 수 없습니다. 새로고침 후 다시 시도해 주세요.'); return; }
+  const core = coreSnap.val();
+  const classKey = core.classKey || key;
+  const classSnap = await get(ref(db, `classes/${classKey}/roster`));
+  const roster = classSnap.exists() ? classSnap.val() : {};
+  if(Object.keys(roster).length===0){ toast('이 방에 연결된 명단을 찾을 수 없습니다.'); return; }
+
+  S.roomKey = key;
+  S.classRosterCache = roster;
+  S.core = core;
+  attachRoomListeners(key);
+  S.screen = 'studentPick';
+  render();
+}
+
+function renderStudentPick(){
+  const roster = S.classRosterCache || {};
+  const claims = S.claims || {};
+  const keys = sortedRosterKeys(roster);
+  const rows = keys.map(no=>{
+    const name = roster[no];
+    const takenBy = claims[no];
+    if(takenBy === S.myId){
+      return `<button class="slot-btn slot-mine" data-no="${escapeAttr(no)}">✅ ${escapeHtml(no)}. ${escapeHtml(name)} (나 · 계속하기)</button>`;
+    } else if(takenBy){
+      return `<button class="slot-btn slot-taken" disabled>${escapeHtml(no)}. ${escapeHtml(name)} · 참여중</button>`;
+    } else {
+      return `<button class="slot-btn slot-open" data-no="${escapeAttr(no)}">${escapeHtml(no)}. ${escapeHtml(name)}</button>`;
+    }
+  }).join('');
+
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:19px;"><span class="dot"></span>본인 확인</h1>
+      <span class="room-chip">${escapeHtml(S.core ? S.core.roomLabel : '')}</span>
+    </div>
+    <div class="card">
+      <div class="section-title">명단에서 본인 번호를 선택하세요</div>
+      <div class="slot-grid">${rows}</div>
+      <div class="hint">이미 "참여중"으로 표시된 자리는 다른 기기에서 이미 선택된 자리입니다. 본인이 맞다면 원래 쓰던 기기/브라우저로 접속해 주세요.</div>
+      <button class="btn-ghost" id="btn-back-home2" style="width:100%;margin-top:14px">뒤로</button>
+    </div>
+  `;
+}
+function bindStudentPick(){
+  document.querySelectorAll('.slot-open, .slot-mine').forEach(btn=>{
+    btn.onclick = ()=>{
+      const no = btn.getAttribute('data-no');
+      if(btn.classList.contains('slot-mine')) resumeSlot(no);
+      else claimSlot(no);
+    };
+  });
+  document.getElementById('btn-back-home2').onclick = ()=>{
+    detachRoomListeners();
+    S.screen='home'; S.core=null; S.votes={}; S.claims={}; S.roomKey='';
+    render();
+    refreshOpenRooms();
+  };
+}
+async function claimSlot(no){
+  try{
+    await set(ref(db, `rooms/${S.roomKey}/claims/${no}`), S.myId);
+  }catch(e){
+    toast('이미 다른 사람이 선택했습니다. 다시 선택해 주세요.');
+    return;
+  }
+  S.name = S.classRosterCache[no];
+  S.role = 'student';
+  S.screen = 'student';
+  startTicker();
+  render();
+}
+function resumeSlot(no){
+  S.name = S.classRosterCache[no];
+  S.role = 'student';
+  S.screen = 'student';
+  startTicker();
+  render();
+}
+
+function startTicker(){
+  if(S.ticker) clearInterval(S.ticker);
+  S.ticker = setInterval(()=>{
+    if(!S.core) return;
+    if(S.role==='teacher' && S.core.status==='playing' && S.core.turn===S.core.studentColor && !S.resolving){
+      const elapsed = (Date.now() - (S.core.turnStartedAt||0))/1000;
+      if(elapsed >= (S.core.timeLimitSec||DEFAULT_TIME_LIMIT)){
+        resolveVote();
+        return;
+      }
+    }
+    render();
+  }, 1000);
+}
+function leaveRoom(){
+  if(S.ticker) clearInterval(S.ticker);
+  S.ticker = null;
+  detachRoomListeners();
+  S.screen = 'home'; S.core=null; S.votes={}; S.claims={}; S.roomKey=''; S.role=null;
+  render();
+  refreshOpenRooms();
+}
+
+/* ============ 투표 집계 및 자동 확정 ============ */
+function tallyVotes(votes){
+  const counts = {};
+  Object.values(votes||{}).forEach(cellIdx=>{ counts[cellIdx] = (counts[cellIdx]||0)+1; });
+  return counts;
+}
+async function resolveVote(){
+  if(S.resolving) return;
+  const core = S.core, votes = S.votes;
+  if(!core || core.status!=='playing' || core.turn!==core.studentColor) return;
+  S.resolving = true;
+  try{
+    const board = boardArrayFromSparse(core.board);
+    const counts = tallyVotes(votes);
+    const applyForbidden = core.turn===1;
+    let remaining = Object.keys(counts).map(k=>parseInt(k)).sort((a,b)=>counts[b]-counts[a]);
+    let chosen = -1;
+
+    while(remaining.length>0 && chosen===-1){
+      const topCount = counts[remaining[0]];
+      const tiedGroup = remaining.filter(c=>counts[c]===topCount);
+      const shuffled = tiedGroup.slice().sort(()=>Math.random()-0.5);
+      for(const c of shuffled){
+        const r = Math.floor(c/SIZE), cc = c%SIZE;
+        if(board[c]!==0) continue;
+        if(applyForbidden && cellForbiddenIfBlackPlays(board,r,cc)!==null) continue;
+        chosen = c; break;
+      }
+      remaining = remaining.filter(c=>counts[c]!==topCount);
+    }
+
+    if(chosen===-1){
+      const emptyLegal = [];
+      for(let i=0;i<board.length;i++){
+        if(board[i]===0){
+          const r=Math.floor(i/SIZE), c=i%SIZE;
+          if(!applyForbidden || cellForbiddenIfBlackPlays(board,r,c)===null) emptyLegal.push(i);
+        }
+      }
+      if(emptyLegal.length===0){
+        await update(coreRef(S.roomKey), { status:'finished', winner:0, updatedAt: Date.now() });
+        await remove(votesRef(S.roomKey));
+        return;
+      }
+      chosen = emptyLegal[Math.floor(Math.random()*emptyLegal.length)];
+    }
+
+    const r = Math.floor(chosen/SIZE), c = chosen%SIZE;
+    const newBoard = board.slice();
+    newBoard[chosen] = core.turn;
+    const isWin = checkWinAt(newBoard, r, c, core.turn);
+    const isFull = newBoard.every(v=>v!==0);
+
+    const updates = { [`board/${chosen}`]: core.turn, lastMove: chosen, updatedAt: Date.now() };
+    if(isWin){ updates.status='finished'; updates.winner=core.turn; }
+    else if(isFull){ updates.status='finished'; updates.winner=0; }
+    else { updates.turn = core.teacherColor; updates.turnStartedAt = Date.now(); }
+
+    await update(coreRef(S.roomKey), updates);
+    await remove(votesRef(S.roomKey));
+  } finally {
+    S.resolving = false;
+  }
+}
+
+/* ============ 교사 액션 ============ */
+async function teacherStart(){
+  await update(coreRef(S.roomKey), { status:'playing', turn:1, turnStartedAt: Date.now(), updatedAt: Date.now() });
+}
+function teacherSelectCell(r,c){
+  const core = S.core;
+  if(!core || core.status!=='playing' || core.turn!==core.teacherColor){ toast('지금은 내 차례가 아닙니다.'); return; }
+  const board = boardArrayFromSparse(core.board);
+  const i = idx(r,c);
+  if(board[i]!==0) return;
+  if(core.teacherColor===1){
+    const forb = cellForbiddenIfBlackPlays(board, r, c);
+    if(forb){ toast('⚠ 렌주룰 금수 자리입니다: ' + forb); return; }
+  }
+  if(S.teacherSelected && S.teacherSelected.r===r && S.teacherSelected.c===c){
+    S.teacherSelected = null; // 같은 자리 다시 클릭하면 선택 취소
+  } else {
+    S.teacherSelected = { r, c };
+  }
+  render();
+}
+function teacherCancelSelection(){
+  S.teacherSelected = null;
+  render();
+}
+async function teacherConfirmMove(){
+  if(!S.teacherSelected) return;
+  const { r, c } = S.teacherSelected;
+  S.teacherSelected = null;
+  await teacherPlaceStone(r, c);
+}
+async function teacherPlaceStone(r,c){
+  const core = S.core;
+  if(!core || core.status!=='playing' || core.turn!==core.teacherColor){ toast('지금은 내 차례가 아닙니다.'); return; }
+  const board = boardArrayFromSparse(core.board);
+  const i = idx(r,c);
+  if(board[i]!==0) return;
+  if(core.teacherColor===1){
+    const forb = cellForbiddenIfBlackPlays(board, r, c);
+    if(forb){ toast('⚠ 렌주룰 금수 자리입니다: ' + forb); return; }
+  }
+  const newBoard = board.slice();
+  newBoard[i] = core.teacherColor;
+  const isWin = checkWinAt(newBoard, r, c, core.teacherColor);
+  const isFull = newBoard.every(v=>v!==0);
+
+  const updates = { [`board/${i}`]: core.teacherColor, lastMove: i, updatedAt: Date.now() };
+  if(isWin){ updates.status='finished'; updates.winner=core.teacherColor; }
+  else if(isFull){ updates.status='finished'; updates.winner=0; }
+  else { updates.turn = core.studentColor; updates.turnStartedAt = Date.now(); }
+
+  await update(coreRef(S.roomKey), updates);
+  await remove(votesRef(S.roomKey));
+}
+async function teacherForceResolve(){
+  if(!S.core || S.core.status!=='playing' || S.core.turn!==S.core.studentColor){ toast('지금은 학생팀 투표 차례가 아닙니다.'); return; }
+  await resolveVote();
+}
+async function teacherUpdateTimeLimit(){
+  const input = document.getElementById('time-limit-input');
+  const val = Math.max(10, Math.min(600, parseInt(input.value)||15));
+  await update(coreRef(S.roomKey), { timeLimitSec: val });
+  toast('제한시간이 ' + val + '초로 적용되었습니다.');
+}
+async function teacherUpdateStudentColor(){
+  if(!S.core) return;
+  if(S.core.status==='playing'){ toast('대국 중에는 색을 변경할 수 없습니다.'); return; }
+  const sel = document.getElementById('student-color-select');
+  const val = parseInt(sel.value)===2 ? 2 : 1;
+  await update(coreRef(S.roomKey), { studentColor: val, teacherColor: val===1?2:1 });
+  toast('학생팀 색이 ' + colorLabel(val) + '(으)로 설정되었습니다.');
+}
+async function teacherRematch(){
+  const core = S.core;
+  if(!core) return;
+  await update(coreRef(S.roomKey), {
+    status:'playing', turn:1, turnStartedAt: Date.now(), winner:0, lastMove:-1,
+    round: (core.round||1)+1, board: null, updatedAt: Date.now()
+  });
+  await remove(votesRef(S.roomKey));
+}
+async function teacherUnlockSlot(no){
+  await remove(ref(db, `rooms/${S.roomKey}/claims/${no}`));
+}
+async function teacherResetAllClaims(){
+  const ok = confirm('모든 학생의 참여 상태를 초기화할까요? 다음 접속부터 다시 자리를 선택해야 합니다.');
+  if(!ok) return;
+  await remove(claimsRef(S.roomKey));
+}
+async function teacherResetRoom(){
+  const core = S.core;
+  if(!core) return;
+  const ok = confirm('이 방의 데이터를 전부 초기화할까요?\n대국 기록, 학생 참여 상태, 진행 중인 투표가 모두 사라지고 방을 새로 연 것처럼 처음 상태로 돌아갑니다.');
+  if(!ok) return;
+  await set(coreRef(S.roomKey), {
+    roomLabel: core.roomLabel, classKey: core.classKey,
+    teacherId: core.teacherId, teacherName: core.teacherName,
+    turn: 1, status: 'waiting', winner: 0, lastMove: -1,
+    timeLimitSec: core.timeLimitSec || DEFAULT_TIME_LIMIT,
+    turnStartedAt: 0, round: 1,
+    studentColor: core.studentColor, teacherColor: core.teacherColor,
+    updatedAt: Date.now()
+  });
+  await remove(votesRef(S.roomKey));
+  await remove(claimsRef(S.roomKey));
+  S.teacherSelected = null;
+  toast('방 데이터를 초기화했습니다.');
+}
+async function teacherCloseRoom(){
+  const core = S.core;
+  if(!core) return;
+  const ok = confirm('이 방을 완전히 닫을까요?\n방 목록에서 사라지며, 학생들은 더 이상 이 방에 들어올 수 없습니다. 이 작업은 되돌릴 수 없습니다.');
+  if(!ok) return;
+  const key = S.roomKey;
+  await remove(roomRef(key));
+  leaveRoom();
+  toast('방을 닫았습니다.');
+}
+
+/* ============ 학생 액션 (투표) ============ */
+async function studentVote(r,c){
+  const core = S.core;
+  if(!core || core.status!=='playing' || core.turn!==core.studentColor){ toast('지금은 투표 시간이 아닙니다.'); return; }
+  const board = boardArrayFromSparse(core.board);
+  const i = idx(r,c);
+  if(board[i]!==0) return;
+  if(core.turn===1){
+    const forb = cellForbiddenIfBlackPlays(board, r, c);
+    if(forb){ toast('⚠ 렌주룰 금수 자리입니다: ' + forb); return; }
+  }
+  if(S.votes[S.myId] === i){
+    await remove(myVoteRef(S.roomKey));
+  } else {
+    await set(myVoteRef(S.roomKey), i);
+  }
+}
+
+/* ============ 알림 ============ */
+let toastTimer=null;
+function toast(msg){
+  const old = document.querySelector('.foul-toast'); if(old) old.remove();
+  const div = document.createElement('div'); div.className='foul-toast'; div.textContent = msg;
+  document.body.appendChild(div);
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>div.remove(), 2600);
+}
+
+/* ============ 보드 렌더링 ============ */
+function stoneStatusText(room){
+  if(room.winner===0) return '무승부입니다';
+  return controllerLabel(room, room.winner) + '(' + colorLabel(room.winner) + ') 승리!';
+}
+function renderBoardSVG(){
+  const core = S.core, votes = S.votes;
+  const board = boardArrayFromSparse(core.board);
+  const margin = 24, gap = 32;
+  const total = margin*2 + gap*(SIZE-1);
+  const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+  let lines = '';
+  for(let i=0;i<SIZE;i++){
+    const p = margin + i*gap;
+    lines += `<line x1="${margin}" y1="${p}" x2="${total-margin}" y2="${p}" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round"/>`;
+    lines += `<line x1="${p}" y1="${margin}" x2="${p}" y2="${total-margin}" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round"/>`;
+  }
+  let starsSvg = stars.map(([r,c])=>{
+    const x = margin+c*gap, y = margin+r*gap;
+    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--line)"/>`;
+  }).join('');
+
+  const counts = tallyVotes(votes);
+  const totalVoteEntries = Object.keys(votes||{}).length;
+  const forbiddenPhase = core.status==='playing' && core.turn===1;
+  const votePhase = core.status==='playing' && core.turn===core.studentColor;
+  const myVoteCell = votes ? votes[S.myId] : undefined;
+
+  let stones = '', hitboxes = '', voteLayer = '', forbidLayer = '';
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      const i = idx(r,c);
+      const v = board[i];
+      const x = margin+c*gap, y = margin+r*gap;
+
+      if(v===0){
+        hitboxes += `<rect data-r="${r}" data-c="${c}" class="cell-hit" x="${x-gap/2}" y="${y-gap/2}" width="${gap}" height="${gap}" fill="transparent"/>`;
+      }
+      if(v===1){ stones += `<circle cx="${x}" cy="${y}" r="13.5" fill="url(#gradBlack)" stroke="#1f1a15" stroke-width="1.3"/>`; }
+      else if(v===2){ stones += `<circle cx="${x}" cy="${y}" r="13.5" fill="url(#gradWhite)" stroke="var(--wood-100)" stroke-width="1.3"/>`; }
+      if(i === core.lastMove){
+        stones += `<circle cx="${x}" cy="${y}" r="4.5" fill="none" stroke="#e2842e" stroke-width="1.8"/>`;
+      }
+
+      if(v===0){
+        if(forbiddenPhase && cellForbiddenIfBlackPlays(board,r,c)!==null){
+          forbidLayer += `<line x1="${x-8}" y1="${y-8}" x2="${x+8}" y2="${y+8}" stroke="var(--forbid)" stroke-width="2" opacity="0.85"/>`;
+          forbidLayer += `<line x1="${x-8}" y1="${y+8}" x2="${x+8}" y2="${y-8}" stroke="var(--forbid)" stroke-width="2" opacity="0.85"/>`;
+        } else if(votePhase && counts[i]){
+          const pct = totalVoteEntries>0 ? Math.round((counts[i]/totalVoteEntries)*100) : 0;
+          const isMine = myVoteCell === i;
+          const rad = 8 + Math.min(13, pct/6);
+          voteLayer += `<circle cx="${x}" cy="${y}" r="${rad}" fill="var(--vote)" opacity="0.30"/>`;
+          if(isMine){ voteLayer += `<circle cx="${x}" cy="${y}" r="${rad+2}" fill="none" stroke="var(--gold)" stroke-width="1.6"/>`; }
+          voteLayer += `<text x="${x}" y="${y+3}" font-size="9" font-family="Jua, sans-serif" font-weight="700" text-anchor="middle" fill="#1f6fa3">${pct}%</text>`;
+        }
+      }
+    }
+  }
+
+  let selectionLayer = '';
+  if(S.role==='teacher' && S.teacherSelected && core.status==='playing' && core.turn===core.teacherColor){
+    const { r: sr, c: sc } = S.teacherSelected;
+    const sx = margin+sc*gap, sy = margin+sr*gap;
+    const previewFill = core.teacherColor===1 ? '#2b2621' : '#f0e6cf';
+    const previewStroke = core.teacherColor===1 ? '#1f1a15' : '#8a5a2b';
+    selectionLayer = `<circle cx="${sx}" cy="${sy}" r="13.5" fill="${previewFill}" opacity="0.5" stroke="${previewStroke}" stroke-width="1.8" stroke-dasharray="3,2.5"/>`;
+  }
+
+  return `
+  <svg viewBox="0 0 ${total} ${total}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="gradBlack" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#5c554e"/><stop offset="70%" stop-color="#2b2621"/>
+      </radialGradient>
+      <radialGradient id="gradWhite" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#fffefa"/><stop offset="80%" stop-color="#f0e6cf"/>
+      </radialGradient>
+    </defs>
+    ${lines}${starsSvg}${stones}${forbidLayer}${voteLayer}${selectionLayer}${hitboxes}
+  </svg>`;
+}
+
+/* ============ 교사 화면 ============ */
+function renderTeacher(){
+  const room = S.core;
+  if(!room) return `<div class="card">방 정보를 불러오는 중...</div>`;
+  const studentCount = Object.keys(S.claims||{}).length;
+  const totalSeats = Object.keys(S.classRosterCache||{}).length;
+  const voteCount = Object.keys(S.votes||{}).length;
+  const remaining = room.status==='playing' && room.turn===room.studentColor
+    ? Math.max(0, Math.ceil((room.timeLimitSec - (Date.now()-(room.turnStartedAt||0))/1000)))
+    : null;
+
+  let banner = '';
+  if(room.status==='waiting'){
+    banner = `<div class="msg-banner wait">학생들이 참가 중입니다 · 준비되면 대국을 시작하세요</div>`;
+  } else if(room.status==='finished'){
+    const cls = room.winner===0?'draw':(room.winner===1?'win-black':'win-white');
+    banner = `<div class="msg-banner ${cls}">${stoneStatusText(room)}</div>`;
+  } else if(room.turn===room.studentColor){
+    banner = `<div class="msg-banner vote">학생팀(${colorLabel(room.studentColor)}) 투표 진행 중 · ${voteCount}/${studentCount}명 투표</div>`;
+  } else if(S.teacherSelected){
+    banner = `<div class="status-line"><span class="stone-mini ${room.teacherColor===1?'black':'white'}"></span>내 차례(${colorLabel(room.teacherColor)}) · 이 자리에 둘까요? 확정을 누르면 착수됩니다</div>`;
+  } else {
+    banner = `<div class="status-line"><span class="stone-mini ${room.teacherColor===1?'black':'white'}"></span>내 차례(${colorLabel(room.teacherColor)}) · 원하는 자리를 클릭해 선택하세요</div>`;
+  }
+
+  const rosterKeys = sortedRosterKeys(S.classRosterCache);
+  const rosterRows = rosterKeys.map(no=>{
+    const claimed = S.claims && S.claims[no];
+    return `<div class="roster-row">
+      <span>${escapeHtml(no)}. ${escapeHtml(S.classRosterCache[no])}</span>
+      <span>${claimed ? '<span class="tag-joined">참여중</span><button class="btn-ghost btn-tiny" data-unlock="'+escapeAttr(no)+'">해제</button>' : '<span class="tag-empty">대기</span>'}</span>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:18px;"><span class="dot"></span>교사 대시보드</h1>
+      <span class="live-chip"><span class="live-dot"></span>실시간 연결됨</span>
+      <span class="role-chip teacher">교사 · ${colorLabel(room.teacherColor)}</span>
+      <span class="room-chip">${escapeHtml(room.roomLabel)}</span>
+    </div>
+    <div class="assign-line">학생팀: ${colorLabel(room.studentColor)}(${room.studentColor===1?'선공':'후공'}) · 교사: ${colorLabel(room.teacherColor)}(${room.teacherColor===1?'선공':'후공'})</div>
+    <div class="card">
+      ${banner}
+      <div class="board-wrap">${renderBoardSVG()}</div>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">${studentCount}/${totalSeats}</div><div class="lbl">참여 학생 / 전체 명단</div></div>
+        <div class="stat-box"><div class="num">${voteCount}</div><div class="lbl">현재 투표 수</div></div>
+        <div class="stat-box"><div class="num">${remaining===null ? '-' : remaining+'s'}</div><div class="lbl">남은 시간(교사 전용)</div></div>
+      </div>
+
+      <div class="controls">
+        ${room.status==='waiting' ? `<button class="btn-primary" id="btn-start">대국 시작</button>` : ''}
+        ${room.status==='playing' && room.turn===room.studentColor ? `<button class="btn-ghost" id="btn-force">지금 바로 확정</button>` : ''}
+        ${room.status==='playing' && room.turn===room.teacherColor && S.teacherSelected ? `<button class="btn-primary" id="btn-confirm-move">✅ 이 자리에 확정</button><button class="btn-ghost" id="btn-cancel-move">다시 선택</button>` : ''}
+        ${room.status==='finished' ? `<button class="btn-primary" id="btn-rematch">다음 판 시작</button>` : ''}
+        <button class="btn-ghost" id="btn-leave">방 나가기</button>
+      </div>
+    </div>
+
+    <div class="card teacher-panel">
+      <div class="section-title">설정 (학생 화면에는 보이지 않음)</div>
+      <div class="settings-grid">
+        <div>
+          <label>학생 투표 제한시간(초)</label>
+          <select id="time-limit-input">
+            ${[10,15,30,60].map(v=>`<option value="${v}" ${room.timeLimitSec===v?'selected':''}>${v}초</option>`).join('')}
+            ${[10,15,30,60].includes(room.timeLimitSec) ? '' : `<option value="${room.timeLimitSec}" selected>${room.timeLimitSec}초</option>`}
+          </select>
+        </div>
+        <button class="btn-primary btn-small" id="btn-apply-time">적용</button>
+      </div>
+      <div class="hint">지금 진행 중인 투표에도 즉시 반영됩니다.</div>
+      <hr class="sep">
+      <div class="settings-grid">
+        <div>
+          <label>학생팀 색 ${room.status==='playing' ? '(대국 중 변경 불가)' : ''}</label>
+          <select id="student-color-select" ${room.status==='playing' ? 'disabled' : ''}>
+            <option value="1" ${room.studentColor===1?'selected':''}>흑 (선공)</option>
+            <option value="2" ${room.studentColor===2?'selected':''}>백 (후공)</option>
+          </select>
+        </div>
+        <button class="btn-primary btn-small" id="btn-apply-color" ${room.status==='playing' ? 'disabled' : ''}>적용</button>
+      </div>
+      <hr class="sep">
+      <div class="section-title" style="margin-bottom:6px;">참여 현황 (자리 잠금 관리)</div>
+      <div class="roster-panel">${rosterRows}</div>
+      <button class="btn-ghost btn-small" style="width:100%;margin-top:10px" id="btn-reset-claims">전체 참여 상태 초기화</button>
+      <hr class="sep">
+      <div class="section-title" style="margin-bottom:6px;">위험 구역</div>
+      <div class="hint" style="margin-top:0;">이 방의 대국 기록, 학생 참여 상태, 투표를 모두 지우고 방을 새로 연 것처럼 초기화합니다.</div>
+      <button class="btn-danger btn-small" style="width:100%;margin-top:8px" id="btn-reset-room">🗑 이 방 데이터 전체 초기화</button>
+      <div class="hint" style="margin-top:12px;">방을 완전히 닫습니다. 방 목록에서 사라지며, 학생들도 더 이상 이 방에 들어올 수 없습니다.</div>
+      <button class="btn-danger btn-small" style="width:100%;margin-top:8px" id="btn-close-room">🚪 이 방 닫기</button>
+    </div>
+    <div class="footer-note">방 이름: ${escapeHtml(room.roomLabel)} · Firebase 실시간 리스너로 동작하며, 이 탭이 열려 있어야 학생 투표의 자동 확정이 처리됩니다.</div>
+  `;
+}
+function bindTeacher(){
+  bindBoardClicks((r,c)=>teacherSelectCell(r,c));
+  const s = document.getElementById('btn-start'); if(s) s.onclick = teacherStart;
+  const f = document.getElementById('btn-force'); if(f) f.onclick = teacherForceResolve;
+  const cm = document.getElementById('btn-confirm-move'); if(cm) cm.onclick = teacherConfirmMove;
+  const cc = document.getElementById('btn-cancel-move'); if(cc) cc.onclick = teacherCancelSelection;
+  const rm = document.getElementById('btn-rematch'); if(rm) rm.onclick = teacherRematch;
+  const lv = document.getElementById('btn-leave'); if(lv) lv.onclick = leaveRoom;
+  const at = document.getElementById('btn-apply-time'); if(at) at.onclick = teacherUpdateTimeLimit;
+  const ac = document.getElementById('btn-apply-color'); if(ac) ac.onclick = teacherUpdateStudentColor;
+  const rc = document.getElementById('btn-reset-claims'); if(rc) rc.onclick = teacherResetAllClaims;
+  const rr = document.getElementById('btn-reset-room'); if(rr) rr.onclick = teacherResetRoom;
+  const cr = document.getElementById('btn-close-room'); if(cr) cr.onclick = teacherCloseRoom;
+  document.querySelectorAll('[data-unlock]').forEach(btn=>{
+    btn.onclick = ()=>teacherUnlockSlot(btn.getAttribute('data-unlock'));
+  });
+}
+
+/* ============ 학생 화면 ============ */
+function renderStudent(){
+  const room = S.core;
+  if(!room) return `<div class="card">방 정보를 불러오는 중...</div>`;
+  const voteCount = Object.keys(S.votes||{}).length;
+  const studentCount = Object.keys(S.claims||{}).length;
+
+  let banner = '';
+  if(room.status==='waiting'){
+    banner = `<div class="msg-banner wait">대국 시작을 기다리는 중입니다</div>`;
+  } else if(room.status==='finished'){
+    const cls = room.winner===0?'draw':(room.winner===1?'win-black':'win-white');
+    banner = `<div class="msg-banner ${cls}">${stoneStatusText(room)}</div>`;
+  } else if(room.turn===room.studentColor){
+    banner = `<div class="msg-banner vote">우리 팀(${colorLabel(room.studentColor)}) 차례 · 두고 싶은 자리를 클릭! 언제든 다시 클릭해 바꿀 수 있어요</div>`;
+  } else {
+    banner = `<div class="status-line"><span class="stone-mini ${room.teacherColor===1?'black':'white'}"></span>선생님(${colorLabel(room.teacherColor)})이 두는 중입니다...</div>`;
+  }
+
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:18px;"><span class="dot"></span>오목 대국실</h1>
+      <span class="live-chip"><span class="live-dot"></span>실시간 연결됨</span>
+      <span class="role-chip student">학생 · ${escapeHtml(S.name)}</span>
+      <span class="room-chip">${escapeHtml(room.roomLabel)}</span>
+    </div>
+    <div class="assign-line">우리 팀: ${colorLabel(room.studentColor)}(${room.studentColor===1?'선공':'후공'})</div>
+    <div class="card">
+      ${banner}
+      <div class="board-wrap">${renderBoardSVG()}</div>
+      <div class="hint" style="text-align:center;margin-top:10px;">
+        빨간 X는 렌주룰 금수(반칙) 자리 · 파란 원은 현재 투표 비율, 금색 테두리는 내가 선택한 자리
+        ${room.status==='playing' && room.turn===room.studentColor ? ` · 지금 ${voteCount}명 투표 중` : ''}
+      </div>
+      <div class="controls">
+        <button class="btn-ghost" id="btn-leave">방 나가기</button>
+      </div>
+    </div>
+    <div class="footer-note">방 이름: ${escapeHtml(room.roomLabel)}</div>
+  `;
+}
+function bindStudent(){
+  bindBoardClicks((r,c)=>studentVote(r,c));
+  const lv = document.getElementById('btn-leave'); if(lv) lv.onclick = leaveRoom;
+}
+
+function bindBoardClicks(handler){
+  const svg = document.querySelector('svg');
+  if(!svg) return;
+  svg.querySelectorAll('.cell-hit').forEach(rect=>{
+    rect.addEventListener('click', ()=>{
+      const r = parseInt(rect.getAttribute('data-r'));
+      const c = parseInt(rect.getAttribute('data-c'));
+      handler(r,c);
+    });
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+bootFirebase();
+</script>
+</body>
+</html>
