@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>렌주룰 오목 · 학생용 (Firebase)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950:#fbf1da; --ink-900:#fffdf8; --ink-800:#ffffff;
+    --wood-500:#e2842e; --wood-300:#ffb457; --wood-100:#8a5a2b;
+    --gold:#b5850f; --cream:#3c352c; --cream-dim:#9b8f7a;
+    --black-win:#c65a3f; --white-win:#3f9166; --line:#b9a37e;
+    --vote:#4fa8d8; --forbid:#c65a3f; --paper:#fdf9f0; --border:#e6d7b8;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle, #ecdfc0 1.4px, transparent 1.6px) 0 0/24px 24px,
+      radial-gradient(1200px 700px at 50% -10%, #fff7e3 0%, var(--paper) 60%);
+    color:var(--cream); font-family:'Jua', 'Noto Sans KR', sans-serif;
+    min-height:100vh; display:flex; align-items:flex-start; justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .wrap{ width:100%; max-width:600px; }
+  h1.brand{
+    font-family:'Jua', sans-serif; font-weight:400; font-size:24px;
+    letter-spacing:0.01em; margin:0 0 4px; color:var(--wood-100);
+    display:flex; align-items:center; gap:10px;
+  }
+  h1.brand .dot{ width:20px;height:20px;border-radius:48% 52% 45% 55%/55% 48% 52% 45%;
+    background:radial-gradient(circle at 35% 30%, #57504a, #2b2621 70%);
+    border:1.5px solid #1f1a15; box-shadow:1px 2px 0 rgba(138,90,43,.25); }
+  .tagline{ font-size:13px; color:var(--cream-dim); margin-bottom:20px; letter-spacing:0.02em; }
+  .card{ background:linear-gradient(180deg, var(--ink-800), var(--ink-900));
+    border:2px solid var(--border); border-radius:18px 22px 20px 16px; padding:20px;
+    box-shadow:4px 5px 0 rgba(201,169,120,.18); }
+  .card + .card{ margin-top:16px; }
+  label{ display:block; font-size:13px; color:var(--cream-dim); margin-bottom:6px; letter-spacing:.02em; }
+  input[type=text], input[type=password], input[type=number]{
+    width:100%; padding:11px 13px; border-radius:10px; border:2px solid var(--border);
+    background:var(--ink-950); color:var(--cream); font-size:16px;
+    font-family:'Jua', sans-serif; font-weight:700; outline:none;
+  }
+  textarea{
+    width:100%; padding:11px 13px; border-radius:10px; border:2px solid var(--border);
+    background:var(--ink-950); color:var(--cream); font-size:15px; font-family:'Jua', sans-serif;
+    outline:none; resize:vertical; min-height:130px; line-height:1.6;
+  }
+  select{
+    width:100%; padding:11px 13px; border-radius:10px; border:2px solid var(--border);
+    background:var(--ink-950); color:var(--cream); font-size:15px; font-family:'Jua', sans-serif; outline:none;
+  }
+  input:focus, select:focus, textarea:focus{ border-color:var(--gold); }
+  button{ font-family:'Jua', sans-serif; font-weight:700; font-size:15px;
+    border:2px solid transparent; border-radius:20px 8px 20px 8px; padding:11px 15px; cursor:pointer;
+    transition:transform .12s ease, filter .12s ease; }
+  button:disabled{ opacity:.45; cursor:not-allowed; }
+  button:active{ transform:scale(0.97) rotate(-0.5deg); }
+  .btn-primary{ background:linear-gradient(180deg, var(--wood-300), var(--wood-500)); color:#4a2a05;
+    border-color:#c9701f; box-shadow:2px 3px 0 rgba(201,112,31,.35); }
+  .btn-primary:hover{ filter:brightness(1.06); }
+  .btn-ghost{ background:#fffefa; color:var(--cream); border:2px solid var(--border); }
+  .btn-ghost:hover{ filter:brightness(0.97); border-color:var(--gold); }
+  .btn-danger{ background:#fff1ec; color:#a8492c; border:2px solid #e2916f; }
+  .btn-danger:hover{ background:#ffe4d8; }
+  .btn-small{ padding:7px 11px; font-size:13px; }
+  .btn-tiny{ padding:4px 9px; font-size:12px; }
+  .section-title{ font-family:'Jua', sans-serif; font-weight:700; font-size:16px; color:var(--wood-100); margin:0 0 12px; }
+  .hint{ font-size:12px; color:var(--cream-dim); margin-top:8px; line-height:1.6; }
+  .row{ display:flex; gap:10px; }
+  .row > *{ flex:1; }
+  .top-bar{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:10px; flex-wrap:wrap; }
+  .room-chip{ font-family:'Jua', sans-serif; font-weight:700; font-size:13.5px; background:var(--ink-950);
+    border:2px solid var(--border); border-radius:10px; padding:6px 10px; color:var(--wood-100); }
+  .role-chip{ font-size:12px; padding:5px 9px; border-radius:20px; border:1.5px solid var(--border); }
+  .role-chip.teacher{ background:rgba(181,133,15,.13); color:var(--gold); border-color:rgba(181,133,15,.4); }
+  .role-chip.student{ background:rgba(79,168,216,.13); color:#1f6fa3; border-color:rgba(79,168,216,.4); }
+  .live-chip{ font-size:11px; padding:4px 8px; border-radius:20px; background:rgba(63,145,102,.13); color:var(--white-win); border:1px solid rgba(63,145,102,.4); }
+  .live-dot{ display:inline-block; width:6px;height:6px;border-radius:50%; background:var(--white-win); margin-right:5px; animation:pulse 1.4s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
+  .assign-line{ font-size:12.5px; color:var(--cream-dim); text-align:center; margin-bottom:10px; }
+  .status-line{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:700; justify-content:center; }
+  .stone-mini{ width:13px;height:13px;border-radius:48% 52% 45% 55%/55% 48% 52% 45%; display:inline-block; }
+  .stone-mini.black{ background:radial-gradient(circle at 35% 30%, #57504a,#2b2621 70%); border:1px solid #1f1a15; }
+  .stone-mini.white{ background:radial-gradient(circle at 35% 30%, #fff,#f0e6cf 75%); border:1px solid var(--wood-100);}
+  .board-wrap{ background:#fffaf0;
+    border:3px dashed #e2c98a; border-radius:16px; padding:14px; box-shadow: 0 10px 24px -14px rgba(138,90,43,.35); }
+  svg{ width:100%; height:auto; display:block; touch-action:manipulation; }
+  .msg-banner{ text-align:center; font-family:'Jua', sans-serif; font-weight:700; font-size:16px;
+    padding:11px; border-radius:12px 6px 12px 6px; margin-bottom:14px; }
+  .msg-banner.win-black{ background:rgba(198,90,63,.13); color:var(--black-win); border:1.5px solid rgba(198,90,63,.4); }
+  .msg-banner.win-white{ background:rgba(63,145,102,.13); color:var(--white-win); border:1.5px solid rgba(63,145,102,.4); }
+  .msg-banner.draw{ background:rgba(181,133,15,.13); color:var(--gold); border:1.5px solid rgba(181,133,15,.4); }
+  .msg-banner.wait{ background:rgba(181,133,15,.1); color:var(--gold); border:1.5px solid rgba(181,133,15,.32); }
+  .msg-banner.vote{ background:rgba(79,168,216,.13); color:#1f6fa3; border:1.5px solid rgba(79,168,216,.4); }
+  .foul-toast{ position:fixed; left:50%; bottom:26px; transform:translateX(-50%);
+    background:#fff1ec; border:2px solid #e2916f; color:#a8492c; padding:12px 18px; border-radius:14px 6px 14px 6px;
+    font-size:14px; font-weight:700; font-family:'Jua', sans-serif; box-shadow:3px 4px 0 rgba(198,90,63,.2); z-index:50; max-width:90vw; text-align:center;
+    animation: fadeUp .18s ease; }
+  @keyframes fadeUp{ from{opacity:0; transform:translateX(-50%) translateY(8px);} to{opacity:1; transform:translateX(-50%) translateY(0);} }
+  .rules-box{ font-size:12.5px; color:var(--cream-dim); line-height:1.75; margin-top:8px; }
+  .rules-box b{ color:var(--wood-100); }
+  .footer-note{ text-align:center; font-size:11.5px; color:var(--cream-dim); margin-top:20px; line-height:1.7; }
+  .settings-grid{ display:flex; gap:10px; align-items:flex-end; }
+  .settings-grid > div{ flex:1; }
+  .teacher-panel{ margin-top:14px; }
+  .stat-row{ display:flex; gap:10px; margin-top:12px; }
+  .stat-box{ flex:1; background:var(--ink-950); border:2px solid var(--border); border-radius:12px; padding:10px 12px; text-align:center; }
+  .stat-box .num{ font-family:'Jua', sans-serif; font-size:22px; font-weight:700; color:var(--wood-100); }
+  .stat-box .lbl{ font-size:11px; color:var(--cream-dim); margin-top:2px; }
+  .controls{ display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .controls > *{ flex:1; min-width:120px; }
+  hr.sep{ border:none; border-top:2px dashed var(--border); margin:16px 0; }
+  code.inline{ background:var(--ink-950); border:1.5px solid var(--border); border-radius:6px; padding:1px 6px; font-family:'Jua', sans-serif; font-weight:700; font-size:12px; color:var(--wood-100); }
+  .slot-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:8px; margin-top:6px; }
+  .slot-btn{ text-align:left; font-size:13px; padding:10px 12px; border-radius:10px; border:2px solid var(--border); background:var(--ink-950); color:var(--cream); }
+  .slot-open:hover{ border-color:var(--gold); }
+  .slot-taken{ background:#f2ece0; color:#a99b80; }
+  .slot-mine{ background:rgba(181,133,15,.15); border-color:var(--gold); color:var(--wood-100); font-weight:700; }
+  .status-chip{ font-size:11px; padding:3px 9px; border-radius:20px; border:1.5px solid var(--border); white-space:nowrap; display:inline-block; }
+  .status-chip.waiting{ background:rgba(181,133,15,.13); color:var(--gold); border-color:rgba(181,133,15,.4); }
+  .status-chip.playing{ background:rgba(63,145,102,.13); color:var(--white-win); border-color:rgba(63,145,102,.4); }
+  .status-chip.finished{ background:rgba(198,90,63,.13); color:var(--black-win); border-color:rgba(198,90,63,.4); }
+  .room-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; text-align:left; }
+  .class-item{ background:var(--ink-950); border:2px solid var(--border); border-radius:12px; padding:12px 14px; margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .class-item .meta{ font-size:11.5px; color:var(--cream-dim); margin-top:2px; }
+  .roster-row{ display:flex; justify-content:space-between; align-items:center; padding:6px 2px; border-bottom:1.5px dashed var(--border); font-size:13px; }
+  .roster-row:last-child{ border-bottom:none; }
+  .tag-joined{ font-size:11px; color:var(--white-win); margin-right:8px; }
+  .tag-empty{ font-size:11px; color:var(--cream-dim); margin-right:8px; }
+  .roster-panel{ max-height:220px; overflow:auto; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app">설정을 불러오는 중...</div>
+
+<script type="module">
+/* ======================================================================
+   Firebase 설정 — Firebase 콘솔(https://console.firebase.google.com)에서
+   프로젝트를 만들고 아래 값을 반드시 채워 넣어야 앱이 동작합니다.
+   1) Build > Authentication > Sign-in method > "익명" 사용 설정
+      (teacher.html용으로 "이메일/비밀번호" 로그인도 함께 켜두세요)
+   2) Build > Realtime Database > 데이터베이스 만들기
+   3) 프로젝트 설정 > 일반 > 앱 추가(웹) > 아래 firebaseConfig 값 붙여넣기
+   4) Realtime Database > 규칙 탭에 안내받은 보안 규칙을 붙여넣으세요.
+====================================================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAcQmT4f8zP1L153PojICdiuZ-d-N2aL6U",
+  authDomain: "math-fly-catch.firebaseapp.com",
+  databaseURL: "https://math-fly-catch-default-rtdb.firebaseio.com",
+  projectId: "math-fly-catch",
+  storageBucket: "math-fly-catch.firebasestorage.app",
+  messagingSenderId: "748954569516",
+  appId: "1:748954569516:web:c474da7f087530f39b7a89"
+};
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getDatabase, ref, onValue, update, set, remove, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const NEEDS_SETUP = firebaseConfig.apiKey === "YOUR_API_KEY";
+
+/* ============ 상수 ============ */
+const SIZE = 15;
+const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+const DEFAULT_TIME_LIMIT = 15;
+
+/* ============ 전역 상태 ============ */
+const S = {
+  screen: 'home',       // setup | home | classManage | roomCreate | teacher | studentPick | student
+  myId: null,
+  authReady: false,
+  name: '',
+  role: null,            // 'teacher' | 'student'
+  roomKey: '',
+  core: null,
+  votes: {},
+  claims: {},
+  classesIndex: {},      // { classKey: {className, roster, updatedAt} } (교사용 캐시)
+  openRooms: {},         // { roomKey: core } (학생 참가 화면에 표시할, 현재 개설된 방 목록)
+  classOrder: {},        // { classKey: order } 교사가 등록한 학급 순서 (방 목록 정렬용)
+  classRosterCache: {},  // 현재 방/선택화면에 쓰는 명단 {번호: 이름} (정적, 자주 안 바뀜)
+  editingClassKey: null,
+  teacherAuthed: false,
+  teacherSelected: null, // 교사가 확정 전에 선택한 자리 {r,c}
+  unsub: [],
+  resolving: false,
+  ticker: null,
+};
+
+let app, auth, db;
+
+/* ============ 오목판 / 렌주룰 로직 ============ */
+function idx(r,c){ return r*SIZE+c; }
+function boardArrayFromSparse(sparse){
+  const arr = new Array(SIZE*SIZE).fill(0);
+  if(sparse){ Object.keys(sparse).forEach(k=>{ arr[parseInt(k)] = sparse[k]; }); }
+  return arr;
+}
+function getCell(board,r,c){
+  if(r<0||r>=SIZE||c<0||c>=SIZE) return 'E';
+  const v = board[idx(r,c)];
+  return v===0 ? '_' : (v===1 ? 'X' : 'O');
+}
+function runLength(board,r,c,dr,dc,sym){
+  let cnt=1;
+  for(let s=1;;s++){ if(getCell(board,r+dr*s,c+dc*s)===sym) cnt++; else break; }
+  for(let s=1;;s++){ if(getCell(board,r-dr*s,c-dc*s)===sym) cnt++; else break; }
+  return cnt;
+}
+function checkWinAt(board,r,c,color){
+  const sym = color===1?'X':'O';
+  for(const [dr,dc] of DIRS){
+    const len = runLength(board,r,c,dr,dc,sym);
+    if(color===1){ if(len===5) return true; } else { if(len>=5) return true; }
+  }
+  return false;
+}
+function checkOverline(board,r,c){
+  for(const [dr,dc] of DIRS){ if(runLength(board,r,c,dr,dc,'X')>=6) return true; }
+  return false;
+}
+function lineString9(board,r,c,dr,dc){
+  let s=''; for(let o=-4;o<=4;o++) s += getCell(board,r+dr*o,c+dc*o); return s;
+}
+function uniqueFourPoints(board,r,c){
+  const set = new Set();
+  for(const [dr,dc] of DIRS){
+    const str = lineString9(board,r,c,dr,dc);
+    for(let S0=0;S0<=4;S0++){
+      const win = str.substr(S0,5);
+      if(win.length<5) continue;
+      const xCount = (win.match(/X/g)||[]).length;
+      const blank = win.indexOf('_');
+      if(xCount===4 && blank!==-1 && !win.includes('O') && !win.includes('E')){
+        const off = (S0+blank)-4;
+        set.add((r+dr*off)+','+(c+dc*off));
+      }
+    }
+  }
+  return set;
+}
+function openThreeDirCount(board,r,c){
+  const patterns = ['_XXX__','__XXX_','_XX_X_','_X_XX_'];
+  let count=0;
+  for(const [dr,dc] of DIRS){
+    const str = lineString9(board,r,c,dr,dc);
+    let found=false;
+    for(let S0=0;S0<=3;S0++){
+      const win = str.substr(S0,6);
+      if(win.length<6) continue;
+      if(patterns.includes(win)){ found=true; break; }
+    }
+    if(found) count++;
+  }
+  return count;
+}
+function isForbiddenForBlack(board,r,c){
+  if(checkWinAt(board,r,c,1)) return null;
+  if(checkOverline(board,r,c)) return '장목(6목 이상)';
+  const fours = uniqueFourPoints(board,r,c);
+  if(fours.size>=2) return '사사(4-4)';
+  const threeDirs = openThreeDirCount(board,r,c);
+  if(threeDirs>=2) return '삼삼(3-3)';
+  return null;
+}
+function cellForbiddenIfBlackPlays(board,r,c){
+  if(board[idx(r,c)]!==0) return null;
+  const nb = board.slice();
+  nb[idx(r,c)] = 1;
+  return isForbiddenForBlack(nb,r,c);
+}
+function colorLabel(n){ return n===1 ? '흑' : '백'; }
+function controllerLabel(room, colorNum){ return colorNum===room.studentColor ? '학생팀' : '교사'; }
+
+/* ============ Firebase 초기화 ============ */
+function bootFirebase(){
+  if(NEEDS_SETUP){ S.screen='setup'; render(); return; }
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+  onAuthStateChanged(auth, user=>{
+    if(user){ S.myId = user.uid; S.authReady = true; if(S.screen==='home'){ render(); refreshOpenRooms(); } }
+  });
+  // 세션(탭) 단위 로그인 유지: 같은 브라우저의 다른 탭과 로그인을 공유하지 않도록 하여
+  // 한 브라우저에서 여러 탭으로 여러 학생을 테스트해도 각 탭이 서로 다른 사용자로 인식되게 함.
+  setPersistence(auth, browserSessionPersistence)
+    .then(()=> signInAnonymously(auth))
+    .catch(err=>{ toast('로그인 실패: ' + err.message); });
+}
+
+/* ============ 경로 헬퍼 ============ */
+function coreRef(key){ return ref(db, `rooms/${key}/core`); }
+function votesRef(key){ return ref(db, `rooms/${key}/votes`); }
+function claimsRef(key){ return ref(db, `rooms/${key}/claims`); }
+function roomRef(key){ return ref(db, `rooms/${key}`); }
+function myVoteRef(key){ return ref(db, `rooms/${key}/votes/${S.myId}`); }
+function classesRootRef(){ return ref(db, 'classes'); }
+
+function sortedRosterKeys(roster){
+  return Object.keys(roster||{}).sort((a,b)=>{
+    const na = parseInt(a), nb = parseInt(b);
+    if(!isNaN(na) && !isNaN(nb)) return na-nb;
+    return a.localeCompare(b);
+  });
+}
+
+/* ============ 실시간 리스너 부착/해제 ============ */
+function attachRoomListeners(key){
+  detachRoomListeners();
+  const u1 = onValue(coreRef(key), snap=>{
+    const newCore = snap.val();
+    if(S.teacherSelected && (!newCore || newCore.status!=='playing' || newCore.turn!==newCore.teacherColor)){
+      S.teacherSelected = null;
+    }
+    S.core = newCore; render();
+  });
+  const u2 = onValue(votesRef(key), snap=>{ S.votes = snap.val()||{}; render(); });
+  const u3 = onValue(claimsRef(key), snap=>{ S.claims = snap.val()||{}; render(); });
+  S.unsub = [u1,u2,u3];
+}
+function detachRoomListeners(){
+  S.unsub.forEach(fn=>{ try{ fn(); }catch(e){} });
+  S.unsub = [];
+}
+
+/* ============ 화면 흐름 ============ */
+async function refreshOpenRooms(){
+  try{
+    const classesSnap = await get(classesRootRef());
+    const classes = classesSnap.exists() ? classesSnap.val() : {};
+    const keys = Object.keys(classes);
+    const results = {};
+    const orderMap = {};
+    keys.forEach(k=>{
+      const o = classes[k] && classes[k].order;
+      orderMap[k] = (typeof o === 'number') ? o : null;
+    });
+    await Promise.all(keys.map(async key=>{
+      try{
+        const coreSnap = await get(coreRef(key));
+        if(coreSnap.exists()){ results[key] = coreSnap.val(); }
+      }catch(e){ /* 개별 방 조회 실패는 무시 */ }
+    }));
+    S.openRooms = results;
+    S.classOrder = orderMap;
+  }catch(e){
+    S.openRooms = {};
+    S.classOrder = {};
+  }
+  if(S.screen==='home') render();
+}
+
+function render(){
+  const app = document.getElementById('app');
+  if(S.screen==='setup'){ app.innerHTML = renderSetup(); return; }
+  if(S.screen==='home'){ app.innerHTML = renderHome(); bindHome(); return; }
+  if(S.screen==='studentPick'){ app.innerHTML = renderStudentPick(); bindStudentPick(); return; }
+  if(S.screen==='student'){ app.innerHTML = renderStudent(); bindStudent(); return; }
+}
+
+function renderSetup(){
+  return `
+    <h1 class="brand"><span class="dot"></span>Firebase 설정이 필요합니다</h1>
+    <div class="card">
+      <div class="section-title">아직 firebaseConfig가 비어있습니다</div>
+      <div class="rules-box">
+        이 파일 상단의 <code class="inline">firebaseConfig</code> 객체에 본인의 Firebase 프로젝트 설정값을 채워 넣어야 합니다.<br><br>
+        1) Firebase 콘솔에서 프로젝트를 만들고 <b>Realtime Database</b>를 활성화하세요.<br>
+        2) <b>Authentication → 익명 로그인</b>을 켜세요.<br>
+        3) 웹 앱을 추가해 나오는 설정값을 복사해 붙여넣으세요.<br>
+        4) Realtime Database 규칙을 안내받은 대로 설정하세요.<br><br>
+        설정을 마친 뒤 저장하고 새로고침하세요.
+      </div>
+    </div>
+  `;
+}
+
+function renderHome(){
+  const roomKeys = Object.keys(S.openRooms||{}).sort((a,b)=>{
+    const oa = (S.classOrder||{})[a], ob = (S.classOrder||{})[b];
+    if(oa!=null && ob!=null) return oa-ob;
+    if(oa!=null) return -1;
+    if(ob!=null) return 1;
+    const ra = S.openRooms[a], rb = S.openRooms[b];
+    return (rb.updatedAt||0) - (ra.updatedAt||0);
+  });
+  const statusMeta = {
+    waiting:  { text:'대기중', cls:'waiting' },
+    playing:  { text:'진행중', cls:'playing' },
+    finished: { text:'종료',   cls:'finished' },
+  };
+  const roomList = roomKeys.length===0
+    ? `<div class="hint">현재 개설된 방이 없습니다. 선생님이 방을 열면 여기에 표시됩니다.</div>`
+    : `<div class="slot-grid">${roomKeys.map(key=>{
+        const r = S.openRooms[key];
+        const meta = statusMeta[r.status] || statusMeta.waiting;
+        return `<button class="slot-btn slot-open room-row" data-room="${escapeAttr(key)}">
+          <span>${escapeHtml(r.roomLabel)}</span>
+          <span class="status-chip ${meta.cls}">${meta.text}</span>
+        </button>`;
+      }).join('')}</div>`;
+
+  return `
+    <h1 class="brand"><span class="dot"></span>렌주룰 오목 · 학급 대국실</h1>
+    <div class="tagline">우리 모두 힘을 합쳐 선생님을 이겨라!</div>
+
+    <div class="card">
+      <div class="section-title">학생 · 참가하기</div>
+      ${roomList}
+      <button class="btn-ghost btn-small" style="width:100%;margin-top:10px" id="btn-refresh-rooms">방 목록 새로고침</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">진행 방식</div>
+      <div class="rules-box">
+        · 학생팀 차례에는 각자 원하는 자리를 클릭해 투표하고, 시간 안에는 언제든 다시 클릭해 선택을 바꿀 수 있습니다.<br>
+        · 각 자리에는 투표 비율(%)이 실시간으로 표시됩니다.<br>
+        · 제한시간이 끝나면 최다 득표 자리에 자동 착수됩니다 (동률이면 무작위).<br>
+        · 렌주룰 금수(장목·삼삼·사사)는 항상 흑돌에 적용됩니다.
+      </div>
+    </div>
+    <div class="footer-note">학급/방 데이터는 이름으로 저장되어 같은 이름을 아는 사람은 누구나 들어올 수 있습니다. 학급마다 겹치지 않는 이름을 사용하세요.</div>
+  `;
+}
+function bindHome(){
+  document.querySelectorAll('[data-room]').forEach(btn=>{
+    btn.onclick = ()=>joinRoomStudent(btn.getAttribute('data-room'));
+  });
+  const rr = document.getElementById('btn-refresh-rooms');
+  if(rr) rr.onclick = refreshOpenRooms;
+}
+
+/* ============ 학생: 방 입장 → 명단에서 선택 ============ */
+async function joinRoomStudent(key){
+  if(!key){ toast('참가할 방을 선택해 주세요.'); return; }
+  if(!S.authReady){ toast('로그인 중입니다. 잠시 후 다시 시도해 주세요.'); return; }
+
+  const coreSnap = await get(coreRef(key));
+  if(!coreSnap.exists()){ toast('해당 방을 찾을 수 없습니다. 새로고침 후 다시 시도해 주세요.'); return; }
+  const core = coreSnap.val();
+  const classKey = core.classKey || key;
+  const classSnap = await get(ref(db, `classes/${classKey}/roster`));
+  const roster = classSnap.exists() ? classSnap.val() : {};
+  if(Object.keys(roster).length===0){ toast('이 방에 연결된 명단을 찾을 수 없습니다.'); return; }
+
+  S.roomKey = key;
+  S.classRosterCache = roster;
+  S.core = core;
+  attachRoomListeners(key);
+  S.screen = 'studentPick';
+  render();
+}
+
+function renderStudentPick(){
+  const roster = S.classRosterCache || {};
+  const claims = S.claims || {};
+  const keys = sortedRosterKeys(roster);
+  const rows = keys.map(no=>{
+    const name = roster[no];
+    const takenBy = claims[no];
+    if(takenBy === S.myId){
+      return `<button class="slot-btn slot-mine" data-no="${escapeAttr(no)}">✅ ${escapeHtml(no)}. ${escapeHtml(name)} (나 · 계속하기)</button>`;
+    } else if(takenBy){
+      return `<button class="slot-btn slot-taken" disabled>${escapeHtml(no)}. ${escapeHtml(name)} · 참여중</button>`;
+    } else {
+      return `<button class="slot-btn slot-open" data-no="${escapeAttr(no)}">${escapeHtml(no)}. ${escapeHtml(name)}</button>`;
+    }
+  }).join('');
+
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:19px;"><span class="dot"></span>본인 확인</h1>
+      <span class="room-chip">${escapeHtml(S.core ? S.core.roomLabel : '')}</span>
+    </div>
+    <div class="card">
+      <div class="section-title">명단에서 본인 번호를 선택하세요</div>
+      <div class="slot-grid">${rows}</div>
+      <div class="hint">이미 "참여중"으로 표시된 자리는 다른 기기에서 이미 선택된 자리입니다. 본인이 맞다면 원래 쓰던 기기/브라우저로 접속해 주세요.</div>
+      <button class="btn-ghost" id="btn-back-home2" style="width:100%;margin-top:14px">뒤로</button>
+    </div>
+  `;
+}
+function bindStudentPick(){
+  document.querySelectorAll('.slot-open, .slot-mine').forEach(btn=>{
+    btn.onclick = ()=>{
+      const no = btn.getAttribute('data-no');
+      if(btn.classList.contains('slot-mine')) resumeSlot(no);
+      else claimSlot(no);
+    };
+  });
+  document.getElementById('btn-back-home2').onclick = ()=>{
+    detachRoomListeners();
+    S.screen='home'; S.core=null; S.votes={}; S.claims={}; S.roomKey='';
+    render();
+    refreshOpenRooms();
+  };
+}
+async function claimSlot(no){
+  try{
+    await set(ref(db, `rooms/${S.roomKey}/claims/${no}`), S.myId);
+  }catch(e){
+    toast('이미 다른 사람이 선택했습니다. 다시 선택해 주세요.');
+    return;
+  }
+  S.name = S.classRosterCache[no];
+  S.role = 'student';
+  S.screen = 'student';
+  startTicker();
+  render();
+}
+function resumeSlot(no){
+  S.name = S.classRosterCache[no];
+  S.role = 'student';
+  S.screen = 'student';
+  startTicker();
+  render();
+}
+
+function startTicker(){
+  // 학생 화면에서는 매초 다시 그려서 남은 시간 표시 등을 갱신만 합니다.
+  // 투표 시간 초과 시 자동 착수는 교사용 페이지(teacher.html)가 열려 있는 동안 그쪽에서 처리합니다.
+  if(S.ticker) clearInterval(S.ticker);
+  S.ticker = setInterval(()=>{
+    if(!S.core) return;
+    render();
+  }, 1000);
+}
+function leaveRoom(){
+  if(S.ticker) clearInterval(S.ticker);
+  S.ticker = null;
+  detachRoomListeners();
+  S.screen = 'home'; S.core=null; S.votes={}; S.claims={}; S.roomKey=''; S.role=null;
+  render();
+  refreshOpenRooms();
+}
+
+/* ============ 투표 집계 및 자동 확정 ============ */
+function tallyVotes(votes){
+  const counts = {};
+  Object.values(votes||{}).forEach(cellIdx=>{ counts[cellIdx] = (counts[cellIdx]||0)+1; });
+  return counts;
+}
+
+
+/* ============ 학생 액션 (투표) ============ */
+async function studentVote(r,c){
+  const core = S.core;
+  if(!core || core.status!=='playing' || core.turn!==core.studentColor){ toast('지금은 투표 시간이 아닙니다.'); return; }
+  const board = boardArrayFromSparse(core.board);
+  const i = idx(r,c);
+  if(board[i]!==0) return;
+  if(core.turn===1){
+    const forb = cellForbiddenIfBlackPlays(board, r, c);
+    if(forb){ toast('⚠ 렌주룰 금수 자리입니다: ' + forb); return; }
+  }
+  if(S.votes[S.myId] === i){
+    await remove(myVoteRef(S.roomKey));
+  } else {
+    await set(myVoteRef(S.roomKey), i);
+  }
+}
+
+/* ============ 알림 ============ */
+let toastTimer=null;
+function toast(msg){
+  const old = document.querySelector('.foul-toast'); if(old) old.remove();
+  const div = document.createElement('div'); div.className='foul-toast'; div.textContent = msg;
+  document.body.appendChild(div);
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>div.remove(), 2600);
+}
+
+/* ============ 보드 렌더링 ============ */
+function stoneStatusText(room){
+  if(room.winner===0) return '무승부입니다';
+  return controllerLabel(room, room.winner) + '(' + colorLabel(room.winner) + ') 승리!';
+}
+function renderBoardSVG(){
+  const core = S.core, votes = S.votes;
+  const board = boardArrayFromSparse(core.board);
+  const margin = 24, gap = 32;
+  const total = margin*2 + gap*(SIZE-1);
+  const stars = [[3,3],[3,11],[11,3],[11,11],[7,7]];
+  let lines = '';
+  for(let i=0;i<SIZE;i++){
+    const p = margin + i*gap;
+    lines += `<line x1="${margin}" y1="${p}" x2="${total-margin}" y2="${p}" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round"/>`;
+    lines += `<line x1="${p}" y1="${margin}" x2="${p}" y2="${total-margin}" stroke="var(--line)" stroke-width="1.6" stroke-linecap="round"/>`;
+  }
+  let starsSvg = stars.map(([r,c])=>{
+    const x = margin+c*gap, y = margin+r*gap;
+    return `<circle cx="${x}" cy="${y}" r="3" fill="var(--line)"/>`;
+  }).join('');
+
+  const counts = tallyVotes(votes);
+  const totalVoteEntries = Object.keys(votes||{}).length;
+  const forbiddenPhase = core.status==='playing' && core.turn===1;
+  const votePhase = core.status==='playing' && core.turn===core.studentColor;
+  const myVoteCell = votes ? votes[S.myId] : undefined;
+
+  let stones = '', hitboxes = '', voteLayer = '', forbidLayer = '';
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      const i = idx(r,c);
+      const v = board[i];
+      const x = margin+c*gap, y = margin+r*gap;
+
+      if(v===0){
+        hitboxes += `<rect data-r="${r}" data-c="${c}" class="cell-hit" x="${x-gap/2}" y="${y-gap/2}" width="${gap}" height="${gap}" fill="transparent"/>`;
+      }
+      if(v===1){ stones += `<circle cx="${x}" cy="${y}" r="13.5" fill="url(#gradBlack)" stroke="#1f1a15" stroke-width="1.3"/>`; }
+      else if(v===2){ stones += `<circle cx="${x}" cy="${y}" r="13.5" fill="url(#gradWhite)" stroke="var(--wood-100)" stroke-width="1.3"/>`; }
+      if(i === core.lastMove){
+        stones += `<circle cx="${x}" cy="${y}" r="4.5" fill="none" stroke="#e2842e" stroke-width="1.8"/>`;
+      }
+
+      if(v===0){
+        if(forbiddenPhase && cellForbiddenIfBlackPlays(board,r,c)!==null){
+          forbidLayer += `<line x1="${x-8}" y1="${y-8}" x2="${x+8}" y2="${y+8}" stroke="var(--forbid)" stroke-width="2" opacity="0.85"/>`;
+          forbidLayer += `<line x1="${x-8}" y1="${y+8}" x2="${x+8}" y2="${y-8}" stroke="var(--forbid)" stroke-width="2" opacity="0.85"/>`;
+        } else if(votePhase && counts[i]){
+          const pct = totalVoteEntries>0 ? Math.round((counts[i]/totalVoteEntries)*100) : 0;
+          const isMine = myVoteCell === i;
+          const rad = 8 + Math.min(13, pct/6);
+          voteLayer += `<circle cx="${x}" cy="${y}" r="${rad}" fill="var(--vote)" opacity="0.30"/>`;
+          if(isMine){ voteLayer += `<circle cx="${x}" cy="${y}" r="${rad+2}" fill="none" stroke="var(--gold)" stroke-width="1.6"/>`; }
+          voteLayer += `<text x="${x}" y="${y+3}" font-size="9" font-family="Jua, sans-serif" font-weight="700" text-anchor="middle" fill="#1f6fa3">${pct}%</text>`;
+        }
+      }
+    }
+  }
+
+  let selectionLayer = '';
+  if(S.role==='teacher' && S.teacherSelected && core.status==='playing' && core.turn===core.teacherColor){
+    const { r: sr, c: sc } = S.teacherSelected;
+    const sx = margin+sc*gap, sy = margin+sr*gap;
+    const previewFill = core.teacherColor===1 ? '#2b2621' : '#f0e6cf';
+    const previewStroke = core.teacherColor===1 ? '#1f1a15' : '#8a5a2b';
+    selectionLayer = `<circle cx="${sx}" cy="${sy}" r="13.5" fill="${previewFill}" opacity="0.5" stroke="${previewStroke}" stroke-width="1.8" stroke-dasharray="3,2.5"/>`;
+  }
+
+  return `
+  <svg viewBox="0 0 ${total} ${total}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="gradBlack" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#5c554e"/><stop offset="70%" stop-color="#2b2621"/>
+      </radialGradient>
+      <radialGradient id="gradWhite" cx="35%" cy="30%" r="75%">
+        <stop offset="0%" stop-color="#fffefa"/><stop offset="80%" stop-color="#f0e6cf"/>
+      </radialGradient>
+    </defs>
+    ${lines}${starsSvg}${stones}${forbidLayer}${voteLayer}${selectionLayer}${hitboxes}
+  </svg>`;
+}
+
+
+/* ============ 학생 화면 ============ */
+function renderStudent(){
+  const room = S.core;
+  if(!room) return `<div class="card">방 정보를 불러오는 중...</div>`;
+  const voteCount = Object.keys(S.votes||{}).length;
+  const studentCount = Object.keys(S.claims||{}).length;
+
+  let banner = '';
+  if(room.status==='waiting'){
+    banner = `<div class="msg-banner wait">대국 시작을 기다리는 중입니다</div>`;
+  } else if(room.status==='finished'){
+    const cls = room.winner===0?'draw':(room.winner===1?'win-black':'win-white');
+    banner = `<div class="msg-banner ${cls}">${stoneStatusText(room)}</div>`;
+  } else if(room.turn===room.studentColor){
+    banner = `<div class="msg-banner vote">우리 팀(${colorLabel(room.studentColor)}) 차례 · 두고 싶은 자리를 클릭! 언제든 다시 클릭해 바꿀 수 있어요</div>`;
+  } else {
+    banner = `<div class="status-line"><span class="stone-mini ${room.teacherColor===1?'black':'white'}"></span>선생님(${colorLabel(room.teacherColor)})이 두는 중입니다...</div>`;
+  }
+
+  return `
+    <div class="top-bar">
+      <h1 class="brand" style="font-size:18px;"><span class="dot"></span>오목 대국실</h1>
+      <span class="live-chip"><span class="live-dot"></span>실시간 연결됨</span>
+      <span class="role-chip student">학생 · ${escapeHtml(S.name)}</span>
+      <span class="room-chip">${escapeHtml(room.roomLabel)}</span>
+    </div>
+    <div class="assign-line">우리 팀: ${colorLabel(room.studentColor)}(${room.studentColor===1?'선공':'후공'})</div>
+    <div class="card">
+      ${banner}
+      <div class="board-wrap">${renderBoardSVG()}</div>
+      <div class="hint" style="text-align:center;margin-top:10px;">
+        빨간 X는 렌주룰 금수(반칙) 자리 · 파란 원은 현재 투표 비율, 금색 테두리는 내가 선택한 자리
+        ${room.status==='playing' && room.turn===room.studentColor ? ` · 지금 ${voteCount}명 투표 중` : ''}
+      </div>
+      <div class="controls">
+        <button class="btn-ghost" id="btn-leave">방 나가기</button>
+      </div>
+    </div>
+    <div class="footer-note">방 이름: ${escapeHtml(room.roomLabel)}</div>
+  `;
+}
+function bindStudent(){
+  bindBoardClicks((r,c)=>studentVote(r,c));
+  const lv = document.getElementById('btn-leave'); if(lv) lv.onclick = leaveRoom;
+}
+
+function bindBoardClicks(handler){
+  const svg = document.querySelector('svg');
+  if(!svg) return;
+  svg.querySelectorAll('.cell-hit').forEach(rect=>{
+    rect.addEventListener('click', ()=>{
+      const r = parseInt(rect.getAttribute('data-r'));
+      const c = parseInt(rect.getAttribute('data-c'));
+      handler(r,c);
+    });
+  });
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+function escapeAttr(s){ return escapeHtml(s); }
+
+bootFirebase();
+</script>
+</body>
+</html>
