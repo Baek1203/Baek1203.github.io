@@ -226,22 +226,27 @@ function checkOverline(board,r,c){
 function lineString9(board,r,c,dr,dc){
   let s=''; for(let o=-4;o<=4;o++) s += getCell(board,r+dr*o,c+dc*o); return s;
 }
-function uniqueFourPoints(board,r,c){
-  const set = new Set();
+function fourDirCount(board,r,c){
+  // 한 방향(한 줄)에 사(四)가 있으면, 그 줄에 오목을 완성할 수 있는 빈 점이
+  // 하나(막힌 사)든 둘(열린 사)이든 '사(四) 한 개'로 셉니다.
+  // 사사(4-4) 반칙은 서로 다른 방향에 사(四)가 2개 이상 동시에 만들어질 때만 성립합니다.
+  let count=0;
   for(const [dr,dc] of DIRS){
     const str = lineString9(board,r,c,dr,dc);
+    let found=false;
     for(let S0=0;S0<=4;S0++){
       const win = str.substr(S0,5);
       if(win.length<5) continue;
       const xCount = (win.match(/X/g)||[]).length;
       const blank = win.indexOf('_');
       if(xCount===4 && blank!==-1 && !win.includes('O') && !win.includes('E')){
-        const off = (S0+blank)-4;
-        set.add((r+dr*off)+','+(c+dc*off));
+        found = true;
+        break;
       }
     }
+    if(found) count++;
   }
-  return set;
+  return count;
 }
 function openThreeDirCount(board,r,c){
   const patterns = ['_XXX__','__XXX_','_XX_X_','_X_XX_'];
@@ -261,8 +266,8 @@ function openThreeDirCount(board,r,c){
 function isForbiddenForBlack(board,r,c){
   if(checkWinAt(board,r,c,1)) return null;
   if(checkOverline(board,r,c)) return '장목(6목 이상)';
-  const fours = uniqueFourPoints(board,r,c);
-  if(fours.size>=2) return '사사(4-4)';
+  const fourDirs = fourDirCount(board,r,c);
+  if(fourDirs>=2) return '사사(4-4)';
   const threeDirs = openThreeDirCount(board,r,c);
   if(threeDirs>=2) return '삼삼(3-3)';
   return null;
