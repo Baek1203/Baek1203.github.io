@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>교점과 교선 탐구하기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F8FB;
+  --card:#FFFFFF;
+  --ink:#1B2430;
+  --ink-2:#5A6675;
+  --ink-3:#8D98A6;
+  --rule:#DDE3EC;
+  --grid:#E7EDF6;
+  --leaf:#7FBF7A;          /* 도형 면 기본색 */
+  --mark:#FFD43B;          /* 형광펜: 내가 고른 것 */
+  --mark-deep:#E8A400;
+  --point:#E03131;         /* 교점 = 점 = 빨강 */
+  --line:#1971C2;          /* 교선 = 선 = 파랑 */
+  --ok:#2F9E44;
+  --shadow:0 1px 2px rgba(27,36,48,.06), 0 8px 24px rgba(27,36,48,.07);
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  font-size:15px;
+  line-height:1.6;
+  padding:14px;
+}
+.app{max-width:940px;margin:0 auto}
+
+/* ── 헤더 ───────────────────────────── */
+.hd{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.title{font-family:"Gowun Batang",serif;font-weight:700;font-size:22px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:9px}
+.title small{font-family:inherit;font-weight:400;font-size:13px;color:var(--ink-3);letter-spacing:0}
+
+/* ── 세그먼트 / 탭 버튼 ─────────────── */
+.seg{display:flex;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:3px;box-shadow:var(--shadow)}
+.seg button{
+  appearance:none;border:0;background:transparent;cursor:pointer;
+  font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-2);
+  padding:7px 15px;border-radius:999px;transition:.16s;white-space:nowrap;
+}
+.seg button.on{background:var(--ink);color:#fff}
+.seg button:not(.on):hover{background:#EDF1F7;color:var(--ink)}
+
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.tabs button{
+  appearance:none;cursor:pointer;font:inherit;text-align:left;
+  background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+  padding:10px 12px;transition:.16s;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:1px;
+}
+.tabs button b{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.tabs button span{font-size:11.5px;color:var(--ink-3);font-weight:500;font-variant-numeric:tabular-nums}
+.tabs button:hover{border-color:#B9C4D3;transform:translateY(-1px)}
+.tabs button.on{background:var(--ink);border-color:var(--ink)}
+.tabs button.on b{color:#fff}
+.tabs button.on span{color:rgba(255,255,255,.62)}
+.tabs button:focus-visible,.seg button:focus-visible,.chip:focus-visible,.mini:focus-visible{outline:2.5px solid var(--line);outline-offset:2px}
+
+/* ── 본문 레이아웃 ──────────────────── */
+.body{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;align-items:start}
+.stage{
+  position:relative;background:var(--card);border:1px solid var(--rule);border-radius:var(--r);
+  box-shadow:var(--shadow);overflow:hidden;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;
+}
+svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+svg [data-pick]{cursor:pointer}
+svg line[data-pick]:hover{stroke:rgba(255,212,59,.55)}
+svg circle[data-pick]:hover{fill:rgba(224,49,49,.2)}
+svg polygon[data-pick]{transition:fill-opacity .12s}
+svg polygon[data-pick]:hover{fill:var(--mark);fill-opacity:.5}
+svg polygon[data-pick].sel:hover{fill-opacity:.95}
+.stagebar{
+  position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;
+  gap:8px;padding:7px 10px;font-size:11.5px;color:var(--ink-3);
+  background:linear-gradient(transparent,rgba(255,255,255,.9) 45%);
+}
+.mini{
+  appearance:none;border:1px solid var(--rule);background:var(--card);border-radius:8px;
+  font:inherit;font-size:11.5px;font-weight:600;color:var(--ink-2);padding:4px 9px;cursor:pointer;transition:.15s;
+}
+.mini:hover{border-color:#B9C4D3;color:var(--ink)}
+
+.panel{display:flex;flex-direction:column;gap:10px}
+.box{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:13px 14px;box-shadow:var(--shadow)}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;color:var(--ink-3);margin-bottom:6px}
+.ask{font-size:14.5px;font-weight:600;line-height:1.5}
+.ask em{font-style:normal;background:linear-gradient(transparent 58%,var(--mark) 58%);padding:0 1px}
+
+/* 고른 것 표시 */
+.picks{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:30px;align-items:center}
+.pick{
+  display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;
+  background:var(--mark);color:#4A3600;border-radius:8px;padding:5px 9px;
+  box-shadow:inset 0 -2px 0 rgba(0,0,0,.07);
+}
+.pick.empty{background:#F1F4F9;color:var(--ink-3);font-weight:600;box-shadow:none;border:1px dashed var(--rule)}
+
+/* 결과 카드 */
+.res{border-radius:var(--r);padding:13px 14px;border:1px solid;font-size:14px;line-height:1.55}
+.res .kind{font-size:11px;font-weight:800;letter-spacing:.08em;display:block;margin-bottom:4px}
+.res b{font-weight:800}
+.res .why{display:block;margin-top:7px;padding-top:7px;border-top:1px dashed currentColor;font-size:12.5px;opacity:.85;font-weight:500}
+.res.point{background:#FFF5F5;border-color:#FFC9C9;color:#B32020}
+.res.line{background:#F1F7FE;border-color:#B7D6F5;color:#12558F}
+.res.none{background:#F7F9FC;border-color:var(--rule);color:var(--ink-2)}
+
+/* 면 목록 칩 */
+.chipwrap{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{
+  appearance:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;
+  background:#F4F7FB;border:1px solid var(--rule);color:var(--ink-2);
+  border-radius:8px;padding:5px 9px;transition:.15s;white-space:nowrap;
+}
+.chip:hover{border-color:#B9C4D3;color:var(--ink)}
+.chip.on{background:var(--mark);border-color:var(--mark-deep);color:#4A3600;box-shadow:inset 0 -2px 0 rgba(0,0,0,.07)}
+.chip.hid::after{content:" ·뒤";font-size:10.5px;opacity:.55}
+
+/* 개수 세기 */
+.tally{display:grid;gap:8px}
+.row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid var(--rule);border-radius:var(--r);padding:11px 13px;background:var(--card);
+  box-shadow:var(--shadow);transition:.18s;
+}
+.row .lab{font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px}
+.dot{width:11px;height:11px;border-radius:50%;flex:none}
+.bar{width:11px;height:4px;border-radius:2px;flex:none}
+.row .sub{font-size:11.5px;color:var(--ink-3);font-weight:500;margin-top:1px}
+.num{font-family:"Gowun Batang",serif;font-size:27px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.num .unit{font-family:inherit;font-size:13px;font-weight:400;margin-left:2px}
+.num.wait{color:var(--ink-3)}
+.row.done{border-color:currentColor}
+.row.pt.done{background:#FFF5F5;border-color:#FFC9C9}
+.row.ln.done{background:#F1F7FE;border-color:#B7D6F5}
+.row.pt .num{color:var(--point)}
+.row.ln .num{color:var(--line)}
+.row.pt .num.wait,.row.ln .num.wait{color:#C3CBD6}
+
+.final{
+  border:1.5px solid var(--ink);border-radius:var(--r);background:var(--ink);color:#fff;
+  padding:13px 15px;font-size:14px;line-height:1.6;
+}
+.final b{font-family:"Gowun Batang",serif;font-size:19px;font-weight:700;padding:0 2px}
+.final .pt{color:#FFA8A8}.final .ln{color:#8CC6FF}
+
+.foot{margin-top:12px;font-size:11.5px;color:var(--ink-3);text-align:center;line-height:1.7}
+.foot kbd{background:var(--card);border:1px solid var(--rule);border-bottom-width:2px;border-radius:5px;padding:1px 5px;font:inherit;font-size:11px;font-weight:600;color:var(--ink-2)}
+
+@media (max-width:760px){
+  body{padding:10px}
+  .body{grid-template-columns:1fr}
+  .tabs{grid-template-columns:repeat(2,1fr)}
+  .title{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="hd">
+    <div class="title">교점과 교선 <small>입체도형에서 찾아보기</small></div>
+    <div class="seg" id="solidSeg">
+      <button data-solid="cuboid" class="on">직육면체</button>
+      <button data-solid="pyramid">사각뿔</button>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-mode="ee" class="on"><b>교점 찾기</b><span>선 + 선</span></button>
+    <button data-mode="ef"><b>교점 찾기</b><span>선 + 면</span></button>
+    <button data-mode="ff"><b>교선 찾기</b><span>면 + 면</span></button>
+    <button data-mode="count"><b>개수 세기</b><span>꼭짓점 · 모서리</span></button>
+  </nav>
+
+  <main class="body">
+    <section class="stage">
+      <svg id="svg" viewBox="0 0 460 384" role="img" aria-label="입체도형"></svg>
+      <div class="stagebar">
+        <span>도형을 드래그하면 뒤쪽도 볼 수 있어요</span>
+        <button class="mini" id="resetView">처음 각도로</button>
+      </div>
+    </section>
+
+    <aside class="panel" id="panel"></aside>
+  </main>
+
+  <p class="foot">
+    <kbd>노란색</kbd> 내가 고른 것 &nbsp;·&nbsp; <kbd style="color:#B32020">빨간 점</kbd> 교점 &nbsp;·&nbsp; <kbd style="color:#12558F">파란 선</kbd> 교선
+  </p>
+</div>
+
+<script>
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("svg");
+const panel = document.getElementById("panel");
+
+/* ── 도형 데이터 ────────────────────────────────────────────── */
+const SOLIDS = {
+  cuboid: {
+    ko: "직육면체",
+    labels: ["A","B","C","D","E","F","G","H"],
+    verts: [
+      [-1, .62, .78], [1, .62, .78], [1, .62,-.78], [-1, .62,-.78],   // A B C D (윗면)
+      [-1,-.62, .78], [1,-.62, .78], [1,-.62,-.78], [-1,-.62,-.78]    // E F G H (아랫면)
+    ],
+    edges: [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]],
+    faces: [[0,1,2,3],[4,7,6,5],[0,4,5,1],[1,5,6,2],[2,6,7,3],[3,7,4,0]]
+  },
+  pyramid: {
+    ko: "사각뿔",
+    labels: ["A","B","C","D","O"],
+    verts: [
+      [-1,-.72, .88], [1,-.72, .88], [1,-.72,-.88], [-1,-.72,-.88],   // A B C D (밑면)
+      [0, 1.06, 0]                                                     // O (꼭대기)
+    ],
+    edges: [[0,1],[1,2],[2,3],[3,0],[0,4],[1,4],[2,4],[3,4]],
+    faces: [[0,3,2,1],[4,0,1],[4,1,2],[4,2,3],[4,3,0]]
+  }
+};
+
+/* 벡터 도우미 */
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0]];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const norm=a=>{const m=Math.hypot(a[0],a[1],a[2])||1;return [a[0]/m,a[1]/m,a[2]/m];};
+
+/* 도형별 부가 정보(법선, 인접 관계, 이름) 미리 계산 */
+for (const key in SOLIDS){
+  const s = SOLIDS[key];
+  const c = s.verts.reduce((a,v)=>[a[0]+v[0]/s.verts.length, a[1]+v[1]/s.verts.length, a[2]+v[2]/s.verts.length],[0,0,0]);
+  s.normals = s.faces.map(f=>{
+    let n = norm(cross(sub(s.verts[f[1]],s.verts[f[0]]), sub(s.verts[f[2]],s.verts[f[0]])));
+    const fc = f.reduce((a,i)=>[a[0]+s.verts[i][0]/f.length, a[1]+s.verts[i][1]/f.length, a[2]+s.verts[i][2]/f.length],[0,0,0]);
+    if (dot(n, sub(fc,c)) < 0) n = [-n[0],-n[1],-n[2]];
+    return n;
+  });
+  s.faceName = s.faces.map(f=>"면 "+f.map(i=>s.labels[i]).join(""));
+  s.edgeName = s.edges.map(e=>"모서리 "+s.labels[e[0]]+s.labels[e[1]]);
+  s.vertName = s.labels.map(l=>"점 "+l);
+  s.edgeFaces = s.edges.map(e=> s.faces.map((f,i)=>i).filter(i=> s.faces[i].includes(e[0]) && s.faces[i].includes(e[1])));
+  s.vertFaces = s.verts.map((v,vi)=> s.faces.map((f,i)=>i).filter(i=> s.faces[i].includes(vi)));
+}
+
+/* ── 상태 ───────────────────────────────────────────────────── */
+const HOME = { yaw:-0.44, pitch:0.30 };
+let view = { ...HOME };
+const state = {
+  solid: "cuboid",
+  mode: "ee",
+  countType: "v",
+  sel: [],
+  result: null,
+  counted: { cuboid:{v:[],e:[]}, pyramid:{v:[],e:[]} },
+  note: null
+};
+const MODE_NEED = { ee:{edge:2,face:0}, ef:{edge:1,face:1}, ff:{edge:0,face:2} };
+
+/* ── 투영 ───────────────────────────────────────────────────── */
+const CX=230, CY=192, S=104;
+function rot(p){
+  const ca=Math.cos(view.yaw), sa=Math.sin(view.yaw);
+  const x1 = p[0]*ca + p[2]*sa, z1 = -p[0]*sa + p[2]*ca;
+  const cb=Math.cos(view.pitch), sb=Math.sin(view.pitch);
+  return [x1, p[1]*cb - z1*sb, p[1]*sb + z1*cb];
+}
+const proj = p => { const r = rot(p); return {x: CX + S*r[0], y: CY - S*r[1]}; };
+
+function E(tag, attrs, parent){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) if (attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+
+/* ── 도형 그리기 ────────────────────────────────────────────── */
+function draw(){
+  const s = SOLIDS[state.solid];
+  svg.replaceChildren();
+  const P = s.verts.map(proj);
+  const nR = s.normals.map(rot);
+  const faceVis = nR.map(n => n[2] > 1e-6);
+  const edgeVis = s.edges.map((e,i) => s.edgeFaces[i].some(f => faceVis[f]));
+  const vertVis = s.verts.map((v,i) => s.vertFaces[i].some(f => faceVis[f]));
+
+  const cnt = state.counted[state.solid];
+  const r = state.result;
+  const selE = state.sel.filter(x=>x.t==="edge").map(x=>x.i);
+  const selF = state.sel.filter(x=>x.t==="face").map(x=>x.i);
+
+  const gFace   = E("g",{},svg);
+  const gHidden = E("g",{"pointer-events":"none"},svg);
+  const gEdge   = E("g",{"pointer-events":"none"},svg);
+  const gAns    = E("g",{"pointer-events":"none"},svg);
+  const gVert   = E("g",{"pointer-events":"none"},svg);
+  const gBadge  = E("g",{"pointer-events":"none"},svg);
+  const gHit    = E("g",{},svg);
+
+  const facesClickable = state.mode==="ef" || state.mode==="ff";
+  const edgesClickable = state.mode==="ee" || state.mode==="ef" || (state.mode==="count" && state.countType==="e");
+  const vertsClickable = state.mode==="count" && state.countType==="v";
+  gFace.style.pointerEvents = facesClickable ? "auto" : "none";
+
+  const L = norm([-.35,.72,.6]);
+  const pts = f => f.map(i=>P[i].x.toFixed(1)+","+P[i].y.toFixed(1)).join(" ");
+
+  /* 1. 보이는 면 */
+  s.faces.forEach((f,i)=>{
+    if(!faceVis[i]) return;
+    const t = Math.max(0, dot(nR[i], L));
+    const sel = selF.includes(i);
+    const po = E("polygon", {
+      points: pts(f),
+      class: sel ? "sel" : null,
+      fill: sel ? "#FFD43B" : "hsl(115 34% "+(63+24*t).toFixed(0)+"%)",
+      "fill-opacity": sel ? .78 : .92,
+      stroke: sel ? "#E8A400" : "none",
+      "stroke-width": sel ? 2.5 : 0
+    }, gFace);
+    if (facesClickable) po.setAttribute("data-pick", "face:" + i);
+  });
+
+  /* 2. 선택된 뒤쪽 면 (점선 테두리 + 반투명) */
+  selF.forEach(i=>{
+    if(faceVis[i]) return;
+    E("polygon",{points:pts(s.faces[i]),fill:"#FFD43B","fill-opacity":.42,stroke:"#E8A400","stroke-width":2.5,"stroke-dasharray":"7 4"},gHidden);
+  });
+
+  /* 3. 모서리 */
+  s.edges.forEach((e,i)=>{
+    const g = edgeVis[i] ? gEdge : gHidden;
+    const a=P[e[0]], b=P[e[1]];
+    const base = {x1:a.x,y1:a.y,x2:b.x,y2:b.y,"stroke-linecap":"round"};
+    if (selE.includes(i))
+      E("line",{...base,stroke:"#FFD43B","stroke-width":9,"stroke-opacity":.95},g);
+    E("line",{...base,stroke:"#1B2430","stroke-width":edgeVis[i]?2.6:1.7,
+      "stroke-dasharray":edgeVis[i]?null:"6 4.5","stroke-opacity":edgeVis[i]?1:.5},g);
+  });
+
+  /* 4. 정답 강조 */
+  if (r && r.edge != null){
+    const e=s.edges[r.edge], a=P[e[0]], b=P[e[1]];
+    const col = r.kind==="line" ? "#1971C2" : "#E8A400";
+    E("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:"#fff","stroke-width":10,"stroke-linecap":"round","stroke-opacity":.85},gAns);
+    const ln=E("line",{x1:a.x,y1:a.y,x2:b.x,y2:b.y,stroke:col,"stroke-width":6.5,"stroke-linecap":"round"},gAns);
+    E("animate",{attributeName:"stroke-width",values:"6.5;8.5;6.5",dur:"1.6s",repeatCount:"indefinite"},ln);
+  }
+  if (r && r.vert != null){
+    const p=P[r.vert];
+    const ring=E("circle",{cx:p.x,cy:p.y,r:8,fill:"none",stroke:"#E03131","stroke-width":2.5},gAns);
+    E("animate",{attributeName:"r",values:"8;22",dur:"1.5s",repeatCount:"indefinite"},ring);
+    E("animate",{attributeName:"opacity",values:".85;0",dur:"1.5s",repeatCount:"indefinite"},ring);
+    E("circle",{cx:p.x,cy:p.y,r:8.5,fill:"#E03131",stroke:"#fff","stroke-width":3},gAns);
+  }
+
+  /* 5. 꼭짓점 + 이름표 */
+  const cS = proj([0,0,0]);
+  s.verts.forEach((v,i)=>{
+    const p=P[i];
+    const isCounted = cnt.v.includes(i);
+    const isAns = r && r.vert===i;
+    if(!isAns){
+      E("circle",{cx:p.x,cy:p.y,r:4.4,
+        fill:isCounted?"#E03131":(vertVis[i]?"#1B2430":"#fff"),
+        stroke:isCounted?"#fff":"#1B2430","stroke-width":isCounted?2:1.6,
+        "stroke-opacity":vertVis[i]||isCounted?1:.5},gVert);
+    }
+    let dx=p.x-cS.x, dy=p.y-cS.y;
+    const m=Math.hypot(dx,dy)||1; dx/=m; dy/=m;
+    E("text",{x:p.x+dx*17,y:p.y+dy*17+4.5,"text-anchor":"middle",
+      "font-family":"Gowun Batang, serif","font-size":15,
+      "font-weight":isAns?700:400,
+      fill:isAns?"#E03131":(vertVis[i]?"#1B2430":"#8D98A6")},gVert).textContent = s.labels[i];
+  });
+
+  /* 6. 세기 번호표 */
+  cnt.v.forEach((vi,k)=>{
+    const p=P[vi];
+    E("circle",{cx:p.x-13,cy:p.y-13,r:9,fill:"#E03131",stroke:"#fff","stroke-width":2},gBadge);
+    E("text",{x:p.x-13,y:p.y-9.4,"text-anchor":"middle","font-size":10.5,"font-weight":700,fill:"#fff"},gBadge).textContent=k+1;
+  });
+  cnt.e.forEach((ei,k)=>{
+    const e=s.edges[ei], mx=(P[e[0]].x+P[e[1]].x)/2, my=(P[e[0]].y+P[e[1]].y)/2;
+    E("line",{x1:P[e[0]].x,y1:P[e[0]].y,x2:P[e[1]].x,y2:P[e[1]].y,stroke:"#1971C2","stroke-width":4.5,"stroke-linecap":"round","stroke-opacity":.9},gBadge);
+    E("circle",{cx:mx,cy:my,r:9.5,fill:"#1971C2",stroke:"#fff","stroke-width":2},gBadge);
+    E("text",{x:mx,y:my+3.7,"text-anchor":"middle","font-size":10.5,"font-weight":700,fill:"#fff"},gBadge).textContent=k+1;
+  });
+
+  /* 7. 클릭 영역 (맨 위, 투명) */
+  if (edgesClickable) s.edges.forEach((e,i)=>{
+    E("line",{x1:P[e[0]].x,y1:P[e[0]].y,x2:P[e[1]].x,y2:P[e[1]].y,
+      stroke:"transparent","stroke-width":18,"stroke-linecap":"round",
+      "data-pick":"edge:"+i},gHit);
+  });
+  if (vertsClickable) s.verts.forEach((v,i)=>{
+    E("circle",{cx:P[i].x,cy:P[i].y,r:16,fill:"transparent","data-pick":"vert:"+i},gHit);
+  });
+}
+
+/* ── 클릭 처리 ──────────────────────────────────────────────── */
+function pick(t, i){
+  if (state.mode === "count"){ count(t,i); return; }
+
+  const at = state.sel.findIndex(x=>x.t===t && x.i===i);
+  if (at >= 0){ state.sel.splice(at,1); state.result=null; state.note=null; render(); return; }
+
+  if (state.sel.length >= 2){ state.sel = []; state.result = null; }
+  const need = MODE_NEED[state.mode][t] || 0;
+  if (need === 0){ state.note = t==="face" ? "이 단계에서는 면을 고르지 않아요." : "이 단계에서는 모서리를 고르지 않아요."; render(); return; }
+  if (state.sel.filter(x=>x.t===t).length >= need) state.sel = state.sel.filter(x=>x.t!==t);
+
+  state.sel.push({t,i});
+  state.note = null;
+  if (state.sel.length === 2) judge();
+  render();
+}
+
+function judge(){
+  const s = SOLIDS[state.solid];
+  const F = i => s.faces[i], Ev = i => s.edges[i];
+
+  if (state.mode === "ee"){
+    const [a,b] = state.sel.map(x=>x.i);
+    const shared = Ev(a).filter(v => Ev(b).includes(v));
+    state.result = shared.length
+      ? { kind:"point", vert:shared[0],
+          head:`${s.edgeName[a]}와 ${s.edgeName[b]}가 만나서 생기는 교점은 <b>${s.vertName[shared[0]]}</b>입니다.`,
+          why:"선과 선이 만나면 점이 생기고, 이 점을 교점이라고 해요." }
+      : { kind:"none",
+          head:`${s.edgeName[a]}와 ${s.edgeName[b]}는 만나지 않습니다.`,
+          why:"두 선이 만나지 않으면 교점도 생기지 않아요." };
+  }
+
+  if (state.mode === "ef"){
+    const e = state.sel.find(x=>x.t==="edge").i;
+    const f = state.sel.find(x=>x.t==="face").i;
+    const on = Ev(e).filter(v => F(f).includes(v));
+    if (on.length === 2)
+      state.result = { kind:"line", edge:e,
+        head:`${s.edgeName[e]}는 ${s.faceName[f]} 위에 놓여 있습니다.`,
+        why:"만나는 부분이 점 하나가 아니라 모서리 전체예요. 이때는 교점이라고 하지 않아요." };
+    else if (on.length === 1)
+      state.result = { kind:"point", vert:on[0],
+        head:`${s.edgeName[e]}와 ${s.faceName[f]}가 만나서 생기는 교점은 <b>${s.vertName[on[0]]}</b>입니다.`,
+        why:"선과 면이 만나서 생기는 점도 교점이에요. 이 도형에서는 그 자리가 꼭짓점이 됩니다." };
+    else
+      state.result = { kind:"none",
+        head:`${s.edgeName[e]}와 ${s.faceName[f]}는 만나지 않습니다.`,
+        why:"모서리가 면에서 떨어져 있으면 교점이 생기지 않아요." };
+  }
+
+  if (state.mode === "ff"){
+    const [a,b] = state.sel.map(x=>x.i);
+    const shared = F(a).filter(v => F(b).includes(v));
+    if (shared.length >= 2){
+      const ei = s.edges.findIndex(e => shared.includes(e[0]) && shared.includes(e[1]));
+      state.result = { kind:"line", edge:ei,
+        head:`${s.faceName[a]}와 ${s.faceName[b]}가 만나서 생기는 교선은 <b>${s.edgeName[ei]}</b>입니다.`,
+        why:"면과 면이 만나면 선이 생기고, 이 선을 교선이라고 해요." };
+    } else if (shared.length === 1){
+      state.result = { kind:"none", vert:shared[0],
+        head:`${s.faceName[a]}와 ${s.faceName[b]}는 ${s.vertName[shared[0]]}에서만 만납니다.`,
+        why:"만나는 부분이 선이 아니라 점 하나예요. 그래서 교선은 생기지 않아요." };
+    } else {
+      state.result = { kind:"none",
+        head:`${s.faceName[a]}와 ${s.faceName[b]}는 평행해서 만나지 않습니다.`,
+        why:"두 면이 만나지 않으면 교선도 생기지 않아요." };
+    }
+  }
+}
+
+function count(t, i){
+  const c = state.counted[state.solid];
+  const list = t==="vert" ? c.v : c.e;
+  if (list.includes(i)){ state.note = "이미 센 " + (t==="vert"?"꼭짓점":"모서리") + "이에요."; render(); return; }
+  list.push(i);
+  state.note = null;
+  render();
+}
+
+/* ── 패널 그리기 ────────────────────────────────────────────── */
+const ASK = {
+  ee: "만나게 하고 싶은 <em>모서리 두 개</em>를 순서대로 눌러 보세요.",
+  ef: "<em>모서리 하나</em>와 <em>면 하나</em>를 눌러 보세요.",
+  ff: "<em>면 두 개</em>를 눌러 보세요."
+};
+const TIP = {
+  ee: "선과 선이 만나면 무엇이 생길까요?",
+  ef: "선과 면이 만나도 교점이 생길까요?",
+  ff: "면과 면이 만나면 무엇이 생길까요?"
+};
+
+function render(){
+  draw();
+  const s = SOLIDS[state.solid];
+  panel.replaceChildren();
+
+  if (state.mode !== "count"){
+    /* 안내 + 고른 것 */
+    const b1 = div("box");
+    b1.innerHTML = `<div class="eyebrow">${TIP[state.mode]}</div><div class="ask">${ASK[state.mode]}</div>`;
+    const picks = div("picks");
+    if (!state.sel.length){
+      picks.appendChild(span("pick empty","아직 고른 것이 없어요"));
+    } else {
+      state.sel.forEach(x=>{
+        const name = x.t==="edge" ? s.edgeName[x.i] : s.faceName[x.i];
+        const p = span("pick", name);
+        p.title = "다시 누르면 선택이 풀려요";
+        picks.appendChild(p);
+      });
+      if (state.sel.length === 1) picks.appendChild(span("pick empty","하나 더 고르세요"));
+    }
+    b1.appendChild(picks);
+    panel.appendChild(b1);
+
+    /* 결과 */
+    if (state.result){
+      const r = state.result;
+      const box = div("res " + r.kind);
+      const label = r.kind==="point" ? "교점이 있어요" : r.kind==="line" ? "교선이 있어요" : "만나지 않아요";
+      box.innerHTML = `<span class="kind">${label}</span>${r.head}<span class="why">${r.why}</span>`;
+      panel.appendChild(box);
+    } else if (state.note){
+      const box = div("res none"); box.textContent = state.note; panel.appendChild(box);
+    }
+
+    /* 면 목록 (뒤쪽 면도 고를 수 있게) */
+    if (state.mode==="ef" || state.mode==="ff"){
+      const nR = s.normals.map(rot);
+      const b2 = div("box");
+      b2.innerHTML = `<div class="eyebrow">면 목록</div><div style="font-size:12.5px;color:var(--ink-2)">뒤쪽에 숨은 면은 여기서 고르세요.</div>`;
+      const wrap = div("chipwrap");
+      s.faces.forEach((f,i)=>{
+        const hidden = nR[i][2] <= 1e-6;
+        const c = document.createElement("button");
+        c.className = "chip" + (state.sel.some(x=>x.t==="face"&&x.i===i)?" on":"") + (hidden?" hid":"");
+        c.textContent = s.faceName[i];
+        c.addEventListener("click",()=>pick("face",i));
+        wrap.appendChild(c);
+      });
+      b2.appendChild(wrap);
+      panel.appendChild(b2);
+    }
+
+    const reset = div("box");
+    reset.style.padding = "9px 10px";
+    reset.innerHTML = `<button class="mini" style="width:100%">고른 것 지우기</button>`;
+    reset.querySelector("button").addEventListener("click",()=>{state.sel=[];state.result=null;state.note=null;render();});
+    panel.appendChild(reset);
+
+  } else {
+    /* 개수 세기 */
+    const c = state.counted[state.solid];
+    const nV = s.verts.length, nE = s.edges.length;
+    const doneV = c.v.length===nV, doneE = c.e.length===nE;
+
+    const b1 = div("box");
+    b1.innerHTML = `<div class="eyebrow">무엇을 셀까요?</div>`;
+    const seg = div("seg"); seg.style.width="100%";
+    [["v","꼭짓점(교점)"],["e","모서리(교선)"]].forEach(([k,t])=>{
+      const btn=document.createElement("button");
+      btn.textContent=t; btn.style.flex="1";
+      if(state.countType===k) btn.className="on";
+      btn.addEventListener("click",()=>{state.countType=k;state.note=null;render();});
+      seg.appendChild(btn);
+    });
+    b1.appendChild(seg);
+    const guide = div("ask");
+    guide.style.marginTop="10px";
+    guide.innerHTML = state.countType==="v"
+      ? `도형의 <em>꼭짓점</em>을 하나씩 누르며 세어 보세요. <span style="color:var(--ink-3);font-weight:500">(${c.v.length} / ${nV})</span>`
+      : `도형의 <em>모서리</em>를 하나씩 누르며 세어 보세요. <span style="color:var(--ink-3);font-weight:500">(${c.e.length} / ${nE})</span>`;
+    b1.appendChild(guide);
+    if (state.note){
+      const n = document.createElement("div");
+      n.style.cssText="margin-top:8px;font-size:12.5px;color:var(--point);font-weight:600";
+      n.textContent = state.note;
+      b1.appendChild(n);
+    }
+    panel.appendChild(b1);
+
+    const tally = div("tally");
+    tally.appendChild(row("pt", "교점의 개수", "= 꼭짓점의 개수", c.v.length, nV, doneV, "dot"));
+    tally.appendChild(row("ln", "교선의 개수", "= 모서리의 개수", c.e.length, nE, doneE, "bar"));
+    panel.appendChild(tally);
+
+    if (doneV && doneE){
+      const f = div("final");
+      f.innerHTML = `<b>${s.ko}</b>의<br>교점은 <b class="pt">${nV}개</b>, 교선은 <b class="ln">${nE}개</b>입니다.`;
+      panel.appendChild(f);
+    }
+
+    const rs = div("box"); rs.style.padding="9px 10px";
+    rs.innerHTML = `<button class="mini" style="width:100%">다시 세기</button>`;
+    rs.querySelector("button").addEventListener("click",()=>{
+      state.counted[state.solid] = {v:[],e:[]}; state.note=null; render();
+    });
+    panel.appendChild(rs);
+  }
+}
+
+function row(cls, lab, sub, n, total, done, shape){
+  const el = div("row " + cls + (done?" done":""));
+  const left = document.createElement("div");
+  const color = cls==="pt" ? "var(--point)" : "var(--line)";
+  left.innerHTML = `<div class="lab"><span class="${shape}" style="background:${color}"></span>${lab}</div><div class="sub">${sub}</div>`;
+  const right = document.createElement("div");
+  right.className = "num" + (done?"":" wait");
+  right.innerHTML = done ? `${total}<span class="unit">개</span>` : `${n}<span class="unit" style="opacity:.6">/${total}</span>`;
+  el.append(left,right);
+  return el;
+}
+function div(c){ const d=document.createElement("div"); d.className=c; return d; }
+function span(c,t){ const d=document.createElement("span"); d.className=c; d.textContent=t; return d; }
+
+/* ── 회전 (드래그) ──────────────────────────────────────────── */
+/* 포인터를 누른 순간 대상을 기억해 두고, 떼었을 때 "끌지 않았다면" 선택으로 처리한다.
+   (setPointerCapture를 누르자마자 걸면 click 이벤트가 svg로 넘어가 버리므로,
+    실제로 끌기 시작한 뒤에만 캡처를 건다.) */
+let dragging=false, dragged=false, startX=0, startY=0, lastX=0, lastY=0, pending=null;
+
+svg.addEventListener("pointerdown", e=>{
+  dragging=true; dragged=false;
+  startX=lastX=e.clientX; startY=lastY=e.clientY;
+  const t = e.target.closest ? e.target.closest("[data-pick]") : null;
+  pending = t ? t.getAttribute("data-pick") : null;
+});
+
+svg.addEventListener("pointermove", e=>{
+  if(!dragging) return;
+  const dx=e.clientX-lastX, dy=e.clientY-lastY;
+  lastX=e.clientX; lastY=e.clientY;
+  if(!dragged){
+    if(Math.hypot(e.clientX-startX, e.clientY-startY) < 5) return;
+    dragged = true; pending = null;
+    try{ svg.setPointerCapture(e.pointerId); }catch(_){}
+  }
+  view.yaw += dx*0.011;
+  view.pitch = Math.max(-1.15, Math.min(1.15, view.pitch + dy*0.011));
+  draw();
+});
+
+function endDrag(e){
+  if(!dragging) return;
+  dragging=false;
+  try{ if(svg.hasPointerCapture(e.pointerId)) svg.releasePointerCapture(e.pointerId); }catch(_){}
+  if(dragged){
+    dragged=false;
+    if(state.mode==="ef" || state.mode==="ff") render();   // 면 목록의 앞/뒤 표시 갱신
+    return;
+  }
+  if(pending){
+    const [t, i] = pending.split(":");
+    pending = null;
+    pick(t, +i);
+  }
+}
+svg.addEventListener("pointerup", endDrag);
+svg.addEventListener("pointercancel", e=>{ dragging=false; dragged=false; pending=null; });
+
+/* ── 탭 / 도형 전환 ─────────────────────────────────────────── */
+document.getElementById("tabs").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-mode]"); if(!b) return;
+  [...b.parentNode.children].forEach(x=>x.classList.toggle("on", x===b));
+  state.mode = b.dataset.mode; state.sel=[]; state.result=null; state.note=null;
+  render();
+});
+document.getElementById("solidSeg").addEventListener("click", e=>{
+  const b = e.target.closest("button[data-solid]"); if(!b) return;
+  [...b.parentNode.children].forEach(x=>x.classList.toggle("on", x===b));
+  state.solid = b.dataset.solid; state.sel=[]; state.result=null; state.note=null;
+  render();
+});
+document.getElementById("resetView").addEventListener("click", ()=>{ view={...HOME}; render(); });
+
+render();
+</script>
+</body>
+</html>
