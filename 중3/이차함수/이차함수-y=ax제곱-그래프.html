@@ -162,11 +162,15 @@ td.cell.filled::before{content:none}
 td.cell.filled:hover{background:#fff}
 td.cell .val{display:inline-block;font-size:1.18rem;animation:valPop .34s cubic-bezier(.2,1.5,.45,1) both}
 @keyframes valPop{from{opacity:0;transform:scale(.4) translateY(7px)}to{opacity:1;transform:none}}
-table.vt.ratio tr.rel td.cell.filled::after{
-  content:'×2 ↓';position:absolute;bottom:1px;right:4px;font-family:var(--sans);
-  font-size:10.5px;font-weight:800;color:var(--hot);letter-spacing:-.02em;
-  animation:valPop .3s both;
+/* y=x² 행을 기준으로 위로는 ×½, 아래로는 ×2 */
+table.vt.ratio tr.ref td.cell.filled::before,
+table.vt.ratio tr.ref td.cell.filled::after{
+  position:absolute;right:4px;font-family:var(--sans);
+  font-size:11px;font-weight:800;letter-spacing:-.02em;animation:valPop .3s both;
 }
+table.vt.ratio tr.ref td.cell.filled::before{content:'↑ ×½';top:1px;color:var(--go)}
+table.vt.ratio tr.ref td.cell.filled::after{content:'↓ ×2';bottom:1px;color:var(--hot)}
+table.vt.ratio tr.ref th{background:#EEF4F6}
 /* 표 오른쪽에 붙는 조작 버튼 칸 */
 table.vt th.bh{
   background:transparent;border:none;min-width:106px;text-align:left;
@@ -194,7 +198,8 @@ svg.plane{display:block;width:100%;height:auto;margin:0 auto;touch-action:manipu
 .mid{text-anchor:middle}.endA{text-anchor:end}
 .pt{animation:ptPop .42s cubic-bezier(.2,1.5,.45,1) both}
 @keyframes ptPop{from{transform:scale(0)}60%{transform:scale(1.32)}to{transform:scale(1)}}
-.ptlab{font-family:var(--math);font-size:17.5px;font-weight:700;animation:fadeIn .4s .12s both}
+.ptlab{font-family:var(--math);font-size:17.5px;font-weight:700}
+.ptfrac{font-family:var(--math);font-size:15px;font-weight:700}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .gdash{stroke:#96A6B1;stroke-width:1.4;stroke-dasharray:5 5}
 .vguide{stroke:#46586B;stroke-width:2.6;stroke-dasharray:8 5;stroke-linecap:round}
@@ -364,7 +369,7 @@ details.ask li::marker{color:var(--go)}
       <div class="tablefoot">
         <div class="row">
           <button class="btn sm" id="fillAll">한 번에 모두 채우기</button>
-          <button class="btn sm" id="ratio">×2 관계 표시</button>
+          <button class="btn sm" id="ratio"><span class="m"><i>y</i>=<i>x</i><sup>2</sup></span> 기준 배수 표시</button>
           <button class="btn sm ghost" id="clearTable">표 지우기</button>
         </div>
         <div class="prog" id="prog">채운 칸 0 / 21</div>
@@ -425,14 +430,18 @@ details.ask li::marker{color:var(--go)}
 
     <div class="card">
       <h3>③ 일반화 — <i class="v">a</i> 를 바꾸어도 그럴까?</h3>
-      <div class="slider">
-        <span class="aval" id="aval2">a = 1</span>
-        <input type="range" id="asl2" min="0.3" max="3" step="0.1" value="1" aria-label="a의 값">
+      <p class="locknote" id="genLock">②까지 확인한 뒤 열어 보세요. <span class="m"><i>a</i></span> 를 바꾸며 같은 관계가 늘 성립하는지 살펴봅니다.</p>
+      <button class="btn primary" id="genBtn" style="width:100%;justify-content:center">일반화 열어 보기</button>
+      <div id="genBody" hidden>
+        <div class="slider">
+          <span class="aval" id="aval2">a = 1</span>
+          <input type="range" id="asl2" min="0.3" max="3" step="0.1" value="1" aria-label="a의 값">
+        </div>
+        <div class="planebox" style="margin-top:10px"><div id="plane2b"></div></div>
+        <p class="hint" style="text-align:center;margin-top:10px">
+          <i class="v">a</i> 를 어떻게 바꾸어도 <span class="m"><i>y</i>=<i>ax</i><sup>2</sup></span> 과 <span class="m"><i>y</i>=−<i>ax</i><sup>2</sup></span> 은 늘 <b><i class="v">x</i>축에 대칭</b>입니다.
+        </p>
       </div>
-      <div class="planebox" style="margin-top:10px"><div id="plane2b"></div></div>
-      <p class="hint" style="text-align:center;margin-top:10px">
-        <i class="v">a</i> 를 어떻게 바꾸어도 <span class="m"><i>y</i>=<i>ax</i><sup>2</sup></span> 과 <span class="m"><i>y</i>=−<i>ax</i><sup>2</sup></span> 은 늘 <b><i class="v">x</i>축에 대칭</b>입니다.
-      </p>
     </div>
   </div>
 
@@ -464,6 +473,10 @@ details.ask li::marker{color:var(--go)}
           <span class="aval" id="aval3">a = 1</span>
           <input type="range" id="asl3" min="-3" max="3" step="0.1" value="1" aria-label="a의 값">
         </div>
+        <div class="row" style="margin-top:9px">
+          <button class="btn sm" id="slToggle">탐색 곡선 보이기</button>
+          <button class="btn sm ghost" id="slReset">초기화</button>
+        </div>
         <p class="hint" id="ahint3" style="margin-top:8px"></p>
       </div>
     </aside>
@@ -484,7 +497,7 @@ details.ask li::marker{color:var(--go)}
         <div class="ans"><b><span class="m">|<i>a</i>|</span> 가 클수록 폭이 좁아집니다.</b> 같은 <i class="v">x</i> 에 대해 함숫값의 절댓값이 커지므로 그래프가 <i class="v">y</i>축에 더 바짝 붙습니다. (<span class="m">|<i>a</i>|</span> 가 작을수록 폭이 넓어집니다.)</div>
       </div>
       <div class="obs" data-i="3">
-        <q>Q3. <span class="m"><i>y</i>=2<i>x</i><sup>2</sup></span> 과 <span class="m"><i>y</i>=−2<i>x</i><sup>2</sup></span> 처럼 <b>부호만 다른</b> 두 그래프는?</q>
+        <q>Q3. <span class="m"><i>y</i>=2<i>x</i><sup>2</sup></span> 과 <span class="m"><i>y</i>=−2<i>x</i><sup>2</sup></span> 처럼 <b>부호만 다른</b> 두 그래프는 서로 어떤 관계에 있나요?</q>
         <button class="btn sm">답 확인</button>
         <div class="ans"><b><i class="v">x</i>축에 서로 대칭</b>입니다. 색이 같은 실선과 점선을 확인해 보세요.</div>
       </div>
@@ -561,7 +574,7 @@ class Plane{
     this.svg=svg;
     const g=E("g",{transform:"translate("+c.pad+","+c.pad+")"},svg);
     this.L={};
-    ["grid","axis","curve","guide","point","hit","top"].forEach(n=>{this.L[n]=E("g",{"class":"l-"+n},g);});
+    ["grid","axis","curve","guide","point","label","hit","top"].forEach(n=>{this.L[n]=E("g",{"class":"l-"+n},g);});
     this.grid(); this.axis();
   }
   X(x){return (x-this.c.xMin)*this.c.ux;}
@@ -641,6 +654,10 @@ class Plane{
   }
   clear(){for(let i=0;i<arguments.length;i++)this.L[arguments[i]].innerHTML="";}
 }
+function fq(v){
+  if(Number.isInteger(v))return String(v);
+  return '<span class="frac"><span>'+Math.round(v*2)+'</span><span>2</span></span>';
+}
 function fmt(v){
   if(Number.isInteger(v))return String(v);
   return String(Math.round(v*100)/100);
@@ -669,7 +686,7 @@ const VT=$("#vt");
   XS.forEach(x=>{h+='<th>'+x+'</th>';});
   h+='<th class="el">⋯</th><th class="bh">② 점 찍기</th><th class="bh">③ 곡선 그리기</th></tr></thead><tbody>';
   FNS.forEach((f,ri)=>{
-    h+='<tr data-k="'+f.k+'"'+(ri<2?' class="rel"':'')+'>';
+    h+='<tr data-k="'+f.k+'"'+(ri===1?' class="ref"':'')+'>';
     h+='<th><span class="sw" style="background:'+f.color+'"></span>'+f.label+'</th><td class="el">⋯</td>';
     XS.forEach((x,i)=>{h+='<td class="cell" data-k="'+f.k+'" data-i="'+i+'"></td>';});
     h+='<td class="el">⋯</td><td class="bt" data-slot="pt" data-k="'+f.k+'"></td>'
@@ -741,7 +758,9 @@ $("#fillAll").onclick=()=>{
 };
 $("#ratio").onclick=e=>{
   VT.classList.toggle("ratio");
-  e.currentTarget.textContent=VT.classList.contains("ratio")?"↑ ×2 관계 숨기기":"↑ ×2 관계 표시";
+  e.currentTarget.innerHTML=VT.classList.contains("ratio")
+    ? '배수 표시 숨기기'
+    : '<span class="m"><i>y</i>=<i>x</i><sup>2</sup></span> 기준 배수 표시';
 };
 $("#clearTable").onclick=()=>{
   $$("td.cell",VT).forEach(td=>{td.classList.remove("filled");td.innerHTML="";});
@@ -774,8 +793,72 @@ $("#clearPlane").onclick=()=>{
 
 const plane1=new Plane("plane1",{xMin:-3.8,xMax:3.8,yMin:-1.7,yMax:10.3,ux:88,uy:88,pad:40,yStep:1});
 
+/* 순서쌍 라벨: 분수 표기 + 곡선/다른 라벨과 겹치지 않는 자리 자동 선택 */
+function fracParts(v){
+  if(Number.isInteger(v))return null;
+  return {n:Math.round(v*2), d:2};
+}
+function buildCoordLabel(layer,xVal,yVal,color){
+  const g=E("g",{},layer);
+  let cur=0;
+  const t1=E("text",{x:0,y:0,"class":"ptlab",fill:color},g);
+  t1.textContent="("+xVal+",\u00A0";
+  cur+=t1.getComputedTextLength();
+  const fr=fracParts(yVal);
+  if(fr){
+    const fg=E("g",{transform:"translate("+cur+",0)"},g);
+    const num=E("text",{x:0,y:-6,"class":"ptfrac mid",fill:color},fg); num.textContent=fr.n;
+    const den=E("text",{x:0,y:14,"class":"ptfrac mid",fill:color},fg); den.textContent=fr.d;
+    const w=Math.max(num.getComputedTextLength(),den.getComputedTextLength())+5;
+    num.setAttribute("x",w/2); den.setAttribute("x",w/2);
+    E("line",{x1:1,y1:-1,x2:w-1,y2:-1,stroke:color,"stroke-width":1.7},fg);
+    cur+=w;
+  }else{
+    const t2=E("text",{x:cur,y:0,"class":"ptlab",fill:color},g);
+    t2.textContent=String(yVal);
+    cur+=t2.getComputedTextLength();
+  }
+  const t3=E("text",{x:cur,y:0,"class":"ptlab",fill:color},g);
+  t3.textContent=")";
+  cur+=t3.getComputedTextLength();
+  return {g:g,w:cur,h:fr?32:22};
+}
+function scoreBox(pl,box,actives,placed){
+  let sc=0;
+  if(box.l<2||box.r>pl.w-2||box.t<2||box.b>pl.h-2)sc+=8;
+  const x0=pl.c.xMin+box.l/pl.c.ux, x1=pl.c.xMin+box.r/pl.c.ux;
+  const yHi=pl.c.yMax-box.t/pl.c.uy, yLo=pl.c.yMax-box.b/pl.c.uy;
+  actives.forEach(a=>{
+    const q0=(x0<=0&&x1>=0)?0:Math.min(x0*x0,x1*x1), q1=Math.max(x0*x0,x1*x1);
+    if(a*q1>=yLo && a*q0<=yHi)sc+=3;
+  });
+  placed.forEach(b=>{
+    if(box.l<b.r&&box.r>b.l&&box.t<b.b&&box.b>b.t)sc+=4;
+  });
+  return sc;
+}
+function placeCoordLabel(pl,x,y,color,actives,placed,delay){
+  const L=buildCoordLabel(pl.L.label||pl.L.top,x,y,color);
+  const px=pl.X(x), py=pl.Y(y), out=x>=0?1:-1;
+  const cands=[[out*16,-13],[out*16,12],[-out*16,-13],[-out*16,12],
+               [out*16,-34],[-out*16,-34],[out*16,32],[-out*16,32]];
+  let best=null,bestSc=1e9;
+  cands.forEach(c=>{
+    const left=c[0]>=0?px+c[0]:px+c[0]-L.w;
+    const top=py+c[1]-L.h*0.72;
+    const box={l:left,t:top,r:left+L.w,b:top+L.h};
+    const sc=scoreBox(pl,box,actives,placed);
+    if(sc<bestSc){bestSc=sc;best={c:c,box:box};}
+  });
+  const dx=best.c[0]>=0?best.c[0]:best.c[0]-L.w;
+  L.g.setAttribute("transform","translate("+(px+dx)+","+(py+best.c[1])+")");
+  L.g.setAttribute("class","gfade");
+  L.g.style.animationDelay=(delay||0)+"ms";
+  placed.push(best.box);
+}
+
 function render1(){
-  plane1.clear("curve","point","guide","hit");
+  plane1.clear("curve","point","guide","label","hit");
   FNS.forEach(f=>{
     if(S1.cv[f.k])plane1.curve(f.a,{color:f.color,animate:S1.fresh==="c-"+f.k});
   });
@@ -793,10 +876,26 @@ function render1(){
         }
         return;
       }
-      plane1.point(x,y,{color:f.color,label:S1.lab,delay:S1.fresh===f.k?d:0});
+      plane1.point(x,y,{color:f.color,delay:S1.fresh===f.k?d:0});
       d+=80;
     });
   });
+  if(S1.lab){
+    const actives=FNS.filter(f=>S1.pt[f.k]).map(f=>f.a);
+    const placed=[]; let originDone=false;
+    FNS.forEach(f=>{
+      if(!S1.pt[f.k])return;
+      let d=0;
+      XS.forEach(x=>{
+        const y=f.a*x*x;
+        if(y>plane1.c.yMax){d+=80;return;}
+        if(x===0){ if(originDone){d+=80;return;} originDone=true; }
+        placeCoordLabel(plane1,x,y,f.color,actives,placed,
+          (S1.fresh===f.k?d:0)+120);
+        d+=80;
+      });
+    });
+  }
   drawHotspots();
   if(S1.gx!==null)drawGuide(S1.gx);
   S1.fresh=null;
@@ -820,11 +919,10 @@ function toggleGuide(x){
   const v=[0.5*x*x,x*x,2*x*x];
   $("#msg1").innerHTML = x===0
     ? '<span><b><i class="v">x</i> = 0</b> 일 때 세 함숫값이 모두 <b>0</b> → 세 그래프는 모두 <b>원점</b>을 지납니다.</span>'
-    : '<span><b><i class="v">x</i> = '+x+'</b> 일 때 &nbsp; <span class="m" style="color:'+C1+'">'+fmt(v[0])+'</span> <b>→ ×2 →</b> <span class="m" style="color:'+C2+'">'+fmt(v[1])+'</span> <b>→ ×2 →</b> <span class="m" style="color:'+C3+'">'+fmt(v[2])+'</span> &nbsp; 함숫값이 2배씩 커집니다.</span>';
+    : '<span><b><i class="v">x</i> = '+x+'</b> 일 때 &nbsp; 기준 <span class="m" style="color:'+C2+'"><i>x</i><sup>2</sup> = '+fmt(v[1])+'</span> &nbsp;·&nbsp; <span class="m" style="color:'+C1+'">'+fq(v[0])+'</span> 은 <b style="color:'+C1+'">×½</b> &nbsp;·&nbsp; <span class="m" style="color:'+C3+'">'+fmt(v[2])+'</span> 은 <b style="color:'+C3+'">×2</b></span>';
 }
 function drawGuide(x){
   const p=plane1,g=p.L.guide,ymax=p.c.yMax;
-  const v=[0.5*x*x,x*x,2*x*x], cols=[C1,C2,C3];
   const y0=p.Y(0), px=p.X(x);
   if(x===0){
     const t=E("text",{x:px+16,y:y0-16,"class":"note"},g);
@@ -832,9 +930,9 @@ function drawGuide(x){
     return;
   }
   const s=x>0?1:-1;
-  /* ① x = n 세로 보조선이 아래에서 위로 자라며 화살표가 함께 올라감 */
-  const topY=p.Y(Math.min(v[2],ymax))-16;
-  const vline=E("line",{x1:px,y1:y0,x2:px,y2:y0,"class":"vguide","marker-end":"url(#mk-slate)"},g);
+  /* x = n 의 일부가 되는 세로 보조선만 아래에서 위로 자라남 */
+  const topY=p.Y(Math.min(2*x*x,ymax))-6;
+  const vline=E("line",{x1:px,y1:y0,x2:px,y2:y0,"class":"vguide"},g);
   const t0=performance.now(), DUR=560;
   (function step(now){
     const k=Math.min(1,(now-t0)/DUR), e=1-Math.pow(1-k,3);
@@ -843,27 +941,6 @@ function drawGuide(x){
   })(performance.now());
   const xl=E("text",{x:px+11*s,y:y0+42,"class":"xguide gfade"+(s<0?" endA":"")},g);
   xl.textContent="x = "+x;
-  /* ② 각 함숫값까지의 가로 점선과 값 */
-  v.forEach((y,i)=>{
-    if(y>ymax)return;
-    const ln=E("line",{x1:p.X(0),y1:p.Y(y),x2:px,y2:p.Y(y),"class":"gdash gfade"},g);
-    ln.style.animationDelay=(DUR+i*110)+"ms";
-    const t=E("text",{x:px-13*s,y:p.Y(y)-9,"class":"vlab gfade"+(s>0?" endA":""),fill:cols[i]},g);
-    t.style.animationDelay=(DUR+i*110)+"ms";
-    t.textContent=fmt(y);
-  });
-  /* ③ ×2 화살표 */
-  [[0,1],[1,2]].forEach((pr,k)=>{
-    const yA=v[pr[0]], yB=v[pr[1]];
-    if(yA>ymax)return;
-    const cl=yB>ymax, yT=Math.min(yB,ymax);
-    const xa=px+(17+k*22)*s, delay=DUR+380+k*260;
-    const ar=E("line",{x1:xa,y1:p.Y(yA)-4,x2:xa,y2:p.Y(yT)+(cl?4:9),"class":"garrow gfade","marker-end":"url(#mk-hot)"},g);
-    ar.style.animationDelay=delay+"ms";
-    const t=E("text",{x:xa+8*s,y:(p.Y(yA)+p.Y(yT))/2+5,"class":"gtxt gfade"+(s<0?" endA":"")},g);
-    t.style.animationDelay=delay+"ms";
-    t.textContent=cl?"×2 ("+yB+")":"×2";
-  });
 }
 render1(); updateProg();
 
@@ -965,6 +1042,12 @@ function draw2b(a){
   const lab2=E("text",{x:plane2b.X(0)+12,y:plane2b.h-10,"class":"vlab",fill:C3,opacity:.75},plane2b.L.guide);
   lab2.textContent="y = −"+fmt(a)+"x²";
 }
+$("#genBtn").onclick=e=>{
+  $("#genBody").hidden=false;
+  $("#genLock").style.display="none";
+  e.currentTarget.style.display="none";
+  draw2b(parseFloat($("#asl2").value));
+};
 $("#asl2").oninput=e=>{
   const a=parseFloat(e.target.value);
   $("#aval2").textContent="a = "+fmt(a);
@@ -983,7 +1066,7 @@ const AS=[
 ];
 const on3={};
 const plane3=new Plane("plane3",{xMin:-4.3,xMax:4.3,yMin:-8.6,yMax:8.6,ux:60,uy:60,pad:36,yStep:2});
-let slA=null;
+let slA=null, slShow=false;
 AS.forEach((o,i)=>{
   const b=document.createElement("button");
   b.className="chip"; b.dataset.i=i;
@@ -1014,13 +1097,29 @@ function render3(fresh){
     t.textContent="y = "+fmt(slA)+"x²";
   }
 }
-$("#asl3").oninput=e=>{
-  const a=parseFloat(e.target.value);
-  slA=a;
-  $("#aval3").textContent="a = "+fmt(a);
+function hint3(a){
   $("#ahint3").innerHTML = Math.abs(a)<0.05
     ? '<b><i class="v">a</i> = 0</b> 이면 <span class="m"><i>y</i> = 0</span> 이 되어 이차함수가 아닙니다.'
     : (a>0?'아래로 볼록':'위로 볼록')+' · |a| = '+fmt(Math.abs(a))+' → 폭이 '+(Math.abs(a)>1?'좁습니다':Math.abs(a)<1?'넓습니다':'기준입니다');
+}
+$("#slToggle").onclick=e=>{
+  slShow=!slShow;
+  slA=slShow?parseFloat($("#asl3").value):null;
+  e.currentTarget.textContent=slShow?"탐색 곡선 숨기기":"탐색 곡선 보이기";
+  render3(null);
+};
+$("#slReset").onclick=()=>{
+  $("#asl3").value=1; $("#aval3").textContent="a = 1";
+  slShow=false; slA=null;
+  $("#slToggle").textContent="탐색 곡선 보이기";
+  hint3(1); render3(null);
+};
+$("#asl3").oninput=e=>{
+  const a=parseFloat(e.target.value);
+  slShow=true; slA=a;
+  $("#slToggle").textContent="탐색 곡선 숨기기";
+  $("#aval3").textContent="a = "+fmt(a);
+  hint3(a);
   render3(null);
 };
 $$("#p3 .obs").forEach(o=>{o.querySelector("button").onclick=()=>o.classList.add("open");});
