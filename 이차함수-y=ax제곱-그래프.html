@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>이차함수 y = ax² 의 그래프 · 중3 수학</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{
+  --paper:#EDF1F3;
+  --pgrid:#D8E2E8;
+  --card:#FFFFFF;
+  --ink:#131C27;
+  --sub:#5C6975;
+  --line:#DDE5EA;
+  --c1:#D9552B;
+  --c2:#1B6EA8;
+  --c3:#6B3FA0;
+  --hot:#C1121F;
+  --go:#0E5A57;
+  --shadow:0 1px 0 rgba(19,28,39,.06), 0 10px 26px -18px rgba(19,28,39,.55);
+  --sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+  --math:'Nanum Myeongjo',Georgia,'Times New Roman','Batang',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans);
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--pgrid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--pgrid) 1px, transparent 1px);
+  background-size:22px 22px;
+  background-position:-1px -1px;
+  font-size:16.5px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- 수식 서체 ---------- */
+.m{font-family:var(--math);font-size:1.08em;letter-spacing:.01em}
+.m i,.v{font-family:var(--math);font-style:italic}
+sup{font-size:.66em;vertical-align:super;line-height:0}
+.frac{
+  display:inline-flex;flex-direction:column;align-items:center;justify-content:center;
+  vertical-align:middle;position:relative;top:-.07em;
+  line-height:1.02;font-size:.66em;text-align:center;margin:0 .1em;
+}
+.frac>span:first-child{border-bottom:1.3px solid currentColor;padding:0 .2em 1px}
+.frac>span:last-child{padding:1px .2em 0}
+
+/* ---------- 상단바 ---------- */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(1.4) blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.topbar .inner{max-width:2000px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.02em;font-size:1.02rem;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.brand .sq{width:14px;height:14px;border:2.5px solid var(--go);border-radius:3px;display:inline-block}
+.brand .grade{font-size:.72rem;font-weight:700;color:var(--go);background:#DCEDEA;border-radius:999px;padding:2px 9px;letter-spacing:.02em}
+.tabs{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.tabs button{
+  font-family:inherit;font-size:.86rem;font-weight:700;color:var(--sub);
+  background:transparent;border:1px solid transparent;border-radius:9px;
+  padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s;
+}
+.tabs button i{
+  font-style:normal;width:19px;height:19px;border-radius:5px;background:#E4EAEE;color:var(--sub);
+  display:grid;place-items:center;font-size:.72rem;font-weight:800;transition:.15s;
+}
+.tabs button:hover{background:#F0F4F6;color:var(--ink)}
+.tabs button.on{background:var(--ink);color:#fff}
+.tabs button.on i{background:rgba(255,255,255,.22);color:#fff}
+
+/* ---------- 레이아웃 ---------- */
+main{max-width:2000px;margin:0 auto;padding:26px 24px 44px}
+.page{display:none;animation:pageIn .35s ease-out}
+.page.on{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.phead{margin:4px 0 20px}
+.eyebrow{font-size:.74rem;font-weight:800;letter-spacing:.14em;color:var(--go);margin-bottom:7px}
+h2{font-size:1.62rem;font-weight:800;letter-spacing:-.03em;margin:0 0 8px}
+.lead{margin:0;color:var(--sub);max-width:70ch}
+.lead b{color:var(--ink);font-weight:700}
+
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow);padding:18px;margin-bottom:18px;
+}
+.card>h3{margin:0 0 12px;font-size:1rem;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+.card>h3::before{content:'';width:4px;height:15px;border-radius:2px;background:var(--go)}
+
+.split{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:18px;align-items:start}
+.split.wide{grid-template-columns:minmax(760px,920px) minmax(0,1fr)}
+/* 2페이지: 표·확인 버튼 | 좌표평면 | 일반화 패널 3단 가로 배치 */
+.split.p2grid{grid-template-columns:minmax(0,740px) minmax(0,620px) minmax(0,520px)}
+@media (max-width:1820px){.split.p2grid{grid-template-columns:minmax(0,640px) minmax(0,1fr)}}
+/* 3페이지: 조작 · 좌표평면 · 질문 3단 가로 배치 */
+.split.p3grid{grid-template-columns:minmax(0,340px) minmax(0,680px) minmax(0,1fr)}
+@media (max-width:1560px){.split.p3grid{grid-template-columns:minmax(0,320px) minmax(0,1fr)}}
+@media (max-width:1280px){.split.p2grid{grid-template-columns:1fr}}
+@media (max-width:1100px){.split.wide{grid-template-columns:1fr}}
+@media (max-width:900px){.split,.split.p3grid{grid-template-columns:1fr}}
+
+/* ---------- 버튼 ---------- */
+.btn{
+  font-family:inherit;font-size:.87rem;font-weight:700;color:var(--ink);
+  background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:9px 13px;cursor:pointer;transition:.14s;display:inline-flex;align-items:center;gap:8px;
+}
+.btn:hover{border-color:#B9C6CE;background:#F7FAFB;transform:translateY(-1px)}
+.btn:active{transform:none}
+.btn.primary{background:var(--go);border-color:var(--go);color:#fff}
+.btn.primary:hover{background:#0B4B48;border-color:#0B4B48}
+.btn.ghost{border-style:dashed;color:var(--sub)}
+.btn.sm{font-size:.8rem;padding:6px 10px;border-radius:8px}
+.btn .swatch{width:11px;height:11px;border-radius:3px;flex:none}
+.btn.done{background:#F3F7F8;color:var(--sub);border-style:solid}
+.btn:disabled{background:#F5F8F9;color:#AEBAC2;border-style:dashed;border-color:#DDE5EA;cursor:not-allowed}
+.btn:disabled:hover{transform:none;background:#F5F8F9;border-color:#DDE5EA}
+.planetools{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin-bottom:12px}
+.locknote{
+  margin:0 0 12px;font-size:.83rem;color:var(--sub);background:#F6F9FA;border:1px dashed #C8D4DB;
+  border-radius:9px;padding:9px 13px;
+}
+.locknote b{color:var(--go)}
+.btn:focus-visible,.tabs button:focus-visible,.chip:focus-visible{outline:3px solid #8FD3CE;outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.stack{display:flex;flex-direction:column;gap:8px}
+.stepnum{font-size:.72rem;font-weight:800;letter-spacing:.1em;color:var(--sub);margin:14px 0 7px;display:block}
+.stepnum:first-child{margin-top:0}
+
+/* ---------- 표 ---------- */
+.tablewrap{overflow-x:auto;padding-bottom:4px}
+table.vt{border-collapse:separate;border-spacing:0;margin:0 auto;font-family:var(--math)}
+table.vt th,table.vt td{border:1px solid #C8D4DB;padding:0;text-align:center}
+table.vt thead th{
+  background:#F3F7F9;font-family:var(--sans);font-size:.85rem;font-weight:800;
+  height:46px;min-width:62px;letter-spacing:-.01em;
+}
+table.vt thead th.rowhead{min-width:104px;background:#EDF3F6}
+table.vt th.el,table.vt td.el{background:#F7FAFB;color:#9BAAB4;min-width:44px;font-size:1.15rem;letter-spacing:.12em}
+table.vt tbody th{
+  background:#F8FBFC;font-size:1rem;height:56px;padding:0 12px;white-space:nowrap;
+  border-left-width:1px;font-weight:400;
+}
+table.vt tbody th .sw{display:inline-block;width:9px;height:9px;border-radius:2.5px;margin-right:8px;vertical-align:1px}
+td.cell{cursor:pointer;position:relative;height:56px;background:#fff;transition:background .14s}
+td.cell::before{
+  content:'?';font-family:var(--sans);font-size:.95rem;font-weight:700;color:#C3D0D8;
+  transition:.14s;
+}
+td.cell:hover{background:#FFF8EF}
+td.cell:hover::before{color:var(--c1)}
+td.cell.filled{cursor:default;background:#fff}
+td.cell.filled::before{content:none}
+td.cell.filled:hover{background:#fff}
+td.cell .val{display:inline-block;font-size:1.18rem;animation:valPop .34s cubic-bezier(.2,1.5,.45,1) both}
+@keyframes valPop{from{opacity:0;transform:scale(.4) translateY(7px)}to{opacity:1;transform:none}}
+table.vt.ratio tr.rel td.cell.filled::after{
+  content:'×2 ↓';position:absolute;bottom:1px;right:4px;font-family:var(--sans);
+  font-size:10.5px;font-weight:800;color:var(--hot);letter-spacing:-.02em;
+  animation:valPop .3s both;
+}
+/* 표 오른쪽에 붙는 조작 버튼 칸 */
+table.vt th.bh{
+  background:transparent;border:none;min-width:106px;text-align:left;
+  font-family:var(--sans);font-size:.76rem;font-weight:800;color:var(--sub);
+  letter-spacing:-.01em;padding:0 0 0 12px;
+}
+table.vt td.bt{border:none;background:transparent;padding:0 0 0 12px;text-align:left;white-space:nowrap}
+table.vt td.bt .btn{width:100%;justify-content:center}
+.tablefoot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-top:12px}
+.hint{font-size:.83rem;color:var(--sub);margin:0}
+.hint b{color:var(--ink)}
+.prog{font-size:.82rem;font-weight:700;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+.prog.full{color:var(--go)}
+
+/* ---------- 좌표평면 ---------- */
+.planecard{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:14px}
+.planebox{display:block;width:100%;overflow-x:auto}
+.planebox>div{width:100%}
+svg.plane{display:block;width:100%;height:auto;margin:0 auto;touch-action:manipulation}
+.gl{stroke:#DCE7ED;stroke-width:1}
+.gl.z{stroke:#C3D2DA}
+.ax{stroke:var(--ink);stroke-width:1.8}
+.axlab{font-family:var(--math);font-style:italic;font-size:22px;fill:var(--ink)}
+.tick{font-family:var(--math);font-size:17px;fill:#5A6875}
+.mid{text-anchor:middle}.endA{text-anchor:end}
+.pt{animation:ptPop .42s cubic-bezier(.2,1.5,.45,1) both}
+@keyframes ptPop{from{transform:scale(0)}60%{transform:scale(1.32)}to{transform:scale(1)}}
+.ptlab{font-family:var(--math);font-size:17.5px;font-weight:700;animation:fadeIn .4s .12s both}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.gdash{stroke:#96A6B1;stroke-width:1.4;stroke-dasharray:5 5}
+.vguide{stroke:#46586B;stroke-width:2.6;stroke-dasharray:8 5;stroke-linecap:round}
+.xguide{font-family:var(--math);font-size:20px;font-weight:700;fill:#46586B}
+.gfade{animation:fadeIn .45s both}
+.garrow{stroke:var(--hot);stroke-width:2.4}
+.gtxt{font-family:var(--sans);font-size:17px;font-weight:800;fill:var(--hot)}
+.vlab{font-family:var(--math);font-size:18px;font-weight:700}
+.hotdot{fill:#fff;stroke:var(--hot);stroke-width:2.2;transition:.15s}
+.hotg{cursor:pointer}
+.hotg:hover .hotdot{fill:#FBD9DB;r:7.5}
+.hotg.on .hotdot{fill:var(--hot)}
+.hotg.off{cursor:default;pointer-events:none}
+.hotg.off .hotdot{stroke:#B7C3CB;fill:#fff}
+.hotg .ring{fill:none;stroke:var(--hot);stroke-width:2;opacity:0;animation:ring 2.4s ease-out infinite}
+.hotg.on .ring{animation:none;opacity:0}
+@keyframes ring{0%{r:6;opacity:.55}70%{r:15;opacity:0}100%{opacity:0}}
+.flag{font-family:var(--math);font-size:16px;font-weight:700}
+.note{font-family:var(--sans);font-size:16px;fill:var(--sub)}
+
+.msg{
+  margin-top:12px;padding:11px 14px;border-radius:10px;background:#FBF4EC;
+  border:1px solid #F0DCC7;font-size:.88rem;min-height:44px;display:flex;align-items:center;gap:9px;
+}
+.msg:empty{display:none}
+.msg .m{font-size:1em}
+.scalenote{font-size:.76rem;color:var(--sub);text-align:center;margin:8px 0 0}
+
+/* ---------- 범례 / 칩 ---------- */
+.legend{display:flex;flex-direction:column;gap:6px;font-size:.85rem}
+.legend div{display:flex;align-items:center;gap:9px}
+.legend .bar{width:26px;height:0;border-top-width:3.5px;border-top-style:solid;border-radius:2px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{
+  font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:.14s;
+  background:#fff;border:1.5px solid var(--line);border-radius:999px;padding:7px 14px;
+  display:inline-flex;align-items:center;gap:8px;color:var(--sub);
+}
+.chip .bar{width:18px;height:0;border-top-width:3.5px;border-top-style:solid}
+.chips.big{gap:9px}
+.chips.big .chip{padding:11px 16px;font-size:1.02rem}
+.chips.big .chip .m{font-size:1.28rem}
+.chips.big .chip .bar{width:26px;border-top-width:4px}
+.chip:hover{border-color:#B9C6CE}
+.chip.on{color:#fff;border-color:transparent}
+.chip.on .bar{border-top-color:#fff !important}
+
+/* ---------- 발문 상자 ---------- */
+details.ask{border:1px dashed #C8D4DB;border-radius:11px;background:#F8FBFC;padding:0;margin-top:14px}
+details.ask summary{
+  cursor:pointer;list-style:none;padding:10px 14px;font-size:.83rem;font-weight:800;color:var(--go);
+  display:flex;align-items:center;gap:8px;
+}
+details.ask summary::-webkit-details-marker{display:none}
+details.ask summary::before{content:'💬';font-size:.9rem}
+details.ask summary::after{content:'펼치기';margin-left:auto;font-weight:700;color:var(--sub);font-size:.78rem}
+details.ask[open] summary::after{content:'접기'}
+details.ask ul{margin:0;padding:0 18px 14px 34px;font-size:.86rem;color:var(--sub)}
+details.ask li{margin-bottom:6px}
+details.ask li::marker{color:var(--go)}
+
+/* ---------- 관찰 / 결론 ---------- */
+.obs{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;background:#fff}
+.obs q{display:block;font-weight:700;margin-bottom:10px;font-size:.95rem;quotes:none}
+.obs .ans{
+  display:none;font-size:.92rem;background:#EDF6F5;border-left:3px solid var(--go);
+  border-radius:0 8px 8px 0;padding:10px 13px;color:#134E4A;animation:pageIn .3s
+}
+.obs.open .ans{display:block}
+.obs.open .btn{display:none}
+
+/* 4페이지: 카드 2×2 | 공책 정리 */
+.split.p4grid{grid-template-columns:minmax(0,1fr) minmax(0,620px)}
+@media (max-width:1240px){.split.p4grid{grid-template-columns:1fr}}
+.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:640px){.summary{grid-template-columns:1fr}}
+.sum{
+  background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
+  padding:20px;display:flex;flex-direction:column;gap:14px;cursor:pointer;transition:.18s;position:relative;overflow:hidden;
+}
+.sum:hover{transform:translateY(-2px);border-color:#B9C6CE}
+.sum .no{
+  position:absolute;top:14px;right:18px;font-size:3.2rem;font-weight:800;color:#EDF2F5;
+  line-height:1;letter-spacing:-.04em;
+}
+.sum .mini{display:grid;place-items:center;min-height:250px}
+/* 문장 자리는 항상 확보해 두어 펼쳐도 카드 높이가 변하지 않음 */
+.sum p{margin:0;font-size:1.06rem;font-weight:600;line-height:1.6;min-height:3.2em;
+  opacity:0;transform:translateY(6px);transition:.35s}
+.sum.open p{opacity:1;transform:none}
+.sum .tap{font-size:.82rem;font-weight:800;color:var(--go);letter-spacing:.02em}
+.sum.open .tap{visibility:hidden}
+.finalbox{
+  border:2px solid var(--ink);border-radius:14px;background:#fff;padding:22px 24px;
+  position:sticky;top:76px;transition:.35s;
+}
+.finalbox h3{margin:0 0 14px;font-size:1.12rem;font-weight:800;letter-spacing:-.02em}
+.finalbox ol{margin:0;padding-left:24px;font-size:1.06rem;transition:.4s}
+.finalbox li{margin-bottom:12px;font-size:1.06rem}
+.finalbox li::marker{font-weight:800;color:var(--go)}
+.finalhint{margin:0 0 14px;font-size:.88rem;color:var(--sub);background:#F6F9FA;
+  border:1px dashed #C8D4DB;border-radius:9px;padding:9px 13px}
+.finalhint b{color:var(--go)}
+.finalbox.locked{border-color:#CFD8DE}
+.finalbox.locked ol{filter:blur(5px);opacity:.4;user-select:none;pointer-events:none}
+.finalbox:not(.locked) .finalhint{display:none}
+.kw{background:linear-gradient(transparent 58%, #FFE9A8 58%);font-weight:700;padding:0 1px}
+
+/* ---------- 슬라이더 ---------- */
+.slider{display:flex;align-items:center;gap:12px;margin-top:6px}
+.slider input[type=range]{flex:1;accent-color:var(--go);height:22px}
+.aval{font-family:var(--math);font-size:1.15rem;font-weight:700;min-width:76px;text-align:center;
+  background:#F3F7F9;border-radius:8px;padding:4px 8px;font-variant-numeric:tabular-nums}
+
+/* ---------- 하단 이동 ---------- */
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:26px}
+.pager .btn{font-size:.88rem}
+.pager .btn[disabled]{opacity:.35;pointer-events:none}
+
+.defs{position:absolute;width:0;height:0;overflow:hidden}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+@media (max-width:560px){
+  h2{font-size:1.32rem}
+  main{padding:18px 13px 32px}
+  .card{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<svg class="defs" aria-hidden="true"><defs>
+  <marker id="mk-ink" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="11" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,5 L0,10 Z" fill="#131C27"/></marker>
+  <marker id="mk-hot" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="12" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,5 L0,10 Z" fill="#C1121F"/></marker>
+  <marker id="mk-c2" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="11" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,5 L0,10 Z" fill="#1B6EA8"/></marker>
+  <marker id="mk-slate" viewBox="0 0 12 10" refX="10" refY="5" markerWidth="11" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,5 L0,10 Z" fill="#46586B"/></marker>
+</defs></svg>
+
+<header class="topbar">
+  <div class="inner">
+    <div class="brand"><span class="sq"></span> 이차함수 <span class="m"><i>y</i> = <i>ax</i><sup>2</sup></span> 의 그래프 <span class="grade">중3 수학</span></div>
+    <nav class="tabs" id="tabs">
+      <button data-p="1" class="on"><i>1</i> a&gt;0 인 경우</button>
+      <button data-p="2"><i>2</i> a&lt;0 인 경우</button>
+      <button data-p="3"><i>3</i> a가 변하면?</button>
+      <button data-p="4"><i>4</i> 정리</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════ 1 ═══════════ -->
+<section class="page on" id="p1">
+  <div class="phead">
+    <div class="eyebrow">활 동 1</div>
+    <h2><span class="m"><i>a</i> &gt; 0</span> 인 경우 — 표를 채우고, 점을 찍어 곡선을 그린다</h2>
+    <p class="lead">세 이차함수 <span class="m"><i>y</i>=<span class="frac"><span>1</span><span>2</span></span><i>x</i><sup>2</sup></span>, <span class="m"><i>y</i>=<i>x</i><sup>2</sup></span>, <span class="m"><i>y</i>=2<i>x</i><sup>2</sup></span> 의 함숫값을 구해 봅시다.</p>
+  </div>
+
+  <div class="split wide">
+    <div class="card">
+      <h3>① 함숫값을 구해 표로 나타내기</h3>
+      <div class="tablewrap"><table class="vt" id="vt"></table></div>
+      <div class="tablefoot">
+        <div class="row">
+          <button class="btn sm" id="fillAll">한 번에 모두 채우기</button>
+          <button class="btn sm" id="ratio">×2 관계 표시</button>
+          <button class="btn sm ghost" id="clearTable">표 지우기</button>
+        </div>
+        <div class="prog" id="prog">채운 칸 0 / 21</div>
+      </div>
+      <p class="hint" style="margin-top:10px">양 끝의 <b>⋯</b> 는 <i class="v">x</i> 에 <b>모든 실수</b>를 넣을 수 있다는 뜻입니다. 표에 적은 7개는 그중 일부일 뿐입니다.</p>
+    </div>
+
+    <div class="card">
+      <h3>좌표평면</h3>
+      <p class="locknote" id="lock1"></p>
+      <div class="planetools">
+        <button class="btn sm" id="labBtn">좌표 숨기기</button>
+        <button class="btn sm ghost" id="clearPlane">그래프 지우기</button>
+      </div>
+      <div class="planebox"><div id="plane1"></div></div>
+      <div class="msg" id="msg1"></div>
+    </div>
+  </div>
+
+  <div class="pager"><span></span><button class="btn primary" data-go="2">다음 · a&lt;0 인 경우 →</button></div>
+</section>
+
+<!-- ═══════════ 2 ═══════════ -->
+<section class="page" id="p2">
+  <div class="phead">
+    <div class="eyebrow">활 동 2</div>
+    <h2>a &lt; 0 인 경우</h2>
+    <p class="lead">함숫값을 나란히 비교해 보고, 두 그래프를 겹쳐 봅시다.</p>
+  </div>
+
+  <div class="split p2grid">
+    <aside>
+      <div class="card">
+        <h3>① 함숫값 비교</h3>
+        <div class="tablewrap"><table class="vt" id="vt2"></table></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn sm" id="fill2">모두 채우기</button>
+          <button class="btn sm ghost" id="clear2">지우기</button>
+        </div>
+        <p class="hint" style="margin-top:10px">같은 <i class="v">x</i> 에 대해 두 함숫값은 <b>절댓값이 같고 부호만 반대</b>입니다.</p>
+      </div>
+      <div class="card">
+        <h3>② 그래프로 확인</h3>
+        <div class="stack">
+          <button class="btn" id="b2a"><span class="swatch" style="background:var(--c2)"></span>① <span class="m"><i>y</i>=<i>x</i><sup>2</sup></span> 그래프 그리기</button>
+          <button class="btn" id="b2b"><span class="swatch" style="background:var(--c2);opacity:.45"></span>② 점을 <i class="v">x</i>축 대칭으로 옮기기</button>
+          <button class="btn" id="b2d"><span class="swatch" style="background:var(--c2);opacity:.45"></span>③ 옮긴 점을 잇는 곡선 그리기</button>
+          <button class="btn" id="b2c">④ 📄 접어서 겹쳐 보기</button>
+          <button class="btn ghost sm" id="b2r">지우기</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="planecard">
+      <div class="planebox"><div id="plane2"></div></div>
+      <div class="msg" id="msg2"></div>
+    </div>
+
+    <div class="card">
+      <h3>③ 일반화 — <i class="v">a</i> 를 바꾸어도 그럴까?</h3>
+      <div class="slider">
+        <span class="aval" id="aval2">a = 1</span>
+        <input type="range" id="asl2" min="0.3" max="3" step="0.1" value="1" aria-label="a의 값">
+      </div>
+      <div class="planebox" style="margin-top:10px"><div id="plane2b"></div></div>
+      <p class="hint" style="text-align:center;margin-top:10px">
+        <i class="v">a</i> 를 어떻게 바꾸어도 <span class="m"><i>y</i>=<i>ax</i><sup>2</sup></span> 과 <span class="m"><i>y</i>=−<i>ax</i><sup>2</sup></span> 은 늘 <b><i class="v">x</i>축에 대칭</b>입니다.
+      </p>
+    </div>
+  </div>
+
+  <div class="pager"><button class="btn" data-go="1">← 이전</button><button class="btn primary" data-go="3">다음 · a가 변하면? →</button></div>
+</section>
+
+<!-- ═══════════ 3 ═══════════ -->
+<section class="page" id="p3">
+  <div class="phead">
+    <div class="eyebrow">활 동 3</div>
+    <h2>a가 변하면?</h2>
+    <p class="lead">아래 버튼을 눌러 그래프를 하나씩 겹쳐 그리며 관찰해 봅시다.</p>
+  </div>
+
+  <div class="split p3grid">
+    <aside>
+      <div class="card">
+        <h3>그래프 켜고 끄기</h3>
+        <div class="chips big" id="chips3" style="flex-direction:column;align-items:stretch"></div>
+        <span class="stepnum">한 번에 보기</span>
+        <div class="row">
+          <button class="btn sm" data-set="pos"><i class="v">a</i> &gt; 0 만</button>
+          <button class="btn sm" data-set="neg"><i class="v">a</i> &lt; 0 만</button>
+          <button class="btn sm" data-set="all">모두</button>
+          <button class="btn sm ghost" data-set="none">지우기</button>
+        </div>
+        <span class="stepnum"><i class="v">a</i> 를 연속으로 바꾸어 보기</span>
+        <div class="slider">
+          <span class="aval" id="aval3">a = 1</span>
+          <input type="range" id="asl3" min="-3" max="3" step="0.1" value="1" aria-label="a의 값">
+        </div>
+        <p class="hint" id="ahint3" style="margin-top:8px"></p>
+      </div>
+    </aside>
+
+    <div class="planecard">
+      <div class="planebox"><div id="plane3"></div></div>
+    </div>
+
+    <div>
+      <div class="obs" data-i="1">
+        <q>Q1. <i class="v">a</i> 의 <b>부호</b>에 따라 그래프의 모양은 어떻게 달라지나요?</q>
+        <button class="btn sm">답 확인</button>
+        <div class="ans"><b><i class="v">a</i> &gt; 0 이면 아래로 볼록</b>(∪ 모양), <b><i class="v">a</i> &lt; 0 이면 위로 볼록</b>(∩ 모양)합니다. 모두 <i class="v">y</i>축을 축으로 하고 원점을 꼭짓점으로 하는 포물선입니다.</div>
+      </div>
+      <div class="obs" data-i="2">
+        <q>Q2. <span class="m">|<i>a</i>|</span> 가 커지면 그래프의 <b>폭</b>은 어떻게 되나요?</q>
+        <button class="btn sm">답 확인</button>
+        <div class="ans"><b><span class="m">|<i>a</i>|</span> 가 클수록 폭이 좁아집니다.</b> 같은 <i class="v">x</i> 에 대해 함숫값의 절댓값이 커지므로 그래프가 <i class="v">y</i>축에 더 바짝 붙습니다. (<span class="m">|<i>a</i>|</span> 가 작을수록 폭이 넓어집니다.)</div>
+      </div>
+      <div class="obs" data-i="3">
+        <q>Q3. <span class="m"><i>y</i>=2<i>x</i><sup>2</sup></span> 과 <span class="m"><i>y</i>=−2<i>x</i><sup>2</sup></span> 처럼 <b>부호만 다른</b> 두 그래프는?</q>
+        <button class="btn sm">답 확인</button>
+        <div class="ans"><b><i class="v">x</i>축에 서로 대칭</b>입니다. 색이 같은 실선과 점선을 확인해 보세요.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pager"><button class="btn" data-go="2">← 이전</button><button class="btn primary" data-go="4">다음 · 정리 →</button></div>
+</section>
+
+<!-- ═══════════ 4 ═══════════ -->
+<section class="page" id="p4">
+  <div class="phead">
+    <div class="eyebrow">정 리</div>
+    <h2>이차함수 <span class="m"><i>y</i>=<i>ax</i><sup>2</sup></span> 의 그래프</h2>
+    <p class="lead">카드를 눌러 오늘 찾아낸 성질을 하나씩 확인해 봅시다.</p>
+  </div>
+
+  <div class="split p4grid">
+    <div>
+      <div class="summary" id="sumWrap">
+        <div class="sum" data-i="0"><span class="no">1</span><div class="mini" id="mini0"></div><span class="tap">눌러서 확인</span><p><span class="kw"><i class="v">y</i>축</span>을 축으로 하고 <span class="kw">원점</span>을 꼭짓점으로 하는 <span class="kw">포물선</span>이다.</p></div>
+        <div class="sum" data-i="1"><span class="no">2</span><div class="mini" id="mini1"></div><span class="tap">눌러서 확인</span><p><span class="m"><i>a</i>&gt;0</span> 일 때 <span class="kw">아래로 볼록</span>하고, <span class="m"><i>a</i>&lt;0</span> 일 때 <span class="kw">위로 볼록</span>하다.</p></div>
+        <div class="sum" data-i="2"><span class="no">3</span><div class="mini" id="mini2"></div><span class="tap">눌러서 확인</span><p><span class="m">|<i>a</i>|</span> 가 <span class="kw">클수록</span> 그래프의 <span class="kw">폭이 좁아진다</span>.</p></div>
+        <div class="sum" data-i="3"><span class="no">4</span><div class="mini" id="mini3"></div><span class="tap">눌러서 확인</span><p>이차함수 <span class="m"><i>y</i>=−<i>ax</i><sup>2</sup></span> 의 그래프와 <span class="kw"><i class="v">x</i>축에 서로 대칭</span>이다.</p></div>
+      </div>
+
+      <div class="row" style="margin-top:16px;justify-content:center">
+        <button class="btn primary" id="showAll">4가지 모두 펼치기</button>
+        <button class="btn ghost sm" id="hideAll">다시 접기</button>
+      </div>
+    </div>
+
+    <div class="finalbox locked" id="finalbox">
+      <h3>공책 정리</h3>
+      <p class="finalhint" id="finalHint">왼쪽 카드 <b><span id="openCnt">0</span> / 4</b> 를 모두 펼치면 공책 정리가 나타납니다.</p>
+      <ol class="m">
+        <li><i>y</i>축을 축으로 하고, 원점 (0, 0)을 꼭짓점으로 하는 포물선이다.</li>
+        <li><i>a</i> &gt; 0 일 때 아래로 볼록, <i>a</i> &lt; 0 일 때 위로 볼록하다.</li>
+        <li>|<i>a</i>| 가 클수록 그래프의 폭이 좁아진다.</li>
+        <li>이차함수 <i>y</i> = −<i>ax</i><sup>2</sup> 의 그래프와 <i>x</i>축에 서로 대칭이다.</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="pager"><button class="btn" data-go="3">← 이전</button><button class="btn" data-go="1">처음으로 ↺</button></div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const E=(t,a,p)=>{const e=document.createElementNS(NS,t);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;};
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.prototype.slice.call((r||document).querySelectorAll(s));
+const CSSV=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C1=CSSV("--c1"), C2=CSSV("--c2"), C3=CSSV("--c3"), HOT=CSSV("--hot"), INK=CSSV("--ink");
+
+/* ──────────────── 좌표평면 ──────────────── */
+class Plane{
+  constructor(host,cfg){
+    this.host=typeof host==="string"?document.getElementById(host):host;
+    this.c=Object.assign({xMin:-4,xMax:4,yMin:-2,yMax:10,ux:44,uy:44,pad:30,xStep:1,yStep:1,minimal:false},cfg||{});
+    this.build();
+  }
+  set(cfg){Object.assign(this.c,cfg);this.build();}
+  build(){
+    const c=this.c;
+    this.w=(c.xMax-c.xMin)*c.ux; this.h=(c.yMax-c.yMin)*c.uy;
+    const W=this.w+c.pad*2, H=this.h+c.pad*2;
+    this.host.innerHTML="";
+    const svg=E("svg",{viewBox:"0 0 "+W+" "+H,width:W,height:H,"class":"plane"},this.host);
+    svg.style.maxWidth=W+"px";
+    this.svg=svg;
+    const g=E("g",{transform:"translate("+c.pad+","+c.pad+")"},svg);
+    this.L={};
+    ["grid","axis","curve","guide","point","hit","top"].forEach(n=>{this.L[n]=E("g",{"class":"l-"+n},g);});
+    this.grid(); this.axis();
+  }
+  X(x){return (x-this.c.xMin)*this.c.ux;}
+  Y(y){return (this.c.yMax-y)*this.c.uy;}
+  grid(){
+    const c=this.c,g=this.L.grid;
+    for(let x=Math.ceil(c.xMin);x<=c.xMax;x++)
+      E("line",{x1:this.X(x),y1:0,x2:this.X(x),y2:this.h,"class":"gl"+(x===0?" z":"")},g);
+    for(let y=Math.ceil(c.yMin);y<=c.yMax;y++)
+      E("line",{x1:0,y1:this.Y(y),x2:this.w,y2:this.Y(y),"class":"gl"+(y===0?" z":"")},g);
+  }
+  axis(){
+    const c=this.c,g=this.L.axis,y0=this.Y(0),x0=this.X(0);
+    E("line",{x1:0,y1:y0,x2:this.w+13,y2:y0,"class":"ax","marker-end":"url(#mk-ink)"},g);
+    E("line",{x1:x0,y1:this.h,x2:x0,y2:-13,"class":"ax","marker-end":"url(#mk-ink)"},g);
+    if(c.minimal)return;
+    E("text",{x:this.w+18,y:y0+5,"class":"axlab"},g).textContent="x";
+    E("text",{x:x0-15,y:-16,"class":"axlab"},g).textContent="y";
+    E("text",{x:x0-11,y:y0+18,"class":"tick endA"},g).textContent="O";
+    for(let x=Math.ceil(c.xMin);x<=c.xMax;x++){
+      if(x===0||x%c.xStep)continue;
+      E("text",{x:this.X(x),y:y0+18,"class":"tick mid"},g).textContent=x;
+    }
+    for(let y=Math.ceil(c.yMin);y<=c.yMax;y++){
+      if(y===0||y%c.yStep)continue;
+      E("text",{x:x0-9,y:this.Y(y)+4.5,"class":"tick endA"},g).textContent=y;
+    }
+  }
+  pathD(a,xa,xb,n){
+    n=n||130; let d="";
+    for(let i=0;i<=n;i++){
+      const x=xa+(xb-xa)*i/n, y=a*x*x;
+      d+=(i?" L":"M")+this.X(x).toFixed(2)+","+this.Y(y).toFixed(2);
+    }
+    return d;
+  }
+  edge(a){
+    const c=this.c;
+    if(!a)return {l:c.xMin,r:c.xMax};
+    const lim=Math.sqrt(Math.abs((a>0?c.yMax:c.yMin)/a));
+    return {l:Math.max(c.xMin,-lim), r:Math.min(c.xMax,lim)};
+  }
+  curve(a,o){
+    o=o||{};
+    const layer=this.L[o.layer||"curve"];
+    const g=E("g",{},layer);
+    const e=this.edge(a);
+    const at={fill:"none",stroke:o.color||INK,"stroke-width":o.width||3.4,"stroke-linecap":"round"};
+    const p1=E("path",Object.assign({d:this.pathD(a,0,e.r)},at),g);
+    const p2=E("path",Object.assign({d:this.pathD(a,0,e.l)},at),g);
+    if(o.dash){p1.setAttribute("stroke-dasharray","9 8");p2.setAttribute("stroke-dasharray","9 8");}
+    if(o.animate){
+      if(o.dash){
+        g.style.opacity=0;
+        requestAnimationFrame(()=>{g.style.transition="opacity .65s ease-out";g.style.opacity=1;});
+      }else{
+        [p1,p2].forEach(p=>{
+          const L=p.getTotalLength();
+          p.style.strokeDasharray=L; p.style.strokeDashoffset=L;
+          requestAnimationFrame(()=>{p.style.transition="stroke-dashoffset 1.05s ease-out";p.style.strokeDashoffset=0;});
+        });
+      }
+    }
+    return g;
+  }
+  point(x,y,o){
+    o=o||{};
+    const g=E("g",{transform:"translate("+this.X(x)+","+this.Y(y)+")"},this.L[o.layer||"point"]);
+    const c=E("circle",{cx:0,cy:0,r:o.r||7,fill:o.color||INK,stroke:"#fff","stroke-width":2.4,"class":"pt"},g);
+    if(o.delay)c.style.animationDelay=o.delay+"ms";
+    if(o.label){
+      const sx=(x<0?-1:1), t=E("text",{x:14*sx,y:-14,"class":"ptlab"+(sx<0?" endA":""),fill:o.color||INK},g);
+      t.textContent="("+x+", "+fmt(y)+")";
+      if(o.delay)t.style.animationDelay=(o.delay+60)+"ms";
+    }
+    return g;
+  }
+  clear(){for(let i=0;i<arguments.length;i++)this.L[arguments[i]].innerHTML="";}
+}
+function fmt(v){
+  if(Number.isInteger(v))return String(v);
+  return String(Math.round(v*100)/100);
+}
+function fracHTML(s){
+  if(s.indexOf("/")<0)return s;
+  const p=s.split("/");
+  return '<span class="frac"><span>'+p[0]+'</span><span>'+p[1]+'</span></span>';
+}
+
+/* ──────────────── 활동 1 ──────────────── */
+const XS=[-3,-2,-1,0,1,2,3];
+const FNS=[
+  {k:"f1",a:0.5,color:C1,label:'<i>y</i> = <span class="frac"><span>1</span><span>2</span></span><i>x</i><sup>2</sup>',
+   vals:["9/2","2","1/2","0","1/2","2","9/2"]},
+  {k:"f2",a:1,color:C2,label:'<i>y</i> = <i>x</i><sup>2</sup>',
+   vals:["9","4","1","0","1","4","9"]},
+  {k:"f3",a:2,color:C3,label:'<i>y</i> = 2<i>x</i><sup>2</sup>',
+   vals:["18","8","2","0","2","8","18"]}
+];
+const S1={fill:{f1:{},f2:{},f3:{}},pt:{},cv:{},gx:null,lab:true,fresh:null};
+
+const VT=$("#vt");
+(function buildTable(){
+  let h='<thead><tr><th class="rowhead"><i class="v">x</i></th><th class="el">⋯</th>';
+  XS.forEach(x=>{h+='<th>'+x+'</th>';});
+  h+='<th class="el">⋯</th><th class="bh">② 점 찍기</th><th class="bh">③ 곡선 그리기</th></tr></thead><tbody>';
+  FNS.forEach((f,ri)=>{
+    h+='<tr data-k="'+f.k+'"'+(ri<2?' class="rel"':'')+'>';
+    h+='<th><span class="sw" style="background:'+f.color+'"></span>'+f.label+'</th><td class="el">⋯</td>';
+    XS.forEach((x,i)=>{h+='<td class="cell" data-k="'+f.k+'" data-i="'+i+'"></td>';});
+    h+='<td class="el">⋯</td><td class="bt" data-slot="pt" data-k="'+f.k+'"></td>'
+      +'<td class="bt" data-slot="cv" data-k="'+f.k+'"></td></tr>';
+  });
+  VT.innerHTML=h+'</tbody>';
+})();
+
+function cellFill(td,delay){
+  if(td.classList.contains("filled"))return;
+  const k=td.dataset.k, i=+td.dataset.i;
+  const f=FNS.find(o=>o.k===k);
+  const go=()=>{
+    td.classList.add("filled");
+    td.innerHTML='<span class="val" style="color:'+f.color+'">'+fracHTML(f.vals[i])+'</span>';
+    S1.fill[k][i]=true; updateProg();
+  };
+  if(delay)setTimeout(go,delay); else go();
+}
+function rowFilled(k){return Object.keys(S1.fill[k]).length===XS.length;}
+function fillRow(k,cb){
+  const tds=$$('td.cell[data-k="'+k+'"]',VT);
+  let d=0; tds.forEach(td=>{if(!td.classList.contains("filled")){cellFill(td,d);d+=70;}});
+  if(cb)setTimeout(cb,d+120);
+  return d;
+}
+function allPlotted(){return FNS.every(f=>!!S1.pt[f.k]);}
+function updateProg(){
+  const n=FNS.reduce((s,f)=>s+Object.keys(S1.fill[f.k]).length,0);
+  const el=$("#prog");
+  el.textContent="채운 칸 "+n+" / 21";
+  el.classList.toggle("full",n===21);
+  updateBtns();
+}
+function updateBtns(){
+  FNS.forEach(f=>{
+    const bp=$('button[data-b="pt"][data-k="'+f.k+'"]');
+    const bc=$('button[data-b="cv"][data-k="'+f.k+'"]');
+    if(!bp||!bc)return;
+    bp.disabled=!rowFilled(f.k);
+    bp.classList.toggle("done",!!S1.pt[f.k]);
+    bp.title=bp.disabled?"이 줄의 함숫값을 모두 채우면 열립니다":"";
+    bc.disabled=!S1.pt[f.k];
+    bc.classList.toggle("done",!!S1.cv[f.k]);
+    bc.title=bc.disabled?"먼저 점을 찍어 보세요":"";
+  });
+  const lock=$("#lock1");
+  const filledRows=FNS.filter(f=>rowFilled(f.k)).length;
+  if(filledRows===0)
+    lock.innerHTML='표의 빈칸을 채우면 <b>② 점 찍기</b> 버튼이 차례로 열립니다.';
+  else if(!allPlotted())
+    lock.innerHTML='세 함수의 점을 모두 찍으면 <i class="v">x</i>축 위의 <b>빨간 점</b>이 활성화되어 <b>×2 관계</b>를 볼 수 있습니다.';
+  else if(!FNS.every(f=>S1.cv[f.k]))
+    lock.innerHTML='이제 <b>③ 곡선 그리기</b>로 점 사이를 이어 봅시다. <i class="v">x</i>축 위의 <b>빨간 점</b>도 눌러 보세요.';
+  else
+    lock.innerHTML='세 포물선이 모두 완성되었습니다. <i class="v">x</i>축 위의 <b>빨간 점</b>을 눌러 함숫값의 <b>×2 관계</b>를 확인해 보세요.';
+}
+VT.addEventListener("click",e=>{
+  const td=e.target.closest("td.cell");
+  if(td)cellFill(td);
+});
+$("#fillAll").onclick=()=>{
+  let d=0;
+  FNS.forEach(f=>{
+    $$('td.cell[data-k="'+f.k+'"]',VT).forEach(td=>{
+      if(!td.classList.contains("filled")){cellFill(td,d);d+=45;}
+    });
+  });
+};
+$("#ratio").onclick=e=>{
+  VT.classList.toggle("ratio");
+  e.currentTarget.textContent=VT.classList.contains("ratio")?"↑ ×2 관계 숨기기":"↑ ×2 관계 표시";
+};
+$("#clearTable").onclick=()=>{
+  $$("td.cell",VT).forEach(td=>{td.classList.remove("filled");td.innerHTML="";});
+  S1.fill={f1:{},f2:{},f3:{}}; updateProg();
+};
+
+/* 표 오른쪽 조작 버튼 만들기 */
+FNS.forEach(f=>{
+  const b1=document.createElement("button");
+  b1.className="btn sm"; b1.dataset.b="pt"; b1.dataset.k=f.k; b1.disabled=true;
+  b1.innerHTML='<span class="swatch" style="background:'+f.color+'"></span>점 찍기';
+  b1.onclick=()=>{S1.pt[f.k]=true;S1.fresh=f.k;render1();updateBtns();};
+  $('td.bt[data-slot="pt"][data-k="'+f.k+'"]',VT).appendChild(b1);
+
+  const b2=document.createElement("button");
+  b2.className="btn sm"; b2.dataset.b="cv"; b2.dataset.k=f.k; b2.disabled=true;
+  b2.innerHTML='<span class="swatch" style="background:'+f.color+'"></span>곡선 그리기';
+  b2.onclick=()=>{S1.cv[f.k]=true;S1.fresh="c-"+f.k;render1();updateBtns();};
+  $('td.bt[data-slot="cv"][data-k="'+f.k+'"]',VT).appendChild(b2);
+});
+$("#labBtn").onclick=e=>{
+  S1.lab=!S1.lab;
+  e.currentTarget.textContent=S1.lab?"좌표 숨기기":"좌표 보이기";
+  render1();
+};
+$("#clearPlane").onclick=()=>{
+  S1.pt={};S1.cv={};S1.gx=null;S1.fresh=null;
+  $("#msg1").innerHTML=""; render1(); updateProg();
+};
+
+const plane1=new Plane("plane1",{xMin:-3.8,xMax:3.8,yMin:-1.7,yMax:10.3,ux:88,uy:88,pad:40,yStep:1});
+
+function render1(){
+  plane1.clear("curve","point","guide","hit");
+  FNS.forEach(f=>{
+    if(S1.cv[f.k])plane1.curve(f.a,{color:f.color,animate:S1.fresh==="c-"+f.k});
+  });
+  FNS.forEach(f=>{
+    if(!S1.pt[f.k])return;
+    let d=0;
+    XS.forEach(x=>{
+      const y=f.a*x*x;
+      if(y>plane1.c.yMax){
+        if(x>0||x<0){
+          const g=E("g",{transform:"translate("+plane1.X(x)+",6)"},plane1.L.point);
+          E("path",{d:"M0,-6 L6,4 L-6,4 Z",fill:f.color},g);
+          const t=E("text",{x:0,y:20,"class":"flag mid",fill:f.color},g);
+          t.textContent="("+x+", "+y+")";
+        }
+        return;
+      }
+      plane1.point(x,y,{color:f.color,label:S1.lab,delay:S1.fresh===f.k?d:0});
+      d+=80;
+    });
+  });
+  drawHotspots();
+  if(S1.gx!==null)drawGuide(S1.gx);
+  S1.fresh=null;
+}
+function drawHotspots(){
+  const live=allPlotted();
+  XS.forEach(x=>{
+    const on=S1.gx===x;
+    const g=E("g",{"class":"hotg"+(on?" on":"")+(live?"":" off"),
+      transform:"translate("+plane1.X(x)+","+plane1.Y(0)+")"},plane1.L.hit);
+    if(live)E("circle",{cx:0,cy:0,r:6,"class":"ring"},g);
+    E("circle",{cx:0,cy:0,r:14,fill:"transparent"},g);
+    E("circle",{cx:0,cy:0,r:6.5,"class":"hotdot"},g);
+    if(live)g.addEventListener("click",()=>toggleGuide(x));
+  });
+}
+function toggleGuide(x){
+  if(S1.gx===x){S1.gx=null;$("#msg1").innerHTML="";render1();return;}
+  S1.gx=x;
+  render1();
+  const v=[0.5*x*x,x*x,2*x*x];
+  $("#msg1").innerHTML = x===0
+    ? '<span><b><i class="v">x</i> = 0</b> 일 때 세 함숫값이 모두 <b>0</b> → 세 그래프는 모두 <b>원점</b>을 지납니다.</span>'
+    : '<span><b><i class="v">x</i> = '+x+'</b> 일 때 &nbsp; <span class="m" style="color:'+C1+'">'+fmt(v[0])+'</span> <b>→ ×2 →</b> <span class="m" style="color:'+C2+'">'+fmt(v[1])+'</span> <b>→ ×2 →</b> <span class="m" style="color:'+C3+'">'+fmt(v[2])+'</span> &nbsp; 함숫값이 2배씩 커집니다.</span>';
+}
+function drawGuide(x){
+  const p=plane1,g=p.L.guide,ymax=p.c.yMax;
+  const v=[0.5*x*x,x*x,2*x*x], cols=[C1,C2,C3];
+  const y0=p.Y(0), px=p.X(x);
+  if(x===0){
+    const t=E("text",{x:px+16,y:y0-16,"class":"note"},g);
+    t.textContent="세 그래프 모두 원점을 지납니다";
+    return;
+  }
+  const s=x>0?1:-1;
+  /* ① x = n 세로 보조선이 아래에서 위로 자라며 화살표가 함께 올라감 */
+  const topY=p.Y(Math.min(v[2],ymax))-16;
+  const vline=E("line",{x1:px,y1:y0,x2:px,y2:y0,"class":"vguide","marker-end":"url(#mk-slate)"},g);
+  const t0=performance.now(), DUR=560;
+  (function step(now){
+    const k=Math.min(1,(now-t0)/DUR), e=1-Math.pow(1-k,3);
+    vline.setAttribute("y2", y0+(topY-y0)*e);
+    if(k<1)requestAnimationFrame(step);
+  })(performance.now());
+  const xl=E("text",{x:px+11*s,y:y0+42,"class":"xguide gfade"+(s<0?" endA":"")},g);
+  xl.textContent="x = "+x;
+  /* ② 각 함숫값까지의 가로 점선과 값 */
+  v.forEach((y,i)=>{
+    if(y>ymax)return;
+    const ln=E("line",{x1:p.X(0),y1:p.Y(y),x2:px,y2:p.Y(y),"class":"gdash gfade"},g);
+    ln.style.animationDelay=(DUR+i*110)+"ms";
+    const t=E("text",{x:px-13*s,y:p.Y(y)-9,"class":"vlab gfade"+(s>0?" endA":""),fill:cols[i]},g);
+    t.style.animationDelay=(DUR+i*110)+"ms";
+    t.textContent=fmt(y);
+  });
+  /* ③ ×2 화살표 */
+  [[0,1],[1,2]].forEach((pr,k)=>{
+    const yA=v[pr[0]], yB=v[pr[1]];
+    if(yA>ymax)return;
+    const cl=yB>ymax, yT=Math.min(yB,ymax);
+    const xa=px+(17+k*22)*s, delay=DUR+380+k*260;
+    const ar=E("line",{x1:xa,y1:p.Y(yA)-4,x2:xa,y2:p.Y(yT)+(cl?4:9),"class":"garrow gfade","marker-end":"url(#mk-hot)"},g);
+    ar.style.animationDelay=delay+"ms";
+    const t=E("text",{x:xa+8*s,y:(p.Y(yA)+p.Y(yT))/2+5,"class":"gtxt gfade"+(s<0?" endA":"")},g);
+    t.style.animationDelay=delay+"ms";
+    t.textContent=cl?"×2 ("+yB+")":"×2";
+  });
+}
+render1(); updateProg();
+
+/* ──────────────── 활동 2 ──────────────── */
+const VT2=$("#vt2");
+const V2=[["9","4","1","0","1","4","9"],["−9","−4","−1","0","−1","−4","−9"]];
+(function(){
+  let h='<thead><tr><th class="rowhead"><i class="v">x</i></th><th class="el">⋯</th>';
+  XS.forEach(x=>{h+='<th>'+x+'</th>';});
+  h+='<th class="el">⋯</th></tr></thead><tbody>';
+  [['<i>y</i> = <i>x</i><sup>2</sup>',C2,0],['<i>y</i> = −<i>x</i><sup>2</sup>',C2,1]].forEach(r=>{
+    h+='<tr data-r="'+r[2]+'"><th><span class="sw" style="background:'+r[1]+';opacity:'+(r[2]?".45":"1")+'"></span>'+r[0]+'</th><td class="el">⋯</td>';
+    XS.forEach((x,i)=>{h+='<td class="cell" data-r="'+r[2]+'" data-i="'+i+'"></td>';});
+    h+='<td class="el">⋯</td></tr>';
+  });
+  VT2.innerHTML=h+'</tbody>';
+})();
+function fill2(td,delay){
+  if(td.classList.contains("filled"))return;
+  const r=+td.dataset.r,i=+td.dataset.i;
+  setTimeout(()=>{
+    td.classList.add("filled");
+    td.innerHTML='<span class="val" style="color:'+C2+';opacity:'+(r?".7":"1")+'">'+V2[r][i]+'</span>';
+  },delay||0);
+}
+VT2.addEventListener("click",e=>{const td=e.target.closest("td.cell");if(td)fill2(td);});
+$("#fill2").onclick=()=>{let d=0;$$("td.cell",VT2).forEach(td=>{if(!td.classList.contains("filled")){fill2(td,d);d+=55;}});};
+$("#clear2").onclick=()=>{$$("td.cell",VT2).forEach(td=>{td.classList.remove("filled");td.innerHTML="";});};
+
+const plane2=new Plane("plane2",{xMin:-4.6,xMax:4.6,yMin:-9.3,yMax:9.3,ux:58,uy:58,pad:36,yStep:2});
+let g2up=null,g2dn=null,mirrored=false;
+$("#b2a").onclick=()=>{
+  plane2.clear("curve","point","guide");
+  g2up=plane2.curve(1,{color:C2,animate:true}); g2dn=null; mirrored=false;
+  let d=0; XS.forEach(x=>{plane2.point(x,x*x,{color:C2,delay:400+d});d+=70;});
+  $("#msg2").innerHTML='<span>포물선 <span class="m"><i>y</i>=<i>x</i><sup>2</sup></span> 을 그렸습니다. 이제 <i class="v">x</i>축 아래로 옮겨 봅시다.</span>';
+};
+$("#b2b").onclick=()=>{
+  if(!g2up)$("#b2a").onclick();
+  plane2.clear("guide");
+  const layer=plane2.L.guide;
+  let d=0;
+  XS.forEach(x=>{
+    if(x===0)return;
+    const y=x*x, y1=plane2.Y(y), y2=plane2.Y(-y), px=plane2.X(x);
+    const ln=E("line",{x1:px,y1:y1,x2:px,y2:y1,"class":"gdash"},layer);
+    const g=E("g",{transform:"translate("+px+","+y1+")"},layer);
+    E("circle",{cx:0,cy:0,r:7,fill:C2,opacity:.72,stroke:"#fff","stroke-width":2.4},g);
+    const t0=performance.now()+d;
+    (function step(now){
+      const k=Math.max(0,Math.min(1,(now-t0)/620));
+      const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      const yy=y1+(y2-y1)*e;
+      g.setAttribute("transform","translate("+px+","+yy+")");
+      ln.setAttribute("y2",yy);
+      if(k<1)requestAnimationFrame(step);
+    })(performance.now());
+    d+=90;
+  });
+  mirrored=true;
+  $("#msg2").innerHTML='<span>각 점 <span class="m">(<i>x</i>, <i>x</i><sup>2</sup>)</span> 이 <span class="m">(<i>x</i>, −<i>x</i><sup>2</sup>)</span> 로 옮겨집니다. <i class="v">x</i>좌표는 그대로, <b><i class="v">y</i>좌표만 부호가 바뀝니다.</b></span>';
+};
+/* ③ 대칭시킨 점들을 잇는 곡선 그리기 */
+$("#b2d").onclick=()=>{
+  if(!mirrored)$("#b2b").onclick();
+  const go=()=>{
+    if(!g2dn)g2dn=plane2.curve(-1,{color:C2,dash:true,animate:true,width:3});
+    $("#msg2").innerHTML='<span>대칭시킨 점들을 이으면 <span class="m"><i>y</i>=−<i>x</i><sup>2</sup></span> 의 그래프가 됩니다. <b>위로 볼록</b>한 포물선이네요.</span>';
+  };
+  setTimeout(go, mirrored?0:1400);
+};
+$("#b2c").onclick=()=>{
+  if(!g2up){$("#b2a").onclick();setTimeout(()=>{$("#b2b").onclick();},1300);setTimeout(()=>{$("#b2d").onclick();},2700);setTimeout(()=>{$("#b2c").onclick();},4200);return;}
+  if(!g2dn)g2dn=plane2.curve(-1,{color:C2,dash:true,width:3});
+  const clone=g2up.cloneNode(true);
+  clone.setAttribute("opacity","0.85");
+  $$("path",clone).forEach(p=>{p.style.strokeDasharray="";p.style.strokeDashoffset="";p.setAttribute("stroke",HOT);});
+  plane2.L.top.appendChild(clone);
+  const y0=plane2.Y(0), t0=performance.now();
+  (function step(now){
+    const k=Math.max(0,Math.min(1,(now-t0)/1500));
+    const e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+    const s=1-2*e;
+    clone.setAttribute("transform","translate(0,"+y0+") scale(1,"+(Math.abs(s)<0.001?0.001:s)+") translate(0,"+(-y0)+")");
+    if(k<1)requestAnimationFrame(step);
+    else setTimeout(()=>{clone.style.transition="opacity .6s";clone.style.opacity=0;setTimeout(()=>clone.remove(),700);},700);
+  })(performance.now());
+  $("#msg2").innerHTML='<span><i class="v">x</i>축을 접는 선으로 하여 접으면 두 곡선이 <b>완전히 겹칩니다</b> → 두 그래프는 <b><i class="v">x</i>축에 대칭</b>입니다.</span>';
+};
+$("#b2r").onclick=()=>{plane2.clear("curve","point","guide","top");g2up=null;g2dn=null;mirrored=false;$("#msg2").innerHTML="";};
+
+const plane2b=new Plane("plane2b",{xMin:-4,xMax:4,yMin:-8,yMax:8,ux:52,uy:48,pad:32,yStep:2});
+function draw2b(a){
+  plane2b.clear("curve","guide");
+  plane2b.curve(a,{color:C3});
+  plane2b.curve(-a,{color:C3,dash:true,width:3});
+  const lab=E("text",{x:plane2b.X(0)+12,y:26,"class":"vlab",fill:C3},plane2b.L.guide);
+  lab.textContent="y = "+fmt(a)+"x²";
+  const lab2=E("text",{x:plane2b.X(0)+12,y:plane2b.h-10,"class":"vlab",fill:C3,opacity:.75},plane2b.L.guide);
+  lab2.textContent="y = −"+fmt(a)+"x²";
+}
+$("#asl2").oninput=e=>{
+  const a=parseFloat(e.target.value);
+  $("#aval2").textContent="a = "+fmt(a);
+  draw2b(a);
+};
+draw2b(1);
+
+/* ──────────────── 활동 3 ──────────────── */
+const AS=[
+  {a:2,   t:'<i>y</i> = 2<i>x</i><sup>2</sup>',  c:C3,dash:false},
+  {a:1,   t:'<i>y</i> = <i>x</i><sup>2</sup>',   c:C2,dash:false},
+  {a:0.5, t:'<i>y</i> = <span class="frac"><span>1</span><span>2</span></span><i>x</i><sup>2</sup>', c:C1,dash:false},
+  {a:-0.5,t:'<i>y</i> = −<span class="frac"><span>1</span><span>2</span></span><i>x</i><sup>2</sup>',c:C1,dash:true},
+  {a:-1,  t:'<i>y</i> = −<i>x</i><sup>2</sup>', c:C2,dash:true},
+  {a:-2,  t:'<i>y</i> = −2<i>x</i><sup>2</sup>',c:C3,dash:true}
+];
+const on3={};
+const plane3=new Plane("plane3",{xMin:-4.3,xMax:4.3,yMin:-8.6,yMax:8.6,ux:60,uy:60,pad:36,yStep:2});
+let slA=null;
+AS.forEach((o,i)=>{
+  const b=document.createElement("button");
+  b.className="chip"; b.dataset.i=i;
+  b.innerHTML='<span class="bar" style="border-top-color:'+o.c+';border-top-style:'+(o.dash?"dashed":"solid")+'"></span><span class="m">'+o.t+'</span>';
+  b.onclick=()=>{on3[i]=!on3[i];render3(i);};
+  $("#chips3").appendChild(b);
+});
+$$("[data-set]").forEach(b=>{
+  b.onclick=()=>{
+    const s=b.dataset.set;
+    AS.forEach((o,i)=>{
+      on3[i]= s==="all" ? true : s==="none" ? false : s==="pos" ? o.a>0 : o.a<0;
+    });
+    render3(null);
+  };
+});
+function render3(fresh){
+  plane3.clear("curve","guide");
+  AS.forEach((o,i)=>{
+    const b=$('#chips3 .chip[data-i="'+i+'"]');
+    b.classList.toggle("on",!!on3[i]);
+    b.style.background=on3[i]?o.c:"";
+    if(on3[i])plane3.curve(o.a,{color:o.c,dash:o.dash,width:o.dash?3:3.6,animate:fresh===i});
+  });
+  if(slA!==null&&slA!==0){
+    plane3.curve(slA,{color:INK,width:2,layer:"guide"});
+    const t=E("text",{x:plane3.X(0)+10,y:slA>0?24:plane3.h-10,"class":"vlab",fill:INK},plane3.L.guide);
+    t.textContent="y = "+fmt(slA)+"x²";
+  }
+}
+$("#asl3").oninput=e=>{
+  const a=parseFloat(e.target.value);
+  slA=a;
+  $("#aval3").textContent="a = "+fmt(a);
+  $("#ahint3").innerHTML = Math.abs(a)<0.05
+    ? '<b><i class="v">a</i> = 0</b> 이면 <span class="m"><i>y</i> = 0</span> 이 되어 이차함수가 아닙니다.'
+    : (a>0?'아래로 볼록':'위로 볼록')+' · |a| = '+fmt(Math.abs(a))+' → 폭이 '+(Math.abs(a)>1?'좁습니다':Math.abs(a)<1?'넓습니다':'기준입니다');
+  render3(null);
+};
+$$("#p3 .obs").forEach(o=>{o.querySelector("button").onclick=()=>o.classList.add("open");});
+[0,1,2].forEach(i=>{on3[i]=false;});
+render3(null);
+$("#ahint3").innerHTML='슬라이더를 움직이면 검은 곡선이 함께 변합니다.';
+
+/* ──────────────── 정리 ──────────────── */
+function mini(id,fn){
+  const p=new Plane(id,{xMin:-3.1,xMax:3.1,yMin:-3.1,yMax:3.1,ux:42,uy:42,pad:16,minimal:true});
+  fn(p); return p;
+}
+mini("mini0",p=>{
+  E("line",{x1:p.X(0),y1:0,x2:p.X(0),y2:p.h,stroke:HOT,"stroke-width":3,"stroke-dasharray":"6 5"},p.L.curve);
+  p.curve(0.8,{color:C2});
+  p.point(0,0,{color:HOT,r:6});
+  const t=E("text",{x:p.X(0)+9,y:p.Y(0)+18,"class":"flag",fill:HOT},p.L.top); t.textContent="꼭짓점";
+  const t2=E("text",{x:p.X(0)+8,y:14,"class":"flag",fill:HOT},p.L.top); t2.textContent="축";
+});
+mini("mini1",p=>{
+  p.curve(0.8,{color:C2}); p.curve(-0.8,{color:C1});
+  const a=E("text",{x:p.X(2.1),y:p.Y(2.4),"class":"flag",fill:C2},p.L.top); a.textContent="a>0";
+  const b=E("text",{x:p.X(2.1),y:p.Y(-2.1),"class":"flag",fill:C1},p.L.top); b.textContent="a<0";
+});
+mini("mini2",p=>{
+  p.curve(2,{color:C3,width:3.4}); p.curve(0.35,{color:C1,width:3.4});
+  const a=E("text",{x:p.X(1.55),y:p.Y(2.7),"class":"flag",fill:C3},p.L.top); a.textContent="|a| 큼";
+  const b=E("text",{x:p.X(2.0),y:p.Y(0.85),"class":"flag",fill:C1},p.L.top); b.textContent="|a| 작음";
+});
+mini("mini3",p=>{
+  E("line",{x1:0,y1:p.Y(0),x2:p.w,y2:p.Y(0),stroke:HOT,"stroke-width":3,"stroke-dasharray":"6 5"},p.L.curve);
+  p.curve(0.8,{color:C2}); p.curve(-0.8,{color:C2,dash:true,width:3});
+});
+function syncFinal(){
+  const n=$$(".sum.open").length;
+  $("#openCnt").textContent=n;
+  $("#finalbox").classList.toggle("locked",n<4);
+}
+$$(".sum").forEach(el=>{el.onclick=()=>{el.classList.toggle("open");syncFinal();};});
+$("#showAll").onclick=()=>{$$(".sum").forEach(el=>el.classList.add("open"));syncFinal();};
+$("#hideAll").onclick=()=>{$$(".sum").forEach(el=>el.classList.remove("open"));syncFinal();};
+syncFinal();
+
+/* ──────────────── 페이지 이동 ──────────────── */
+function goto(n){
+  $$(".page").forEach(p=>p.classList.toggle("on",p.id==="p"+n));
+  $$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.p===String(n)));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+$$("#tabs button").forEach(b=>{b.onclick=()=>goto(b.dataset.p);});
+$$("[data-go]").forEach(b=>{b.onclick=()=>goto(b.dataset.go);});
+document.addEventListener("keydown",e=>{
+  if(e.target.matches("input,textarea"))return;
+  const cur=+$(".page.on").id.slice(1);
+  if(e.key==="ArrowRight"&&cur<4)goto(cur+1);
+  if(e.key==="ArrowLeft"&&cur>1)goto(cur-1);
+});
+</script>
+</body>
+</html>
