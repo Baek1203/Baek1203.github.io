@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>맞꼭지각과 수직 · 수업 도구</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --paper:#EFF3F7; --card:#FFFFFF; --ink:#15242F; --dim:#5E7488;
+  --hair:#DDE5EC; --hair-2:#C2D0DC;
+  --rose:#D8306A; --rose-w:#FCE7EF;
+  --mint:#0A907C; --mint-w:#DFF4F0;
+  --amber:#B4740A; --amber-w:#FCF0D9;
+  --sky:#2A63CC;  --sky-w:#E6EEFB;
+  --shadow:0 1px 2px rgba(21,36,47,.06), 0 10px 26px -16px rgba(21,36,47,.30);
+  --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:clamp(15px,1.02vw,19px);line-height:1.55;-webkit-font-smoothing:antialiased;
+  display:flex;overflow:hidden}
+h1,h2,h3,p{margin:0}
+button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--sky);outline-offset:3px;border-radius:4px}
+.ov{text-decoration:overline;text-decoration-thickness:2px;text-underline-offset:0}
+
+/* ── 좌측 단계 레일 ─────────────────────────── */
+.rail{width:clamp(178px,13.5vw,232px);flex-shrink:0;height:100vh;background:var(--card);
+  border-right:1px solid var(--hair);display:flex;flex-direction:column}
+.brand{padding:.95rem .9rem .8rem;border-bottom:1px solid var(--hair)}
+.eyebrow{font-family:var(--mono);font-size:.63em;letter-spacing:.1em;color:var(--dim);display:block;line-height:1.5}
+.title{font-size:1.22em;font-weight:800;letter-spacing:-.02em;line-height:1.2;margin-top:.2rem}
+.title em{font-style:normal;color:var(--mint)}
+.rail nav{flex:1;overflow-y:auto;padding:.45rem}
+.rail nav button{display:block;width:100%;text-align:left;background:transparent;
+  border:1px solid transparent;border-radius:10px;padding:.42rem .6rem;margin-bottom:.15rem;transition:.15s}
+.rail nav button:hover{background:var(--paper)}
+.rail .n{font-family:var(--mono);font-size:.66em;color:var(--dim);letter-spacing:.08em}
+.rail .t{font-weight:700;font-size:.94em;letter-spacing:-.01em}
+.rail .m{font-family:var(--mono);font-size:.63em;color:var(--dim)}
+.rail nav button[aria-selected="true"]{background:var(--mint-w);border-color:var(--mint)}
+.rail nav button[aria-selected="true"] .n{color:var(--mint)}
+.rail nav button[aria-selected="true"] .m{color:var(--amber)}
+.railfoot{padding:.6rem .9rem .8rem;border-top:1px solid var(--hair)}
+.keyhint{font-family:var(--mono);font-size:.62em;color:var(--dim);line-height:1.7}
+.keyhint b{color:var(--ink);font-weight:700}
+.ghost{width:100%;margin-top:.5rem;background:var(--card);border:1px solid var(--hair-2);
+  border-radius:999px;padding:.36em .8em;font-size:.76em;color:var(--dim);transition:.15s}
+.ghost:hover{color:var(--sky);border-color:var(--sky)}
+
+/* ── 본문 ──────────────────────────────────── */
+main{flex:1;min-width:0;height:100vh;overflow:auto}
+.stage{display:none;padding:clamp(.8rem,1.4vw,1.4rem) clamp(1rem,1.9vw,1.9rem) 1.5rem}
+.stage.on{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,1fr);
+  gap:clamp(.9rem,1.5vw,1.6rem);align-items:start}
+.canvasbox{background:var(--card);border:1px solid var(--hair);border-radius:16px;
+  padding:clamp(.55rem,1vw,.95rem);box-shadow:var(--shadow)}
+.canvasbox svg{display:block;width:100%;height:auto;touch-action:none}
+.side{display:flex;flex-direction:column;gap:.75rem;min-width:0}
+
+.card{background:var(--card);border:1px solid var(--hair);border-radius:14px;
+  padding:.85rem .95rem;box-shadow:var(--shadow)}
+.card h3{font-size:.72em;font-family:var(--mono);letter-spacing:.13em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:.45rem;font-weight:500}
+.defbox{background:var(--paper);border:1px solid var(--hair);border-radius:11px;
+  padding:.65rem .85rem;margin-bottom:.45rem}
+.defbox:last-child{margin-bottom:0}
+.defbox b{display:block;font-size:1.12em;color:var(--ink);margin-bottom:.15rem;letter-spacing:-.01em}
+.defbox p{font-size:.95em;color:var(--dim);line-height:1.5}
+.defbox p em{font-style:normal;color:var(--mint);font-weight:700}
+
+.reads{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+.read{background:var(--paper);border:1px solid var(--hair);border-radius:10px;padding:.4rem .6rem}
+.read .lbl{font-family:var(--mono);font-size:.7em;color:var(--dim)}
+.read .val{font-size:1.5em;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.15}
+.read.rose{background:var(--rose-w);border-color:#F5C4D6} .read.rose .val{color:var(--rose)}
+.read.mint{background:var(--mint-w);border-color:#AEDFD7} .read.mint .val{color:var(--mint)}
+
+.btn{background:var(--card);border:1px solid var(--hair-2);border-radius:10px;
+  padding:.55em .9em;font-weight:600;transition:.15s;text-align:center}
+.btn:hover{border-color:var(--sky);color:var(--sky)}
+.btn.primary{background:var(--mint);color:#fff;border-color:var(--mint)}
+.btn.primary:hover{background:#0BA88F;color:#fff}
+.btn.wide{width:100%}
+.btnrow{display:flex;gap:.45rem;flex-wrap:wrap}
+.btnrow .btn{flex:1 1 auto}
+
+.seg{display:flex;gap:.28rem;background:var(--paper);border:1px solid var(--hair);
+  border-radius:11px;padding:.24rem;margin-bottom:.7rem}
+.seg button{flex:1;background:transparent;border:none;border-radius:8px;padding:.45em .4em;
+  font-weight:600;font-size:.9em;color:var(--dim)}
+.seg button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+
+input[type=range]{width:100%;accent-color:var(--sky);height:1.9em}
+.slrow{display:flex;align-items:center;gap:.6rem}
+.slrow span{font-family:var(--mono);font-size:.76em;color:var(--dim);white-space:nowrap}
+
+.steps{display:flex;flex-direction:column;gap:.4rem}
+.step{display:none;border:1px solid var(--hair-2);border-radius:10px;padding:.5rem .75rem;
+  font-variant-numeric:tabular-nums;background:var(--card)}
+.step.live{display:block}
+.step .why{display:block;font-size:.76em;color:var(--dim);margin-top:.08rem}
+.steps.big .eq{font-size:1.28em}
+.steps.big .why{font-size:.97em;color:var(--ink);margin-top:.2rem;line-height:1.45}
+.step.concl.live{border-color:var(--mint);background:var(--mint-w)}
+.eq{font-size:1.04em;font-weight:700}
+
+.verdict{border-radius:10px;padding:.6rem .8rem;font-weight:700;display:none}
+.verdict.show{display:block}
+.verdict.yes{background:var(--mint-w);border:1px solid var(--mint);color:var(--mint)}
+.verdict.no{background:var(--rose-w);border:1px solid var(--rose);color:var(--rose)}
+.verdict.idle{background:var(--paper);border:1px solid var(--hair-2);color:var(--dim)}
+.verdict small{display:block;font-weight:500;font-size:.8em;color:var(--ink);margin-top:.2rem;line-height:1.5}
+
+.toggle{display:flex;align-items:center;gap:.6rem;background:var(--paper);border:1px solid var(--hair);
+  border-radius:10px;padding:.5rem .75rem;cursor:pointer;font-weight:600;margin-bottom:.4rem}
+.toggle input{width:1.2em;height:1.2em;accent-color:var(--mint);margin:0;flex-shrink:0}
+
+/* 낱말 잇기 */
+.matchwrap{position:relative}
+.mlines{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:visible}
+.mgrid{position:relative;z-index:1;width:100%}
+.mcard{position:absolute;border:1px solid var(--hair-2);border-radius:10px;background:var(--paper);
+  padding:.52em .7em;font-weight:700;text-align:left;line-height:1.35;
+  transition:background .15s,border-color .15s,color .15s}
+.mword{text-align:center;font-size:1.05em;padding-right:.85em}
+.mdesc{font-weight:500;font-size:.93em;padding-left:.85em}
+.mcard .dot{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;
+  background:var(--card);border:2.5px solid var(--hair-2);transform:translateY(-50%);transition:.15s}
+.mword .dot{right:-7px} .mdesc .dot{left:-7px}
+.mword[aria-selected="true"]{border-color:var(--amber);background:var(--amber-w);color:var(--amber)}
+.mword[aria-selected="true"] .dot{border-color:var(--amber);background:var(--amber)}
+.mcard.done{border-color:var(--mint);background:var(--mint-w);color:var(--mint);cursor:default}
+.mcard.done .dot{border-color:var(--mint);background:var(--mint)}
+.mdesc.miss{border-color:var(--rose);background:var(--rose-w);color:var(--rose)}
+.mprog{font-family:var(--mono);font-size:.76em;color:var(--dim);margin-top:.5rem;
+  display:flex;justify-content:space-between;align-items:center}
+
+.precard{display:flex;align-items:center;justify-content:space-between;gap:.8rem;width:100%;
+  text-align:left;background:var(--paper);border:1px solid var(--hair);border-radius:11px;
+  padding:.62em .8em;margin-bottom:.4rem;transition:.15s}
+.precard:hover{border-color:var(--sky)}
+.precard.on{border-color:var(--amber);background:var(--amber-w)}
+.precard.done{border-color:var(--mint);background:var(--mint-w)}
+.precard .pd{font-size:1.02em;font-weight:600;line-height:1.4}
+.precard .pw{font-size:1.3em;font-weight:800;color:var(--hair-2);flex-shrink:0;min-width:2.8em;text-align:center}
+.precard.on .pw{color:var(--amber)}
+.precard.done .pw{color:var(--mint)}
+
+.recap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+.rcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.85rem;
+  min-height:158px;background:var(--card);border:1px solid var(--hair);border-radius:16px;
+  padding:1.1rem 1.05rem;text-align:center;box-shadow:var(--shadow);transition:.2s}
+.rcard:hover{border-color:var(--mint);box-shadow:0 2px 4px rgba(21,36,47,.07),0 14px 30px -18px rgba(10,144,124,.55)}
+.rcard .rq{font-size:.99em;font-weight:600;color:var(--ink);line-height:1.5}
+.rcard .ra{font-size:1.32em;font-weight:800;color:var(--mint);letter-spacing:-.01em;
+  opacity:0;transform:translateY(7px);transition:opacity .28s,transform .28s}
+.rcard.open{background:var(--mint-w);border-color:var(--mint)}
+.rcard.open .ra{opacity:1;transform:none}
+@media (max-width:1400px){.recap{grid-template-columns:1fr 1fr}}
+
+.qa{border:1px solid var(--hair);border-radius:11px;padding:.55rem .8rem;margin-bottom:.4rem;
+  background:var(--paper);cursor:pointer}
+.qa .q{font-weight:600}
+.qa .a{display:none;margin-top:.35rem;padding-top:.35rem;border-top:1px dashed var(--hair-2);
+  color:var(--mint);font-weight:700}
+.qa.open{background:var(--card)}
+.qa.open .a{display:block}
+.qa .a small{display:block;color:var(--dim);font-weight:500;margin-top:.12rem}
+
+text{font-family:var(--sans)}
+.svg-lab{font-size:20px;font-weight:700;fill:var(--ink)}
+.svg-val{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums}
+.svg-note{font-size:15px;font-weight:600;fill:var(--dim)}
+.svg-sym{font-size:31px;font-weight:800}
+.hidden{display:none!important}
+@media (max-width:1180px){ .stage.on{grid-template-columns:1fr} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<aside class="rail">
+  <div class="brand">
+    <span class="eyebrow">중1 · Ⅳ. 기본 도형<br>4~5차시</span>
+    <h1 class="title">맞꼭지각과 <em>수직</em></h1>
+  </div>
+  <nav id="rail" role="tablist"></nav>
+  <div class="railfoot">
+    <div class="keyhint"><b>0</b>–<b>7</b> 단계 이동<br><b>←</b> <b>→</b> 이전·다음<br><b>Space</b> 다음 진행</div>
+    <button class="ghost" id="fs">전체 화면</button>
+  </div>
+</aside>
+
+<main>
+
+<!-- ══ 0. 도입 ═══════════════════════════════════════ -->
+<section class="stage" id="s0" role="tabpanel">
+  <div class="canvasbox">
+    <div class="seg" id="seg0" role="tablist">
+      <button role="tab" data-p="a" aria-selected="true">선수학습 확인</button>
+      <button role="tab" data-p="b" aria-selected="false">새로운 용어</button>
+    </div>
+    <svg id="sv0a" viewBox="0 0 640 430" aria-label="선수학습 용어 그림"></svg>
+    <svg id="sv0b" viewBox="0 0 640 430" class="hidden" aria-label="교각과 맞꼭지각이 생기는 과정"></svg>
+  </div>
+  <div class="side">
+    <div id="p0a">      <div class="card">
+        <h3>지난 시간에 배운 말</h3>
+        <div id="pre0"></div>
+      </div>
+    </div>
+    <div id="p0b" class="hidden">      <div class="card">
+        <h3>차례로 살펴보기</h3>
+        <div class="steps big">
+          <div class="step" id="i1"><span class="eq">교점</span><span class="why">두 직선이 만나서 생기는 점 — 지난 시간에 배운 말</span></div>
+          <div class="step" id="i2"><span class="eq">교각</span><span class="why">두 직선이 한 점에서 만날 때 생기는 네 각</span></div>
+          <div class="step concl" id="i3"><span class="eq">맞꼭지각</span><span class="why">교각 중에서 서로 마주 보는 각 — 두 쌍이 생긴다</span></div>
+        </div>
+        <div class="btnrow" style="margin-top:.6rem">
+          <button class="btn primary" id="next0">다음</button>
+          <button class="btn" id="reset0">처음부터</button>
+        </div>
+      </div>
+      <div class="card"><h3>오늘 배울 것</h3>
+        <p>맞꼭지각의 크기 사이에는 어떤 관계가 있을까? 그리고 두 직선이 <b>직각</b>으로 만나면 어떤 이름이 붙을까?</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 1. 탐구 ═══════════════════════════════════════ -->
+<section class="stage" id="s1" role="tabpanel">
+  <div class="canvasbox">
+    <svg id="sv1" viewBox="0 0 680 506" aria-label="두 직선이 만들어내는 네 각과 오려낸 조각">
+      <g id="ring1"></g><g id="sect1"></g>
+      <line id="l1a" stroke="var(--ink)" stroke-width="5.5" stroke-linecap="round"/>
+      <line id="l1b" stroke="var(--ink)" stroke-width="5.5" stroke-linecap="round"/>
+      <g id="ra1"></g>
+      <circle id="o1" r="7.5" fill="var(--amber)"/>
+      <g id="grabs1"></g><g id="labs1"></g><g id="tray1"></g>
+    </svg>
+  </div>
+  <div class="side">    <div class="card">
+      <h3>각의 크기</h3>
+      <div class="reads">
+        <div class="read rose"><span class="lbl">∠a</span><div class="val" id="r1a">100°</div></div>
+        <div class="read mint"><span class="lbl">∠b</span><div class="val" id="r1b">80°</div></div>
+        <div class="read mint"><span class="lbl">∠d</span><div class="val" id="r1d">80°</div></div>
+        <div class="read rose"><span class="lbl">∠c</span><div class="val" id="r1c">100°</div></div>
+      </div>
+      <div class="slrow" style="margin-top:.45rem"><span>직선 ①</span><input type="range" id="slp" min="0" max="179" value="15" aria-label="직선 1 돌리기"></div>
+      <div class="slrow"><span>직선 ②</span><input type="range" id="slq" min="0" max="179" value="115" aria-label="직선 2 돌리기"></div>
+    </div>
+    <div class="card">
+      <h3>오려서 포개기</h3>
+      <div class="btnrow">
+        <button class="btn primary" id="cut1">네 각 오려내기</button>
+        <button class="btn" id="auto1">밀어서 포개기</button>
+        <button class="btn" id="home1">제자리로</button>
+      </div>
+      <div class="verdict" id="v1" style="margin-top:.55rem"></div>
+    </div>
+    <div class="card">
+      <h3>탐구 정리</h3>
+      <div class="qa" data-qa><div class="q">탐구 1 · 크기가 같은 각은 모두 몇 쌍일까?</div>
+        <div class="a">2쌍</div></div>
+      <div class="qa" data-qa><div class="q">탐구 2 · 그 각들은 오리기 전에 어떤 위치에 있었을까?</div>
+        <div class="a">서로 마주 보는 위치<small>두 직선의 교각 중 마주 보는 각 → 맞꼭지각</small></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 2. 성질 ═══════════════════════════════════════ -->
+<section class="stage" id="s2" role="tabpanel">
+  <div class="canvasbox">
+    <svg id="sv2" viewBox="0 0 660 490" aria-label="맞꼭지각의 크기가 같은 이유">
+      <g id="sect2"></g>
+      <path id="flat2" fill="none" stroke-width="7" stroke-linecap="round" opacity="0"/>
+      <line id="l2a" stroke="var(--ink)" stroke-width="5.5" stroke-linecap="round"/>
+      <line id="l2b" stroke="var(--ink)" stroke-width="5.5" stroke-linecap="round"/>
+      <circle id="o2" r="7.5" fill="var(--amber)"/>
+      <g id="labs2"></g>
+      <text id="flatlab2" class="svg-val" text-anchor="middle" opacity="0" fill="var(--amber)">180°</text>
+    </svg>
+  </div>
+  <div class="side">    <div class="card">
+      <h3>설명 단계 <span id="from1" style="text-transform:none;letter-spacing:0;color:var(--amber)"></span></h3>
+      <div class="steps">
+        <div class="step" id="p1"><span class="eq">∠a + ∠b = 180°</span><span class="why" id="w1"></span></div>
+        <div class="step" id="p2"><span class="eq">∠b + ∠c = 180°</span><span class="why" id="w2"></span></div>
+        <div class="step" id="p3"><span class="eq">∠a = 180° − ∠b,  ∠c = 180° − ∠b</span><span class="why" id="w3"></span></div>
+        <div class="step concl" id="p4"><span class="eq">∴ ∠a = ∠c,  ∠b = ∠d</span><span class="why">맞꼭지각의 크기는 서로 같다</span></div>
+      </div>
+      <div class="btnrow" style="margin-top:.6rem">
+        <button class="btn primary" id="next2">다음 단계</button>
+        <button class="btn" id="reset2">처음부터</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>맞꼭지각의 성질</h3>
+      <p style="font-size:1.12em;font-weight:800">맞꼭지각의 크기는 서로 같다.</p>
+      <p style="font-size:.85em;color:var(--dim);margin-top:.4rem">기원전 6세기 그리스의 탈레스가 이 사실을 처음으로 설명했다고 전해집니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 3. 확인 ═══════════════════════════════════════ -->
+<section class="stage" id="s3" role="tabpanel">
+  <div class="canvasbox">
+    <div class="seg" id="seg3" role="tablist">
+      <button role="tab" data-p="a" aria-selected="true">세 직선에서 찾기</button>
+      <button role="tab" data-p="b" aria-selected="false">각의 크기 구하기</button>
+      <button role="tab" data-p="c" aria-selected="false">이것도 맞꼭지각일까?</button>
+    </div>
+    <svg id="sv3a" viewBox="0 0 640 460" aria-label="세 직선이 한 점에서 만나는 그림">
+      <g id="hl3a"></g><g id="lines3a"></g>
+      <circle cx="320" cy="225" r="7.5" fill="var(--amber)"/><g id="labs3a"></g>
+    </svg>
+    <svg id="sv3b" viewBox="0 0 640 460" class="hidden" aria-label="문제 8 그림"></svg>
+    <svg id="sv3c" viewBox="0 0 640 460" class="hidden" aria-label="문제 9 그림">
+      <g id="ext3c"></g><g id="sect3c"></g><g id="lines3c"></g>
+      <circle cx="320" cy="230" r="7.5" fill="var(--amber)"/><g id="labs3c"></g>
+    </svg>
+  </div>
+  <div class="side">
+    <div id="p3a">      <div class="card">
+        <h3>어떤 각을 볼까요</h3>
+        <div class="btnrow" id="pick3" style="margin-bottom:.55rem">
+          <button class="btn" data-i="0">∠AOB</button>
+          <button class="btn" data-i="1">∠AOF</button>
+          <button class="btn" data-i="2">∠COE</button>
+        </div>
+        <button class="btn primary wide" id="show3">맞꼭지각 보이기</button>
+        <div class="verdict yes" id="ans3" style="margin-top:.55rem"></div>
+      </div>
+    </div>
+    <div id="p3b" class="hidden">      <div class="card">
+        <h3>문제 8</h3>
+        <div class="qa" data-qa><div class="q">⑴ 50°가 주어졌을 때 ∠a, ∠b</div>
+          <div class="a">∠a = 50°, ∠b = 130°<small>∠a는 50°의 맞꼭지각, ∠b는 50°와 함께 평각</small></div></div>
+        <div class="qa" data-qa><div class="q">⑵ 60°와 35°가 주어졌을 때 ∠a, ∠b</div>
+          <div class="a">∠a = 85°, ∠b = 85°<small>60° + ∠a + 35° = 180° → ∠a = 85°, ∠b는 ∠a의 맞꼭지각</small></div></div>
+      </div>
+    </div>
+    <div id="p3c" class="hidden">      <div class="card">
+        <h3>문제 9 · 판단하기</h3>
+        <div class="btnrow">
+          <button class="btn" id="yes3c">맞꼭지각이다</button>
+          <button class="btn" id="no3c">아니다</button>
+        </div>
+        <div class="verdict no" id="v3c" style="margin-top:.55rem"></div>
+      </div>
+      <div class="card">
+        <h3>확인해 보기</h3>
+        <button class="btn primary wide" id="ext3btn">반직선 AO를 그대로 늘여 보기</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4. 용어 ═══════════════════════════════════════ -->
+<section class="stage" id="s4" role="tabpanel">
+  <div class="canvasbox">
+    <div class="seg" id="seg4" role="tablist">
+      <button role="tab" data-p="a" aria-selected="true">직각 · 직교 · 수직 · 수선</button>
+      <button role="tab" data-p="b" aria-selected="false">수직이등분선</button>
+    </div>
+    <svg id="sv4a" viewBox="0 0 640 430" aria-label="직교와 수선 그림"></svg>
+    <svg id="sv4b" viewBox="0 0 640 430" class="hidden" aria-label="수직이등분선 그림"></svg>
+  </div>
+  <div class="side">
+    <div id="p4a">      <div class="card">
+        <h3>낱말과 뜻 잇기</h3>
+        <div class="matchwrap" id="mwrap">
+          <svg class="mlines" id="mlines" aria-hidden="true"></svg>
+          <div class="mgrid" id="mgrid"></div>
+        </div>
+        <div class="mprog"><span id="mprog4">0 / 4 연결</span>
+          <span style="display:flex;gap:.4rem">
+            <button class="btn hidden" id="malign" style="padding:.3em .8em;font-size:.9em">짝끼리 정렬하기</button>
+            <button class="btn" id="mreset4" style="padding:.3em .8em;font-size:.9em">다시 하기</button>
+          </span></div>
+      </div>
+      <div class="card"><h3>기호</h3>
+        <svg viewBox="0 0 340 160" style="width:100%;max-width:340px;height:auto" id="symsvg" aria-label="직교 기호"></svg></div>
+    </div>
+    <div id="p4b" class="hidden">      <div class="card">
+        <h3>조건 켜고 끄기</h3>
+        <label class="toggle"><input type="checkbox" id="c4perp"> <span>선분 AB에 <b>수직</b>이다</span></label>
+        <label class="toggle"><input type="checkbox" id="c4mid"> <span>선분 AB의 <b>중점</b>을 지난다</span></label>
+        <div class="verdict no show" id="v4"></div>
+      </div>
+      <div class="card"><h3>정의</h3>
+        <p>직선 <em style="font-style:italic;color:var(--mint)">l</em> 이 선분 AB의 중점 M을 지나면서 AB에 수직일 때, <b>수직이등분선</b>이라고 합니다.</p>
+        <p style="margin-top:.4rem;color:var(--amber);font-weight:800;font-size:1.08em">
+          <em style="font-style:italic">l</em> ⊥ <span class="ov">AB</span>,&nbsp;&nbsp; <span class="ov">AM</span> = <span class="ov">MB</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5. 수선의 발 ══════════════════════════════════ -->
+<section class="stage" id="s5" role="tabpanel">
+  <div class="canvasbox">
+    <svg id="sv5" viewBox="0 0 660 512" aria-label="점과 직선 사이의 거리">
+      <g id="trail5"></g>
+      <line x1="50" y1="330" x2="620" y2="330" stroke="var(--ink)" stroke-width="5.5" stroke-linecap="round"/>
+      <text x="632" y="337" class="svg-lab" style="font-style:italic">l</text>
+      <line id="seg5" stroke="var(--rose)" stroke-width="6" stroke-linecap="round"/>
+      <g id="ra5" opacity="0"></g>
+      <circle cx="310" cy="130" r="8.5" fill="var(--amber)"/>
+      <text x="310" y="108" text-anchor="middle" class="svg-lab">P</text>
+      <circle id="x5" r="22" fill="var(--sky-w)" stroke="var(--sky)" stroke-width="3" cy="330"/>
+      <text id="xlab5" y="372" text-anchor="middle" class="svg-lab">X</text>
+      <text id="len5" class="svg-val" fill="var(--rose)" text-anchor="middle">8.00 cm</text>
+      <rect x="46" y="386" width="578" height="112" rx="10" fill="var(--paper)" stroke="var(--hair)" stroke-width="1.5"/>
+      <text x="58" y="408" class="svg-note">길이 기록</text>
+      <g id="plot5"></g>
+    </svg>
+  </div>
+  <div class="side">    <div class="card">
+      <h3>측정</h3>
+      <div class="reads">
+        <div class="read rose"><span class="lbl">지금 길이 PX</span><div class="val" id="r5now">8.00 cm</div></div>
+        <div class="read mint"><span class="lbl">가장 짧았던 길이</span><div class="val" id="r5min">8.00 cm</div></div>
+      </div>
+      <div class="btnrow" style="margin-top:.5rem">
+        <button class="btn" id="keep5">이 선분 남기기</button>
+        <button class="btn" id="clr5">기록 지우기</button>
+      </div>
+    </div>
+    <div class="verdict yes" id="v5"></div>
+    <div class="card"><h3>정리</h3>
+      <div class="defbox"><b>수선의 발</b>
+        <p>점 P에서 직선 <em style="font-style:italic">l</em> 에 내린 수선이 <em style="font-style:italic">l</em> 과 만나는 <em>교점 H</em></p></div>
+      <div class="defbox"><b>점 P와 직선 <em style="font-style:italic;color:var(--ink)">l</em> 사이의 거리</b>
+        <p>선분 <span class="ov">PH</span> 의 길이. 점 P와 직선 <em style="font-style:italic">l</em> 위의 점을 잇는 선분 중 <em>가장 짧다</em></p></div></div>
+  </div>
+</section>
+
+<!-- ══ 6. 적용 ═══════════════════════════════════════ -->
+<section class="stage" id="s6" role="tabpanel">
+  <div class="canvasbox">
+    <div class="seg" id="seg6" role="tablist">
+      <button role="tab" data-p="a" aria-selected="true">문제 10 · 사다리꼴</button>
+      <button role="tab" data-p="b" aria-selected="false">문제 11 · 종이비행기</button>
+    </div>
+    <svg id="sv6a" viewBox="0 0 640 430" aria-label="사다리꼴 ABCD"></svg>
+    <svg id="sv6b" viewBox="0 0 700 470" class="hidden" aria-label="종이비행기 착륙 지점"></svg>
+  </div>
+  <div class="side">
+    <div id="p6a">      <div class="card">
+        <h3>문제 10</h3>
+        <div class="qa" data-qa data-hl="1"><div class="q">⑴ 변 BC와 직교하는 변은?</div><div class="a">변 AB</div></div>
+        <div class="qa" data-qa data-hl="2"><div class="q">⑵ 점 C에서 변 AB에 내린 수선의 발은?</div><div class="a">점 B</div></div>
+        <div class="qa" data-qa data-hl="3"><div class="q">⑶ 점 D와 변 AB 사이의 거리는?</div><div class="a">3 cm<small>변 AD가 AB와 직교하므로 AD의 길이가 곧 거리</small></div></div>
+      </div>
+    </div>
+    <div id="p6b" class="hidden">      <div class="card">
+        <h3>두 단계로 구하기</h3>
+        <div class="btnrow">
+          <button class="btn primary" id="perp6">① 수선 내리기</button>
+          <button class="btn" id="meas6">② 거리 측정하기</button>
+        </div>
+        <div class="reads" style="margin-top:.55rem">
+          <div class="read rose"><span class="lbl">승민</span><div class="val" id="r6s">—</div></div>
+          <div class="read mint"><span class="lbl">현주</span><div class="val" id="r6h">—</div></div>
+        </div>
+      </div>
+      <div class="verdict yes" id="v6"></div>
+      <p style="font-size:.86em;color:var(--dim)">눈금 한 칸은 10 m입니다.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7. 정리 ═══════════════════════════════════════ -->
+<section class="stage" id="s7" role="tabpanel">
+  <div class="canvasbox" style="padding:clamp(.9rem,1.6vw,1.5rem)">
+    <div class="recap" id="recap7">
+      <button class="rcard"><span class="rq">두 직선이 한 점에서 만날 때 생기는 네 각</span><span class="ra">교각</span></button>
+      <button class="rcard"><span class="rq">교각 중 서로 마주 보는 각</span><span class="ra">맞꼭지각</span></button>
+      <button class="rcard"><span class="rq">맞꼭지각의 크기 사이의 관계</span><span class="ra">서로 같다</span></button>
+      <button class="rcard"><span class="rq">두 직선의 교각이 직각일 때 쓰는 기호</span><span class="ra"><span class="ov">AB</span> ⊥ <span class="ov">CD</span></span></button>
+      <button class="rcard"><span class="rq">선분 <span class="ov">AB</span> 의 중점을 지나면서 <span class="ov">AB</span> 에 수직인 직선</span><span class="ra">수직이등분선</span></button>
+      <button class="rcard"><span class="rq">점 P와 직선 <em style="font-style:italic">l</em> 사이의 거리</span><span class="ra">점 P에서 수선의 발까지의 길이</span></button>
+    </div>
+  </div>
+  <div class="side">    <div class="card">
+      <h3>빠른 확인 · O X</h3>
+      <div class="qa" data-qa><div class="q">① 마주 보는 두 각은 언제나 맞꼭지각이다.</div>
+        <div class="a">✗ 아니다<small>두 직선이 만나 생긴 교각일 때만 맞꼭지각</small></div></div>
+      <div class="qa" data-qa><div class="q">② 맞꼭지각의 크기는 항상 90°이다.</div>
+        <div class="a">✗ 아니다<small>크기는 서로 같을 뿐, 90°인 것은 두 직선이 직교할 때</small></div></div>
+      <div class="qa" data-qa><div class="q">③ 점과 직선 사이의 거리는 수선의 발까지의 거리이다.</div>
+        <div class="a">○ 맞다<small>그 선분이 가장 짧기 때문</small></div></div>
+    </div>
+    <div class="card"><h3>다음 시간</h3>
+      <p style="color:var(--dim)">평행선과 동위각 · 엇각</p></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+"use strict";
+const D=Math.PI/180, $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const RM=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const px=(cx,cy,r,a)=>[cx+r*Math.cos(a*D), cy-r*Math.sin(a*D)];
+function arc(cx,cy,r,a0,a1){const[x0,y0]=px(cx,cy,r,a0),[x1,y1]=px(cx,cy,r,a1);
+  return `M ${x0} ${y0} A ${r} ${r} 0 ${(a1-a0)>180?1:0} 0 ${x1} ${y1}`;}
+function sector(cx,cy,r,a0,a1){const[x0,y0]=px(cx,cy,r,a0),[x1,y1]=px(cx,cy,r,a1);
+  return `M ${cx} ${cy} L ${x0} ${y0} A ${r} ${r} 0 ${(a1-a0)>180?1:0} 0 ${x1} ${y1} Z`;}
+function el(tag,attrs,txt){const e=document.createElementNS("http://www.w3.org/2000/svg",tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  if(attrs&&attrs.fill&&/^svg-/.test(attrs.class||"")) e.style.fill=attrs.fill;
+  if(txt!=null) e.textContent=txt; return e;}
+function raMark(cx,cy,a0,a1,s,color){
+  const[x1,y1]=px(cx,cy,s,a0),[x2,y2]=px(cx,cy,s*Math.SQRT2,(a0+a1)/2),[x3,y3]=px(cx,cy,s,a1);
+  return el("polyline",{points:`${x1},${y1} ${x2},${y2} ${x3},${y3}`,fill:"none",
+    stroke:color||"var(--amber)","stroke-width":3.5});}
+/* 문자 위 선분·직선 기호 */
+function overbar(sv,textEl,kind,color){
+  const b=textEl.getBBox(), y=b.y-5, c=color||"var(--ink)";
+  sv.appendChild(el("line",{x1:b.x-2,y1:y,x2:b.x+b.width+2,y2:y,stroke:c,"stroke-width":2.6,"stroke-linecap":"round"}));
+  if(kind==="line"){
+    sv.appendChild(el("polyline",{points:`${b.x+6},${y-5} ${b.x-2},${y} ${b.x+6},${y+5}`,
+      fill:"none",stroke:c,"stroke-width":2.6,"stroke-linejoin":"round"}));
+    sv.appendChild(el("polyline",{points:`${b.x+b.width-6},${y-5} ${b.x+b.width+2},${y} ${b.x+b.width-6},${y+5}`,
+      fill:"none",stroke:c,"stroke-width":2.6,"stroke-linejoin":"round"}));}
+}
+function svgPoint(svg,ev){const p=svg.createSVGPoint();p.x=ev.clientX;p.y=ev.clientY;
+  return p.matrixTransform(svg.getScreenCTM().inverse());}
+function pointer(svg,{down,move,up}){
+  let on=false;
+  svg.addEventListener("pointerdown",e=>{e.preventDefault();on=true;
+    svg.setPointerCapture(e.pointerId);down&&down(svgPoint(svg,e));});
+  svg.addEventListener("pointermove",e=>{if(!on)return;e.preventDefault();move&&move(svgPoint(svg,e));});
+  const off=e=>{if(!on)return;on=false;try{svg.releasePointerCapture(e.pointerId);}catch(_){}up&&up();};
+  svg.addEventListener("pointerup",off);svg.addEventListener("pointercancel",off);
+}
+const ease=k=>k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+function anim(ms,step,done){
+  if(RM){step(1);done&&done();return;}
+  const t0=performance.now();
+  (function tick(t){const k=Math.min(1,(t-t0)/ms);step(ease(k));
+    k<1?requestAnimationFrame(tick):(done&&done());})(t0);
+}
+
+/* ── 단계 이동 ───────────────────────────────── */
+const STAGES=[["도입","용어 확인과 소개","5분"],["탐구","두 직선이 만나면","5분"],
+  ["성질","왜 항상 같을까","7분"],["확인","맞꼭지각 찾기","7분"],["용어","직교와 수직","5분"],
+  ["거리","수선의 발","7분"],["적용","문제 10과 11","6분"],["정리","오늘의 정리","3분"]];
+const railNav=$("#rail");
+STAGES.forEach((s,i)=>{const b=document.createElement("button");
+  b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);
+  b.innerHTML=`<div class="n">0${i}</div><div class="t">${s[0]} · ${s[1]}</div><div class="m">${s[2]}</div>`;
+  b.onclick=()=>goStage(i);railNav.appendChild(b);});
+let cur=0;
+function goStage(i){
+  const prev=cur; cur=(i+8)%8;
+  $$("#rail button").forEach((b,k)=>b.setAttribute("aria-selected",k===cur));
+  $$(".stage").forEach((s,k)=>s.classList.toggle("on",k===cur));
+  if(cur===2&&prev!==2){st2=0;draw2();}
+  if(cur===4){drawSymbol();requestAnimationFrame(()=>layout(false));}
+}
+addEventListener("keydown",e=>{
+  const t=e.target, type=(t.type||"").toLowerCase();
+  const isRange=t.tagName==="INPUT"&&type==="range";
+  const isToggle=t.tagName==="BUTTON"||(t.tagName==="INPUT"&&type==="checkbox");
+  if(e.key>="0"&&e.key<="7"){goStage(+e.key);e.preventDefault();}
+  else if(e.key==="ArrowRight"&&!isRange){goStage(cur+1);e.preventDefault();}
+  else if(e.key==="ArrowLeft"&&!isRange){goStage(cur-1);e.preventDefault();}
+  else if(e.key===" "&&!isToggle){advance();e.preventDefault();}
+});
+function advance(){
+  if(cur===0&&sub0==="b"){step0();return;}
+  if(cur===2){step2();return;}
+  const q=$$(".stage.on [data-qa]:not(.open)").find(n=>n.offsetParent!==null);
+  if(q){q.classList.add("open"); if(q.closest("#p6a")) refreshHL();}
+}
+$$("[data-qa]").forEach(q=>q.addEventListener("click",()=>{
+  q.classList.toggle("open"); if(q.closest("#p6a")) refreshHL();}));
+$("#fs").onclick=()=>document.fullscreenElement?document.exitFullscreen():
+  document.documentElement.requestFullscreen();
+
+function segSwitch(segId,map,onPick){
+  $$(`#${segId} button`).forEach(b=>b.onclick=()=>{
+    $$(`#${segId} button`).forEach(x=>x.setAttribute("aria-selected",x===b));
+    for(const k in map) map[k].forEach(sel=>$(sel).classList.toggle("hidden",k!==b.dataset.p));
+    onPick&&onPick(b.dataset.p);});
+}
+
+/* ══ 0-a. 선수학습 — 설명을 누르면 낱말이 나타난다 ═══ */
+const PRE=[
+  {d:"선과 선 또는 선과 면이 만나서 생기는 <b>점</b>", w:"교점", fig:"point"},
+  {d:"면과 면이 만나서 생기는 <b>선</b>", w:"교선", fig:"edge"},
+  {d:"두 반직선이 한 점을 중심으로 서로 반대쪽에 있어 이루는 각 · <b>180°</b>", w:"평각", fig:"flat"}];
+let sel0a=-1, rev0=new Set();
+function renderPre(){
+  const box=$("#pre0");box.innerHTML="";
+  PRE.forEach((t,i)=>{
+    const b=document.createElement("button");
+    b.className="precard"+(sel0a===i?" on":"")+(rev0.has(i)?" done":"");
+    b.innerHTML=`<span class="pd">${t.d}</span><span class="pw">${rev0.has(i)?t.w:"?"}</span>`;
+    b.onclick=()=>{
+      if(sel0a!==i) sel0a=i; else rev0.add(i);
+      renderPre(); draw0a(t.fig, rev0.has(i)?t.w:null);};
+    box.appendChild(b);});
+}
+function draw0a(kind,word){
+  const sv=$("#sv0a");sv.innerHTML="";
+  const mark=(x,y,lx,ly)=>{
+    sv.appendChild(el("circle",{cx:x,cy:y,r:15,fill:"var(--amber-w)",stroke:"var(--amber)","stroke-width":3.5}));
+    sv.appendChild(el("circle",{cx:x,cy:y,r:6.5,fill:"var(--amber)"}));
+    if(word) sv.appendChild(el("text",{x:lx,y:ly,"text-anchor":"middle",class:"svg-val",fill:"var(--amber)"},word));};
+  const plane=(pts,fill)=>sv.appendChild(el("polygon",{points:pts.map(q=>q.join(",")).join(" "),
+    fill,stroke:"var(--hair-2)","stroke-width":2}));
+  if(kind==="point"){
+    // 선과 선이 만나서 생기는 점
+    sv.appendChild(el("line",{x1:55,y1:305,x2:300,y2:150,stroke:"var(--ink)","stroke-width":4.5,"stroke-linecap":"round"}));
+    sv.appendChild(el("path",{d:"M 80 165 Q 112 262 180 226 Q 248 190 292 322",fill:"none",
+      stroke:"var(--ink)","stroke-width":4.5,"stroke-linecap":"round"}));
+    mark(180,226,196,186);
+    // 선과 면이 만나서 생기는 점
+    plane([[350,255],[545,208],[600,288],[405,335]],"var(--rose-w)");
+    sv.appendChild(el("line",{x1:478,y1:272,x2:436,y2:406,stroke:"var(--hair-2)","stroke-width":4,
+      "stroke-dasharray":"10 8","stroke-linecap":"round"}));
+    sv.appendChild(el("line",{x1:478,y1:272,x2:520,y2:136,stroke:"var(--ink)","stroke-width":4.5,"stroke-linecap":"round"}));
+    mark(478,272,534,232);
+  }else if(kind==="edge"){
+    const poly=(pts,fill,st)=>sv.appendChild(el("polygon",{points:pts.map(q=>q.join(",")).join(" "),
+      fill,stroke:st,"stroke-width":2.5,"stroke-linejoin":"round"}));
+    // 면과 면이 만나서 생기는 선 — 두 면을 반투명하게 겹쳐 관통을 보인다
+    // 교선 PQ 를 공유하는 두 평행사변형
+    const P=[85,275], Q=[245,208], a=[58,68], b=[-52,70];
+    const off=(pt,v,sg)=>[pt[0]+sg*v[0],pt[1]+sg*v[1]];
+    poly([off(P,b,1),off(Q,b,1),off(Q,b,-1),off(P,b,-1)],"rgba(42,99,204,.14)","rgba(42,99,204,.62)");
+    poly([off(P,a,1),off(Q,a,1),off(Q,a,-1),off(P,a,-1)],"rgba(216,48,106,.15)","rgba(216,48,106,.62)");
+    sv.appendChild(el("line",{x1:P[0],y1:P[1],x2:Q[0],y2:Q[1],stroke:"var(--amber)",
+      "stroke-width":7,"stroke-linecap":"round"}));
+    if(word) sv.appendChild(el("text",{x:165,y:416,"text-anchor":"middle",class:"svg-val",fill:"var(--amber)"},word));
+
+    // 곡선이 되는 교선 — 평면이 원기둥을 관통한다
+    // 타원 호에서 sweep 0 = 아래쪽(앞), sweep 1 = 위쪽(뒤)
+    const CX=485, RX=56, RY=17, TOP=150, BOT=365, CUT=275, NEAR=305;
+    const L=CX-RX, R2=CX+RX;
+    poly([[370,NEAR],[420,245],[600,245],[550,NEAR]],"var(--rose-w)","var(--hair-2)");
+    sv.appendChild(el("path",{d:`M ${L} ${TOP} L ${L} ${BOT} A ${RX} ${RY} 0 0 0 ${R2} ${BOT} L ${R2} ${TOP} Z`,
+      fill:"var(--card)",stroke:"var(--ink)","stroke-width":3.5,"stroke-linejoin":"round"}));
+    sv.appendChild(el("path",{d:`M ${L} ${BOT} A ${RX} ${RY} 0 0 1 ${R2} ${BOT}`,fill:"none",
+      stroke:"var(--hair-2)","stroke-width":2.5,"stroke-dasharray":"9 7"}));
+    sv.appendChild(el("ellipse",{cx:CX,cy:TOP,rx:RX,ry:RY,fill:"var(--card)",stroke:"var(--ink)","stroke-width":3.5}));
+    sv.appendChild(el("path",{d:`M ${L} ${CUT} A ${RX} ${RY} 0 0 1 ${R2} ${CUT}`,fill:"none",
+      stroke:"var(--amber)","stroke-width":4,"stroke-dasharray":"9 7"}));   // 뒤쪽 절반: 원기둥에 가림
+    sv.appendChild(el("path",{d:`M ${L} ${CUT} A ${RX} ${RY} 0 0 0 ${R2} ${CUT} L ${R2} ${NEAR} L ${L} ${NEAR} Z`,
+      fill:"var(--rose-w)",stroke:"none"}));                                 // 평면 중 원기둥 앞쪽
+    sv.appendChild(el("line",{x1:370,y1:NEAR,x2:550,y2:NEAR,stroke:"var(--hair-2)","stroke-width":2}));
+    sv.appendChild(el("path",{d:`M ${L} ${CUT} A ${RX} ${RY} 0 0 0 ${R2} ${CUT}`,fill:"none",
+      stroke:"var(--amber)","stroke-width":6,"stroke-linecap":"round"}));    // 앞쪽 절반: 실선
+    if(word) sv.appendChild(el("text",{x:CX,y:416,"text-anchor":"middle",class:"svg-val",fill:"var(--amber)"},word));
+  }else{
+    const ox=320,oy=245,R=200;
+    sv.appendChild(el("path",{d:sector(ox,oy,110,0,180),fill:"var(--amber-w)"}));
+    sv.appendChild(el("path",{d:arc(ox,oy,110,0,180),fill:"none",stroke:"var(--amber)","stroke-width":6}));
+    sv.appendChild(el("line",{x1:ox-R,y1:oy,x2:ox+R,y2:oy,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"}));
+    sv.appendChild(el("circle",{cx:ox,cy:oy,r:8,fill:"var(--amber)"}));
+    sv.appendChild(el("text",{x:ox,y:oy-128,"text-anchor":"middle",class:"svg-val",fill:"var(--amber)"},"180°"));
+    [[ox-R,"A"],[ox,"O"],[ox+R,"B"]].forEach(([x,n])=>
+      sv.appendChild(el("text",{x,y:oy+34,"text-anchor":"middle",class:"svg-lab"},n)));
+    if(word) sv.appendChild(el("text",{x:ox+152,y:oy-72,"text-anchor":"middle",class:"svg-val",fill:"var(--amber)"},word));
+  }
+}
+renderPre(); draw0a("point",null);
+
+/* ══ 0-b. 교각 → 맞꼭지각 ═══════════════════════ */
+let sub0="a", st0=0;
+segSwitch("seg0",{a:["#sv0a","#p0a"],b:["#sv0b","#p0b"]},p=>{sub0=p;});
+const O0=[320,205],R0=185,PA=12,QA=112;
+function draw0b(){
+  const sv=$("#sv0b");sv.innerHTML="";
+  const[ox,oy]=O0;
+  const putline=a=>{const[x1,y1]=px(ox,oy,R0,a),[x2,y2]=px(ox,oy,R0,a+180);
+    sv.appendChild(el("line",{x1,y1,x2,y2,stroke:"var(--ink)","stroke-width":5.5,"stroke-linecap":"round"}));};
+  const d=QA-PA, S=[[PA,QA,"a"],[QA,PA+180,"b"],[PA+180,PA+180+d,"c"],[PA+180+d,PA+360,"d"]];
+  const col=i=>st0>=3?((i===0||i===2)?"rose":"mint"):"amber";
+  if(st0>=2) S.forEach(([a0,a1],i)=>{
+    sv.appendChild(el("path",{d:sector(ox,oy,84,a0,a1),fill:`var(--${col(i)}-w)`}));
+    sv.appendChild(el("path",{d:arc(ox,oy,84,a0,a1),fill:"none",stroke:`var(--${col(i)})`,"stroke-width":5}));});
+  putline(PA);
+  if(st0>=1) putline(QA);
+  if(st0>=2) S.forEach(([a0,a1,n],i)=>{
+    const[lx,ly]=px(ox,oy,52,(a0+a1)/2);
+    sv.appendChild(el("text",{x:lx,y:ly+8,"text-anchor":"middle",class:"svg-val",
+      fill:`var(--${col(i)})`,"font-style":"italic"},n));});
+  if(st0>=1){
+    sv.appendChild(el("circle",{cx:ox,cy:oy,r:st0===1?18:9,
+      fill:st0===1?"var(--amber-w)":"var(--amber)",stroke:"var(--amber)","stroke-width":4}));
+    if(st0===1){sv.appendChild(el("circle",{cx:ox,cy:oy,r:7,fill:"var(--amber)"}));
+      sv.appendChild(el("text",{x:ox+30,y:oy-26,class:"svg-val",fill:"var(--amber)"},"교점"));}
+  }
+  const cap=["직선","두 직선이 한 점에서 만난다 → 교점",
+    "두 직선의 교각 — 네 각 ∠a, ∠b, ∠c, ∠d",
+    "마주 보는 ∠a와 ∠c, ∠b와 ∠d — 맞꼭지각 두 쌍"][st0];
+  sv.appendChild(el("text",{x:320,y:414,"text-anchor":"middle",class:"svg-note"},cap));
+  ["#i1","#i2","#i3"].forEach((id,i)=>$(id).classList.toggle("live",st0>=i+1));
+}
+function step0(){st0=st0>=3?0:st0+1;draw0b();}
+$("#next0").onclick=step0; $("#reset0").onclick=()=>{st0=0;draw0b();};
+draw0b();
+
+/* ══ 1. 탐구 ═══════════════════════════════════ */
+const O1=[340,172], R1=146, WR=70;
+const TRAY={x:22,y:328,w:636,h:172}, PR=60;
+let p1=15, q1=115, pieces=null, drag1=null;
+const gap=(a,b)=>((b-a)%180+180)%180;
+function angsOf(){
+  const d=gap(p1,q1)||90;
+  return [[p1,p1+d,"a","rose",d],[p1+d,p1+180,"b","mint",180-d],
+          [p1+180,p1+180+d,"c","rose",d],[p1+180+d,p1+360,"d","mint",180-d]];
+}
+function draw1(){
+  const[ox,oy]=O1, S=angsOf(), A=Math.round(S[0][4]), B=180-A;
+  const setline=(id,ang)=>{const[x1,y1]=px(ox,oy,R1,ang),[x2,y2]=px(ox,oy,R1,ang+180);
+    const e=$(id);e.setAttribute("x1",x1);e.setAttribute("y1",y1);e.setAttribute("x2",x2);e.setAttribute("y2",y2);};
+  setline("#l1a",p1); setline("#l1b",q1);
+  const ring=$("#ring1");ring.innerHTML="";
+  for(let t=0;t<360;t+=10){const big=t%90===0;
+    const[x1,y1]=px(ox,oy,big?106:114,t),[x2,y2]=px(ox,oy,123,t);
+    ring.appendChild(el("line",{x1,y1,x2,y2,stroke:"var(--hair-2)","stroke-width":big?2.5:1.2}));}
+  ring.appendChild(el("circle",{cx:ox,cy:oy,r:123,fill:"none",stroke:"var(--hair)","stroke-width":1.5}));
+  const g=$("#sect1");g.innerHTML="";const L=$("#labs1");L.innerHTML="";
+  S.forEach(([s,e,n,c,v])=>{
+    g.appendChild(el("path",{d:sector(ox,oy,WR,s,e),fill:`var(--${c}-w)`}));
+    g.appendChild(el("path",{d:arc(ox,oy,WR,s,e),fill:"none",stroke:`var(--${c})`,"stroke-width":5}));
+    const[lx,ly]=px(ox,oy,46,(s+e)/2);
+    L.appendChild(el("text",{x:lx,y:ly+8,"text-anchor":"middle",class:"svg-val",
+      fill:`var(--${c})`,"font-style":"italic"},n));
+    const[vx,vy]=px(ox,oy,92,(s+e)/2);
+    L.appendChild(el("text",{x:vx,y:vy+6,"text-anchor":"middle",class:"svg-note"},Math.round(v)+"°"));});
+  const ra=$("#ra1");ra.innerHTML="";
+  if(A===90) S.forEach(([s,e])=>ra.appendChild(raMark(ox,oy,s,e,26,"var(--amber)")));
+  const gr=$("#grabs1");gr.innerHTML="";
+  [[p1,"①"],[q1,"②"]].forEach(([a,n])=>{const[hx,hy]=px(ox,oy,R1-20,a);
+    gr.appendChild(el("circle",{cx:hx,cy:hy,r:21,fill:"var(--sky-w)",stroke:"var(--sky)","stroke-width":3}));
+    gr.appendChild(el("text",{x:hx,y:hy+7,"text-anchor":"middle",class:"svg-note",fill:"var(--sky)"},n));});
+  $("#o1").setAttribute("cx",ox);$("#o1").setAttribute("cy",oy);
+  $("#r1a").textContent=A+"°";$("#r1c").textContent=A+"°";
+  $("#r1b").textContent=B+"°";$("#r1d").textContent=B+"°";
+  $("#slp").value=Math.round(p1);$("#slq").value=Math.round(q1);
+  if(pieces&&!flying){
+    const S2=angsOf(), changed=pieceSize!==null&&Math.abs(S2[0][4]-pieceSize)>0.4;
+    pieces.forEach((pc,i)=>pc.size=S2[i][4]);
+    if(changed){pieceSize=S2[0][4];
+      pieces.forEach(pc=>{pc.x=pc.hx;pc.y=pc.hy;pc.r=PR;pc.rot=0;});hideV1();}
+  }
+  drawTray();
+}
+function drawTray(){
+  const t=$("#tray1");t.innerHTML="";
+  t.appendChild(el("rect",{x:TRAY.x,y:TRAY.y,width:TRAY.w,height:TRAY.h,rx:14,fill:"var(--paper)",
+    stroke:"var(--hair-2)","stroke-width":1.5,"stroke-dasharray":"8 6"}));
+  if(!pieces)return;
+  pieces.forEach((pc,i)=>{
+    const stacked=!flying&&pieces.some((o,j)=>j<i&&Math.hypot(pc.x-o.x,pc.y-o.y)<2);
+    t.appendChild(el("path",{d:sector(pc.x,pc.y,pc.r,pc.rot-pc.size/2,pc.rot+pc.size/2),
+      fill:stacked?"none":`var(--${pc.col}-w)`,
+      stroke:stacked?"var(--amber)":`var(--${pc.col})`,"stroke-width":stacked?4.5:4,
+      "stroke-dasharray":stacked?"11 7":"none","stroke-linejoin":"round"}));
+    t.appendChild(el("circle",{cx:pc.x,cy:pc.y,r:5,fill:`var(--${pc.col})`}));
+    const[lx,ly]=px(pc.x,pc.y,pc.r*0.42,pc.rot);
+    t.appendChild(el("text",{x:stacked?pc.x-17:lx,y:stacked?pc.y+32:ly+8,"text-anchor":"middle",
+      class:"svg-val",fill:stacked?"var(--amber)":`var(--${pc.col})`,"font-style":"italic"},pc.n));});
+}
+let flying=false, pieceSize=null;
+function makePieces(){
+  const S=angsOf(), [ox,oy]=O1;
+  pieces=S.map(([s,e,n,c,v],i)=>({n,col:c,size:v,x:ox,y:oy,r:WR,rot:(s+e)/2,
+    hx:TRAY.x+70+i*152, hy:TRAY.y+96}));
+  const start=pieces.map(p=>({x:p.x,y:p.y,r:p.r,rot:p.rot}));
+  pieceSize=S[0][4];
+  hideV1();
+  if(RM){pieces.forEach((p,i)=>{p.x=p.hx;p.y=p.hy;p.r=PR;p.rot=0;});drawTray();doneFly();return;}
+  flying=true;
+  const T=1600, stag=160, t0=performance.now();
+  (function tick(t){
+    let done=true;
+    pieces.forEach((p,i)=>{
+      let k=(t-t0-i*stag)/(T-3*stag); k=Math.max(0,Math.min(1,k)); if(k<1)done=false;
+      const e=ease(k), s=start[i];
+      p.x=s.x+(p.hx-s.x)*e; p.y=s.y+(p.hy-s.y)*e; p.r=s.r+(PR-s.r)*e;
+      const d=((0-s.rot)%360+540)%360-180;
+      p.rot=s.rot+d*e;});
+    drawTray();
+    done?(flying=false,doneFly()):requestAnimationFrame(tick);
+  })(t0);
+}
+function doneFly(){flying=false;drawTray();hideV1();}
+function hideV1(){$("#v1").className="verdict";}
+function setV1(kind,html){const v=$("#v1");v.className="verdict show "+kind;v.innerHTML=html;}
+function checkStack(i){
+  const me=pieces[i];
+  for(let j=0;j<pieces.length;j++){
+    if(j===i)continue;const o=pieces[j];
+    if(Math.hypot(me.x-o.x,me.y-o.y)<26){
+      me.x=o.x;me.y=o.y;
+      const same=Math.abs(me.size-o.size)<0.6;
+      setV1(same?"yes":"no", same
+        ? `∠${me.n} 와 ∠${o.n} — 딱 맞습니다<small>두 조각이 완전히 포개집니다. 크기가 ${Math.round(me.size)}° 로 같습니다.</small>`
+        : `∠${me.n} 와 ∠${o.n} — 맞지 않습니다<small>${Math.round(me.size)}° 와 ${Math.round(o.size)}° 로 크기가 다릅니다.</small>`);
+      drawTray();return;}
+  }
+  hideV1();
+}
+function nearestLine(pt){
+  const t=(Math.atan2(O1[1]-pt.y,pt.x-O1[0])/D+360)%180;
+  const dd=a=>{const g=Math.abs(t-a)%180;return Math.min(g,180-g);};
+  return dd(p1)<=dd(q1)?0:1;
+}
+function setLine(which,pt){
+  const t=(Math.atan2(O1[1]-pt.y,pt.x-O1[0])/D+360)%180;
+  if(which===0){let d=gap(t,q1);d=Math.max(20,Math.min(160,d));p1=((q1-d)%180+180)%180;}
+  else{let d=gap(p1,t);d=Math.max(20,Math.min(160,d));q1=(p1+d)%180;}
+  draw1();
+}
+pointer($("#sv1"),{
+  down(pt){
+    if(flying)return;
+    if(pieces&&pt.y>TRAY.y){
+      let best=-1,bd=1e9;
+      pieces.forEach((pc,i)=>{const d=Math.hypot(pt.x-pc.x,pt.y-pc.y);if(d<bd&&d<PR+24){bd=d;best=i;}});
+      if(best>=0){drag1={kind:"piece",i:best,dx:pieces[best].x-pt.x,dy:pieces[best].y-pt.y};return;}
+      if(pt.y>TRAY.y+30){drag1=null;return;}
+    }
+    drag1={kind:"line",which:nearestLine(pt)};setLine(drag1.which,pt);
+  },
+  move(pt){
+    if(!drag1)return;
+    if(drag1.kind==="line"){setLine(drag1.which,pt);return;}
+    const pc=pieces[drag1.i], hh=PR*Math.sin(pc.size/2*D);
+    pc.x=Math.max(TRAY.x+34,Math.min(TRAY.x+TRAY.w-10-PR,pt.x+drag1.dx));
+    pc.y=Math.max(TRAY.y+36+hh,Math.min(TRAY.y+TRAY.h-8-hh,pt.y+drag1.dy));
+    drawTray();
+  },
+  up(){ if(drag1&&drag1.kind==="piece")checkStack(drag1.i); drag1=null; }
+});
+$("#slp").oninput=e=>{let d=gap(+e.target.value,q1);d=Math.max(20,Math.min(160,d));
+  p1=((q1-d)%180+180)%180;draw1();};
+$("#slq").oninput=e=>{let d=gap(p1,+e.target.value);d=Math.max(20,Math.min(160,d));
+  q1=(p1+d)%180;draw1();};
+$("#cut1").onclick=makePieces;
+$("#home1").onclick=()=>{if(flying)return;pieces=null;pieceSize=null;drawTray();hideV1();};
+$("#auto1").onclick=()=>{
+  if(!pieces||flying)return;
+  const mv=[[2,0],[3,1]].map(([i,j])=>({pc:pieces[i],sx:pieces[i].x,sy:pieces[i].y,
+    tx:pieces[j].x,ty:pieces[j].y}));
+  anim(1100,k=>{mv.forEach(m=>{m.pc.x=m.sx+(m.tx-m.sx)*k;m.pc.y=m.sy+(m.ty-m.sy)*k;});drawTray();},
+    ()=>setV1("yes","밀어서 포개었더니 딱 맞습니다<small>∠c는 ∠a 위에, ∠d는 ∠b 위에 정확히 포개집니다. 크기를 바꾸지 않고 옆으로 옮기기만 했습니다.</small>"));
+};
+draw1();
+
+/* ══ 2. 성질 — 1단계에서 맞춘 각을 그대로 사용 ═══ */
+const O2=[330,238],R2=228;
+let st2=0;
+function draw2(){
+  const[ox,oy]=O2, S=angsOf(), A=Math.round(S[0][4]), B=180-A;
+  const set=(id,ang)=>{const[x1,y1]=px(ox,oy,R2,ang),[x2,y2]=px(ox,oy,R2,ang+180);
+    const e=$(id);e.setAttribute("x1",x1);e.setAttribute("y1",y1);e.setAttribute("x2",x2);e.setAttribute("y2",y2);};
+  set("#l2a",p1);set("#l2b",q1);
+  $("#o2").setAttribute("cx",ox);$("#o2").setAttribute("cy",oy);
+  const lit = st2===1?[0,1] : st2===2?[1,2] : st2>=3?[0,2] : [];
+  const g=$("#sect2");g.innerHTML="";const L=$("#labs2");L.innerHTML="";
+  S.forEach(([s,e,n,c,v],i)=>{
+    const on=lit.length===0||lit.includes(i);
+    g.appendChild(el("path",{d:sector(ox,oy,92,s,e),fill:`var(--${c}-w)`,opacity:on?1:.35}));
+    g.appendChild(el("path",{d:arc(ox,oy,92,s,e),fill:"none",stroke:`var(--${c})`,
+      "stroke-width":on?6:2,opacity:on?1:.35}));
+    const[lx,ly]=px(ox,oy,56,(s+e)/2);
+    L.appendChild(el("text",{x:lx,y:ly+8,"text-anchor":"middle",class:"svg-val",
+      fill:`var(--${c})`,opacity:on?1:.3,"font-style":"italic"},n));
+    const[vx,vy]=px(ox,oy,126,(s+e)/2);
+    L.appendChild(el("text",{x:vx,y:vy+6,"text-anchor":"middle",class:"svg-note",opacity:on?1:.3},
+      Math.round(v)+"°"));});
+  const flat=$("#flat2"),fl=$("#flatlab2");
+  if(st2===1||st2===2){
+    const s=st2===1?S[0][0]:S[1][0];
+    flat.setAttribute("d",arc(ox,oy,162,s,s+180));
+    flat.setAttribute("stroke","var(--amber)");flat.setAttribute("opacity",".95");
+    const[fx,fy]=px(ox,oy,196,s+90);
+    fl.setAttribute("x",fx);fl.setAttribute("y",fy+8);fl.setAttribute("opacity",1);
+  }else{flat.setAttribute("opacity",0);fl.setAttribute("opacity",0);}
+  $("#w1").textContent=`직선 ① 위의 평각 · ${A}° + ${B}° = 180°`;
+  $("#w2").textContent=`직선 ② 위의 평각 · ${B}° + ${A}° = 180°`;
+  $("#w3").textContent=`둘 다 180° − ${B}° = ${A}°`;
+  $("#from1").textContent=`1단계에서 맞춘 각 ${A}° / ${B}°`;
+  ["#p1","#p2","#p3","#p4"].forEach((id,i)=>$(id).classList.toggle("live",st2>=i+1));
+}
+function step2(){st2=st2>=4?0:st2+1;draw2();}
+$("#next2").onclick=step2; $("#reset2").onclick=()=>{st2=0;draw2();};
+draw2();
+
+/* ══ 3-a. 세 직선 ═══════════════════════════════ */
+const O3=[320,225],R3=205;
+const RAY={A:145,B:180,C:220,D:325,E:0,F:40};
+(function(){
+  const[ox,oy]=O3,g=$("#lines3a");
+  [["A","D"],["B","E"],["C","F"]].forEach(([p,q])=>{
+    const[x1,y1]=px(ox,oy,R3,RAY[p]),[x2,y2]=px(ox,oy,R3,RAY[q]);
+    g.appendChild(el("line",{x1,y1,x2,y2,stroke:"var(--ink)","stroke-width":5,"stroke-linecap":"round"}));});
+  for(const k in RAY){const[x,y]=px(ox,oy,R3+26,RAY[k]);
+    $("#labs3a").appendChild(el("text",{x,y:y+8,"text-anchor":"middle",class:"svg-lab"},k));}
+})();
+const PAIRS=[["AOB","DOE"],["AOF","DOC"],["COE","FOB"]];
+let sel3=0;
+function span(n){const a=RAY[n[0]],b=RAY[n[2]];let s=a,e=b,d=(e-s+360)%360;
+  if(d>180){s=b;e=a;d=(e-s+360)%360;} return [s,s+d];}
+function paint3(names,color){
+  const[ox,oy]=O3,g=$("#hl3a");
+  names.forEach(n=>{const[s,e]=span(n);
+    g.appendChild(el("path",{d:sector(ox,oy,80,s,e),fill:`var(--${color}-w)`}));
+    g.appendChild(el("path",{d:arc(ox,oy,80,s,e),fill:"none",stroke:`var(--${color})`,"stroke-width":6}));});
+}
+function pick3(i){sel3=i;$("#hl3a").innerHTML="";$("#ans3").classList.remove("show");
+  $$("#pick3 .btn").forEach((b,k)=>b.classList.toggle("primary",k===i));
+  paint3([PAIRS[i][0]],"rose");}
+$$("#pick3 .btn").forEach((b,i)=>b.onclick=()=>pick3(i));
+pick3(0);
+$("#show3").onclick=()=>{const[a,b]=PAIRS[sel3];paint3([b],"mint");
+  $("#ans3").innerHTML=`∠${a} 의 맞꼭지각은 ∠${b}<small>두 반직선이 점 O를 사이에 두고 각각 반대쪽으로 뻗어 있습니다.</small>`;
+  $("#ans3").classList.add("show");};
+
+/* ══ 3-b. 문제 8 ════════════════════════════════ */
+(function(){
+  const sv=$("#sv3b");
+  function fig(ox,oy,R,angs,marks){
+    const g=el("g",{});
+    marks.forEach(([s,e,c])=>{
+      g.appendChild(el("path",{d:sector(ox,oy,52,s,e),fill:`var(--${c}-w)`}));
+      g.appendChild(el("path",{d:arc(ox,oy,52,s,e),fill:"none",stroke:`var(--${c})`,"stroke-width":4.5}));});
+    angs.forEach(a=>{const[x1,y1]=px(ox,oy,R,a),[x2,y2]=px(ox,oy,R,a+180);
+      g.appendChild(el("line",{x1,y1,x2,y2,stroke:"var(--ink)","stroke-width":5,"stroke-linecap":"round"}));});
+    marks.forEach(([s,e,c,t])=>{
+      const[lx,ly]=px(ox,oy,84,(s+e)/2);
+      g.appendChild(el("text",{x:lx,y:ly+8,"text-anchor":"middle",class:"svg-val",
+        fill:`var(--${c})`,"font-style":t.length===1?"italic":"normal"},t));});
+    g.appendChild(el("circle",{cx:ox,cy:oy,r:6,fill:"var(--amber)"}));
+    return g;}
+  sv.appendChild(el("text",{x:44,y:76,class:"svg-lab",fill:"var(--dim)"},"⑴"));
+  sv.appendChild(fig(172,235,116,[10,60],[[10,60,"mint","50°"],[190,240,"rose","a"],[60,190,"amber","b"]]));
+  sv.appendChild(el("text",{x:346,y:76,class:"svg-lab",fill:"var(--dim)"},"⑵"));
+  sv.appendChild(fig(462,235,116,[0,35,120],[[0,35,"mint","35°"],[120,180,"mint","60°"],
+    [35,120,"rose","a"],[215,300,"amber","b"]]));
+})();
+
+/* ══ 3-c. 문제 9 ════════════════════════════════ */
+const O3C=[320,230],R3C=200,A3=165,B3=210,C3=-20,D3=25;
+(function(){
+  const[ox,oy]=O3C,g=$("#lines3c");
+  [[A3,"A"],[B3,"B"],[C3,"C"],[D3,"D"]].forEach(([a,n])=>{
+    const[x,y]=px(ox,oy,R3C,a);
+    g.appendChild(el("line",{x1:ox,y1:oy,x2:x,y2:y,stroke:"var(--ink)","stroke-width":5,"stroke-linecap":"round"}));
+    const[lx,ly]=px(ox,oy,R3C+28,a);
+    $("#labs3c").appendChild(el("text",{x:lx,y:ly+8,"text-anchor":"middle",class:"svg-lab"},n));});
+  const s=$("#sect3c");
+  const put=(a0,a1,r,c,t)=>{
+    s.appendChild(el("path",{d:sector(ox,oy,r,a0,a1),fill:`var(--${c}-w)`}));
+    s.appendChild(el("path",{d:arc(ox,oy,r,a0,a1),fill:"none",stroke:`var(--${c})`,"stroke-width":5}));
+    const[lx,ly]=px(ox,oy,r+32,(a0+a1)/2);
+    s.appendChild(el("text",{x:lx,y:ly+8,"text-anchor":"middle",class:"svg-val",fill:`var(--${c})`},t));};
+  put(D3,A3,64,"amber","140°"); put(A3,B3,110,"rose","45°"); put(C3,D3,110,"rose","45°");
+})();
+$("#ext3btn").onclick=()=>{
+  const[ox,oy]=O3C,g=$("#ext3c");g.innerHTML="";
+  const[x,y]=px(ox,oy,R3C+34,A3-180);
+  const ln=el("line",{x1:ox,y1:oy,x2:ox,y2:oy,stroke:"var(--mint)","stroke-width":4,
+    "stroke-dasharray":"12 9","stroke-linecap":"round"});
+  g.appendChild(ln);
+  anim(900,k=>{ln.setAttribute("x2",ox+(x-ox)*k);ln.setAttribute("y2",oy+(y-oy)*k);},()=>{
+    g.appendChild(el("text",{x:x-14,y:y+58,"text-anchor":"end",class:"svg-lab",fill:"var(--rose)"},
+      "5° 어긋남 — C를 지나지 않는다"));
+    g.appendChild(el("path",{d:arc(ox,oy,R3C+8,C3,A3-180),fill:"none",stroke:"var(--rose)","stroke-width":6}));});
+};
+function judge3c(isYes){
+  const v=$("#v3c");v.className="verdict show "+(isYes?"no":"yes");
+  v.innerHTML=isYes
+    ? "다시 살펴봅시다<small>∠AOD + ∠COD = 140° + 45° = 185°. 180°가 아니므로 세 점 A, O, C는 한 직선 위에 있지 않습니다.</small>"
+    : "맞습니다 · 맞꼭지각이 아닙니다<small>∠AOD + ∠COD = 185° 이므로 A, O, C는 한 직선 위에 있지 않습니다. 두 직선이 만나 생긴 각이 아니므로 맞꼭지각이 아닙니다.</small>";
+}
+$("#yes3c").onclick=()=>judge3c(true); $("#no3c").onclick=()=>judge3c(false);
+segSwitch("seg3",{a:["#sv3a","#p3a"],b:["#sv3b","#p3b"],c:["#sv3c","#p3c"]});
+
+/* ══ 4-a. 낱말 잇기 ═════════════════════════════ */
+const TERMS=[
+  {w:"직각", d:"크기가 90°인 각, 또는 그 크기를 나타내는 말", fig:"angle"},
+  {w:"직교", d:"두 직선이 직각을 이루며 만남을 나타내는 말", fig:"cross"},
+  {w:"수직", d:"두 직선의 교각이 직각임을 나타내는 말", fig:"cross"},
+  {w:"수선", d:"한 직선과 직각으로 만나는 다른 직선을 나타내는 말", fig:"perp"}];
+const ORDER=[2,0,3,1];        // 뜻 카드가 처음 놓이는 순서
+const WCOL=86, GAPX=52, ROWGAP=10;
+let selW=null, matched=new Set(), rightOrder=[...ORDER];
+let wordNodes=[], descNodes=[], moving=false;
+
+function buildMatch(){
+  selW=null;matched.clear();rightOrder=[...ORDER];moving=false;
+  const g=$("#mgrid");g.innerHTML="";wordNodes=[];descNodes=[];
+  TERMS.forEach((t,i)=>{
+    const b=document.createElement("button");
+    b.className="mcard mword";b.dataset.i=i;
+    b.style.left="0px";b.style.width=WCOL+"px";
+    b.innerHTML='<span>'+t.w+'</span><i class="dot"></i>';
+    b.onclick=()=>{draw4a(t.fig);if(matched.has(i)||moving)return;
+      selW=(selW===i?null:i);refresh();};
+    g.appendChild(b);wordNodes[i]=b;});
+  TERMS.forEach((t,j)=>{
+    const d=document.createElement("button");
+    d.className="mcard mdesc";d.dataset.i=j;
+    d.style.left=(WCOL+GAPX)+"px";d.style.right="0px";
+    d.innerHTML='<i class="dot"></i><span>'+t.d+'</span>';
+    d.onclick=()=>tryMatch(j,d);
+    g.appendChild(d);descNodes[j]=d;});
+  $("#malign").textContent="짝끼리 정렬하기";
+  refresh();
+}
+function refresh(){
+  wordNodes.forEach((n,i)=>{n.classList.toggle("done",matched.has(i));
+    n.setAttribute("aria-selected",selW===i);});
+  descNodes.forEach((n,j)=>n.classList.toggle("done",matched.has(j)));
+  $("#mprog4").textContent=matched.size+" / 4 연결";
+  $("#malign").classList.toggle("hidden",matched.size<4);
+  layout(false);
+}
+function tryMatch(j,node){
+  if(moving||selW===null||matched.has(j))return;
+  if(selW===j){matched.add(j);selW=null;refresh();}
+  else{node.classList.add("miss");setTimeout(()=>node.classList.remove("miss"),650);}
+}
+/* 행 높이와 카드의 세로 위치를 직접 계산한다 */
+function plan(){
+  const rows=[],tops=[];let y=0;
+  for(let r=0;r<4;r++){
+    const w=wordNodes[r], d=descNodes[rightOrder[r]];
+    if(!w||!d)return null;
+    rows[r]=Math.max(w.offsetHeight,d.offsetHeight);
+    tops[r]=y; y+=rows[r]+ROWGAP;}
+  const target=new Map();
+  for(let r=0;r<4;r++){
+    const w=wordNodes[r], d=descNodes[rightOrder[r]];
+    target.set(w,tops[r]+(rows[r]-w.offsetHeight)/2);
+    target.set(d,tops[r]+(rows[r]-d.offsetHeight)/2);}
+  return {target,height:y-ROWGAP};
+}
+function layout(animate){
+  const g=$("#mgrid");if(!g||!wordNodes.length)return;
+  const p=plan();if(!p)return;
+  g.style.height=p.height+"px";
+  if(!animate){p.target.forEach((v,n)=>n.style.top=v+"px");drawLines();return;}
+  const start=new Map();
+  let dist=0;
+  p.target.forEach((v,n)=>{const s=parseFloat(n.style.top)||0;start.set(n,s);dist+=Math.abs(v-s);});
+  if(dist<2){p.target.forEach((v,n)=>n.style.top=v+"px");drawLines();return;}
+  moving=true;
+  const items=[];let di=0;
+  p.target.forEach((v,n)=>{
+    const s=start.get(n), isD=n.classList.contains("mdesc");
+    items.push({n,v,s,dir:Math.sign(v-s),delay:isD?(di++)*90:0});
+    n.style.zIndex = v>s ? "3" : "2";});
+  const T=800, tot=T+270, t0=performance.now();
+  (function tick(t){
+    const ms=t-t0;
+    items.forEach(it=>{
+      const k=Math.max(0,Math.min(1,(ms-it.delay)/T)), e=ease(k);
+      it.n.style.top=(it.s+(it.v-it.s)*e)+"px";
+      it.n.style.transform="translateX("+(it.dir*16*Math.sin(Math.PI*e))+"px)";});
+    drawLines();
+    if(ms<tot)requestAnimationFrame(tick);
+    else{items.forEach(it=>{it.n.style.top=it.v+"px";it.n.style.transform="";it.n.style.zIndex="";});
+      drawLines();moving=false;}
+  })(t0);
+}
+function drawLines(){
+  const wrap=$("#mwrap"), sv=$("#mlines");
+  const wb=wrap.getBoundingClientRect();
+  sv.innerHTML="";
+  if(!wb.width)return;
+  sv.setAttribute("width",wb.width);sv.setAttribute("height",wb.height);
+  sv.setAttribute("viewBox","0 0 "+wb.width+" "+wb.height);
+  matched.forEach(i=>{
+    const a=wordNodes[i]&&wordNodes[i].querySelector(".dot");
+    const b=descNodes[i]&&descNodes[i].querySelector(".dot");
+    if(!a||!b)return;
+    const ra=a.getBoundingClientRect(), rb=b.getBoundingClientRect();
+    const x1=ra.left+ra.width/2-wb.left, y1=ra.top+ra.height/2-wb.top;
+    const x2=rb.left+rb.width/2-wb.left, y2=rb.top+rb.height/2-wb.top;
+    const mx=(x1+x2)/2;
+    sv.appendChild(el("path",{d:"M "+x1+" "+y1+" C "+mx+" "+y1+", "+mx+" "+y2+", "+x2+" "+y2,
+      fill:"none",stroke:"var(--mint)","stroke-width":3,"stroke-linecap":"round"}));});
+}
+let roTimer;
+if(window.ResizeObserver) new ResizeObserver(()=>{
+  clearTimeout(roTimer);roTimer=setTimeout(()=>{if(!moving)layout(false);},60);}).observe($("#mwrap"));
+addEventListener("resize",()=>{if(!moving)layout(false);});
+if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>layout(false));
+$("#malign").onclick=()=>{
+  if(moving||matched.size<4)return;
+  const aligned=rightOrder.every((v,i)=>v===i);
+  rightOrder=aligned?[...ORDER]:[0,1,2,3];
+  $("#malign").textContent=aligned?"짝끼리 정렬하기":"원래 자리로";
+  layout(true);
+};
+$("#mreset4").onclick=buildMatch;
+function draw4a(kind){
+  const sv=$("#sv4a");sv.innerHTML="";
+  const ox=320,oy=200,R=168;
+  const line=(a,c,w)=>{const[x1,y1]=px(ox,oy,R,a),[x2,y2]=px(ox,oy,R,a+180);
+    sv.appendChild(el("line",{x1,y1,x2,y2,stroke:c,"stroke-width":w,"stroke-linecap":"round"}));};
+  if(kind==="angle"){
+    const[x1,y1]=px(ox,oy,R,0),[x2,y2]=px(ox,oy,R,90);
+    sv.appendChild(el("path",{d:sector(ox,oy,72,0,90),fill:"var(--amber-w)"}));
+    sv.appendChild(el("line",{x1:ox,y1:oy,x2:x1,y2:y1,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"}));
+    sv.appendChild(el("line",{x1:ox,y1:oy,x2:x2,y2:y2,stroke:"var(--ink)","stroke-width":6,"stroke-linecap":"round"}));
+    sv.appendChild(raMark(ox,oy,0,90,32));
+    sv.appendChild(el("text",{x:ox+96,y:oy-60,class:"svg-val",fill:"var(--amber)"},"90°"));
+    sv.appendChild(el("text",{x:320,y:412,"text-anchor":"middle",class:"svg-note"},"각 하나를 가리키는 말"));
+  }else{
+    line(0,"var(--ink)",6); line(90,kind==="perp"?"var(--mint)":"var(--ink)",6);
+    sv.appendChild(raMark(ox,oy,0,90,32));
+    if(kind==="cross"){
+      sv.appendChild(el("text",{x:ox+R+20,y:oy+8,class:"svg-lab"},"B"));
+      sv.appendChild(el("text",{x:ox-R-20,y:oy+8,class:"svg-lab"},"A"));
+      sv.appendChild(el("text",{x:ox,y:oy-R-14,"text-anchor":"middle",class:"svg-lab"},"C"));
+      sv.appendChild(el("text",{x:ox,y:oy+R+30,"text-anchor":"middle",class:"svg-lab"},"D"));
+      sv.appendChild(el("text",{x:320,y:412,"text-anchor":"middle",class:"svg-note"},"두 직선 사이의 관계를 가리키는 말"));
+    }else{
+      sv.appendChild(el("text",{x:ox,y:oy-R-14,"text-anchor":"middle",class:"svg-val",fill:"var(--mint)"},"수선"));
+      sv.appendChild(el("text",{x:320,y:412,"text-anchor":"middle",class:"svg-note"},"직선 하나를 가리키는 말"));
+    }
+  }
+  sv.appendChild(el("circle",{cx:ox,cy:oy,r:7,fill:"var(--amber)"}));
+}
+let symDrawn=false;
+function drawSymbol(){
+  if(symDrawn)return; symDrawn=true;
+  const sv=$("#symsvg");sv.innerHTML="";
+  const row=(y,label,kind)=>{
+    sv.appendChild(el("text",{x:6,y:y-1,class:"svg-note"},label));
+    const ab=el("text",{x:152,y,"text-anchor":"middle",class:"svg-sym"},"AB");
+    const op=el("text",{x:214,y,"text-anchor":"middle",class:"svg-sym"},"⊥");
+    const cd=el("text",{x:280,y,"text-anchor":"middle",class:"svg-sym"},"CD");
+    sv.appendChild(ab);sv.appendChild(op);sv.appendChild(cd);
+    overbar(sv,ab,kind);overbar(sv,cd,kind);};
+  row(64,"두 직선","line");
+  sv.appendChild(el("line",{x1:6,y1:96,x2:334,y2:96,stroke:"var(--hair)","stroke-width":1.5}));
+  row(146,"두 선분","seg");
+}
+segSwitch("seg4",{a:["#sv4a","#p4a"],b:["#sv4b","#p4b"]});
+buildMatch(); draw4a("angle");
+
+/* ══ 4-b. 수직이등분선 ═══════════════════════════ */
+function draw4b(){
+  const sv=$("#sv4b");sv.innerHTML="";
+  const ax=150,bx=490,y=240,mx=(ax+bx)/2;
+  const perp=$("#c4perp").checked, mid=$("#c4mid").checked, ok=perp&&mid;
+  const cx=mid?mx:mx+108, ang=perp?90:58;
+  const[x1,y1]=px(cx,y,180,ang),[x2,y2]=px(cx,y,180,ang+180);
+  sv.appendChild(el("line",{x1,y1,x2,y2,stroke:ok?"var(--mint)":"var(--sky)","stroke-width":6,"stroke-linecap":"round"}));
+  sv.appendChild(el("text",{x:x1+16,y:y1+16,class:"svg-lab",fill:ok?"var(--mint)":"var(--sky)","font-style":"italic"},"l"));
+  sv.appendChild(el("line",{x1:ax,y1:y,x2:bx,y2:y,stroke:"var(--ink)","stroke-width":7,"stroke-linecap":"round"}));
+  [[ax,"A"],[bx,"B"]].forEach(([x,n])=>{
+    sv.appendChild(el("circle",{cx:x,cy:y,r:7,fill:"var(--ink)"}));
+    sv.appendChild(el("text",{x,y:y+40,"text-anchor":"middle",class:"svg-lab"},n));});
+  sv.appendChild(el("circle",{cx:mx,cy:y,r:8,fill:"var(--amber)"}));
+  sv.appendChild(el("text",{x:mx,y:y+42,"text-anchor":"middle",class:"svg-lab",fill:"var(--amber)"},"M"));
+  if(perp) sv.appendChild(raMark(cx,y,0,90,26,ok?"var(--mint)":"var(--sky)"));
+  const cut=mid?mx:cx;
+  const L=Math.round((cut-ax)/34*10)/10, R=Math.round((bx-cut)/34*10)/10;
+  sv.appendChild(el("text",{x:(ax+cut)/2,y:y-42,"text-anchor":"middle",class:"svg-lab",
+    fill:mid?"var(--mint)":"var(--dim)"},L+" cm"));
+  sv.appendChild(el("text",{x:(cut+bx)/2,y:y-42,"text-anchor":"middle",class:"svg-lab",
+    fill:mid?"var(--mint)":"var(--dim)"},R+" cm"));
+  const v=$("#v4");v.className="verdict show "+(ok?"yes":"no");
+  v.innerHTML=ok?"수직이등분선이다<small>수직이면서 중점을 지납니다.</small>"
+    :!perp&&!mid?"수직이등분선이 아니다<small>어떤 조건이 필요할까요?</small>"
+    :perp?"수직이등분선이 아니다<small>수직이지만 중점을 지나지 않아 AB를 이등분하지 못합니다.</small>"
+    :"수직이등분선이 아니다<small>이등분하지만 수직이 아닙니다.</small>";
+}
+$("#c4perp").onchange=draw4b; $("#c4mid").onchange=draw4b; draw4b();
+
+/* ══ 5. 수선의 발 ═══════════════════════════════ */
+const P5=[310,130], LY=330, SC=25;
+let x5=545, min5=Infinity, pts=[];
+const len5=x=>Math.hypot(x-P5[0],LY-P5[1])/SC;
+const cm=v=>v.toFixed(2)+" cm";
+function draw5(){
+  const snap=Math.abs(x5-P5[0])<3; if(snap)x5=P5[0];
+  const L=len5(x5); min5=Math.min(min5,L);
+  const s=$("#seg5");
+  s.setAttribute("x1",P5[0]);s.setAttribute("y1",P5[1]);s.setAttribute("x2",x5);s.setAttribute("y2",LY);
+  s.setAttribute("stroke",snap?"var(--mint)":"var(--rose)");
+  $("#x5").setAttribute("cx",x5);
+  $("#xlab5").setAttribute("x",x5);$("#xlab5").textContent=snap?"H":"X";
+  $("#xlab5").style.fill=snap?"var(--mint)":"var(--ink)";
+  const t=$("#len5");
+  t.setAttribute("x",(P5[0]+x5)/2+(x5>=P5[0]?52:-52));
+  t.setAttribute("y",(P5[1]+LY)/2);
+  t.style.fill=snap?"var(--mint)":"var(--rose)";
+  t.textContent=cm(L);
+  $("#ra5").innerHTML="";$("#ra5").setAttribute("opacity",snap?1:0);
+  if(snap)$("#ra5").appendChild(raMark(x5,LY,90,180,24,"var(--mint)"));
+  $("#r5now").textContent=cm(L);
+  $("#r5min").textContent=cm(min5);
+  const v=$("#v5");v.classList.toggle("show",snap);
+  if(snap)v.innerHTML='가장 짧습니다 · 점 H가 수선의 발<small>직각 표시가 나타났습니다. 선분 <span class="ov">PH</span> 의 길이 8.00 cm 가 점 P와 직선 l 사이의 거리입니다.</small>';
+  const last=pts[pts.length-1];
+  if(!last||Math.abs(last[0]-x5)>6) pts.push([x5,L]);
+  if(pts.length>200)pts.shift();
+  const g=$("#plot5");g.innerHTML="";
+  g.appendChild(el("line",{x1:60,y1:488,x2:612,y2:488,stroke:"var(--hair-2)","stroke-width":2}));
+  pts.forEach(([x,l])=>g.appendChild(el("circle",{cx:x,cy:488-(l-8)*15,r:4,
+    fill:Math.abs(x-P5[0])<3?"var(--mint)":"var(--hair-2)"})));
+}
+draw5();
+pointer($("#sv5"),{down:p=>{x5=Math.max(60,Math.min(610,p.x));draw5();},
+  move:p=>{x5=Math.max(60,Math.min(610,p.x));draw5();}});
+$("#keep5").onclick=()=>{const g=$("#trail5");
+  g.appendChild(el("line",{x1:P5[0],y1:P5[1],x2:x5,y2:LY,stroke:"var(--hair-2)","stroke-width":2.5,"stroke-dasharray":"7 6"}));
+  g.appendChild(el("text",{x:x5,y:LY-12,"text-anchor":"middle",class:"svg-note"},len5(x5).toFixed(2)));};
+$("#clr5").onclick=()=>{$("#trail5").innerHTML="";pts=[];min5=Infinity;draw5();};
+
+/* ══ 6-a. 사다리꼴 ═══════════════════════════════ */
+const TR={A:[170,120],D:[350,120],B:[170,300],C:[530,300]};
+function draw6a(hl){
+  const sv=$("#sv6a");sv.innerHTML="";
+  const seg=(p,q,c,w)=>sv.appendChild(el("line",{x1:TR[p][0],y1:TR[p][1],x2:TR[q][0],y2:TR[q][1],
+    stroke:c,"stroke-width":w,"stroke-linecap":"round"}));
+  seg("A","D",hl===3?"var(--mint)":"var(--ink)",hl===3?9:5);
+  seg("D","C","var(--ink)",5);
+  seg("B","C",hl===1?"var(--rose)":"var(--ink)",hl===1?9:5);
+  seg("A","B",(hl===1||hl===2)?"var(--mint)":"var(--ink)",hl?9:5);
+  sv.appendChild(raMark(TR.B[0],TR.B[1],0,90,22));
+  sv.appendChild(raMark(TR.A[0],TR.A[1],-90,0,22));
+  if(hl===2){
+    sv.appendChild(el("line",{x1:TR.C[0],y1:TR.C[1],x2:TR.B[0],y2:TR.B[1],stroke:"var(--rose)",
+      "stroke-width":6,"stroke-dasharray":"12 8"}));
+    sv.appendChild(el("circle",{cx:TR.B[0],cy:TR.B[1],r:14,fill:"none",stroke:"var(--mint)","stroke-width":4}));}
+  if(hl===3) sv.appendChild(el("text",{x:260,y:96,"text-anchor":"middle",class:"svg-val",fill:"var(--mint)"},"3 cm"));
+  const lab={A:[-24,-12],B:[-24,28],C:[26,28],D:[26,-12]};
+  for(const k in TR){const[dx,dy]=lab[k];
+    sv.appendChild(el("circle",{cx:TR[k][0],cy:TR[k][1],r:6,fill:"var(--amber)"}));
+    sv.appendChild(el("text",{x:TR[k][0]+dx,y:TR[k][1]+dy,"text-anchor":"middle",class:"svg-lab"},k));}
+  if(hl!==3)[["3 cm",260,106],["4 cm",138,215],["6 cm",350,336],["5 cm",460,195]]
+    .forEach(([t,x,y])=>sv.appendChild(el("text",{x,y,"text-anchor":"middle",class:"svg-note"},t)));
+}
+function refreshHL(){
+  const open=$$("#p6a [data-qa].open");
+  draw6a(open.length?+open[open.length-1].dataset.hl:0);
+}
+draw6a(0);
+
+/* ══ 6-b. 종이비행기 ═════════════════════════════ */
+const CELL=64, BASE=406, SM=[210,BASE-4*CELL], HJ=[500,BASE-5*CELL];
+function draw6b(mode){
+  const sv=$("#sv6b");sv.innerHTML="";
+  sv.appendChild(el("rect",{x:40,y:BASE-5.6*CELL,width:640,height:5.6*CELL,fill:"var(--paper)"}));
+  for(let x=40;x<=680;x+=CELL) sv.appendChild(el("line",{x1:x,y1:BASE-5.6*CELL,x2:x,y2:BASE,
+    stroke:"var(--hair-2)","stroke-width":1.2}));
+  for(let y=BASE;y>=BASE-5.6*CELL;y-=CELL) sv.appendChild(el("line",{x1:40,y1:y,x2:680,y2:y,
+    stroke:"var(--hair-2)","stroke-width":1.2}));
+  sv.appendChild(el("line",{x1:30,y1:BASE,x2:690,y2:BASE,stroke:"var(--ink)","stroke-width":7,"stroke-linecap":"round"}));
+  sv.appendChild(el("text",{x:696,y:BASE+8,class:"svg-lab","font-style":"italic"},"l"));
+  sv.appendChild(el("text",{x:36,y:BASE+34,class:"svg-note"},"출발선 · 한 칸 10 m"));
+  if(mode>=1) [[SM,"rose",40],[HJ,"mint",50]].forEach(([p,c,m])=>{
+    sv.appendChild(el("line",{x1:p[0],y1:p[1],x2:p[0],y2:BASE,stroke:`var(--${c})`,"stroke-width":6}));
+    sv.appendChild(raMark(p[0],BASE,90,180,22,`var(--${c})`));
+    sv.appendChild(el("circle",{cx:p[0],cy:BASE,r:8,fill:`var(--${c})`}));
+    if(mode===1) sv.appendChild(el("text",{x:p[0]+58,y:BASE-14,"text-anchor":"middle",
+      class:"svg-note",fill:`var(--${c})`},"수선의 발"));
+    if(mode>=2) sv.appendChild(el("text",{x:p[0]+54,y:(p[1]+BASE)/2,"text-anchor":"middle",
+      class:"svg-val",fill:`var(--${c})`},m+" m"));});
+  [[SM,"승민","rose"],[HJ,"현주","mint"]].forEach(([p,n,c])=>{
+    sv.appendChild(el("circle",{cx:p[0],cy:p[1],r:9,fill:`var(--${c})`}));
+    sv.appendChild(el("text",{x:p[0],y:p[1]-20,"text-anchor":"middle",class:"svg-lab",fill:`var(--${c})`},n));});
+}
+draw6b(0);
+$("#perp6").onclick=()=>{draw6b(1);$("#r6s").textContent="—";$("#r6h").textContent="—";
+  const v=$("#v6");v.className="verdict show idle";
+  v.innerHTML="수선과 출발선이 만나는 두 점이 각각 수선의 발입니다";};
+$("#meas6").onclick=()=>{draw6b(2);$("#r6s").textContent="40 m";$("#r6h").textContent="50 m";
+  const v=$("#v6");v.className="verdict show yes";
+  v.innerHTML="현주의 기록이 더 좋습니다<small>승민이는 네 칸, 현주는 다섯 칸이므로 각각 40 m와 50 m입니다.</small>";};
+segSwitch("seg6",{a:["#sv6a","#p6a"],b:["#sv6b","#p6b"]});
+
+$$("#recap7 .rcard").forEach(b=>b.onclick=()=>b.classList.toggle("open"));
+
+goStage(0);
+</script>
+</body>
+</html>
