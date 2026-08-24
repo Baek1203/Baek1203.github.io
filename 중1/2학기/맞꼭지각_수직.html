@@ -550,13 +550,13 @@ function anim(ms,step,done){
 }
 
 /* ── 단계 이동 ───────────────────────────────── */
-const STAGES=[["도입","용어 확인과 소개","5분"],["탐구","두 직선이 만나면","5분"],
-  ["성질","왜 항상 같을까","7분"],["확인","맞꼭지각 찾기","7분"],["용어","직교와 수직","5분"],
-  ["거리","수선의 발","7분"],["적용","문제 10과 11","6분"],["정리","오늘의 정리","3분"]];
+const STAGES=[["도입","용어 확인과 소개"],["탐구","두 직선이 만나면"],
+  ["성질","왜 항상 같을까"],["확인","맞꼭지각 찾기"],["용어","직교와 수직"],
+  ["거리","수선의 발"],["적용","문제 10과 11"],["정리","오늘의 정리"]];
 const railNav=$("#rail");
 STAGES.forEach((s,i)=>{const b=document.createElement("button");
   b.setAttribute("role","tab");b.setAttribute("aria-selected",i===0);
-  b.innerHTML=`<div class="n">0${i}</div><div class="t">${s[0]} · ${s[1]}</div><div class="m">${s[2]}</div>`;
+  b.innerHTML=`<div class="n">0${i}</div><div class="t">${s[0]} · ${s[1]}</div>`;
   b.onclick=()=>goStage(i);railNav.appendChild(b);});
 let cur=0;
 function goStage(i){
