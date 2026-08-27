@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동위각과 엇각 · 연습</title>
+<style>
+:root{
+  --cream:#fff7f1; --pink:#ff8fa8; --mint:#4fd1ac; --sky:#74bdff; --sun:#ffca4d;
+  --ink:#3b3348; --muted:#a2948f; --soft:#fff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%}
+body{
+  font-family:'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
+  color:var(--ink);font-variant-numeric:tabular-nums;min-height:100vh;
+  background:
+    radial-gradient(720px 460px at 8% 0%, #ffe6ee 0%, transparent 58%),
+    radial-gradient(680px 460px at 100% 12%, #e2f3ff 0%, transparent 58%),
+    radial-gradient(700px 500px at 50% 108%, #e6fff5 0%, transparent 58%),
+    var(--cream);
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+svg{display:block;width:100%;height:auto;overflow:visible;user-select:none}
+.hide{display:none !important}
+
+.top{position:sticky;top:0;z-index:20;background:rgba(255,247,241,.9);backdrop-filter:blur(8px)}
+.top-in{max-width:920px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px;justify-content:center}
+.tabs{display:flex;gap:8px;background:#fff;border-radius:16px;padding:5px;box-shadow:0 5px 0 #f0dfd4}
+.tab{padding:9px 16px;border-radius:12px;font-weight:800;font-size:14.5px;color:#9d90ab}
+.tab.on{background:var(--pink);color:#fff}
+.body{max-width:920px;margin:0 auto;padding:14px 16px 70px}
+.panel{display:none}.panel.on{display:block}
+.card{background:var(--soft);border-radius:26px;padding:18px;
+  box-shadow:0 10px 0 #f2e2d8, 0 26px 44px -30px rgba(90,60,70,.45)}
+.card+.card{margin-top:14px}
+.prompt{font-size:clamp(17px,2.6vw,21px);font-weight:800;text-align:center;letter-spacing:-.02em}
+.tagw{padding:4px 11px;border-radius:11px;margin:0 3px}
+.tag-hot{background:#ffe1e9;color:#e0567c}
+.tag-cool{background:#d8f1f6;color:#0d8ba0}
+.btn{padding:12px 18px;border-radius:16px;font-weight:800;font-size:15px;background:#fff;color:var(--ink);
+  box-shadow:0 5px 0 #ecdcd2;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 #ecdcd2}
+.btn.pink{background:var(--pink);color:#fff;box-shadow:0 5px 0 #e2708b}
+.btn.mint{background:var(--mint);color:#fff;box-shadow:0 5px 0 #35b493}
+.btn.sun{background:var(--sun);color:#7a5300;box-shadow:0 5px 0 #e5b23f}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.seg{display:inline-flex;background:#f6eee9;border-radius:16px;padding:4px;gap:3px}
+.seg button{padding:8px 14px;border-radius:12px;font-weight:800;font-size:13.5px;color:#a294ae}
+.seg button.on{background:#fff;color:var(--ink);box-shadow:0 3px 0 #e8d8ce}
+.dots{display:flex;gap:6px;justify-content:center}
+.dot{width:11px;height:11px;border-radius:50%;background:#f0e2da}
+.dot.ok{background:var(--mint)}.dot.no{background:#ffb3b3}.dot.now{background:var(--sun);transform:scale(1.35)}
+.verdict{text-align:center;font-weight:800;font-size:17px;min-height:26px}
+.verdict.ok{color:#1fa87f}.verdict.no{color:#e0655e}
+.hintbox{background:#fff8e4;border-radius:18px;padding:13px 15px;font-size:14.5px;line-height:1.85;color:#7a5a12}
+.hintbox b{color:#a06a00}
+.statline{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.stat{background:#fff;border-radius:16px;padding:9px 15px;box-shadow:0 4px 0 #f2e2d8;text-align:center;min-width:78px}
+.stat span{display:block;font-size:11px;color:#a294ae;font-weight:800;letter-spacing:.05em}
+.stat b{font-size:20px;font-weight:800}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:300px;margin:0 auto}
+.key{padding:15px 0;border-radius:16px;background:#fff;font-size:21px;font-weight:800;
+  box-shadow:0 5px 0 #ecdcd2;transition:transform .08s,box-shadow .08s}
+.key:active{transform:translateY(4px);box-shadow:0 1px 0 #ecdcd2}
+.key.go{background:var(--mint);color:#fff;box-shadow:0 5px 0 #35b493;font-size:18px}
+.key.del{background:#fdeee9;color:#c08b76;box-shadow:0 5px 0 #f0d9cf}
+.ansbox{text-align:center;font-size:36px;font-weight:800;background:#f8f2ff;border-radius:18px;
+  padding:8px 0;margin:0 auto 12px;max-width:300px}
+.ansbox.empty{color:#c9bdd6}
+.ang{cursor:pointer;transition:fill .12s}
+.ang:hover{fill:#f6e7f0}
+.s-line{stroke:var(--ink);stroke-width:2.6;fill:none;stroke-linecap:round}
+.s-val{font-size:15.5px;font-weight:800;fill:var(--ink)}
+.linelbl{font-size:17px;font-style:italic;font-weight:700;fill:var(--ink)}
+.mascot{font-size:26px}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+.floaty{display:inline-block;animation:floaty 2.6s ease-in-out infinite}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .38s}
+.confetti{position:fixed;top:-14px;width:10px;height:14px;border-radius:3px;pointer-events:none;z-index:99}
+@keyframes fall{to{transform:translateY(105vh) rotate(760deg);opacity:.1}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</head>
+<body>
+
+<div class="top"><div class="top-in">
+  <div class="tabs">
+    <button class="tab on" data-sp="find">🔍 각 찾기</button>
+    <button class="tab" data-sp="drill">⚡ 각 구하기</button>
+  </div>
+</div></div>
+
+<div class="body">
+  <!-- 각 찾기 -->
+  <div class="panel on" data-sp="find">
+    <div class="card" id="sf-card">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+        <div class="seg" id="sf-mode">
+          <button class="on" data-m="practice">연습 (힌트 O)</button>
+          <button data-m="test">도전 (8문제)</button>
+        </div>
+        <span style="flex:1"></span>
+        <div class="dots" id="sf-dots"></div>
+      </div>
+      <div class="prompt" id="sf-prompt"></div>
+      <svg id="sf-svg" viewBox="0 0 640 400" style="margin:6px 0"></svg>
+      <div class="verdict" id="sf-verdict"></div>
+      <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+        <button class="btn sun" id="sf-hint">💡 힌트</button>
+        <button class="btn pink" id="sf-next">다음 →</button>
+      </div>
+      <div class="hintbox hide" id="sf-hintbox" style="margin-top:12px"></div>
+    </div>
+    <div class="card hide" id="sf-done" style="text-align:center">
+      <div class="mascot floaty">🎉</div>
+      <div id="sf-score" style="font-size:22px;font-weight:800;margin:8px 0"></div>
+      <button class="btn mint" id="sf-again">다시 도전</button>
+    </div>
+  </div>
+
+  <!-- 각 구하기 -->
+  <div class="panel" data-sp="drill">
+    <div class="card" id="dr-lobby">
+      <div style="text-align:center">
+        <div class="mascot floaty">⚡</div>
+        <h2 style="margin:6px 0 2px;font-size:23px;letter-spacing:-.02em">각의 크기 구하기</h2>
+        <p style="color:var(--muted);font-size:14px;margin:0 0 16px">동위각 · 엇각 · 맞꼭지각 · 평각</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+        <div class="seg" id="dr-type">
+          <button data-t="basic">기초</button>
+          <button data-t="para">평행선</button>
+          <button data-t="zig">꺾은선</button>
+          <button class="on" data-t="all">전체</button>
+        </div>
+        <div class="seg" id="dr-mode">
+          <button class="on" data-m="practice">연습 (힌트 O)</button>
+          <button data-m="rush">90초 도전</button>
+        </div>
+        <button class="btn pink" id="dr-start" style="padding:14px 34px;font-size:17px">시작하기</button>
+      </div>
+      <div class="statline" id="dr-best" style="margin-top:16px"></div>
+    </div>
+
+    <div class="card hide" id="dr-play">
+      <div class="statline" style="margin-bottom:10px" id="dr-stats"></div>
+      <div class="prompt" id="dr-q"></div>
+      <svg id="dr-svg" viewBox="0 0 430 300" style="margin:4px 0 8px"></svg>
+      <div class="verdict" id="dr-verdict"></div>
+      <div class="ansbox empty" id="dr-ans">?</div>
+      <div class="pad" id="dr-pad"></div>
+      <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+        <button class="btn sun" id="dr-hint">💡 힌트</button>
+        <button class="btn" id="dr-quit">그만두기</button>
+      </div>
+      <div class="hintbox hide" id="dr-hintbox" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card hide" id="dr-end" style="text-align:center">
+      <div class="mascot floaty">🏁</div>
+      <div id="dr-result" style="font-size:21px;font-weight:800;margin:8px 0 4px"></div>
+      <div id="dr-result2" style="color:var(--muted);font-size:14px;margin-bottom:14px"></div>
+      <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
+        <button class="btn mint" id="dr-retry">한 번 더</button>
+        <button class="btn" id="dr-back">유형 바꾸기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const PI=Math.PI;
+const d2r=d=>d*PI/180, r2d=r=>r*180/PI;
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const f=n=>Math.round(n*100)/100;
+function nrm(a){a=a%(PI*2); if(a>PI)a-=PI*2; if(a<=-PI)a+=PI*2; return a;}
+function pol(v,a,r){return{x:v.x+r*Math.cos(a),y:v.y+r*Math.sin(a)};}
+function wedgeD(v,a1,a2,r){
+  const d=nrm(a2-a1), p1=pol(v,a1,r), p2=pol(v,a2,r);
+  return `M${f(v.x)} ${f(v.y)}L${f(p1.x)} ${f(p1.y)}A${r} ${r} 0 0 ${d>0?1:0} ${f(p2.x)} ${f(p2.y)}Z`;
+}
+function arcD(v,a1,a2,r){
+  const d=nrm(a2-a1), p1=pol(v,a1,r), p2=pol(v,a2,r);
+  return `M${f(p1.x)} ${f(p1.y)}A${r} ${r} 0 0 ${d>0?1:0} ${f(p2.x)} ${f(p2.y)}`;
+}
+function bisPt(v,a1,a2,r){const d=nrm(a2-a1);return pol(v,a1+d/2,r);}
+function angDeg(a1,a2){return Math.abs(r2d(nrm(a2-a1)));}
+function lineD(p,a,back,fwd){const s=pol(p,a,-back),e=pol(p,a,fwd);return `M${f(s.x)} ${f(s.y)}L${f(e.x)} ${f(e.y)}`;}
+function txt(x,y,s,cls,extra){return `<text x="${f(x)}" y="${f(y)}" class="${cls||''}" text-anchor="middle" dominant-baseline="middle" ${extra||''}>${s}</text>`;}
+function confetti(){
+  const cols=['#ff8fa8','#4fd1ac','#74bdff','#ffca4d','#c9a7ff'];
+  for(let i=0;i<18;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    d.style.left=(10+Math.random()*80)+'vw'; d.style.background=cols[i%cols.length];
+    d.style.animation=`fall ${0.9+Math.random()*0.7}s linear forwards`;
+    document.body.appendChild(d); setTimeout(()=>d.remove(),1800);
+  }
+}
+
+const KEYS=['a','b','c','d','e','f','g','h'];
+const CORR={a:'e',b:'f',c:'g',d:'h',e:'a',f:'b',g:'c',h:'d'};
+const ALT ={c:'e',d:'f',e:'c',f:'d'};
+
+/* ---------- 찾기용 도형 ---------- */
+function makeFigure(){
+  const A={x:320,y:110}, M0={x:320,y:284};
+  let phi=rnd(58,122); if(Math.abs(phi-90)<7) phi+= phi<90?-9:9;
+  let tl=rnd(-11,11), tm, g=0;
+  do{tm=rnd(-11,11);}while(Math.abs(tm-tl)<7&&g++<60);
+  const ph=d2r(phi), Tl=d2r(tl), Tm=d2r(tm);
+  const a11=Math.cos(ph), a12=-Math.cos(Tm), b1=M0.x-A.x;
+  const a21=Math.sin(ph), a22=-Math.sin(Tm), b2=M0.y-A.y;
+  const t=(b1*a22-a12*b2)/(a11*a22-a12*a21);
+  const B={x:A.x+t*Math.cos(ph), y:A.y+t*Math.sin(ph)};
+  const rA={R:Tl,L:Tl+PI,D:ph,U:ph+PI}, rB={R:Tm,L:Tm+PI,D:ph,U:ph+PI};
+  const W={a:[A,rA.R,rA.U],b:[A,rA.U,rA.L],c:[A,rA.L,rA.D],d:[A,rA.D,rA.R],
+           e:[B,rB.R,rB.U],f:[B,rB.U,rB.L],g:[B,rB.L,rB.D],h:[B,rB.D,rB.R]};
+  return {A,B,Tl,Tm,ph,W};
+}
+/* 각 → 직선 순서로 그려 직선이 항상 위에 보이게 함 */
+function figureSVG(fig,band){
+  const {A,B,Tl,Tm,ph,W}=fig;
+  let angs='',lines='';
+  if(band){
+    const p1=pol(A,Tl,-196),p2=pol(A,Tl,196),p3=pol(B,Tm,196),p4=pol(B,Tm,-196);
+    angs+=`<path d="M${f(p1.x)} ${f(p1.y)}L${f(p2.x)} ${f(p2.y)}L${f(p3.x)} ${f(p3.y)}L${f(p4.x)} ${f(p4.y)}Z" fill="#fff3c4" opacity=".75" pointer-events="none"/>`;
+  }
+  KEYS.forEach(k=>{
+    const [v,a1,a2]=W[k];
+    angs+=`<path d="${wedgeD(v,a1,a2,38)}" data-k="${k}" class="ang" fill="#f7f2fb" stroke="#e0d4ea" stroke-width="1.4"/>`;
+  });
+  lines+=`<g pointer-events="none">`;
+  lines+=`<path d="${lineD(A,Tl,182,182)}" class="s-line"/><path d="${lineD(B,Tm,182,182)}" class="s-line"/>`;
+  const n1=pol(A,ph,-76), n2=pol(B,ph,76);
+  lines+=`<path d="M${f(n1.x)} ${f(n1.y)}L${f(n2.x)} ${f(n2.y)}" class="s-line"/>`;
+  const le=pol(A,Tl,200), me=pol(B,Tm,200), ne=pol(A,ph,-94);
+  lines+=txt(le.x,le.y,'l','linelbl')+txt(me.x,me.y,'m','linelbl')+txt(ne.x,ne.y,'n','linelbl')+`</g>`;
+  return angs+lines;
+}
+
+/* ================= 각 찾기 ================= */
+const SF={
+  mode:'practice', fig:null, q:null, locked:false, idx:0, res:[],
+  init(){
+    $$('#sf-mode button').forEach(b=>b.addEventListener('click',()=>{
+      $$('#sf-mode button').forEach(x=>x.classList.toggle('on',x===b));
+      this.mode=b.dataset.m; this.start();
+    }));
+    $('#sf-hint').addEventListener('click',()=>this.hint());
+    $('#sf-next').addEventListener('click',()=>this.next());
+    $('#sf-again').addEventListener('click',()=>this.start());
+    this.start();
+  },
+  start(){this.idx=0;this.res=[];$('#sf-done').classList.add('hide');$('#sf-card').classList.remove('hide');this.next(true);},
+  next(first){
+    if(this.mode==='test'&&!first&&this.idx>=8) return this.finish();
+    this.fig=makeFigure();
+    const type=Math.random()<0.5?'동위각':'엇각';
+    const target= type==='동위각'?pick(KEYS):pick(['c','d','e','f']);
+    this.q={type,target,answer:type==='동위각'?CORR[target]:ALT[target]};
+    this.locked=false;
+    $('#sf-hintbox').classList.add('hide');
+    $('#sf-hint').classList.toggle('hide',this.mode!=='practice');
+    this.draw(false);
+    const cls=type==='동위각'?'tag-hot':'tag-cool';
+    $('#sf-prompt').innerHTML=`<span style="color:var(--muted)">색칠된 각의</span> <span class="tagw ${cls}">${type}</span><span style="color:var(--muted)">을 찾아 볼까요?</span>`;
+    $('#sf-verdict').textContent=''; $('#sf-verdict').className='verdict';
+    this.dots();
+  },
+  draw(band){
+    const svg=$('#sf-svg');
+    svg.innerHTML=figureSVG(this.fig,band);
+    svg.querySelectorAll('.ang').forEach(e=>e.addEventListener('click',()=>this.click(e.dataset.k)));
+    this.paint(this.q.target, this.q.type==='동위각'?'#ffd7e0':'#cdeff4', this.q.type==='동위각'?'#e5486b':'#0e93a8',2.8);
+  },
+  dots(){
+    if(this.mode!=='test'){$('#sf-dots').innerHTML='';return;}
+    let s='';
+    for(let i=0;i<8;i++){
+      const st=this.res[i]===true?'ok':this.res[i]===false?'no':(i===this.idx?'now':'');
+      s+=`<span class="dot ${st}"></span>`;
+    }
+    $('#sf-dots').innerHTML=s;
+  },
+  paint(k,fill,stroke,w){
+    const el=$('#sf-svg').querySelector(`[data-k="${k}"]`);
+    if(el){el.setAttribute('fill',fill);el.setAttribute('stroke',stroke);el.setAttribute('stroke-width',w||1.4);}
+  },
+  hint(){
+    const box=$('#sf-hintbox'); box.classList.remove('hide');
+    if(this.q.type==='동위각'){
+      box.innerHTML=`<b>동위각</b> = 직선 <i>n</i>을 기준으로 <b>같은 쪽</b>, 두 직선 <i>l</i>, <i>m</i>에서 <b>같은 위치</b>에 있는 각.<br>색칠된 각을 그대로 <b>쭉 밀어 옮긴</b> 자리를 찾아보세요.`;
+    }else{
+      box.innerHTML=`<b>엇각</b> = 직선 <i>n</i>을 기준으로 <b>반대쪽</b>, 두 직선 <i>l</i>, <i>m</i>의 <b>안쪽</b>(노란 띠)에 있는 각.`;
+      this.draw(true);
+    }
+  },
+  click(k){
+    if(this.locked) return;
+    if(k===this.q.answer){
+      this.locked=true;
+      this.paint(k,'#c6f2e0','#1fa87f',2.8);
+      $('#sf-verdict').textContent='정답! 🎉'; $('#sf-verdict').className='verdict ok';
+      confetti();
+      if(this.mode==='test'){
+        if(this.res[this.idx]===undefined) this.res[this.idx]=true;
+        this.idx++; this.dots(); setTimeout(()=>this.next(),820);
+      }
+    }else{
+      this.paint(k,'#ffd9d6','#e0655e',2.4);
+      $('#sf-verdict').textContent='아쉬워요, 다시!'; $('#sf-verdict').className='verdict no';
+      if(this.mode==='test') this.res[this.idx]=false;
+      const c=$('#sf-svg'); c.classList.add('shake'); setTimeout(()=>c.classList.remove('shake'),400);
+      this.dots();
+    }
+  },
+  finish(){
+    const n=this.res.filter(x=>x===true).length;
+    $('#sf-card').classList.add('hide'); $('#sf-done').classList.remove('hide');
+    $('#sf-score').innerHTML=`8문제 중 <span style="color:#1fa87f">${n}문제</span> 한 번에 성공!`;
+  }
+};
+
+/* ================= 문제 생성기 ================= */
+const EDGES=[
+ ['a','c','맞꼭지각','eq'],['b','d','맞꼭지각','eq'],['e','g','맞꼭지각','eq'],['f','h','맞꼭지각','eq'],
+ ['a','e','동위각','eq'],['b','f','동위각','eq'],['c','g','동위각','eq'],['d','h','동위각','eq'],
+ ['c','e','엇각','eq'],['d','f','엇각','eq'],
+ ['a','b','평각','sup'],['b','c','평각','sup'],['c','d','평각','sup'],['d','a','평각','sup'],
+ ['e','f','평각','sup'],['f','g','평각','sup'],['g','h','평각','sup'],['h','e','평각','sup']
+];
+const ADJ={};
+EDGES.forEach(([p,q,n,t])=>{(ADJ[p]=ADJ[p]||[]).push([q,n,t]);(ADJ[q]=ADJ[q]||[]).push([p,n,t]);});
+function bfsPath(from,to){
+  const seen={[from]:1}, qu=[[from,[]]];
+  while(qu.length){
+    const [cur,path]=qu.shift();
+    if(cur===to) return path;
+    for(const [nx,name,t] of ADJ[cur]){ if(seen[nx])continue; seen[nx]=1; qu.push([nx,path.concat([[name,t,nx]])]); }
+  }
+  return null;
+}
+const NICE_T1=[40,45,50,55,60,65,70,75,105,110,115,120,125,130,135,140];
+const NICE_T0=[30,35,40,45,50,55,60,65,70,75,80,100,105,110,115,120,125,130,135,140,145,150];
+
+function genT1(maxSteps){
+  const th=pick(NICE_T1), ph=d2r(th);
+  const A={x: th<90?125:305, y:78};
+  const B={x:A.x+140/Math.tan(ph), y:218};
+  const W={a:[A,0,ph+PI],b:[A,ph+PI,PI],c:[A,PI,ph],d:[A,ph,0],
+           e:[B,0,ph+PI],f:[B,ph+PI,PI],g:[B,PI,ph],h:[B,ph,0]};
+  const top=['a','b','c','d'], bot=['e','f','g','h'];
+  let gk,xk,path,guard=0;
+  do{
+    const flip=Math.random()<0.5;
+    gk=pick(flip?top:bot); xk=pick(flip?bot:top);
+    path=bfsPath(gk,xk);
+  }while((!path||path.length>maxSteps)&&guard++<300);
+  if(!path){gk='d';xk='f';path=bfsPath(gk,xk);}
+  const gv=Math.round(angDeg(W[gk][1],W[gk][2]));
+  const vals=[gv]; let cur=gv;
+  path.forEach(([n,t])=>{cur = t==='eq'?cur:180-cur; vals.push(cur);});
+  const asking=Math.random()<0.25;
+  let angs='',lines='';
+  if(path.length===2){
+    const mid=path[0][2];
+    const [v,a1,a2]=W[mid];
+    angs+=`<g class="hintonly" opacity="0"><path d="${wedgeD(v,a1,a2,27)}" fill="#fff1c9" stroke="#e8a33b" stroke-width="2" stroke-dasharray="5 4"/>`;
+    const p=bisPt(v,a1,a2,46); angs+=txt(p.x,p.y,vals[1]+'°','s-val','fill="#c9821d"')+`</g>`;
+  }
+  [[gk,'#ffd7e0','#e5486b',gv+'°'],[xk,'#e4f0ff','#4a90d9','x']].forEach(([k,fl,st,label])=>{
+    const [v,a1,a2]=W[k];
+    angs+=`<path d="${wedgeD(v,a1,a2,27)}" fill="${fl}" stroke="${st}" stroke-width="2.4"/>`;
+  });
+  lines+=`<g pointer-events="none">`;
+  lines+=`<path d="M25 78L405 78" class="s-line"/><path d="M25 218L405 218" class="s-line"/>`;
+  const n1=pol(A,ph,-62), n2=pol(B,ph,62);
+  lines+=`<path d="M${f(n1.x)} ${f(n1.y)}L${f(n2.x)} ${f(n2.y)}" class="s-line"/>`;
+  if(!asking)[78,218].forEach(y=>{lines+=`<path d="M348 ${y-6}l7 6-7 6" fill="none" stroke="#3b3348" stroke-width="2" stroke-linecap="round"/>`;});
+  [[gk,'#e5486b',gv+'°'],[xk,'#4a90d9','x']].forEach(([k,st,label])=>{
+    const [v,a1,a2]=W[k], p=bisPt(v,a1,a2,48);
+    lines+=txt(p.x,p.y,label,'s-val',`fill="${st}"${label==='x'?' font-style="italic" font-size="19"':''}`);
+  });
+  lines+=txt(414,78,'l','linelbl')+txt(414,218,'m','linelbl')+txt(n1.x,n1.y-14,'n','linelbl')+`</g>`;
+  const steps=path.map(([n,t],i)=>
+    `${i+1}. ${vals[i]}°인 각과 ${i===path.length-1?'∠x':'다음 각'}은 <b>${n}</b> → ${t==='eq'?`크기가 같으므로 <b>${vals[i+1]}°</b>`:`두 각의 합이 180°이므로 <b>${vals[i+1]}°</b>`}`);
+  return {svg:angs+lines, vb:'0 0 430 300', answer:cur,
+    q: asking?`∠x 가 몇 도이면 l ∥ m 이 될까요?`:`l ∥ m 일 때 ∠x 의 크기는?`,
+    hints:steps, sol:steps.join('<br>')};
+}
+
+function genT0a(){
+  const th=pick(NICE_T0), ph=d2r(th), C={x:200,y:140};
+  const W={TR:[C,0,ph+PI],TL:[C,ph+PI,PI],BL:[C,PI,ph],BR:[C,ph,0]};
+  const ks=['TR','TL','BL','BR'], opp={TR:'BL',BL:'TR',TL:'BR',BR:'TL'};
+  const gk=pick(ks); const xk=pick(ks.filter(k=>k!==gk));
+  const val=k=>Math.round(angDeg(W[k][1],W[k][2]));
+  const same = opp[gk]===xk;
+  const ans = same? val(gk) : 180-val(gk);
+  let angs='',lines='';
+  [gk,xk].forEach(k=>{
+    const [v,a1,a2]=W[k], hot=(k===gk);
+    angs+=`<path d="${wedgeD(v,a1,a2,30)}" fill="${hot?'#ffd7e0':'#e4f0ff'}" stroke="${hot?'#e5486b':'#4a90d9'}" stroke-width="2.4"/>`;
+  });
+  lines+=`<g pointer-events="none">`;
+  lines+=`<path d="M30 140L370 140" class="s-line"/><path d="${lineD(C,ph,118,118)}" class="s-line"/>`;
+  [gk,xk].forEach(k=>{
+    const [v,a1,a2]=W[k], hot=(k===gk), p=bisPt(v,a1,a2,50);
+    lines+=txt(p.x,p.y,hot?val(k)+'°':'x','s-val',`fill="${hot?'#e5486b':'#4a90d9'}"${hot?'':' font-style="italic" font-size="19"'}`);
+  });
+  lines+=`</g>`;
+  const hint = same? `∠x 와 ${val(gk)}°인 각은 <b>맞꼭지각</b> → 크기가 같아요`
+                   : `∠x 와 ${val(gk)}°인 각은 한 직선 위에 있어요 (<b>평각</b>) → 180°에서 빼요`;
+  return {svg:angs+lines, vb:'0 0 400 290', answer:ans, q:'∠x 의 크기는?', hints:[hint], sol:hint};
+}
+
+function genT0b(){
+  let v1,v2,v3;
+  do{ v1=5*Math.round(rnd(25,75)/5); v2=5*Math.round(rnd(25,75)/5); v3=180-v1-v2; }while(v3<25||v3>110);
+  const C={x:200,y:196}, A1=d2r(-v1), A2=d2r(-(v1+v2));
+  const W=[[0,A1,v1],[A1,A2,v2],[A2,PI,v3]];
+  const xi=Math.floor(rnd(0,3)), radii=[40,66,40];
+  let angs='',lines='';
+  W.forEach(([a1,a2,val],i)=>{
+    const isx=(i===xi);
+    angs+=`<path d="${wedgeD(C,a1,a2,radii[i])}" fill="${isx?'#e4f0ff':'#ffe9d9'}" stroke="${isx?'#4a90d9':'#e88b3b'}" stroke-width="2.3"/>`;
+  });
+  lines+=`<g pointer-events="none">`;
+  lines+=`<path d="M30 196L370 196" class="s-line"/>`;
+  lines+=`<path d="M${C.x} ${C.y}L${f(pol(C,A1,124).x)} ${f(pol(C,A1,124).y)}" class="s-line"/>`;
+  lines+=`<path d="M${C.x} ${C.y}L${f(pol(C,A2,124).x)} ${f(pol(C,A2,124).y)}" class="s-line"/>`;
+  W.forEach(([a1,a2,val],i)=>{
+    const isx=(i===xi), p=bisPt(C,a1,a2,radii[i]+18);
+    lines+=txt(p.x,p.y,isx?'x':val+'°','s-val',`fill="${isx?'#4a90d9':'#c56f22'}"${isx?' font-style="italic" font-size="19"':''}`);
+  });
+  lines+=`</g>`;
+  const others=W.filter((_,i)=>i!==xi).map(w=>w[2]);
+  const hint=`한 직선 위의 각의 합은 <b>180°</b> → 180 − ${others[0]} − ${others[1]}`;
+  return {svg:angs+lines, vb:'0 0 400 262', answer:W[xi][2], q:'∠x 의 크기는?', hints:[hint], sol:hint};
+}
+
+function genT2(){
+  const a=5*Math.round(rnd(30,60)/5), b=5*Math.round(rnd(30,60)/5);
+  const flip=Math.random()<0.5?1:-1;
+  const Q={x: flip>0?130:300, y:62};
+  const P={x:Q.x+flip*88/Math.tan(d2r(a)), y:150};
+  const R={x:P.x-flip*88/Math.tan(d2r(b)), y:238};
+  const base= flip>0?0:PI;
+  const aQP=Math.atan2(P.y-Q.y,P.x-Q.x), aRP=Math.atan2(P.y-R.y,P.x-R.x);
+  const aPQ=Math.atan2(Q.y-P.y,Q.x-P.x), aPR=Math.atan2(R.y-P.y,R.x-P.x);
+  const known=pick(['x','a','b']);
+  let angs='',lines='';
+  angs+=`<g class="hintonly" opacity="0">
+      <path d="M${f(P.x-118)} ${f(P.y)}L${f(P.x+118)} ${f(P.y)}" stroke="#e8a33b" stroke-width="2.2" stroke-dasharray="7 5" fill="none"/>
+      <path d="${arcD(P,aPQ,base+PI,26)}" stroke="#e8a33b" stroke-width="2" fill="none"/>
+      <path d="${arcD(P,base+PI,aPR,26)}" stroke="#e8a33b" stroke-width="2" fill="none"/></g>`;
+  const wedge=(v,a1,a2,r,isx)=>`<path d="${wedgeD(v,a1,a2,r)}" fill="${isx?'#e4f0ff':'#ffd7e0'}" stroke="${isx?'#4a90d9':'#e5486b'}" stroke-width="2.4"/>`;
+  angs+=wedge(Q,base,aQP,27,known==='a')+wedge(R,base,aRP,27,known==='b')+wedge(P,aPQ,aPR,30,known==='x');
+  lines+=`<g pointer-events="none">`;
+  lines+=`<path d="M25 62L405 62" class="s-line"/><path d="M25 238L405 238" class="s-line"/>`;
+  lines+=`<path d="M${f(Q.x)} ${f(Q.y)}L${f(P.x)} ${f(P.y)}L${f(R.x)} ${f(R.y)}" class="s-line"/>`;
+  [62,238].forEach(y=>{lines+=`<path d="M356 ${y-6}l7 6-7 6" fill="none" stroke="#3b3348" stroke-width="2" stroke-linecap="round"/>`;});
+  const lab=(v,a1,a2,r,val,isx)=>{const p=bisPt(v,a1,a2,r+23);
+    return txt(p.x,p.y,isx?'x':val+'°','s-val',`fill="${isx?'#4a90d9':'#e5486b'}"${isx?' font-style="italic" font-size="19"':''}`);};
+  lines+=lab(Q,base,aQP,27,a,known==='a')+lab(R,base,aRP,27,b,known==='b')+lab(P,aPQ,aPR,30,a+b,known==='x');
+  lines+=txt(414,62,'l','linelbl')+txt(414,238,'m','linelbl')+`</g>`;
+  let ans,hint;
+  if(known==='x'){ans=a+b;hint=`P를 지나 <i>l</i>과 평행한 <b>보조선</b>을 그으면, 위쪽은 ${a}°와 <b>엇각</b>, 아래쪽은 ${b}°와 <b>엇각</b> → ${a} + ${b}`;}
+  else if(known==='a'){ans=a;hint=`P를 지나는 <b>보조선</b>을 그으면 ∠x는 두 <b>엇각</b>으로 나뉘어요 → ${a+b} − ${b}`;}
+  else {ans=b;hint=`P를 지나는 <b>보조선</b>을 그으면 ∠x는 두 <b>엇각</b>으로 나뉘어요 → ${a+b} − ${a}`;}
+  return {svg:angs+lines, vb:'0 0 430 300', answer:ans, q:'l ∥ m 일 때 ∠x 의 크기는?', hints:[hint], sol:hint};
+}
+
+function genProblem(type){
+  if(type==='basic') return Math.random()<0.5?genT0a():genT0b();
+  if(type==='para')  return genT1(2);
+  if(type==='zig')   return genT2();
+  const r=Math.random();
+  if(r<0.28) return Math.random()<0.5?genT0a():genT0b();
+  if(r<0.78) return genT1(2);
+  return genT2();
+}
+
+/* ================= 각 구하기 ================= */
+const DR={
+  type:'all', mode:'practice', cur:null, input:'', n:0, streak:0, best:0,
+  t0:0, timer:null, left:0, times:[],
+  init(){
+    $$('#dr-type button').forEach(b=>b.addEventListener('click',()=>{
+      $$('#dr-type button').forEach(x=>x.classList.toggle('on',x===b)); this.type=b.dataset.t;}));
+    $$('#dr-mode button').forEach(b=>b.addEventListener('click',()=>{
+      $$('#dr-mode button').forEach(x=>x.classList.toggle('on',x===b)); this.mode=b.dataset.m;}));
+    $('#dr-start').addEventListener('click',()=>this.start());
+    $('#dr-retry').addEventListener('click',()=>this.start());
+    $('#dr-back').addEventListener('click',()=>this.lobby());
+    $('#dr-quit').addEventListener('click',()=>this.finish());
+    $('#dr-hint').addEventListener('click',()=>{
+      const b=$('#dr-hintbox'); b.classList.remove('hide'); b.innerHTML=this.cur.hints.join('<br>');
+      $('#dr-svg').querySelectorAll('.hintonly').forEach(g=>g.setAttribute('opacity','1'));
+    });
+    const keys=['1','2','3','4','5','6','7','8','9','←','0','확인'];
+    $('#dr-pad').innerHTML=keys.map(k=>
+      `<button class="key${k==='확인'?' go':k==='←'?' del':''}" data-k="${k}">${k}</button>`).join('');
+    $$('#dr-pad .key').forEach(b=>b.addEventListener('click',()=>this.key(b.dataset.k)));
+    document.addEventListener('keydown',e=>{
+      if($('#dr-play').classList.contains('hide')) return;
+      if(/^[0-9]$/.test(e.key)) this.key(e.key);
+      else if(e.key==='Backspace') this.key('←');
+      else if(e.key==='Enter') this.key('확인');
+    });
+    this.showBest();
+  },
+  showBest(){$('#dr-best').innerHTML=this.best?`<div class="stat"><span>최고 기록</span><b>${this.best}</b></div>`:'';},
+  lobby(){$('#dr-lobby').classList.remove('hide');$('#dr-play').classList.add('hide');$('#dr-end').classList.add('hide');this.showBest();},
+  start(){
+    this.n=0;this.streak=0;this.times=[];
+    $('#dr-lobby').classList.add('hide');$('#dr-end').classList.add('hide');$('#dr-play').classList.remove('hide');
+    clearInterval(this.timer);
+    if(this.mode==='rush'){
+      this.left=90;
+      this.timer=setInterval(()=>{this.left--;this.stats();if(this.left<=0)this.finish();},1000);
+    }
+    this.next();
+  },
+  next(){
+    this.cur=genProblem(this.type); this.input=''; this.t0=performance.now();
+    $('#dr-svg').setAttribute('viewBox',this.cur.vb||'0 0 430 300');
+    $('#dr-svg').innerHTML=this.cur.svg;
+    $('#dr-q').innerHTML=this.cur.q;
+    $('#dr-verdict').textContent=''; $('#dr-verdict').className='verdict';
+    $('#dr-hintbox').classList.add('hide');
+    $('#dr-hint').classList.toggle('hide',this.mode!=='practice');
+    this.showAns(); this.stats();
+  },
+  showAns(){
+    const el=$('#dr-ans');
+    el.textContent=this.input===''?'?':this.input+'°';
+    el.classList.toggle('empty',this.input==='');
+  },
+  stats(){
+    let h=`<div class="stat"><span>푼 문제</span><b>${this.n}</b></div>
+           <div class="stat"><span>연속</span><b>${this.streak}</b></div>`;
+    if(this.mode==='rush') h+=`<div class="stat"><span>남은 시간</span><b>${Math.max(0,this.left)}</b></div>`;
+    $('#dr-stats').innerHTML=h;
+  },
+  key(k){
+    if(k==='←'){this.input=this.input.slice(0,-1);this.showAns();return;}
+    if(k==='확인'){this.check();return;}
+    if(this.input.length>=3) return;
+    this.input+=k; this.showAns();
+  },
+  check(){
+    if(this.input==='') return;
+    if(+this.input===this.cur.answer){
+      this.n++;this.streak++;this.times.push(performance.now()-this.t0);
+      $('#dr-verdict').textContent='정답! 🎉'; $('#dr-verdict').className='verdict ok';
+      confetti(); this.stats();
+      setTimeout(()=>this.next(),520);
+    }else{
+      this.streak=0;
+      $('#dr-verdict').innerHTML=`다시 볼까요? <span style="color:var(--muted);font-size:14px">${this.cur.sol}</span>`;
+      $('#dr-verdict').className='verdict no';
+      $('#dr-ans').classList.add('shake'); setTimeout(()=>$('#dr-ans').classList.remove('shake'),400);
+      this.input=''; this.showAns(); this.stats();
+    }
+  },
+  finish(){
+    clearInterval(this.timer);
+    $('#dr-play').classList.add('hide'); $('#dr-end').classList.remove('hide');
+    const avg=this.times.length?(this.times.reduce((a,b)=>a+b,0)/this.times.length/1000).toFixed(1):'-';
+    if(this.mode==='rush'&&this.n>this.best) this.best=this.n;
+    $('#dr-result').innerHTML=`${this.n}문제 해결!`;
+    $('#dr-result2').innerHTML=`한 문제당 평균 ${avg}초`;
+  }
+};
+
+$$('.tab').forEach(b=>b.addEventListener('click',()=>{
+  $$('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  $$('.panel').forEach(p=>p.classList.toggle('on',p.dataset.sp===b.dataset.sp));
+  window.scrollTo(0,0);
+}));
+SF.init(); DR.init();
+</script>
+</body>
+</html>
