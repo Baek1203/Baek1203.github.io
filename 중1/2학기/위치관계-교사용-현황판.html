@@ -99,6 +99,8 @@ h3.tsec + p{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft)}
 .item .ic{width:19px;height:19px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;
   border:1.5px solid var(--lock);color:var(--lock);flex:none}
 .item.done .ic{border-color:var(--seal);color:var(--seal)}
+.item .shn{margin-left:7px;font-size:10.5px;font-weight:800;color:var(--ink-soft);
+  border:1px solid var(--rule);border-radius:99px;padding:1px 7px;white-space:nowrap}
 .item .tm{margin-left:auto;font-size:11.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
 .hidden{display:none !important}
 @media (max-width:700px){ .hide-sm{display:none} h1{font-size:20px} }
@@ -168,28 +170,28 @@ h3.tsec + p{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft)}
 var CONFIG = { DB_URL: "https://math-teaching-7dc48-default-rtdb.asia-southeast1.firebasedatabase.app" };
 
 var QUESTS = [
- {id:"s1-on",   st:1, title:"점이 직선 위에 있다"},
- {id:"s1-off",  st:1, title:"점이 직선 위에 있지 않다"},
+ {id:"s1-on",   st:1, title:"점이 직선 위에 있다", sheet:1},
+ {id:"s1-off",  st:1, title:"점이 직선 위에 있지 않다", sheet:2},
  {id:"s1-pass", st:1, title:"직선이 점을 지난다"},
  {id:"s1-many", st:1, title:"한 점을 지나는 직선은 무수히 많다", star:true},
- {id:"s2-cross",st:2, title:"한 점에서 만난다"},
- {id:"s2-same", st:2, title:"일치한다"},
- {id:"s2-para", st:2, title:"평행하다", sym:"l ∥ m"},
+ {id:"s2-cross",st:2, title:"한 점에서 만난다", sheet:3},
+ {id:"s2-same", st:2, title:"일치한다", sheet:4},
+ {id:"s2-para", st:2, title:"평행하다", sym:"l ∥ m", sheet:5},
  {id:"s2-far",  st:2, title:"직선은 끝없이 뻗는다", star:true},
- {id:"s3-cross",st:3, title:"한 점에서 만난다"},
- {id:"s3-same", st:3, title:"일치한다"},
- {id:"s3-para", st:3, title:"평행하다", sym:"l ∥ m"},
- {id:"s3-skew", st:3, title:"꼬인 위치에 있다"},
+ {id:"s3-cross",st:3, title:"한 점에서 만난다", sheet:6},
+ {id:"s3-same", st:3, title:"일치한다", sheet:7},
+ {id:"s3-para", st:3, title:"평행하다", sym:"l ∥ m", sheet:8},
+ {id:"s3-skew", st:3, title:"꼬인 위치에 있다", sheet:9},
  {id:"s3-all",  st:3, title:"AB와 꼬인 위치인 모서리 4개", star:true},
  {id:"x-synth", st:3, title:"꼬인 위치는 공간에만 있다", star:true},
- {id:"s4-cross",st:4, title:"한 점에서 만난다"},
- {id:"s4-in",   st:4, title:"평면에 포함된다"},
- {id:"s4-para", st:4, title:"평행하다", sym:"l ∥ P"},
+ {id:"s4-cross",st:4, title:"한 점에서 만난다", sheet:10},
+ {id:"s4-in",   st:4, title:"평면에 포함된다", sheet:11},
+ {id:"s4-para", st:4, title:"평행하다", sym:"l ∥ P", sheet:12},
  {id:"s4-perp", st:4, title:"평면 EFGH의 수선 4개", star:true},
  {id:"s4-noskew",st:4,title:"직선과 평면에는 꼬인 위치가 없다", star:true},
- {id:"s5-cross",st:5, title:"한 직선에서 만난다"},
- {id:"s5-same", st:5, title:"일치한다"},
- {id:"s5-para", st:5, title:"평행하다", sym:"P ∥ Q"},
+ {id:"s5-cross",st:5, title:"한 직선에서 만난다", sheet:13},
+ {id:"s5-same", st:5, title:"일치한다", sheet:14},
+ {id:"s5-para", st:5, title:"평행하다", sym:"P ∥ Q", sheet:15},
  {id:"s5-perp", st:5, title:"평면 ABCD와 수직인 면 4개", star:true}
 ];
 var SEC = { 1:"① 점과 직선", 2:"② 평면에서 두 직선", 3:"③ 공간에서 두 직선",
@@ -344,7 +346,7 @@ function render(){
     var miss = v.filter(function(r){ return r.done.indexOf(q.id) < 0; });
     var n = v.length - miss.length, pc = v.length ? Math.round(n/v.length*100) : 0;
     return '<div class="qr' + (pc < 50 ? ' low' : '') + '" data-q="' + q.id + '">' +
-      '<div class="sec">' + SEC[q.st] + (q.star ? " · ★" : "") + '</div>' +
+      '<div class="sec">' + SEC[q.st] + (q.sheet ? " · 활동지 " + q.sheet + "번" : " · ★칸") + '</div>' +
       '<div class="t"><span>' + q.title + '</span><em>' + n + '명 · ' + pc + '%</em></div>' +
       '<div class="pbar"><i style="width:' + pc + '%"></i></div>' +
       (openQ === q.id
@@ -374,7 +376,8 @@ function detail(id){
       if(!ok && r.got && r.got[q.id] && r.got[q.id].length)
         extra = '<span class="tm">진행 ' + r.got[q.id].length + '개</span>';
       h += '<div class="item' + (ok ? ' done' : '') + '"><span class="ic">' + (ok ? "✓" : "🔒") + '</span>' +
-           '<span>' + q.title + (q.star ? " ★" : "") + '</span>' +
+           '<span>' + q.title + (q.star ? " ★" : "") +
+           (q.sheet ? '<span class="shn">활동지 ' + q.sheet + '번</span>' : '') + '</span>' +
            (ok ? '<span class="tm">' + hhmm(r.at[q.id]) + '</span>' : extra) + '</div>';
     });
     h += '</div>';
