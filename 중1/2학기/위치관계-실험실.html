@@ -75,9 +75,16 @@ label.sel{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-wei
 .qhead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:2px}
 .qhead h2{font-size:16px}
 .qhead span{font-size:12px;font-weight:800;color:var(--ink-soft)}
-.qlist{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:9px}
-.q{border:1.5px solid var(--rule);border-radius:12px;padding:11px 12px 11px 13px;background:#fff;
+.qlist{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:15px}
+.q{position:relative;border:1.5px solid var(--rule);border-radius:12px;padding:11px 12px 11px 13px;background:#fff;
   display:grid;grid-template-columns:26px 1fr;gap:11px;align-items:start}
+.q.sheet{border-width:2.5px;border-color:#9aa5bd;box-shadow:0 2px 0 rgba(23,34,59,.05)}
+.q.sheet.locked{border-style:dashed;border-color:#98a3ba;background:#f3f6fb}
+.q.sheet.done{border-color:var(--seal);box-shadow:0 0 0 1.5px rgba(18,133,90,.16)}
+.sh{position:absolute;top:-9px;right:12px;background:#fff;border:2px solid var(--ink);color:var(--ink);
+  border-radius:99px;padding:1px 9px;font-size:10.5px;font-weight:800;letter-spacing:.02em;line-height:1.6;
+  white-space:nowrap}
+.q.sheet.done .sh{border-color:var(--seal);color:var(--seal);background:#f2fbf6}
 .q.locked{background:#f6f8fb;border-style:dashed;border-color:#d3daea}
 .q.done{border-color:rgba(18,133,90,.4)}
 .q .seal{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;
@@ -108,8 +115,12 @@ label.sel{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-wei
   display:flex;align-items:center;gap:9px}
 .dexsec h3 em{font-style:normal;font-size:11.5px;font-weight:800;color:var(--ink-soft);
   background:#eef1f7;border-radius:99px;padding:2px 9px}
-.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:11px}
-.card{border:1.5px solid var(--rule);border-radius:13px;padding:11px;background:#fff}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:17px 11px}
+.card{position:relative;border:1.5px solid var(--rule);border-radius:13px;padding:11px;background:#fff}
+.card.sheet{border-width:2.5px;border-color:#9aa5bd}
+.card.sheet.lock{border-color:#98a3ba;background:#f3f6fb}
+.card.sheet:not(.lock){border-color:var(--seal);box-shadow:0 0 0 1.5px rgba(18,133,90,.14)}
+.card.sheet:not(.lock) .sh{border-color:var(--seal);color:var(--seal);background:#f2fbf6}
 .card.lock{border-style:dashed;border-color:#d3daea;background:#f6f8fb}
 .card .fig{background:#fbfcfe;border:1px solid var(--rule);border-radius:9px;height:92px;
   display:grid;place-items:center;overflow:hidden}
@@ -305,7 +316,8 @@ label.sel{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-wei
 
   <aside class="panel quests" id="aside">
     <div class="qhead"><h2 id="qTitle"></h2><span id="qCount"></span></div>
-    <p class="lead">잠긴 이름은 조건을 만족시키면 열립니다.</p>
+    <p class="lead">잠긴 이름은 조건을 만족시키면 열려요.<br>
+      <b style="color:var(--ink)">테두리가 진한 칸</b>은 활동지의 번호 칸에, ★ 표시는 활동지 ★칸에 적습니다.</p>
     <ul class="qlist" id="qList"></ul>
   </aside>
 </div>
@@ -485,10 +497,10 @@ function clip(p,d){
 
 /* ══════════ 도전 과제 ══════════ */
 const QUESTS = [
- { id:"s1-on", st:1, title:"점이 직선 위에 있다",
+ { id:"s1-on", st:1, sheet:1, title:"점이 직선 위에 있다",
    hint:"점 P를 끌어서 직선 l 위에 올려 보세요.",
    desc:"직선 l이 점 P를 지날 때, 점 P는 직선 l 위에 있다고 합니다." },
- { id:"s1-off", st:1, title:"점이 직선 위에 있지 않다",
+ { id:"s1-off", st:1, sheet:2, title:"점이 직선 위에 있지 않다",
    hint:"점 P를 직선 l에서 떨어뜨려 보세요.",
    desc:"직선 l이 점 P를 지나지 않을 때, 점 P는 직선 l 위에 있지 않다(직선 밖에 있다)고 합니다." },
  { id:"s1-pass", st:1, title:"직선이 점을 지난다",
@@ -498,29 +510,29 @@ const QUESTS = [
    hint:"점 P를 지나는 직선을, 기울기를 크게 바꿔 두 가지 이상 만들어 보세요.",
    desc:"한 점을 지나는 직선은 셀 수 없이 많습니다. 직선 하나로 정해지려면 점이 두 개 필요해요." },
 
- { id:"s2-cross", st:2, title:"한 점에서 만난다",
+ { id:"s2-cross", st:2, sheet:3, title:"한 점에서 만난다",
    hint:"두 직선이 한 점에서 만나게 해 보세요.",
    desc:"만나는 점이 단 하나뿐인 경우입니다. 이 점을 두 직선의 교점이라고 합니다." },
- { id:"s2-same", st:2, title:"일치한다",
+ { id:"s2-same", st:2, sheet:4, title:"일치한다",
    hint:"두 직선을 완전히 포개어 보세요.",
    desc:"모든 점이 겹칩니다. 일치하는 두 직선은 한 직선으로 봅니다." },
- { id:"s2-para", st:2, title:"평행하다", sym:"l ∥ m",
+ { id:"s2-para", st:2, sheet:5, title:"평행하다", sym:"l ∥ m",
    hint:"두 직선이 끝없이 늘여도 만나지 않게 해 보세요.",
    desc:"한 평면 위의 두 직선이 만나지 않을 때 평행하다고 하고 l ∥ m으로 씁니다. 이 두 직선을 평행선이라고 합니다." },
  { id:"s2-far", st:2, star:true, title:"직선은 끝없이 뻗는다",
    hint:"화면 안에서는 만나지 않지만, 화면 밖에서는 만나는 두 직선을 만들어 보세요.",
    desc:"평행이 아니라면 화면 밖 어딘가에서 반드시 만납니다. 보이는 곳만 보고 판단하면 안 돼요." },
 
- { id:"s3-cross", st:3, title:"한 점에서 만난다",
+ { id:"s3-cross", st:3, sheet:6, title:"한 점에서 만난다",
    hint:"한 점에서 만나는 두 모서리를 골라 보세요.",
    desc:"만난다 · 한 평면 위에 있다. 만나는 두 직선은 언제나 한 평면 위에 있습니다." },
- { id:"s3-same", st:3, title:"일치한다",
+ { id:"s3-same", st:3, sheet:7, title:"일치한다",
    hint:"같은 모서리를 직선 l과 직선 m으로 각각 골라 보세요.",
    desc:"만난다 · 한 평면 위에 있다. 일치하는 두 직선은 한 직선으로 봅니다." },
- { id:"s3-para", st:3, title:"평행하다", sym:"l ∥ m",
+ { id:"s3-para", st:3, sheet:8, title:"평행하다", sym:"l ∥ m",
    hint:"만나지 않으면서 한 평면 위에 함께 있는 두 모서리를 찾아보세요.",
    desc:"만나지 않는다 · 한 평면 위에 있다. 공간에서도 이때는 평행하다고 합니다." },
- { id:"s3-skew", st:3, title:"꼬인 위치에 있다",
+ { id:"s3-skew", st:3, sheet:9, title:"꼬인 위치에 있다",
    hint:"만나지도 않고 평행하지도 않은 두 모서리를 찾아보세요.",
    desc:"만나지 않는다 · 한 평면 위에 있지 않다. 공간에서만 생기는 경우입니다." },
  { id:"s3-all", st:3, star:true, title:"AB와 꼬인 위치인 모서리 4개", need:4,
@@ -530,13 +542,13 @@ const QUESTS = [
    hint:"평면(②)에서 세 가지를 모두 열고, 공간(③)에서 꼬인 위치까지 찾으면 열립니다.",
    desc:"한 평면 위의 두 직선은 만나거나(한 점·일치) 평행합니다. 꼬인 위치는 두 직선이 한 평면 위에 있지 않을 때만 생겨요." },
 
- { id:"s4-cross", st:4, title:"한 점에서 만난다",
+ { id:"s4-cross", st:4, sheet:10, title:"한 점에서 만난다",
    hint:"평면을 뚫고 지나가듯, 한 점에서만 만나는 직선과 평면을 골라 보세요.",
    desc:"만난다. 직선과 평면이 만나는 점이 하나뿐인 경우입니다." },
- { id:"s4-in", st:4, title:"평면에 포함된다",
+ { id:"s4-in", st:4, sheet:11, title:"평면에 포함된다",
    hint:"직선이 평면 안에 통째로 들어 있는 짝을 골라 보세요.",
    desc:"만난다. 직선의 모든 점이 평면 위에 있어서, 직선이 평면에 포함됩니다." },
- { id:"s4-para", st:4, title:"평행하다", sym:"l ∥ P",
+ { id:"s4-para", st:4, sheet:12, title:"평행하다", sym:"l ∥ P",
    hint:"직선과 평면이 서로 만나지 않는 짝을 골라 보세요.",
    desc:"만나지 않는다. 직선 l과 평면 P가 만나지 않을 때 평행하다고 하고 l ∥ P로 씁니다." },
  { id:"s4-perp", st:4, star:true, title:"평면 EFGH의 수선 4개", need:4,
@@ -546,13 +558,13 @@ const QUESTS = [
    hint:"④에서 세 가지 경우를 모두 찾으면 열립니다.",
    desc:"직선과 평면은 만나거나(한 점·포함) 평행하거나, 세 가지뿐입니다. 꼬인 위치는 두 직선 사이에서만 생겨요." },
 
- { id:"s5-cross", st:5, title:"한 직선에서 만난다",
+ { id:"s5-cross", st:5, sheet:13, title:"한 직선에서 만난다",
    hint:"서로 만나는 두 면을 골라 보세요.",
    desc:"만난다. 두 평면이 만나면 그 자리에 직선이 하나 생기고, 이를 두 평면의 교선이라고 합니다." },
- { id:"s5-same", st:5, title:"일치한다",
+ { id:"s5-same", st:5, sheet:14, title:"일치한다",
    hint:"같은 면을 평면 P와 평면 Q로 각각 골라 보세요.",
    desc:"두 평면의 모든 점이 겹칩니다. 일치하는 두 평면은 한 평면으로 봅니다." },
- { id:"s5-para", st:5, title:"평행하다", sym:"P ∥ Q",
+ { id:"s5-para", st:5, sheet:15, title:"평행하다", sym:"P ∥ Q",
    hint:"서로 만나지 않는 두 면을 골라 보세요.",
    desc:"만나지 않는다. 두 평면 P, Q가 만나지 않을 때 평행하다고 하고 P ∥ Q로 씁니다." },
  { id:"s5-perp", st:5, star:true, title:"평면 ABCD와 수직인 면 4개", need:4,
@@ -606,7 +618,8 @@ function renderQuests(){
   list.forEach(function(q){
     const s = ST[q.id];
     const li = document.createElement("li");
-    li.className = "q " + (s.done ? "done" : "locked") + (q.star ? " star" : "") + (q.id === justId ? " just" : "");
+    li.className = "q " + (s.done ? "done" : "locked") + (q.star ? " star" : "") +
+                   (q.sheet ? " sheet" : "") + (q.id === justId ? " just" : "");
     const seal = document.createElement("div");
     seal.className = "seal"; seal.textContent = s.done ? "✓" : "🔒";
     const body = document.createElement("div");
@@ -623,7 +636,13 @@ function renderQuests(){
         (!q.quiet && s.got.size ? " · " + Array.from(s.got).join(", ") : "");
       body.appendChild(pr);
     }
-    li.appendChild(seal); li.appendChild(body); ul.appendChild(li);
+    li.appendChild(seal); li.appendChild(body);
+    if(q.sheet){
+      const sh = document.createElement("span");
+      sh.className = "sh"; sh.textContent = "활동지 " + q.sheet + "번";
+      li.appendChild(sh);
+    }
+    ul.appendChild(li);
   });
   justId = null;
 }
@@ -1354,8 +1373,9 @@ const THUMB = {
 };
 function renderDex(){
   const done = QUESTS.filter(function(q){ return ST[q.id].done; }).length;
-  document.getElementById("dexLead").textContent =
-    done + " / " + QUESTS.length + "개를 모았습니다. 잠긴 칸은 각 탐구에서 조건을 만들면 열려요.";
+  document.getElementById("dexLead").innerHTML =
+    done + " / " + QUESTS.length + "개를 모았습니다. 잠긴 칸은 각 탐구에서 조건을 만들면 열려요.<br>" +
+    "테두리가 진한 15칸은 활동지의 번호 칸에 옮겨 적을 위치 관계입니다.";
   const body = document.getElementById("dexBody"); body.innerHTML = "";
   [1,2,3,4,5].forEach(function(s){
     const list = QUESTS.filter(function(q){ return q.st === s; });
@@ -1367,7 +1387,8 @@ function renderDex(){
     const grid = document.createElement("div"); grid.className = "dex";
     list.forEach(function(q){
       const ok = ST[q.id].done;
-      const card = document.createElement("div"); card.className = "card" + (ok ? "" : " lock");
+      const card = document.createElement("div");
+      card.className = "card" + (ok ? "" : " lock") + (q.sheet ? " sheet" : "");
       const fig = document.createElement("div"); fig.className = "fig";
       fig.innerHTML = ok ? svg(THUMB[q.id] || "") : "？";
       const nm = document.createElement("div"); nm.className = "nm";
@@ -1377,6 +1398,11 @@ function renderDex(){
       const tx = document.createElement("p"); tx.className = "tx";
       tx.textContent = ok ? q.desc : q.hint;
       card.appendChild(fig); card.appendChild(nm); card.appendChild(tx);
+      if(q.sheet){
+        const sh = document.createElement("span");
+        sh.className = "sh"; sh.textContent = "활동지 " + q.sheet + "번";
+        card.appendChild(sh);
+      }
       grid.appendChild(card);
     });
     sec.appendChild(grid); body.appendChild(sec);
