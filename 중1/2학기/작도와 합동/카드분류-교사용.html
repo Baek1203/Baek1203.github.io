@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>작도인가, 아닌가 · 교사용</title>
+<style>
+  :root{
+    --bg:#FFF6EC; --card:#FFFFFF; --ink:#3B3A45; --soft:#8C8899;
+    --mint:#5FCBB0; --mint-l:#DFF6EF; --peach:#FF9273; --peach-l:#FFE7DF;
+    --lav:#A497EA; --lav-l:#EEEAFD; --sun:#FFC648; --sun-l:#FFF3D6; --line:#EDE6DC;
+    --f:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--f);background:var(--bg);color:var(--ink);
+    word-break:keep-all;overflow-wrap:break-word}
+  .app{height:100dvh;display:flex;flex-direction:column}
+
+  .top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:10px 16px;flex:0 0 auto;
+    background:#fff;border-bottom:2px solid var(--line)}
+  .logo{font:900 16px/1 var(--f)}.logo b{color:var(--peach)}
+  select{font:800 13px/1 var(--f);padding:10px 12px;border-radius:12px;border:2px solid var(--line);
+    background:#FDFBF7;color:var(--ink)}
+  .sp{flex:1}
+  .chip{font:800 11.5px/1 var(--f);padding:8px 12px;border-radius:99px;background:#fff;
+    border:2px solid var(--line);color:var(--soft)}
+  .chip.on{background:var(--mint-l);border-color:var(--mint);color:#1F7A64}
+  .chip.off{background:var(--peach-l);border-color:var(--peach);color:#A9432A}
+  .cnt{font:900 12px/1 var(--f);padding:9px 13px;border-radius:99px;background:var(--sun-l);
+    border:2px solid var(--sun);color:#8A5E00}
+
+  .bar2{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 16px;flex:0 0 auto;
+    background:#FCF7F0;border-bottom:2px solid var(--line)}
+  .ph{font:800 12.5px/1 var(--f);padding:11px 14px;border-radius:99px;cursor:pointer;
+    border:2px solid var(--line);background:#fff;color:var(--soft)}
+  .ph[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .btn{font:800 12.5px/1 var(--f);padding:11px 14px;border-radius:13px;cursor:pointer;
+    border:2px solid var(--line);background:#fff;color:var(--ink)}
+  .btn.go{background:var(--sun);border-color:var(--sun);color:#4A3300}
+  .btn.warn{color:#C0342A}
+  .btn[aria-pressed="true"]{background:var(--lav);border-color:var(--lav);color:#fff}
+
+  .body{flex:1;min-height:0;overflow:auto;padding:16px 20px 40px}
+  .mid{max-width:1340px;margin:0 auto}
+
+  .hero{text-align:center;padding:40px 20px}
+  .hero .big{font:900 30px/1.3 var(--f);margin:0 0 10px}
+  .hero p{font:800 15px/1.7 var(--f);color:var(--soft);margin:0}
+
+  .stage{background:#fff;border-radius:30px;padding:24px 30px 30px;border:3px solid #fff;
+    box-shadow:0 14px 40px rgba(90,70,50,.12);max-width:min(1020px,94vw);margin:0 auto}
+  .cardno{text-align:center;font:900 clamp(14px,1.5vw,20px)/1 var(--f);color:var(--soft);letter-spacing:.06em}
+  .draw{background:var(--bg);border-radius:22px;padding:14px;margin:12px 0}
+  .draw svg{width:100%;height:min(40vh,320px);display:block}
+  .cap{text-align:center;font:900 clamp(24px,2.9vw,42px)/1.4 var(--f);margin:0;letter-spacing:-.4px}
+  .tl{height:12px;border-radius:99px;background:#EFE7DC;overflow:hidden;margin:16px 0 6px}
+  .tl i{display:block;height:100%;background:var(--sun);border-radius:99px}
+  .secs{font:900 20px/1 var(--f);color:var(--sun);text-align:center;margin-top:10px}
+  .vc{text-align:center;font:800 14px/1 var(--f);color:var(--soft);margin-top:10px}
+  .res{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-top:16px}
+  .res .n{font:900 46px/1 var(--f);text-align:center}
+  .res .n.ex{color:#1F7A64}.res .n.non{color:#A9432A}
+  .res .vs{font:900 14px/1 var(--f);color:var(--soft)}
+  .split{height:18px;border-radius:99px;background:var(--peach);overflow:hidden;margin-top:14px}
+  .split i{display:block;height:100%;background:var(--mint)}
+  .verd{text-align:center;font:900 17px/1 var(--f);margin-top:14px}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .col{background:#fff;border-radius:26px;padding:14px;border:3px solid var(--line)}
+  .col h3{margin:0 0 13px;text-align:center;font:900 clamp(18px,1.9vw,26px)/1 var(--f);
+    padding:14px;border-radius:16px}
+  .col.ex h3{background:var(--mint-l);color:#1F7A64}
+  .col.non h3{background:var(--peach-l);color:#A9432A}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .mini{background:var(--bg);border-radius:18px;padding:12px 13px 14px;cursor:pointer;
+    border:2px solid transparent}
+  .mini:hover{border-color:var(--sun)}
+  .mini svg{width:100%;height:clamp(74px,8.4vw,116px);display:block}
+  .mini p{margin:9px 2px 1px;font:800 clamp(15px,1.42vw,21px)/1.5 var(--f);color:#4A4756}
+  .mini .lab{float:right;font:900 clamp(15px,1.5vw,22px)/1 var(--f);color:#A9A2B6}
+  .mini .vt{float:left;font:800 clamp(13px,1.25vw,18px)/1 var(--f);color:#A9A2B6}
+  .mini.bad{border-color:#E6A6A6;background:#FDF0EE}
+  .col.drop{border-color:var(--sun);background:var(--sun-l);box-shadow:0 0 0 5px rgba(255,198,72,.28)}
+  .mini.ghost{opacity:.28}
+  .fly{position:fixed;z-index:60;pointer-events:none;width:250px;background:#fff;
+    border-radius:16px;padding:9px;border:3px solid var(--sun);
+    box-shadow:0 14px 34px rgba(90,70,50,.28);transform:translate(-50%,-50%) rotate(-4deg)}
+  .fly svg{width:100%;height:92px;display:block}
+  .fly p{margin:9px 2px 1px;font:800 16px/1.5 var(--f);color:#4A4756}
+
+  .note{background:#fff;border-radius:18px;padding:13px 16px;border:2px solid var(--line);
+    break-inside:avoid}
+  .note b{display:block;font:900 11.5px/1 var(--f);color:var(--lav);margin-bottom:6px}
+  .note p{margin:0;font:700 15px/1.65 var(--f)}
+  .wall{columns:3;column-gap:12px}
+  .wall .note{margin-bottom:12px}
+  @media (max-width:900px){.wall{columns:2}}
+
+  .word{display:inline-block;font:900 17px/1 var(--f);padding:13px 18px;border-radius:99px;
+    background:var(--sun-l);border:3px solid var(--sun);color:#8A5E00;margin:0 9px 9px 0}
+  .word em{font-style:normal;opacity:.6;margin-left:7px;font-size:14px}
+  .word.top{background:var(--sun);color:#4A3300;font-size:20px}
+
+  .flip{background:#fff;border-radius:26px;padding:22px;border:4px dashed #E2DAD0;
+    text-align:center;cursor:pointer}
+  .flip.open{border-style:solid;border-color:var(--sun);background:var(--sun-l)}
+  .flip h3{margin:0;font:900 21px/1.3 var(--f)}
+  .flip .hint{font:800 13px/1 var(--f);color:var(--soft);margin-top:10px}
+  .flip ul{text-align:left;margin:14px 0 0;padding-left:24px}
+  .flip li{font:800 17px/1.9 var(--f)}
+  h2.sec{font:900 17px/1 var(--f);margin:22px 0 12px;padding:11px 0 11px 14px;
+    border-left:5px solid var(--sun);background:#FCF7F0;border-radius:0 14px 14px 0}
+  .hint2{font:800 13px/1.7 var(--f);color:var(--soft);text-align:center;margin:14px 0}
+  :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <span class="logo">작도인가, <b>아닌가</b> · 교사용</span>
+    <select id="cls"><option>1-1</option><option>1-2</option><option>1-3</option><option>1-4</option></select>
+    <span class="sp"></span>
+    <span class="cnt" id="cnt">—</span>
+    <span class="chip" id="net">연결 확인 중</span>
+  </div>
+  <div class="bar2" id="bar"></div>
+  <div class="body"><div class="mid" id="main"></div></div>
+</div>
+
+<script>
+const CARDS=[{"id": "가", "ans": "ex", "cap": "컴퍼스로 선분의 길이를 집어 그대로 옮겼다.", "svg": "<svg viewBox=\"0 0 250 118\" ><path d=\"M52 14 L18 62 M52 14 L86 62\" stroke=\"#C0342A\" stroke-width=\"2.6\" fill=\"none\" stroke-linecap=\"round\"/><circle cx=\"52\" cy=\"14\" r=\"4.2\" fill=\"#C0342A\"/><path d=\"M18 66 V86 M86 66 V86\" stroke=\"#C0342A\" stroke-width=\"1.5\" stroke-dasharray=\"3.5 3.5\"/><line x1=\"18\" y1=\"92\" x2=\"86\" y2=\"92\" stroke=\"#1C1A16\" stroke-width=\"2.8\"/><circle cx=\"18\" cy=\"92\" r=\"3.6\" fill=\"#1C1A16\"/><circle cx=\"86\" cy=\"92\" r=\"3.6\" fill=\"#1C1A16\"/><path d=\"M102 66 L128 66\" stroke=\"#9A917C\" stroke-width=\"2\"/><path d=\"M128 66 l-7 -4.5 v9 z\" fill=\"#9A917C\"/><line x1=\"140\" y1=\"92\" x2=\"242\" y2=\"92\" stroke=\"#1C1A16\" stroke-width=\"2\"/><circle cx=\"152\" cy=\"92\" r=\"3.6\" fill=\"#1C1A16\"/><path d=\"M217.4 73.3 A 68 68 0 0 0 217.4 110.7\" stroke=\"#C0342A\" stroke-width=\"2.8\" fill=\"none\"/></svg>"}, {"id": "나", "ans": "non", "cap": "자의 눈금으로 5 cm를 재어 선분을 그렸다.", "svg": "<svg viewBox=\"0 0 250 118\" ><rect x=\"28\" y=\"30\" width=\"118\" height=\"19\" rx=\"3.5\" fill=\"#F2EEE2\" stroke=\"#9A917C\" stroke-width=\"2.2\"/><line x1=\"37.8\" y1=\"30\" x2=\"37.8\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"47.7\" y1=\"30\" x2=\"47.7\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"57.5\" y1=\"30\" x2=\"57.5\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"67.3\" y1=\"30\" x2=\"67.3\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"77.2\" y1=\"30\" x2=\"77.2\" y2=\"41\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"87.0\" y1=\"30\" x2=\"87.0\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"96.8\" y1=\"30\" x2=\"96.8\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"106.7\" y1=\"30\" x2=\"106.7\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"116.5\" y1=\"30\" x2=\"116.5\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"126.3\" y1=\"30\" x2=\"126.3\" y2=\"41\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><line x1=\"136.2\" y1=\"30\" x2=\"136.2\" y2=\"36\" stroke=\"#9A917C\" stroke-width=\"1.5\"/><text x=\"88\" y=\"24\" font-size=\"17\" font-weight=\"700\" fill=\"#9A917C\" font-family=\"sans-serif\" text-anchor=\"middle\">5 cm</text><line x1=\"34\" y1=\"86\" x2=\"132\" y2=\"86\" stroke=\"#1C1A16\" stroke-width=\"2.6\"/><circle cx=\"34\" cy=\"86\" r=\"3.6\" fill=\"#1C1A16\"/><circle cx=\"132\" cy=\"86\" r=\"3.6\" fill=\"#1C1A16\"/><path d=\"M34 96 L132 96\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><path d=\"M34 92 v8 M132 92 v8\" stroke=\"#9A917C\" stroke-width=\"1.4\"/></svg>"}, {"id": "다", "ans": "ex", "cap": "컴퍼스로 한 점을 중심으로 호를 그렸다.", "svg": "<svg viewBox=\"0 0 250 118\" ><path d=\"M172 92 A 86 86 0 0 0 45 20\" stroke=\"#C0342A\" stroke-width=\"2.8\" fill=\"none\"/><line x1=\"86\" y1=\"92\" x2=\"147\" y2=\"31\" stroke=\"#C0342A\" stroke-width=\"2.6\"/><circle cx=\"147\" cy=\"31\" r=\"4\" fill=\"#C0342A\"/><circle cx=\"86\" cy=\"92\" r=\"4.5\" fill=\"#1C1A16\"/><text x=\"78\" y=\"110\" font-size=\"15\" font-weight=\"700\" fill=\"#1C1A16\" font-family=\"sans-serif\" text-anchor=\"middle\">O</text></svg>"}, {"id": "라", "ans": "non", "cap": "삼각자를 대고 모양을 그대로 본떠 그렸다.", "svg": "<svg viewBox=\"0 0 250 118\" ><path d=\"M40 96 L200 96 L40 20 Z\" fill=\"#F2EEE2\" stroke=\"#9A917C\" stroke-width=\"2.2\" stroke-linejoin=\"round\"/><rect x=\"40\" y=\"83\" width=\"13\" height=\"13\" fill=\"none\" stroke=\"#9A917C\" stroke-width=\"1.6\"/><path d=\"M40 96 L200 96\" stroke=\"#1C1A16\" stroke-width=\"2.8\"/><path d=\"M40 20 L40 96\" stroke=\"#1C1A16\" stroke-width=\"2.8\"/></svg>"}, {"id": "마", "ans": "ex", "cap": "눈금 없는 자로 이미 찍혀 있는 두 점을 이었다.", "svg": "<svg viewBox=\"0 0 250 118\" ><rect x=\"34\" y=\"36\" width=\"176\" height=\"20\" rx=\"3.5\" fill=\"#E7EDF9\" stroke=\"#1F3F94\" stroke-width=\"2.2\"/><circle cx=\"46\" cy=\"84\" r=\"3.6\" fill=\"#1C1A16\"/><circle cx=\"198\" cy=\"84\" r=\"3.6\" fill=\"#1C1A16\"/><line x1=\"46\" y1=\"84\" x2=\"198\" y2=\"84\" stroke=\"#1F3F94\" stroke-width=\"2.8\"/><text x=\"46\" y=\"107\" font-size=\"15\" font-weight=\"700\" fill=\"#1C1A16\" font-family=\"sans-serif\" text-anchor=\"middle\">A</text><text x=\"198\" y=\"107\" font-size=\"15\" font-weight=\"700\" fill=\"#1C1A16\" font-family=\"sans-serif\" text-anchor=\"middle\">B</text></svg>"}, {"id": "바", "ans": "non", "cap": "각도기로 40°를 재어 각을 그렸다.", "svg": "<svg viewBox=\"0 0 250 118\" ><path d=\"M40 92 A 85 85 0 0 1 210 92 Z\" fill=\"#F2EEE2\" stroke=\"#9A917C\" stroke-width=\"2.2\"/><line x1=\"47.0\" y1=\"92.0\" x2=\"40.0\" y2=\"92.0\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"49.7\" y1=\"71.8\" x2=\"42.9\" y2=\"70.0\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"57.5\" y1=\"53.0\" x2=\"51.4\" y2=\"49.5\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"69.8\" y1=\"36.8\" x2=\"64.9\" y2=\"31.9\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"86.0\" y1=\"24.5\" x2=\"82.5\" y2=\"18.4\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"104.8\" y1=\"16.7\" x2=\"103.0\" y2=\"9.9\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"125.0\" y1=\"14.0\" x2=\"125.0\" y2=\"7.0\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"145.2\" y1=\"16.7\" x2=\"147.0\" y2=\"9.9\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"164.0\" y1=\"24.5\" x2=\"167.5\" y2=\"18.4\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"180.2\" y1=\"36.8\" x2=\"185.1\" y2=\"31.9\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"192.5\" y1=\"53.0\" x2=\"198.6\" y2=\"49.5\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"200.3\" y1=\"71.8\" x2=\"207.1\" y2=\"70.0\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><line x1=\"203.0\" y1=\"92.0\" x2=\"210.0\" y2=\"92.0\" stroke=\"#9A917C\" stroke-width=\"1.4\"/><text x=\"125\" y=\"60\" font-size=\"18\" font-weight=\"700\" fill=\"#9A917C\" font-family=\"sans-serif\" text-anchor=\"middle\">40°</text><path d=\"M125 92 L215 92\" stroke=\"#1C1A16\" stroke-width=\"2.6\"/><path d=\"M125 92 L194 34\" stroke=\"#1C1A16\" stroke-width=\"2.6\"/><circle cx=\"125\" cy=\"92\" r=\"3.6\" fill=\"#1C1A16\"/></svg>"}, {"id": "사", "ans": "ex", "cap": "컴퍼스와 눈금 없는 자만으로 각을 옮겨 그렸다.", "svg": "<svg viewBox=\"0 0 250 118\" ><path d=\"M22 96 L104 96 M22 96 L92 34\" stroke=\"#1C1A16\" stroke-width=\"2.4\"/><path d=\"M62 96 A 40 40 0 0 0 51.9 69.5\" stroke=\"#C0342A\" stroke-width=\"2.4\" fill=\"none\"/><circle cx=\"62\" cy=\"96\" r=\"3.2\" fill=\"#C0342A\"/><circle cx=\"51.9\" cy=\"69.5\" r=\"3.2\" fill=\"#C0342A\"/><circle cx=\"22\" cy=\"96\" r=\"3\" fill=\"#1C1A16\"/><path d=\"M112 66 L134 66\" stroke=\"#9A917C\" stroke-width=\"2\"/><path d=\"M134 66 l-7 -4.5 v9 z\" fill=\"#9A917C\"/><path d=\"M152 96 L234 96 M152 96 L222 34\" stroke=\"#1C1A16\" stroke-width=\"2.4\"/><path d=\"M192 96 A 40 40 0 0 0 181.9 69.5\" stroke=\"#C0342A\" stroke-width=\"2.4\" fill=\"none\"/><circle cx=\"192\" cy=\"96\" r=\"3.2\" fill=\"#C0342A\"/><circle cx=\"181.9\" cy=\"69.5\" r=\"3.2\" fill=\"#C0342A\"/><circle cx=\"152\" cy=\"96\" r=\"3\" fill=\"#1C1A16\"/></svg>"}, {"id": "아", "ans": "non", "cap": "눈대중으로 비슷해 보이는 자리에 점을 찍었다.", "svg": "<svg viewBox=\"0 0 250 118\" ><line x1=\"24\" y1=\"86\" x2=\"96\" y2=\"86\" stroke=\"#1C1A16\" stroke-width=\"2.6\"/><circle cx=\"24\" cy=\"86\" r=\"3.6\" fill=\"#1C1A16\"/><circle cx=\"96\" cy=\"86\" r=\"3.6\" fill=\"#1C1A16\"/><path d=\"M110 62 L136 62\" stroke=\"#9A917C\" stroke-width=\"2\"/><path d=\"M136 62 l-7 -4.5 v9 z\" fill=\"#9A917C\"/><line x1=\"150\" y1=\"86\" x2=\"244\" y2=\"86\" stroke=\"#1C1A16\" stroke-width=\"2\" stroke-dasharray=\"5 4\"/><circle cx=\"160\" cy=\"86\" r=\"3.6\" fill=\"#1C1A16\"/><circle cx=\"222\" cy=\"86\" r=\"5\" fill=\"none\" stroke=\"#C98A10\" stroke-width=\"2.4\" stroke-dasharray=\"3 3\"/><text x=\"222\" y=\"56\" font-size=\"24\" font-weight=\"800\" fill=\"#C98A10\" font-family=\"sans-serif\" text-anchor=\"middle\">?</text></svg>"}];
+</script>
+<script>
+"use strict";
+const $=i=>document.getElementById(i);
+const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app";
+const gj=async p=>{const r=await fetch(`${DB}/${p}.json`);if(!r.ok)throw 0;return r.json();};
+const pj=async(p,v)=>{const r=await fetch(`${DB}/${p}.json`,{method:"PUT",
+  headers:{"Content-Type":"application/json"},body:JSON.stringify(v)});if(!r.ok)throw 0;};
+const dj=async p=>{const r=await fetch(`${DB}/${p}.json`,{method:"DELETE"});if(!r.ok)throw 0;};
+const esc=s=>String(s==null?"":s).replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+let ON=null;
+const setNet=ok=>{if(ON===ok)return;ON=ok;
+  $("net").className="chip "+(ok?"on":"off");$("net").textContent=ok?"연결됨":"연결 안 됨";};
+
+const DUR=18000, RESD=5000;
+const PH=[["wait","대기"],["cards","카드 분류"],["sort","분류 결과"],
+  ["feature","특징 쓰기"],["tools","도구 정리"],["define","정의 쓰기"]];
+let V={cls:localStorage.getItem("fr.cls")||"1-1",showAns:false,auto:true};
+let ST={phase:"wait",idx:0,at:0,done:false,flip:{}},VOTE={},FEAT={},DEF={},HERE={};
+
+async function pull(){
+  try{
+    const [s,v,f,d,h]=await Promise.all([
+      gj(`frayer/${V.cls}/state`),gj(`frayer/${V.cls}/votes`),
+      gj(`frayer/${V.cls}/feat`),gj(`frayer/${V.cls}/def`),gj(`frayer/${V.cls}/here`)]);
+    ST=Object.assign({phase:"wait",idx:0,at:0,done:false,flip:{}},s||{});
+    VOTE=v||{};FEAT=f||{};DEF=d||{};HERE=h||{};setNet(true);
+  }catch(e){setNet(false);}
+  paint();
+}
+const push=async o=>{ST=Object.assign({},ST,o);paint();
+  try{await pj(`frayer/${V.cls}/state`,ST);setNet(true);}catch(e){setNet(false);}};
+const tally=id=>{const o=VOTE[id]||{};let e=0,n=0;
+  for(const k in o){if(o[k]==="ex")e++;else n++;}return{e,n};};
+const winner=id=>(ST.flip&&ST.flip[id])||((tally(id).n>tally(id).e)?"non":"ex");
+const liveCount=()=>{
+  const now=Date.now();
+  return Object.values(HERE||{}).filter(h=>h&&h.at&&now-h.at<20*60*1000).length;
+};
+const card=i=>CARDS[Math.max(0,Math.min(i,CARDS.length-1))];
+
+/* ── 카드 진행 ── */
+let timer=null;
+function step(){
+  if(ST.phase!=="cards")return;
+  if(!ST.done)push({done:true});
+  else if(ST.idx<CARDS.length-1)push({idx:ST.idx+1,done:false,at:Date.now()});
+  else push({phase:"sort"});
+}
+setInterval(()=>{
+  if(!V.auto||ST.phase!=="cards")return;
+  const el=Date.now()-(ST.at||0);
+  if(!ST.done&&el>DUR)step();
+  else if(ST.done&&el>DUR+RESD)step();
+},600);
+
+/* ── 화면 ── */
+function bar(){
+  let h=PH.map(([k,n])=>`<button class="ph" data-ph="${k}" aria-pressed="${ST.phase===k}">${n}</button>`).join("");
+  h+=`<span class="sp"></span>`;
+  if(ST.phase==="cards")h+=`<button class="btn go" id="next">${ST.done?"다음 카드":"결과 보기"}</button>
+    <button class="btn" id="auto" aria-pressed="${V.auto}">자동 넘김</button>
+    <button class="btn" id="ans" aria-pressed="${V.showAns}">정답 확인</button>`;
+  if(ST.phase==="sort")h+=`<button class="btn" id="ans" aria-pressed="${V.showAns}">정답 확인</button>
+    <span class="chip">카드를 끌어서 옮기세요</span>`;
+  if(ST.phase==="feature")h+=`<button class="btn go" id="shareF">${ST.share?"특징 감추기":"모두의 특징 열기"}</button>`;
+  if(ST.phase==="define")h+=`<button class="btn go" id="shareD">${ST.shareD?"정의 감추기":"모두의 정의 열기"}</button>`;
+  h+=`<button class="btn warn" id="reset">이 반 초기화</button>`;
+  $("bar").innerHTML=h;
+  $("bar").querySelectorAll("[data-ph]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.ph;b.blur();
+    push(k==="cards"?{phase:"cards",idx:0,done:false,at:Date.now()}:{phase:k});});
+  const g=id=>$(id);
+  if(g("next"))g("next").onclick=()=>{g("next").blur();step();};
+  if(g("auto"))g("auto").onclick=()=>{V.auto=!V.auto;paint();};
+  if(g("ans"))g("ans").onclick=()=>{V.showAns=!V.showAns;paint();};
+  if(g("shareF"))g("shareF").onclick=()=>push({share:!ST.share});
+  if(g("shareD"))g("shareD").onclick=()=>push({shareD:!ST.shareD});
+  g("reset").onclick=async()=>{
+    if(!confirm(`${V.cls} 반의 투표·특징·정의를 모두 지웁니다. 계속할까요?`))return;
+    for(const k of["votes","feat","def","here"]){try{await dj(`frayer/${V.cls}/${k}`);}catch(e){}}
+    VOTE={};FEAT={};DEF={};HERE={};push({phase:"wait",idx:0,done:false,flip:{},share:false,shareD:false});};
+}
+function mini(c,clickable){
+  const t=tally(c.id),bad=V.showAns&&winner(c.id)!==c.ans;
+  return `<div class="mini${bad?" bad":""}" data-c="${c.id}">
+    <span class="vt">${t.e}:${t.n}</span><span class="lab">${c.id}</span>
+    ${c.svg}<p>${esc(c.cap)}</p></div>`;
+}
+function cols(clickable){
+  const ex=[],non=[];CARDS.forEach(c=>(winner(c.id)==="ex"?ex:non).push(c));
+  return `<div class="cols">
+    <div class="col ex"><h3>예 · 작도이다</h3><div class="grid">${ex.map(c=>mini(c)).join("")}</div></div>
+    <div class="col non"><h3>비예 · 작도가 아니다</h3><div class="grid">${non.map(c=>mini(c)).join("")}</div></div>
+  </div>`;
+}
+let DRAG=null;
+function wireCols(){
+  $("main").querySelectorAll(".mini").forEach(el=>{
+    el.style.touchAction="none";
+    el.onpointerdown=e=>{
+      if(e.button)return;
+      e.preventDefault();
+      DRAG={id:el.dataset.c,el,x0:e.clientX,y0:e.clientY,on:false,fly:null};
+      el.setPointerCapture&&el.setPointerCapture(e.pointerId);
+    };
+  });
+}
+function colUnder(x,y){
+  for(const c of $("main").querySelectorAll(".col")){
+    const r=c.getBoundingClientRect();
+    if(x>=r.left&&x<=r.right&&y>=r.top&&y<=r.bottom)
+      return c.classList.contains("ex")?"ex":"non";
+  }
+  return null;
+}
+window.addEventListener("pointermove",e=>{
+  if(!DRAG)return;
+  if(!DRAG.on){
+    if(Math.hypot(e.clientX-DRAG.x0,e.clientY-DRAG.y0)<8)return;
+    DRAG.on=true;DRAG.el.classList.add("ghost");
+    const f=document.createElement("div");f.className="fly";
+    f.innerHTML=DRAG.el.innerHTML.replace(/<span[^>]*>.*?<\/span>/g,"");
+    document.body.appendChild(f);DRAG.fly=f;
+  }
+  DRAG.fly.style.left=e.clientX+"px";DRAG.fly.style.top=e.clientY+"px";
+  const c=colUnder(e.clientX,e.clientY);
+  $("main").querySelectorAll(".col").forEach(x=>
+    x.classList.toggle("drop",c&&(x.classList.contains(c))));
+});
+window.addEventListener("pointerup",e=>{
+  if(!DRAG)return;
+  const d=DRAG;DRAG=null;
+  $("main").querySelectorAll(".col").forEach(x=>x.classList.remove("drop"));
+  if(d.fly)d.fly.remove();
+  d.el.classList.remove("ghost");
+  const cur=winner(d.id);
+  let to=null;
+  if(d.on)to=colUnder(e.clientX,e.clientY);          /* 끌어서 놓기 */
+  else to=(cur==="ex"?"non":"ex");                    /* 그냥 누르면 반대쪽으로 */
+  if(to&&to!==cur)push({flip:Object.assign({},ST.flip,{[d.id]:to})});
+});
+const TOOLS=[
+  {k:"ruler",t:"눈금 없는 자",li:["이미 찍혀 있는 두 점을 잇는다","그은 선을 곧게 늘인다"]},
+  {k:"compass",t:"컴퍼스",li:["한 점을 중심으로 원(호)을 그린다","주어진 길이를 집어서 옮긴다"]}
+];
+const KEYS=[["재지 않",/재지\s*않|안\s*재|재지않/],["눈금",/눈금/],["컴퍼스",/컴퍼스/],
+  ["자",/(^|[^숫])자[^리]/],["옮기",/옮기|옮겨/],["그리",/그리|그린|그려/],
+  ["숫자",/숫자/],["길이",/길이/],["각",/각(도|을|이|과)?/]];
+
+function paint(){
+  $("cnt").textContent=`${liveCount()}명 접속`;
+  bar();
+  const M=$("main"),ph=ST.phase;
+
+  if(ph==="wait"){
+    M.innerHTML=`<div class="hero"><p class="big">${liveCount()}명 들어왔어요</p>
+      <p>학생 화면이 대기 중입니다. 위에서 <b>카드 분류</b>를 누르면 시작합니다.</p></div>`;return;}
+
+  if(ph==="cards"){
+    const c=card(ST.idx),t=tally(c.id),tot=Math.max(1,t.e+t.n);
+    const el=Date.now()-(ST.at||0);
+    const p=ST.done?0:Math.max(0,1-el/DUR);
+    let h=`<div class="stage"><div class="cardno">${ST.idx+1} / ${CARDS.length} · 카드 ${c.id}</div>
+      <div class="draw">${c.svg}</div><p class="cap">${esc(c.cap)}</p>`;
+    if(ST.done){
+      h+=`<div class="res"><div class="n ex">${t.e}</div><div class="vs">예 : 비예</div>
+        <div class="n non">${t.n}</div></div>
+        <div class="split"><i style="width:${Math.round(t.e/tot*100)}%"></i></div>
+        <p class="verd">${winner(c.id)==="ex"?"예 · 작도이다":"비예 · 작도가 아니다"} 쪽으로
+        ${V.showAns?(winner(c.id)===c.ans?"— 맞았어요":"— 다시 이야기해 볼까요?"):""}</p>`;
+    }else{
+      h+=`<div class="tl"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+        <p class="secs">${Math.ceil(p*DUR/1000)}초</p>
+        <p class="vc">${t.e+t.n}명 투표함 · 결과는 아직 가려 둡니다</p>`;
+    }
+    M.innerHTML=h+"</div>";return;}
+
+  if(ph==="sort"){
+    M.innerHTML=`<h2 class="sec">우리 반이 나눈 결과</h2>`+cols(true)+
+      `<p class="hint2">카드를 <b>끌어서</b> 옮기거나, 한 번 눌러 반대쪽으로 보낼 수 있습니다.</p>`;
+    wireCols();return;}
+
+  if(ph==="feature"){
+    const rows=Object.values(FEAT).filter(x=>x&&x.text&&x.text.trim());
+    let h=cols()+`<h2 class="sec">Q. 왼쪽 무리는 무엇을 하지 <em style="font-style:normal;color:var(--peach)">않고</em> 있나요?</h2>`;
+    if(ST.share)h+=`<div class="wall">${rows.map(r=>
+      `<div class="note"><b>${esc(r.nick)}</b><p>${esc(r.text)}</p></div>`).join("")}</div>`;
+    else h+=`<div class="hero" style="padding:26px"><p class="big">${rows.length}명 작성</p>
+      <p>아직 가려 둔 상태입니다. 위의 <b>모두의 특징 열기</b>를 누르면 한꺼번에 보입니다.</p></div>`;
+    M.innerHTML=h;return;}
+
+  if(ph==="tools"){
+    M.innerHTML=`<h2 class="sec">도구가 하는 일</h2>
+      <div class="cols">${TOOLS.map(t=>{const o=ST.flip&&ST.flip[t.k];
+        return `<div class="flip${o?" open":""}" data-k="${t.k}"><h3>${t.t}</h3>
+          ${o?`<ul>${t.li.map(x=>`<li>${x}</li>`).join("")}</ul>`
+             :`<p class="hint">학생과 말로 정리한 뒤 눌러서 확인</p>`}</div>`;}).join("")}</div>
+      <p class="hint2">두 도구 모두 <b>새로운 길이나 각을 만들어 내지 못합니다.</b> 이미 있는 것을 옮길 뿐입니다.</p>`;
+    M.querySelectorAll(".flip").forEach(b=>b.onclick=()=>
+      push({flip:Object.assign({},ST.flip,{[b.dataset.k]:true})}));
+    return;}
+
+  if(ph==="define"){
+    const rows=Object.values(DEF).filter(x=>x&&x.text&&x.text.trim());
+    let h=`<h2 class="sec">작도란 무엇인가 — 우리 반의 정의</h2>`;
+    if(ST.shareD){
+      const chips=KEYS.map(([w,re])=>({w,n:rows.filter(r=>re.test(r.text)).length}))
+        .filter(x=>x.n>0).sort((a,b)=>b.n-a.n);
+      const mx=chips.length?chips[0].n:0;
+      h+=`<div style="text-align:center;margin:6px 0 20px">${chips.map(c=>
+        `<span class="word${c.n===mx?" top":""}">${c.w}<em>${c.n}</em></span>`).join("")}</div>
+        <p class="hint2">가장 많이 나온 말을 이어 붙이면 그것이 곧 <b>작도의 뜻</b>입니다.</p>
+        <div class="wall">${rows.map(r=>
+          `<div class="note"><b>${esc(r.nick)}</b><p>${esc(r.text)}</p></div>`).join("")}</div>`;
+    }else h+=`<div class="hero" style="padding:26px"><p class="big">${rows.length}명 작성</p>
+      <p>위의 <b>모두의 정의 열기</b>를 누르면 낱말 모음과 함께 한꺼번에 보입니다.</p></div>`;
+    M.innerHTML=h;return;}
+}
+$("cls").value=V.cls;
+$("cls").onchange=e=>{V.cls=e.target.value;localStorage.setItem("fr.cls",V.cls);e.target.blur();pull();};
+setInterval(()=>{
+  if(ST.phase!=="cards"||ST.done)return;
+  const bar=document.querySelector(".tl i");if(!bar)return;
+  const p=Math.max(0,1-(Date.now()-(ST.at||0))/DUR);
+  bar.style.width=(p*100).toFixed(1)+"%";
+  const s=document.querySelector(".secs");if(s)s.textContent=Math.ceil(p*DUR/1000)+"초";
+},80);
+setInterval(pull,1800);
+pull();
+</script>
+</body>
+</html>
