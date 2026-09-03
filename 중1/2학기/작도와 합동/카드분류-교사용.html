@@ -109,7 +109,9 @@
     border:0;border-bottom:3px solid var(--sun);background:#FFFDF5;border-radius:8px 8px 0 0;
     color:var(--ink)}
   .deffix input:focus{outline:0;background:#FFF8E6}
-  .deffix .muted{margin:11px 0 0;font:600 12.5px/1.7 var(--f)}
+  .deffix .dnote{margin:12px 0 14px;font:700 clamp(13px,1.4vw,18px)/1.7 var(--f);color:#6A5210}
+  .deffix .btn{margin:0}
+  .deffix .btn.done{background:#E4F1E8;border-color:#8BC5A6;color:#1F5C39}
   .note.pick{cursor:pointer}
   .note.pick:hover{border-color:var(--sun);background:#FFFDF5}
   .frayer{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;
@@ -189,7 +191,8 @@ async function pull(){
   try{
     const [s,v,f,d,h,mo]=await Promise.all([
       gj(`frayer/${V.cls}/state`),gj(`frayer/${V.cls}/votes`),
-      gj(`frayer/${V.cls}/feat`),gj(`frayer/${V.cls}/def`),gj(`frayer/${V.cls}/here`)]);
+      gj(`frayer/${V.cls}/feat`),gj(`frayer/${V.cls}/def`),gj(`frayer/${V.cls}/here`),
+      gj(`frayer/${V.cls}/model`)]);
     ST=Object.assign({phase:"wait",idx:0,at:0,done:false,flip:{}},s||{});
     VOTE=v||{};FEAT=f||{};DEF=d||{};HERE=h||{};MODEL=mo||{};setNet(true);
   }catch(e){setNet(false);}
@@ -410,10 +413,12 @@ function paintNow(){
     const rows=Object.values(DEF).filter(x=>x&&x.text&&x.text.trim());
     let h=`<h2 class="sec">작도란 무엇인가 — 우리 반의 정의</h2>
       <div class="deffix">
-        <label>학급이 함께 정한 정의</label>
-        <input id="ddef" value="${esc(MODEL.def)}" placeholder="아이들의 말을 모아 한 문장으로 적으세요">
-        <p class="muted">여기에 적으면 <b>정리표</b>의 ‘작도란 무엇인가’ 칸에 그대로 들어가고,
-          아이들 화면에도 함께 뜹니다.</p>
+        <label>우리 반이 찾아낸 작도의 뜻</label>
+        <input id="ddef" value="${esc(MODEL.def)}" placeholder="함께 정한 문장을 여기에 적습니다">
+        <p class="dnote">이것이 오늘 우리 반의 결론입니다.
+          학습지와 <b>감식 기록장</b>에 그대로 옮겨 적으세요.</p>
+        <button class="btn${V.dposted&&V.dposted===MODEL.def?" done":""}" id="dpost">${
+          V.dposted&&V.dposted===MODEL.def?"감식 기록장에 올렸습니다":"감식 기록장 게시판에도 올리기"}</button>
       </div>`;
     if(ST.shareD){
       const chips=KEYS.map(([w,re])=>({w,n:rows.filter(r=>re.test(r.text)).length}))
@@ -436,6 +441,14 @@ function paintNow(){
         try{await pj(`frayer/${V.cls}/model/def`,di.value);setNet(true);}catch(e){setNet(false);}};
       M.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{
         b.blur();di.value=b.dataset.pick;di.dispatchEvent(new Event("change"));paint(1);});
+      const dp=$("dpost");
+      dp.onclick=async()=>{
+        const txt=di.value.trim();
+        if(!txt){dp.textContent="먼저 문장을 적어 주세요";return;}
+        dp.blur();dp.textContent="올리는 중…";
+        try{await pj(`gens/${V.cls}/class/1`,{text:txt,posted:true});setNet(true);
+          V.dposted=txt;paint(1);}
+        catch(e){setNet(false);dp.textContent="연결이 되지 않아 올리지 못했습니다";}};
     }
     return;}
 }
