@@ -1370,15 +1370,24 @@ async function runOverlay(){
   if(o.none)return verdict("none","포갤 도형이 아직 없습니다",o.msg);
   busy=true;$("verdict").classList.remove("on");
   o.t=0;over=o;render();
-  const dur=matchMedia("(prefers-reduced-motion: reduce)").matches?0:1150;
-  const t0=performance.now();
+  /* 첫 프레임의 시각을 기준으로 삼는다. performance.now()와 어긋나 진행도가
+     음수가 되던 문제를 막고, 배경 탭 등으로 멈출 때를 대비해 시간 제한을 둔다. */
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const dur=reduce?700:1300;
+  let t0=null;
   await new Promise(res=>{
-    (function step(now){
-      const u=dur?Math.min(1,(now-t0)/dur):1;
+    let done=false;
+    const fin=()=>{if(!done){done=true;res();}};
+    const guard=setTimeout(fin,dur+1200);
+    requestAnimationFrame(function step(now){
+      if(done)return;
+      if(t0===null)t0=now;
+      const u=Math.max(0,Math.min(1,(now-t0)/dur));
       o.t=u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
       render();
-      u<1?requestAnimationFrame(step):res();
-    })(t0);
+      if(u<1)requestAnimationFrame(step);
+      else{clearTimeout(guard);fin();}
+    });
   });
   o.t=1;render();busy=false;
   if(o.ok)verdict("ok","완전히 포개어집니다",
