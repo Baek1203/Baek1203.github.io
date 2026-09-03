@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>작도 실습실 · 교사용</title>
+<style>
+  :root{
+    --paper:#FCFAF3; --paper-2:#E4DCC6; --card:#FFFCF6; --rule:#DCD3BE;
+    --ink:#1C1A16; --ink-soft:#6A6355;
+    --red:#C0342A; --blue:#1F3F94; --gold:#C98A10; --green:#2A7148;
+    --sans:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;margin:0}
+  body{font-family:var(--sans);background:var(--paper-2);color:var(--ink);overscroll-behavior:none}
+  .app{height:100dvh;display:flex;flex-direction:column}
+
+  .head{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 16px;flex:0 0 auto;
+    background:var(--card);border-bottom:1px solid var(--rule)}
+  .head strong{font:800 15px/1 var(--sans)}
+  .head label{font:700 12px/1 var(--sans);color:var(--ink-soft)}
+  select,input{font:600 13px/1 var(--sans);padding:9px 10px;border-radius:8px;
+    border:1.5px solid var(--rule);background:#FCFAF3;color:var(--ink);margin-left:6px}
+  .views{display:flex;gap:5px}
+  .views button{font:700 12.5px/1 var(--sans);padding:11px 15px;border-radius:999px;cursor:pointer;
+    border:1.5px solid var(--rule);background:#F4EFE3;color:var(--ink-soft)}
+  .views button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .spacer{flex:1}
+  .net{font:700 11px/1 var(--sans);padding:7px 10px;border-radius:999px;
+    background:#EDE6D5;color:var(--ink-soft);border:1.5px solid var(--rule)}
+  .net.on{background:#E4F1E8;color:#1F5C39;border-color:#B6D9C4}
+  .net.off{background:#F8E3E1;color:#8E2A22;border-color:#E3B6B1}
+
+  .sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:9px 16px;flex:0 0 auto;
+    background:#F4EFE3;border-bottom:1px solid var(--rule)}
+  .btn{font:700 12px/1 var(--sans);padding:10px 12px;border-radius:8px;cursor:pointer;
+    border:1.5px solid var(--rule);background:#F6F1E6;color:var(--ink)}
+  .btn:hover{border-color:#B9AE94}
+  .btn.danger{color:var(--red)}
+  .btn[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#231B06}
+  .modes{display:flex;gap:5px}
+  .modes button{font:700 12.5px/1 var(--sans);padding:10px 14px;border-radius:8px;cursor:pointer;
+    border:1.5px solid var(--rule);background:#fff;color:var(--ink-soft)}
+  .modes button[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gt{font:700 12.5px/1 var(--sans);padding:10px 13px;border-radius:999px;cursor:pointer;
+    border:1.5px solid var(--rule);background:#fff;color:var(--ink);display:flex;align-items:center;gap:7px}
+  .gt.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .gt em{font-style:normal;font-weight:800;opacity:.6}
+  .gt i{width:9px;height:9px;border-radius:50%;display:inline-block}
+  .gt.cls{border-style:dashed}
+  .pill{font:700 12.5px/1 var(--sans);color:#8A6A0E;background:#F8EFD8;border-radius:999px;padding:8px 12px}
+
+  .body{flex:1;min-height:0;padding:12px 16px;overflow:auto}
+  .pane{display:none;height:100%}
+  .pane.on{display:block}
+
+  #bsvg{width:100%;height:100%;display:block;background:var(--paper);border:1px solid #D3C9B2;
+    border-radius:6px;box-shadow:0 3px 16px rgba(28,26,22,.11);touch-action:none;
+    -webkit-user-select:none;user-select:none}
+
+  table.grid{border-collapse:collapse;width:100%;background:#fff;border-radius:8px;overflow:hidden}
+  table.grid th{background:#F4EFE3;font:800 12px/1.3 var(--sans);text-align:left;padding:10px 11px;
+    border:1px solid var(--rule);position:sticky;top:0;z-index:2}
+  table.grid td{font:600 12.5px/1.4 var(--sans);padding:9px 11px;border:1px solid var(--rule);
+    vertical-align:middle}
+  .dots{display:flex;gap:5px}
+  .dots i{width:19px;height:19px;border-radius:5px;background:#E7E0CD;display:grid;place-items:center;
+    font:800 10px/1 var(--sans);color:#8A8271}
+  .dots i.ok{background:var(--green);color:#fff}
+  tr.stuck td{background:#FDF3F1}
+  tr.done td{background:#F1F7F3}
+  .tag{font:800 10.5px/1 var(--sans);border-radius:999px;padding:5px 8px;white-space:nowrap}
+  .tag.g{background:#E4F1E8;color:#1F5C39}
+  .tag.r{background:#F8E3E1;color:#8E2A22}
+  .tag.y{background:#F8EFD8;color:#8A6A0E}
+  .tag.n{background:#EDE6D5;color:#6A6355}
+  .muted{color:var(--ink-soft);font-weight:600}
+
+  .cols{display:grid;grid-template-columns:250px 1fr;gap:14px;height:100%}
+  .who-list{background:#fff;border:1px solid var(--rule);border-radius:8px;overflow:auto;padding:6px}
+  .who-list button{display:block;width:100%;text-align:left;font:700 12.5px/1.3 var(--sans);
+    padding:10px;border:0;background:none;border-radius:6px;cursor:pointer;color:var(--ink)}
+  .who-list button.on{background:var(--ink);color:#fff}
+  .who-list button small{display:block;font-weight:600;opacity:.6;margin-top:3px}
+  .trace{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:14px 18px;overflow:auto}
+  .trace h3{margin:0 0 10px;font:800 15px/1 var(--sans)}
+  .trace ol{margin:0;padding-left:20px}
+  .trace li{font:500 13px/1.75 var(--sans);color:#2E2A22}
+  .trace p{font:500 13.5px/1.7 var(--sans);color:#2E2A22;margin:0 0 13px;
+    padding-bottom:11px;border-bottom:1px solid #EFEADD}
+  .trace p b{font:800 12px/1 var(--sans);color:var(--ink-soft);letter-spacing:.03em}
+
+  .locks{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:16px 18px;max-width:760px}
+  .locks h3{margin:0 0 4px;font:800 15px/1 var(--sans)}
+  .locks p{margin:0 0 14px;font:600 12.5px/1.6 var(--sans);color:var(--ink-soft)}
+  .cols2{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:100%}
+  .gside,.gpick{overflow:auto;padding-right:4px}
+  .gpick{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:14px 16px}
+  .gpick h3{margin:0 0 8px;font:800 14px/1 var(--sans)}
+  .gc{background:#fff;border:1.5px solid var(--rule);border-radius:10px;padding:12px 14px;margin-bottom:10px}
+  .gc.unit{border-color:var(--ink);border-width:2px;background:#FCFAF3}
+  .gc.posted{border-color:#7FB496;background:#F4FAF6}
+  .gc h4{margin:0 0 8px;font:800 13px/1 var(--sans);display:flex;align-items:center;gap:8px}
+  .gc h4 em{font-style:normal;font-size:10.5px;font-weight:800;color:#1F5C39;
+    background:#DDEEE4;border-radius:999px;padding:4px 8px}
+  .gfr{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .gfr i{font-style:normal;font-weight:800;font-size:12.5px;white-space:nowrap}
+  .gfr input{flex:1;min-width:0;margin:0;font:600 13px/1 var(--sans)}
+  .gfr span{font-weight:800}
+  .grow{display:flex;gap:6px}
+  .btn.s{font-size:11.5px;padding:8px 10px}
+  .btn.s em{font-style:normal;font-weight:800;opacity:.55;margin-left:4px}
+  .sent{display:block;width:100%;text-align:left;background:#FCFAF3;border:1.5px solid var(--rule);
+    border-radius:9px;padding:10px 12px;margin-bottom:7px;cursor:pointer}
+  .sent:hover{border-color:var(--gold)}
+  .sent b{display:block;font:600 13px/1.5 var(--sans)}
+  .sent small{color:var(--ink-soft);font-weight:600}
+  .hypc{background:#FBF6EA;border:1px solid #E6D9B8;border-radius:8px;padding:9px 12px;
+    margin-bottom:7px;font:600 12.5px/1.6 var(--sans)}
+  .hypc b{margin-right:8px}
+  .bigwrap{display:flex;flex-direction:column;gap:14px;justify-content:center;height:100%}
+  .bigline{display:flex;align-items:center;gap:16px;background:#fff;border:2px solid var(--rule);
+    border-radius:12px;padding:18px 22px}
+  .bigline.unit{border-color:var(--ink);background:#FFF8E6}
+  .bigline span{flex:0 0 auto;font:800 15px/1 var(--sans);color:var(--ink-soft);
+    background:#F4EFE3;border-radius:999px;padding:9px 13px}
+  .bigline b{font:800 26px/1.4 var(--sans);letter-spacing:-.4px}
+  table.chart input{width:100%;border:0;background:none;font:600 12.5px/1.4 var(--sans);
+    text-align:center;padding:2px;margin:0;border-radius:4px}
+  table.chart input:focus{background:#FFF8E6;outline:2px solid var(--gold)}
+  table.chart.big td,table.chart.big th{font-size:19px;padding:16px 12px}
+  table.chart.big input{font-size:19px}
+  .lk{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #EFEADD}
+  .lk{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #EFEADD}
+  .lk:last-child{border-bottom:0}
+  .lk input{width:19px;height:19px;margin:0}
+  .lk b{font:800 13px/1 var(--sans);min-width:150px}
+  .lk span{font:600 12px/1 var(--sans);color:var(--ink-soft)}
+  .hint{margin-top:14px;background:#FFF8E6;border-left:4px solid var(--gold);border-radius:0 8px 8px 0;
+    padding:11px 14px;font:600 12.5px/1.7 var(--sans)}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="head">
+    <strong>작도 실습실 · 교사용</strong>
+    <label>반<select id="cls">
+      <option>1-1</option><option>1-2</option><option>1-3</option><option>1-4</option></select></label>
+    <label>과제<select id="task"></select></label>
+    <div class="views">
+      <button data-view="prog" aria-pressed="true">진행</button>
+      <button data-view="board" aria-pressed="false">모둠 판</button>
+      <button data-view="trace" aria-pressed="false">기록</button>
+      <button data-view="note" aria-pressed="false">보고서</button>
+      <button data-view="gen" aria-pressed="false">일반화</button>
+      <button data-view="chart" aria-pressed="false">차트</button>
+      <button data-view="lock" aria-pressed="false">개방</button>
+    </div>
+    <div class="spacer"></div>
+    <span class="pill" id="count">—</span>
+    <span class="net" id="net">연결 확인 중</span>
+  </div>
+
+  <div class="sub" id="sub"></div>
+
+  <div class="body">
+    <div class="pane on" id="paneProg"></div>
+    <div class="pane" id="paneBoard">
+      <svg id="bsvg" viewBox="0 0 1120 660" preserveAspectRatio="xMidYMid meet" aria-label="게시판"></svg>
+    </div>
+    <div class="pane" id="paneTrace">
+      <div class="cols"><div class="who-list" id="traceWho"></div><div class="trace" id="traceBody"></div></div>
+    </div>
+    <div class="pane" id="paneNote">
+      <div class="cols"><div class="who-list" id="noteWho"></div><div class="trace" id="noteBody"></div></div>
+    </div>
+    <div class="pane" id="paneGen"></div>
+    <div class="pane" id="paneChart"></div>
+    <div class="pane" id="paneLock"></div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+/* ================= 통신 ================= */
+const DB_URL="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app";
+const dbGet=async p=>{const r=await fetch(`${DB_URL}/${p}.json`);
+  if(!r.ok)throw new Error(r.status);return r.json();};
+const dbPut=async(p,v)=>{const r=await fetch(`${DB_URL}/${p}.json`,{method:"PUT",
+  headers:{"Content-Type":"application/json"},body:JSON.stringify(v)});
+  if(!r.ok)throw new Error(r.status);return r.json();};
+const dbDel=async p=>{const r=await fetch(`${DB_URL}/${p}.json`,{method:"DELETE"});
+  if(!r.ok)throw new Error(r.status);};
+let ONLINE=null;
+function setNet(ok){if(ONLINE===ok)return;ONLINE=ok;
+  $("net").className="net "+(ok?"on":"off");$("net").textContent=ok?"연결됨":"연결 안 됨";}
+
+/* ================= 상태 ================= */
+const TASKS=[
+  {id:"seg",n:"훈련 1 · 길이를 그대로 옮기기",board:false},
+  {id:"ang",n:"훈련 2 · 각을 그대로 옮기기",board:false},
+  {id:"par",n:"훈련 3 · 나란한 선 긋기",board:false},
+  {id:"pg", n:"훈련장",board:false},
+  {id:"t4", n:"조사 1 · 세 변이 삼각형이 되려면",board:false,lock:true},
+  {id:"t5", n:"조사 2 · 세 변을 알 때",board:true,lock:true},
+  {id:"t6", n:"조사 3 · 두 변과 그 사이 각",board:true,lock:true},
+  {id:"t7", n:"조사 4 · 한 변과 양 끝 각",board:true,lock:true},
+  {id:"t8", n:"조사 5 · 두 변과 한 각",board:true,lock:true},
+  {id:"t9", n:"조사 6 · 세 각만",board:true,lock:true},
+  {id:"t10",n:"사건 파일 · 수사 보고서",board:true,lock:true}
+];
+const LESSON={t4:"2차시",t5:"3차시",t6:"3차시",t7:"3차시",t8:"4차시",t9:"4차시",t10:"6차시"};
+const V={cls:localStorage.getItem("t.cls")||"1-1",task:localStorage.getItem("t.task")||"t5",
+  view:"prog",group:null,mode:"intake",names:false,tf:{},pick:null,drag:null,who:null};
+let DATA={subs:{},cls:[],prog:{},unlocked:{},mode:"intake",traces:{}};
+
+/* ================= 도형 ================= */
+const D2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const cen=t=>({x:(t[0].x+t[1].x+t[2].x)/3,y:(t[0].y+t[1].y+t[2].y)/3});
+const sides3=t=>[D2(t[0],t[1]),D2(t[1],t[2]),D2(t[2],t[0])];
+const sortN=a=>a.slice().sort((x,y)=>x-y);
+const cmp3=(a,b)=>{for(let i=0;i<3;i++)if(Math.abs(a[i]-b[i])>0.06)return a[i]-b[i];return 0;};
+function canonOrder(t){
+  const P=[[0,1,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0],[1,0,2]];
+  let best=null,bs=null;
+  for(const p of P){const Q=p.map(i=>t[i]),s=[D2(Q[0],Q[1]),D2(Q[1],Q[2]),D2(Q[2],Q[0])];
+    if(!bs||cmp3(s,bs)<0){bs=s;best=Q;}}
+  return best;
+}
+function alignT(t,anchor){                      /* 크기는 그대로, 자리와 방향만 맞춘다 */
+  const P=canonOrder(t),th=Math.atan2(P[1].y-P[0].y,P[1].x-P[0].x);
+  const c=Math.cos(-th),s=Math.sin(-th);
+  let Q=P.map(p=>{const dx=p.x-P[0].x,dy=p.y-P[0].y;return{x:dx*c-dy*s,y:dx*s+dy*c};});
+  if(Q[2].y>0)Q=Q.map(p=>({x:p.x,y:-p.y}));
+  return Q.map(p=>({x:p.x+anchor.x,y:p.y+anchor.y}));
+}
+function clusters(list){
+  const cs=[];
+  for(const s of list){const sd=sortN(sides3(s.tri));
+    const hit=cs.find(c=>c.sd.every((v,i)=>Math.abs(v-sd[i])<3.5));
+    if(hit)hit.items.push(s);else cs.push({sd,items:[s]});}
+  return cs;
+}
+const xform=(t,tf,k,about)=>{
+  const a=about||cen(t),r=(tf&&tf.rot)||0,c=Math.cos(r),s=Math.sin(r);
+  return t.map(p=>{const dx=(p.x-a.x)*k,dy=(p.y-a.y)*k;
+    return{x:a.x+dx*c-dy*s+((tf&&tf.dx)||0),y:a.y+dx*s+dy*c+((tf&&tf.dy)||0)};});
+};
+const CCOL=["#1F3F94","#C0342A","#2A7148","#C98A10","#6A4CA8","#8A6A0E"];
+const hash32=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
+const rnd1=s=>{let a=hash32(s)>>>0;a=(a+0x6D2B79F5)>>>0;let t=Math.imul(a^(a>>>15),1|a);
+  t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296;};
+
+/* ================= 자료 가져오기 ================= */
+async function pull(force){
+  try{
+    const [c,subs,prog]=await Promise.all([
+      dbGet(`classes/${V.cls}`),
+      dbGet(`boards/${V.cls}/${V.task}/subs`),
+      dbGet(`progress/${V.cls}`)]);
+    DATA.unlocked=(c&&c.unlocked)||{};DATA.mode=(c&&c.mode)||"intake";
+    DATA.subs=subs||{};DATA.prog=prog||{};
+    const cl=await dbGet(`boards/${V.cls}/${V.task}/cls`);DATA.cls=cl||[];
+    await pullGen();
+    setNet(true);
+  }catch(e){setNet(false);}
+  paint(force);
+}
+const subList=()=>Object.keys(DATA.subs).map(k=>Object.assign({no:k},DATA.subs[k]));
+function groups(){
+  const g=new Set();subList().forEach(s=>g.add(s.group||"없음"));
+  Object.values(DATA.prog).forEach(p=>g.add(p.group||"없음"));
+  return[...g].sort((a,z)=>(+a||99)-(+z||99));
+}
+
+/* ================= 진행 ================= */
+const STALL=3*60*1000;
+function paintProg(){
+  const rows=Object.keys(DATA.prog).map(k=>Object.assign({no:k},DATA.prog[k]))
+    .filter(p=>p.task===V.task)
+    .sort((a,b)=>(+a.group||99)-(+b.group||99)||String(a.nick).localeCompare(String(b.nick)));
+  const now=Date.now();
+  if(!rows.length){
+    $("paneProg").innerHTML=`<p class="muted">이 과제를 열어 둔 학생이 아직 없습니다.
+      학생 화면에서 과제를 시작하면 여기에 나타납니다.</p>`;return;
+  }
+  const board=!!(TASKS.find(x=>x.id===V.task)||{}).board;
+  const nStep=Math.max(...rows.map(r=>(r.steps||[]).length));
+  const titles=(rows.find(r=>r.titles&&r.titles.length===nStep)||{}).titles||[];
+  let h=`<table class="grid"><tr><th>모둠</th><th>코드네임</th><th>단계</th>
+    ${board?"<th>제출</th>":""}<th>상태</th><th>마지막 움직임</th></tr>`;
+  for(const r of rows){
+    const st=r.steps||[],doneN=st.filter(Boolean).length;
+    const idle=now-(r.at||0), off=now-(r.seen||r.at||0)>90000;
+    const sub=DATA.subs[r.no];
+    const stuck=!r.done&&idle>STALL&&!off;
+    h+=`<tr class="${r.done?"done":stuck?"stuck":""}">
+      <td>${r.group||"—"}</td><td><b>${esc(r.nick||"?")}</b></td>
+      <td><div class="dots">${st.map((v,i)=>
+        `<i class="${v?"ok":""}" title="${esc(titles[i]||"")}">${i+1}</i>`).join("")}</div></td>
+      ${board?`<td>${sub?`<span class="tag g">냄</span>`:`<span class="tag n">아직</span>`}</td>`:""}
+      <td>${off?`<span class="tag n">자리 비움</span>`
+          :r.done?`<span class="tag g">완성 ${doneN}/${st.length}</span>`
+          :stuck?`<span class="tag r">막힘</span>`
+          :`<span class="tag y">진행 ${doneN}/${st.length}</span>`}</td>
+      <td class="muted">${ago(idle)}</td></tr>`;
+  }
+  h+="</table>";
+  const stuckN=rows.filter(r=>!r.done&&now-(r.at||0)>STALL&&now-(r.seen||r.at||0)<=90000).length;
+  const doneNn=rows.filter(r=>r.done).length;
+  h=`<p class="muted" style="margin:0 0 10px">
+      ${rows.length}명 작업 중 · 완성 ${doneNn}명${board?` · 제출 ${subList().length}명`:""}
+      ${stuckN?` · <b style="color:#8E2A22">막힘 ${stuckN}명</b>`:""}</p>`+h;
+  $("paneProg").innerHTML=h;
+}
+const esc=s=>String(s).replace(/[<>&]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;"}[c]));
+const ago=ms=>ms<0||!isFinite(ms)?"—":ms<60000?`${Math.round(ms/1000)}초 전`
+  :ms<3600000?`${Math.round(ms/60000)}분 전`:`${Math.round(ms/3600000)}시간 전`;
+
+/* ================= 게시판 ================= */
+const BW=1120,BH=660;
+const shown=()=>V.group==="class"
+  ? DATA.cls.map((c,i)=>({no:"c"+i,tri:c.tri,color:"#1C1A16",label:c.from,n:c.n}))
+  : subList().filter(s=>!V.group||(s.group||"없음")===V.group).sort((a,z)=>a.at-z.at);
+const maxSpan=list=>{let m=1;for(const s of list){const t=s.tri||s.pts;if(!t)continue;
+  m=Math.max(m,D2(t[0],t[1]),D2(t[1],t[2]),D2(t[2],t[0]));}return m;};
+function paintBoard(){
+  const list=shown(),n=list.length,svg=$("bsvg");
+  let g=`<rect width="${BW}" height="${BH}" fill="#FCFAF3"/>`;
+  if(!n){svg.innerHTML=g+`<text x="${BW/2}" y="${BH/2}" text-anchor="middle" font-size="22"
+    fill="#8A8271" font-family="sans-serif">아직 접수된 작도가 없습니다.</text>`;return;}
+  const cols=Math.ceil(Math.sqrt(n*BW/BH)),cw=BW/cols,ch=BH/Math.ceil(n/cols);
+  if(V.mode==="intake"){
+    list.forEach((s,i)=>{const x=(i%cols)*cw+cw/2,y=Math.floor(i/cols)*ch+ch/2,w=Math.min(cw,ch)*.5;
+      g+=`<g transform="translate(${x} ${y}) rotate(${((i*37)%13)-6})">
+        <rect x="${-w/2}" y="${-w*.68}" width="${w}" height="${w*1.36}" rx="9"
+          fill="#E9E1CC" stroke="#C9BFA4" stroke-width="2"/>
+        <circle r="${w*.2}" fill="#D8CEB4"/></g>`;});
+    svg.innerHTML=g+`<text x="${BW/2}" y="${BH-26}" text-anchor="middle" font-size="26"
+      font-weight="700" fill="#6A6355" font-family="sans-serif">${n}명 접수</text>`;return;
+  }
+  let draw=[];
+  if(V.mode==="reveal"){
+    const k=Math.min(1,Math.min(cw,ch)*.72/maxSpan(list));
+    list.forEach((s,i)=>{
+      const cx=(i%cols)*cw+cw/2,cy=Math.floor(i/cols)*ch+ch/2,c0=cen(s.tri);
+      const base=s.tri.map(p=>({x:p.x-c0.x+cx,y:p.y-c0.y+cy}));
+      const tf=V.tf[s.no]||{};
+      draw.push({s,slot:i+1,col:s.color||"#1C1A16",
+        pts:xform(base,{rot:(rnd1(s.no+V.task)-.5)*.9+(tf.rot||0),dx:tf.dx||0,dy:tf.dy||0},k,{x:cx,y:cy})});
+    });
+  }else if(V.mode==="merge"){
+    const k=Math.min(1,BH*.62/maxSpan(list)),an={x:BW*.30,y:BH*.66};
+    list.forEach(s=>draw.push({s,merged:true,col:"#1C1A16",pts:xform(alignT(s.tri,an),null,k,an)}));
+  }else{
+    const cs=clusters(list),k=Math.min(1,(BW/Math.max(1,cs.length))*.62/maxSpan(list));
+    cs.forEach((c,ci)=>{
+      const an={x:BW*(ci+.34)/cs.length,y:BH*.70};
+      c.items.forEach(s=>draw.push({s,col:CCOL[ci%CCOL.length],pts:xform(alignT(s.tri,an),null,k,an)}));
+      g+=`<text x="${BW*(ci+.5)/cs.length}" y="52" text-anchor="middle" font-size="24"
+        font-weight="800" fill="${CCOL[ci%CCOL.length]}" font-family="sans-serif">${ci+1}형 · ${c.items.length}명</text>`;});
+    if(cs.length>4)g+=`<text x="${BW/2}" y="${BH-22}" text-anchor="middle" font-size="20"
+      fill="#6A6355" font-family="sans-serif">서로 다른 삼각형 ${cs.length}가지</text>`;
+  }
+  const op=V.mode==="merge"?.30:.95;
+  for(const d of draw){
+    const pts=d.pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const hot=V.pick===d.s.no;
+    g+=`<polygon points="${pts}" fill="${d.merged?"none":d.col+"14"}" stroke="${d.col}"
+      stroke-width="${d.merged?2.2:2.8}" stroke-linejoin="round" opacity="${hot?1:op}"/>`;
+    if(V.mode==="reveal"){
+      g+=`<circle cx="${d.pts[0].x.toFixed(1)}" cy="${d.pts[0].y.toFixed(1)}" r="7" fill="${d.col}"/>`;
+      const c0=cen(d.pts);
+      g+=`<text x="${c0.x.toFixed(1)}" y="${(c0.y+6).toFixed(1)}" text-anchor="middle" font-size="15"
+        font-weight="800" fill="${V.names?"#3A342B":"#8A8271"}" font-family="sans-serif"
+        opacity="${V.names?1:.55}">${V.names?esc(d.s.nick||d.s.no):d.slot}</text>`;
+      if(hot)g+=`<circle cx="${c0.x.toFixed(1)}" cy="${(c0.y-maxSpan([d.s])*.5-30).toFixed(1)}" r="11"
+        fill="#fff" stroke="${d.col}" stroke-width="3"/>`;
+    }
+    if(d.s.label){const c0=cen(d.pts);
+      g+=`<text x="${c0.x.toFixed(1)}" y="${(c0.y+6).toFixed(1)}" text-anchor="middle" font-size="15"
+        font-weight="800" fill="#8A6A0E" font-family="sans-serif">${esc(d.s.label)} · ${d.s.n}명</text>`;}
+  }
+  V.draw=draw;svg.innerHTML=g;
+}
+/* 끌기 · 회전 · 자석 */
+const bPos=e=>{const r=$("bsvg").getBoundingClientRect();
+  return{x:(e.clientX-r.left)/r.width*BW,y:(e.clientY-r.top)/r.height*BH};};
+function inTri(p,t){const s=(a,b,c)=>(a.x-c.x)*(b.y-c.y)-(b.x-c.x)*(a.y-c.y);
+  const d1=s(p,t[0],t[1]),d2=s(p,t[1],t[2]),d3=s(p,t[2],t[0]);
+  return!(((d1<0)||(d2<0)||(d3<0))&&((d1>0)||(d2>0)||(d3>0)));}
+$("bsvg").addEventListener("pointerdown",e=>{
+  if(V.mode!=="reveal"||!V.draw)return;
+  const p=bPos(e);
+  const rot=V.draw.find(d=>V.pick===d.s.no&&
+    D2(p,{x:cen(d.pts).x,y:cen(d.pts).y-maxSpan([d.s])*.5-30})<22);
+  if(rot){const c=cen(rot.pts);
+    V.drag={no:rot.s.no,mode:"rot",c,a0:Math.atan2(p.y-c.y,p.x-c.x),r0:(V.tf[rot.s.no]||{}).rot||0};return;}
+  const hit=[...V.draw].reverse().find(d=>inTri(p,d.pts));
+  if(!hit){V.pick=null;paintBoard();return;}
+  V.pick=hit.s.no;
+  V.drag={no:hit.s.no,mode:"move",p0:p,d0:{dx:(V.tf[hit.s.no]||{}).dx||0,dy:(V.tf[hit.s.no]||{}).dy||0}};
+  paintBoard();
+});
+window.addEventListener("pointermove",e=>{
+  if(!V.drag)return;
+  const p=bPos(e),t=V.tf[V.drag.no]||(V.tf[V.drag.no]={dx:0,dy:0,rot:0});
+  if(V.drag.mode==="move"){t.dx=V.drag.d0.dx+(p.x-V.drag.p0.x);t.dy=V.drag.d0.dy+(p.y-V.drag.p0.y);}
+  else t.rot=V.drag.r0+(Math.atan2(p.y-V.drag.c.y,p.x-V.drag.c.x)-V.drag.a0);
+  paintBoard();
+});
+window.addEventListener("pointerup",()=>{
+  if(!V.drag)return;const no=V.drag.no;V.drag=null;
+  const m=V.draw.find(d=>d.s.no===no);if(!m)return;
+  let best=null,bd=18;
+  for(const d of V.draw){if(d.s.no===no)continue;
+    for(const a of m.pts)for(const b of d.pts){const v=D2(a,b);if(v<bd){bd=v;best={a,b};}}}
+  if(best){const t=V.tf[no];t.dx+=best.b.x-best.a.x;t.dy+=best.b.y-best.a.y;}
+  paintBoard();
+});
+
+/* ================= 기록 ================= */
+async function paintTrace(){
+  const who=Object.keys(DATA.prog).map(k=>Object.assign({no:k},DATA.prog[k]))
+    .sort((a,b)=>(+a.group||99)-(+b.group||99));
+  $("traceWho").innerHTML=who.length?who.map(w=>
+    `<button data-no="${w.no}" class="${V.who===w.no?"on":""}">${esc(w.nick||"?")}
+      <small>${w.group?w.group+"모둠 · ":""}${(TASKS.find(t=>t.id===w.task)||{}).n||w.task}</small></button>`).join("")
+    :`<p class="muted" style="padding:10px">아직 활동한 학생이 없습니다.</p>`;
+  $("traceWho").querySelectorAll("button").forEach(b=>b.onclick=async()=>{
+    V.who=b.dataset.no;paintTrace();
+    try{DATA.traces[V.who]=await dbGet(`traces/${V.cls}/${V.who}/${V.task}`);}catch(e){}
+    paintTrace();
+  });
+  const t=V.who?DATA.traces[V.who]:null;
+  $("traceBody").innerHTML=!V.who?`<p class="muted">왼쪽에서 학생을 고르세요.</p>`
+    :!t?`<p class="muted">이 학생은 <b>${esc((TASKS.find(x=>x.id===V.task)||{}).n||V.task)}</b>을(를)
+        아직 제출하지 않았습니다. 기록은 제출할 때 올라갑니다.</p>`
+    :`<h3>${esc(t.nick||"")} · ${esc((TASKS.find(x=>x.id===V.task)||{}).n||V.task)}</h3>
+      <ol>${(t.lines||[]).map(l=>`<li>${esc(l)}</li>`).join("")}</ol>
+      <p class="muted" style="margin-top:14px">이 기록은 <b>무엇을 했는지</b>만 담습니다.
+        “왜 그렇게 했는지”는 학생의 활동지에서 확인하세요.</p>`;
+}
+
+/* ================= 보고서(기록장) ================= */
+const NL={say:"목격자 진술",c1:"조건 1",c1t:"조건 1 종류",c2:"조건 2",c2t:"조건 2 종류",
+  c3:"조건 3",c3t:"조건 3 종류",pos:"각이 놓인 자리",guess:"작도 전 예상",why:"예상 이유",
+  how:"왜 그렇게 했는가",verdict:"판정",who:"지목한 증거품",ground:"판정 근거",
+  split:"어디서 갈라졌는가",more:"추가 진술 요청",n:"몇 개인가",q1:"서술"};
+const ORD=["say","c1","c1t","c2","c2t","c3","c3t","pos","guess","why","n","q1","how","ev",
+  "verdict","who","ground","split","more"];
+async function paintNote(){
+  const who=Object.keys(DATA.prog).map(k=>Object.assign({no:k},DATA.prog[k]))
+    .sort((a,b)=>(+a.group||99)-(+b.group||99));
+  $("noteWho").innerHTML=who.length?who.map(w=>
+    `<button data-no="${w.no}" class="${V.who===w.no?"on":""}">${esc(w.nick||"?")}`+
+    `<small>${w.group?w.group+"모둠":"모둠 없음"}</small></button>`).join("")
+    :`<p class="muted" style="padding:10px">아직 활동한 학생이 없습니다.</p>`;
+  $("noteWho").querySelectorAll("button").forEach(b=>b.onclick=async()=>{
+    V.who=b.dataset.no;b.blur();paintNote();
+    DATA.notes=DATA.notes||{};
+    try{DATA.notes[V.who]=await dbGet(`notes/${V.cls}/${V.who}/${V.task}`);}catch(e){}
+    paintNote();});
+  const tn=(TASKS.find(x=>x.id===V.task)||{}).n||V.task;
+  if(!V.who){$("noteBody").innerHTML=`<p class="muted">왼쪽에서 학생을 고르세요.</p>`;return;}
+  const n=DATA.notes&&DATA.notes[V.who];
+  if(!n){$("noteBody").innerHTML=`<p class="muted">이 학생은 <b>${esc(tn)}</b>에 아직 쓴 것이 없습니다.</p>`;return;}
+  let h=`<h3>${esc(n.nick||"")} · ${esc(tn)}</h3>`;
+  for(const k of ORD){
+    if(n[k]==null||n[k]==="")continue;
+    if(k==="ev"){h+=`<p><b>증거품 대조</b><br>`+Object.keys(n.ev).map(x=>
+      `<span class="tag ${n.ev[x]?"g":"n"}">${x} ${n.ev[x]?"포개어짐":"어긋남"}</span>`).join(" ")+`</p>`;
+      continue;}
+    h+=`<p><b>${NL[k]||k}</b><br>${esc(String(n[k])).split("\n").join("<br>")}</p>`;
+  }
+  $("noteBody").innerHTML=h+`<p class="muted" style="margin-top:14px;border:0">`+
+    `루브릭 참고 — “왜냐하면”이 없으면 C, 있으면 B, <b>유일성</b>까지 말하면 A.</p>`;
+}
+
+
+/* ================= 일반화 게시판 ================= */
+const LESS=[
+  {n:"1",label:"1차시 · 측정 없이 옮기기",frame:"작도는"},
+  {n:"2",label:"2차시 · 삼각형이 되기 위한 조건",frame:"삼각형이 만들어지기 위해서는"},
+  {n:"4",label:"4차시 · 무엇을 알면 하나로 정해질까",frame:"삼각형이 하나로 정해지는 것은"},
+  {n:"5",label:"5차시 · 같다고 말할 근거",frame:"삼각형이 하나로 정해지는 조건은"},
+  {n:"6",label:"6차시 · 최소한의 정보로 결정하기",frame:"주어진 조건으로 삼각형이 하나로 정해지지 않으면"},
+  {n:"u",label:"단원 일반화 — 스트랜드 3 + 4의 종합",frame:"삼각형을 하나로 정하는 조건이 같으면",unit:true}
+];
+let GEN={},MINE={},HYP={},CHART={},OPEN={},SELF={};
+V.gpick=null; V.big=false; V.chart="det";
+
+async function pullGen(){
+  try{
+    const [g,m,h,c,o,sf]=await Promise.all([
+      dbGet(`gens/${V.cls}/class`),dbGet(`gens/${V.cls}/mine`),
+      dbGet(`hypo/${V.cls}`),dbGet(`charts/${V.cls}`),
+      dbGet(`gens/${V.cls}/open`),dbGet(`gens/${V.cls}/self`)]);
+    GEN=g||{};MINE=m||{};HYP=h||{};CHART=c||{};OPEN=o||{};SELF=sf||{};
+  }catch(e){}
+}
+const saveGen=async(n,o)=>{GEN[n]=o;try{await dbPut(`gens/${V.cls}/class/${n}`,o);setNet(true);}catch(e){setNet(false);}};
+
+function paintGen(){
+  if(V.big){                                   /* 전자칠판 낭독 모드 */
+    const list=LESS.filter(L=>GEN[L.n]&&GEN[L.n].posted&&GEN[L.n].text);
+    $("paneGen").innerHTML=`<div class="bigwrap">
+      ${list.length?list.map(L=>`<div class="bigline${L.unit?" unit":""}">
+        <span>${L.unit?"단원":L.n+"차시"}</span><b>${esc(GEN[L.n].text)}</b></div>`).join("")
+        :`<p class="muted">게시된 문장이 없습니다.</p>`}</div>`;
+    return;
+  }
+  $("paneGen").innerHTML=`<div class="cols2">
+    <div class="gside">${LESS.map(L=>{
+      const g=GEN[L.n]||{};
+      return `<div class="gc${L.unit?" unit":""}${g.posted?" posted":""}">
+        <h4>${L.label}${g.posted?`<em>게시됨</em>`:""}</h4>
+        <div class="gfr"><i>${L.frame}</i>
+          <input data-n="${L.n}" value="${esc(g.text||"")}" placeholder="학급 합의 문장"><span>.</span></div>
+        <div class="grow">
+          <button class="btn s" data-open="${L.n}" aria-pressed="${isOpen(L.n)}">${
+            isOpen(L.n)?"열림":"잠김"}</button>
+          <button class="btn s" data-post="${L.n}">${g.posted?"게시 내리기":"게시하기"}</button>
+          <button class="btn s" data-see="${L.n}">학생 문장 모아 보기 <em>${
+            Object.values(MINE).filter(m=>m[L.n]).length}</em></button>
+        </div></div>`;}).join("")}</div>
+    <div class="gpick">${pickBody()}${lightBody()}</div></div>`;
+  $("paneGen").querySelectorAll(".gfr input").forEach(el=>{
+    el.onchange=()=>saveGen(el.dataset.n,Object.assign({},GEN[el.dataset.n],{text:el.value}));});
+  $("paneGen").querySelectorAll("[data-open]").forEach(b=>b.onclick=async()=>{
+    const n=b.dataset.open;OPEN[n]=!isOpen(n);b.blur();
+    try{await dbPut(`gens/${V.cls}/open`,OPEN);setNet(true);}catch(e){setNet(false);}
+    paintGen();});
+  $("paneGen").querySelectorAll("[data-post]").forEach(b=>b.onclick=()=>{
+    const n=b.dataset.post,g=GEN[n]||{};saveGen(n,Object.assign({},g,{posted:!g.posted}));paintGen();});
+  $("paneGen").querySelectorAll("[data-see]").forEach(b=>b.onclick=()=>{V.gpick=b.dataset.see;b.blur();paintGen();});
+  const so=$("selfOpen");
+  if(so)so.onclick=async()=>{
+    OPEN.self=!OPEN.self;so.blur();
+    try{await dbPut(`gens/${V.cls}/open`,OPEN);setNet(true);}catch(e){setNet(false);}
+    paintGen();};
+  $("paneGen").querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{
+    const n=V.gpick;saveGen(n,Object.assign({},GEN[n],{text:b.dataset.use}));paintGen();});
+}
+const isOpen=n=>n==="1"?(OPEN["1"]!==false):!!OPEN[n];
+function lightBody(){
+  const rows=Object.values(SELF||{});
+  const c={g:0,y:0,r:0};rows.forEach(x=>{if(x&&c[x.level]!=null)c[x.level]++;});
+  const tot=Math.max(1,rows.length);
+  const bar=(k,col)=>`<i style="width:${Math.round(c[k]/tot*100)}%;background:${col}"></i>`;
+  return `<div class="gc" style="margin-top:14px">
+    <h4>1차시 신호등 자기평가</h4>
+    <div class="grow">
+      <button class="btn s" id="selfOpen" aria-pressed="${!!OPEN.self}">${
+        OPEN.self?"제출 열림":"제출 잠김"}</button>
+      <span class="muted" style="font:700 12px/1 var(--sans)">${rows.length}명 제출</span>
+    </div>
+    <div class="lbar">${bar("g","#2A7148")}${bar("y","#C98A10")}${bar("r","#C0342A")}</div>
+    <div class="lkey">
+      <span><i style="background:#2A7148"></i>혼자 할 수 있다 <b>${c.g}</b></span>
+      <span><i style="background:#C98A10"></i>순서를 보면 <b>${c.y}</b></span>
+      <span><i style="background:#C0342A"></i>아직 어렵다 <b>${c.r}</b></span>
+    </div>
+    <p class="muted" style="font:600 11.5px/1.6 var(--sans);margin:9px 0 0">
+      학번과 이름은 서버에 남기지 않습니다. 선생님 구글 시트로만 갑니다.</p>
+  </div>`;
+}
+function pickBody(){
+  if(V.gpick===null)return `<p class="muted">왼쪽에서 <b>학생 문장 모아 보기</b>를 누르면 이곳에 모입니다.
+    마음에 드는 문장을 눌러 학급 문장으로 올릴 수 있습니다.</p>${hypBody()}`;
+  const L=LESS.find(x=>x.n===V.gpick);
+  const rows=Object.keys(MINE).map(k=>({no:k,nick:MINE[k].nick,group:MINE[k].group,t:MINE[k][V.gpick]}))
+    .filter(r=>r.t&&String(r.t).trim());
+  return `<h3>${L.label}</h3>
+    <p class="muted" style="border:0"><i>${L.frame}</i> ( … ).</p>
+    ${rows.length?rows.map(r=>`<button class="sent" data-use="${esc(r.t)}">
+      <b>${esc(r.t)}</b><small>${esc(r.nick||"")}${r.group?" · "+r.group+"모둠":""}</small></button>`).join("")
+      :`<p class="muted">아직 쓴 학생이 없습니다.</p>`}${hypBody()}`;
+}
+function hypBody(){
+  const ks=Object.keys(HYP||{});
+  if(!ks.length)return "";
+  return `<h3 style="margin-top:20px">모둠 가설 (2차시)</h3>`+
+    ks.sort((a,b)=>(+a||99)-(+b||99)).map(g=>
+      `<div class="hypc"><b>${g}모둠</b> ${esc((HYP[g]||{}).text||"")}</div>`).join("");
+}
+
+/* ================= 교차 비교 차트 ================= */
+const TRI_ROWS=[["3·4·6","","","",""],["5·5·5","","","",""],["4·4·5","","","",""],
+                ["3·4·7","","","",""],["3·4·9","","","",""],["2·5·9","","","",""]];
+const DET_ROWS=[["세 변","3","",""],["두 변과 끼인각","3","",""],["한 변과 양 끝 각","3","",""],
+                ["두 변과 끼인각이 아닌 각","3","",""],["세 각","3","",""],["두 변만","2","",""]];
+const TRI_HEAD=["세 변의 길이","가장 긴 변","대소","나머지 두 변의 합","성공 여부"];
+const DET_HEAD=["주어진 조건","조건 개수","하나로 정해지는가","근거 또는 반례"];
+const NMAP={t5:0,t6:1,t7:2,t8:3,t9:4};
+
+function chartData(){
+  const c=CHART[V.chart]||{};
+  const base=(V.chart==="tri"?TRI_ROWS:DET_ROWS).map(r=>r.slice());
+  const rows=(c.rows&&c.rows.length)?c.rows.map(r=>r.slice()):base;
+  return {rows,show:c.show||(V.chart==="tri"?6:6),cong:!!c.cong,congv:c.congv||["","",""]};
+}
+const saveChart=async o=>{CHART[V.chart]=o;
+  try{await dbPut(`charts/${V.cls}/${V.chart}`,o);setNet(true);}catch(e){setNet(false);}};
+
+function paintChart(){
+  const d=chartData();
+  const head=(V.chart==="tri"?TRI_HEAD:DET_HEAD).slice();
+  if(V.chart==="det"&&d.cong)head.push("합동 조건");
+  const vis=(V.chart==="det")?d.rows.slice(0,d.show):d.rows;
+  $("paneChart").innerHTML=`
+    <table class="grid chart${V.big?" big":""}">
+      <tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr>
+      ${vis.map((r,i)=>`<tr>${r.map((v,j)=>
+        `<td><input data-r="${i}" data-c="${j}" value="${esc(v)}"></td>`).join("")}
+        ${(V.chart==="det"&&d.cong)?`<td><input data-r="${i}" data-c="9" value="${
+          esc(d.congv[i]||"")}" placeholder="${i<3?"SSS / SAS / ASA":"없음"}"></td>`:""}
+      </tr>`).join("")}
+    </table>
+    <p class="muted" style="border:0;margin-top:12px">
+      전자칠판에 띄우고 학급이 함께 채웁니다. 고치면 바로 저장되고, 다음 차시에 그대로 열립니다.</p>`;
+  $("paneChart").querySelectorAll("input").forEach(el=>el.onchange=()=>{
+    const d2=chartData(),i=+el.dataset.r,j=+el.dataset.c;
+    if(j===9){d2.congv[i]=el.value;}else{d2.rows[i][j]=el.value;}
+    saveChart(d2);});
+}
+function fillFromStudents(){
+  const d=chartData();
+  let n=0;
+  for(const [task,row] of Object.entries(NMAP)){
+    const vals=Object.values(DATA.allNotes||{}).map(x=>(x[task]||{}).n).filter(Boolean);
+    if(!vals.length)continue;
+    const cnt={};vals.forEach(v=>cnt[v]=(cnt[v]||0)+1);
+    const top=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a])[0];
+    d.rows[row][2]=(top==="1개")?"정해짐":"안 정해짐";
+    d.rows[row][3]=`학생 ${cnt[top]}명이 “${top}”`;
+    n++;
+  }
+  if(!n)return alert("아직 학생 기록이 없습니다. 학생들이 조사 화면의 기록장에 답하면 채울 수 있습니다.");
+  saveChart(d);paintChart();
+}
+async function loadAllNotes(){
+  DATA.allNotes={};
+  const who=Object.keys(DATA.prog);
+  for(const u of who){
+    DATA.allNotes[u]={};
+    for(const t of Object.keys(NMAP)){
+      try{const v=await dbGet(`notes/${V.cls}/${u}/${t}`);if(v)DATA.allNotes[u][t]=v;}catch(e){}
+    }
+  }
+}
+
+/* ================= 개방 ================= */
+function paintLock(){
+  $("paneLock").innerHTML=`<div class="locks">
+    <h3>과제 개방 — ${V.cls}</h3>
+    <p>스위치를 켜면 그 반 학생 화면에서 3초 안에 잠금이 풀립니다.</p>
+    ${TASKS.filter(t=>t.lock).map(t=>`<label class="lk">
+      <input type="checkbox" data-k="${t.id}" ${DATA.unlocked[t.id]?"checked":""}>
+      <b>${t.n}</b><span>${LESSON[t.id]||""}</span></label>`).join("")}
+    <div class="hint">과제 1~3과 연습장은 항상 열려 있습니다.<br>
+      4차시에는 <b>과제 8을 먼저</b> 열고, 게시판에서 두 무리로 갈라지는 것을 확인한 뒤에 과제 9를 여세요.</div>
+  </div>`;
+  $("paneLock").querySelectorAll("input").forEach(i=>i.onchange=async()=>{
+    DATA.unlocked[i.dataset.k]=i.checked;
+    try{await dbPut(`classes/${V.cls}/unlocked`,DATA.unlocked);setNet(true);}
+    catch(e){setNet(false);alert("연결이 되지 않아 반영되지 않았습니다.");}
+  });
+}
+
+/* ================= 아래 줄 · 그리기 ================= */
+function paintSub(){
+  const t=TASKS.find(x=>x.id===V.task)||{};
+  if(V.view==="board"&&t.board){
+    const gs=groups();
+    $("sub").innerHTML=`<div class="modes">
+      ${[["intake","접수"],["reveal","공개"],["merge","포개기"],["classify","분류"]]
+        .map(([k,n])=>`<button data-mode="${k}" aria-pressed="${V.mode===k}">${n}</button>`).join("")}
+      </div>`+
+      gs.map(g=>{const sub=subList().filter(s=>(s.group||"없음")===g);
+        const dots=clusters(sub).map((c,i)=>`<i style="background:${CCOL[i%CCOL.length]}"></i>`).join("");
+        const gn=(g==="없음")?"모둠 없음":g+"모둠";
+        return `<button class="gt${V.group===g?" on":""}" data-g="${g}">${gn} <em>${sub.length}</em>${dots}</button>`;
+      }).join("")+
+      `<button class="gt cls${V.group==="class"?" on":""}" data-g="class">학급 판 <em>${DATA.cls.length}</em></button>
+       <span style="flex:1"></span>
+       <button class="btn" id="align">자동 정렬</button>
+       <button class="btn" id="names" aria-pressed="${V.names}">코드네임 보기</button>
+       <button class="btn" id="promote">학급 판으로 승격</button>
+       <button class="btn danger" id="wipe">게시판 비우기</button>`;
+    $("sub").querySelectorAll("[data-mode]").forEach(b=>b.onclick=async()=>{
+      V.mode=b.dataset.mode;if(V.mode!=="reveal")V.pick=null;
+      try{await dbPut(`classes/${V.cls}/mode`,V.mode);}catch(e){}
+      paint(1);});
+    $("sub").querySelectorAll(".gt").forEach(b=>b.onclick=()=>{V.group=b.dataset.g;V.tf={};paint(1);});
+    $("align").onclick=()=>{V.tf={};V.mode="merge";paint(1);};
+    $("names").onclick=()=>{V.names=!V.names;paint(1);};
+    $("promote").onclick=promote;
+    $("wipe").onclick=wipe;
+  }else if(V.view==="prog"){
+    $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
+      3분 넘게 단계가 늘지 않으면 <b style="color:#8E2A22">막힘</b>으로 표시됩니다.
+      학생이 화면을 닫으면 <b>자리 비움</b>이 됩니다.</span>
+      <span style="flex:1"></span><button class="btn" id="refresh">새로 고침</button>`;
+    $("refresh").onclick=()=>pull(1);
+  }else if(V.view==="gen"){
+    $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
+      학생이 쓴 문장을 모아 보고, 학급 문장을 정해 게시합니다. 게시하면 학생 앱에도 보입니다.</span>
+      <span style="flex:1"></span>
+      <button class="btn" id="bigBtn" aria-pressed="${V.big}">전자칠판 크게 보기</button>
+      <button class="btn" id="genRefresh">새로 고침</button>`;
+    $("bigBtn").onclick=()=>{V.big=!V.big;paint(1);};
+    $("genRefresh").onclick=async()=>{await pullGen();paint(1);};
+  }else if(V.view==="chart"){
+    $("sub").innerHTML=`<div class="modes">
+        <button data-ch="tri" aria-pressed="${V.chart==="tri"}">삼각형 성립 (2차시)</button>
+        <button data-ch="det" aria-pressed="${V.chart==="det"}">결정조건 (3~5차시)</button>
+      </div>
+      ${V.chart==="det"?`<button class="btn" data-show="3">앞 세 줄만</button>
+        <button class="btn" data-show="6">반례 세 줄 열기</button>
+        <button class="btn" id="congBtn">합동 조건 칸</button>`:""}
+      <span style="flex:1"></span>
+      <button class="btn" id="fillBtn">학생 응답에서 채우기</button>
+      <button class="btn" id="bigBtn2" aria-pressed="${V.big}">크게 보기</button>`;
+    $("sub").querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{V.chart=b.dataset.ch;b.blur();paint(1);});
+    $("sub").querySelectorAll("[data-show]").forEach(b=>b.onclick=()=>{
+      const d=chartData();d.show=+b.dataset.show;saveChart(d);b.blur();paint(1);});
+    const cb=$("congBtn");if(cb)cb.onclick=()=>{const d=chartData();d.cong=!d.cong;saveChart(d);cb.blur();paint(1);};
+    $("fillBtn").onclick=async()=>{await loadAllNotes();fillFromStudents();};
+    $("bigBtn2").onclick=()=>{V.big=!V.big;paint(1);};
+  }else if(V.view==="note"){
+    $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
+      학생이 앱 기록장에 쓴 내용입니다. 자동 저장되므로 제출하지 않아도 보입니다.</span>`;
+  }else if(V.view==="board"){
+    $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
+      이 과제는 게시판에 내는 과제가 아닙니다. 과제 5~10을 고르세요.</span>`;
+  }else $("sub").innerHTML="";
+}
+/* ---- 다시 그리기 안전장치 -------------------------------------
+   2.5초마다 도는 폴링이 타자 중인 칸을 지우지 않도록 한다.
+   ① 본문 안 입력 칸에 커서가 있으면 그리지 않는다
+   ② 도형을 끄는 중이면 그리지 않는다
+   ③ 스크롤 위치를 그대로 되돌린다
+   ---------------------------------------------------------------- */
+const EDITING=()=>{
+  const a=document.activeElement;
+  if(!a)return false;
+  if(!/^(INPUT|TEXTAREA)$/.test(a.tagName)&&!a.isContentEditable)return false;
+  const bd=document.querySelector(".body"),sb=document.getElementById("sub");
+  return (bd&&bd.contains(a))||(sb&&sb.contains(a));
+};
+function paint(force){
+  if(!force&&(EDITING()||V.drag))return;
+  const bd=document.querySelector(".body"),sc=bd?bd.scrollTop:0;
+  paintNow();
+  if(bd&&sc)bd.scrollTop=sc;
+}
+function paintNow(){
+  document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===V.view));
+  ["prog","board","trace","note","gen","chart","lock"].forEach(k=>
+    $("pane"+k[0].toUpperCase()+k.slice(1)).classList.toggle("on",V.view===k));
+  const t=TASKS.find(x=>x.id===V.task)||{};
+  $("count").textContent=`${subList().length}명 접수 · ${Object.keys(DATA.prog).length}명 접속`;
+  paintSub();
+  if(V.view==="prog")paintProg();
+  if(V.view==="board"&&t.board)paintBoard();
+  if(V.view==="trace")paintTrace();
+  if(V.view==="note")paintNote();
+  if(V.view==="gen")paintGen();
+  if(V.view==="chart")paintChart();
+  if(V.view==="lock")paintLock();
+}
+async function promote(){
+  if(V.group==="class"||!V.group)return alert("모둠 탭을 고른 뒤 눌러 주세요.");
+  const sub=subList().filter(s=>(s.group||"없음")===V.group);
+  if(!sub.length)return;
+  const gn=(V.group==="없음")?"모둠 없음":V.group+"모둠";
+  const keep=DATA.cls.filter(c=>c.from!==gn);
+  clusters(sub).forEach(c=>keep.push({tri:c.items[0].tri,from:gn,n:c.items.length}));
+  DATA.cls=keep;
+  try{await dbPut(`boards/${V.cls}/${V.task}/cls`,keep);setNet(true);}catch(e){setNet(false);}
+  V.group="class";V.mode="reveal";paint();
+}
+async function wipe(){
+  if(!confirm(`${V.cls} · ${(TASKS.find(t=>t.id===V.task)||{}).n} 게시판을 모두 비웁니다. 계속할까요?`))return;
+  try{await dbDel(`boards/${V.cls}/${V.task}`);DATA.subs={};DATA.cls=[];V.tf={};setNet(true);}
+  catch(e){setNet(false);}
+  paint();
+}
+
+/* ================= 배선 ================= */
+$("task").innerHTML=TASKS.map(t=>`<option value="${t.id}">${t.n}</option>`).join("");
+$("cls").value=V.cls;$("task").value=V.task;
+$("cls").onchange=e=>{V.cls=e.target.value;localStorage.setItem("t.cls",V.cls);V.group=null;V.tf={};e.target.blur();pull(1);};
+$("task").onchange=e=>{V.task=e.target.value;localStorage.setItem("t.task",V.task);
+  V.group=null;V.tf={};V.who=null;e.target.blur();pull(1);};
+document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
+  V.view=b.dataset.view;b.blur();
+  if(V.view==="board"&&!V.group)V.group=groups()[0]||null;
+  paint(1);});
+pull();setInterval(pull,2500);
+</script>
+</body>
+</html>
