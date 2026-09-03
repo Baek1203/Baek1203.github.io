@@ -108,6 +108,32 @@
     background:var(--sun-l);border:2px solid var(--sun);color:#8A5E00;margin:0 6px 6px 0}
   .word em{font-style:normal;opacity:.65;margin-left:5px}
 
+  .frayer{position:relative;border:3px solid var(--ink);border-radius:20px;overflow:hidden;
+    background:#fff}
+  .frayer .q{padding:14px 15px 16px}
+  .frayer .tl,.frayer .bl{border-bottom:2px solid var(--ink)}
+  .frayer .tr{border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)}
+  .frayer .bl{background:#F4FBF8}
+  .frayer .br{background:#FFF6F2;border-top:2px solid var(--ink)}
+  .frayer h3{margin:0 0 9px;font:900 14px/1 var(--f)}
+  .frayer .bl h3{color:#1F7A64}.frayer .br h3{color:#A9432A}
+  .frayer .ans{margin:0;font:800 16px/1.6 var(--f)}
+  .frayer .ans i{font-style:normal;color:var(--soft);font-weight:700}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .fcard{background:#fff;border:2px solid var(--line);border-radius:12px;padding:8px 9px 10px;
+    position:relative}
+  .fcard .lab{position:absolute;right:9px;top:7px;font:900 12px/1 var(--f);color:#BDB6C6}
+  .fcard svg{width:100%;height:58px;display:block}
+  .fcard p{margin:6px 2px 0;font:800 12px/1.45 var(--f);color:#4A4756}
+  .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:var(--ink);color:#fff;border-radius:99px;padding:9px 20px;
+    font:900 15px/1 var(--f);box-shadow:0 0 0 5px #fff}
+  @media (min-width:620px){
+    .frayer{display:grid;grid-template-columns:1fr 1fr}
+    .frayer .tl,.frayer .bl{border-right:2px solid var(--ink)}
+    .frayer .tr{border-top:0}
+    .frayer .br{border-top:0}
+  }
   .wait{text-align:center;padding:26px 16px;font:800 13.5px/1.7 var(--f);color:var(--soft)}
 
   .modal{position:fixed;inset:0;background:rgba(59,58,69,.45);display:grid;place-items:center;
@@ -225,15 +251,16 @@ $("idModal").addEventListener("click",e=>{
 
 /* ── 자료 ── */
 const DUR=18000, RESD=5000;
-let ST={phase:"wait",idx:0,at:0,done:false,flip:{}}, VOTE={}, FEAT={}, DEF={}, HERE={}, MY={};
+let ST={phase:"wait",idx:0,at:0,done:false,flip:{}}, VOTE={}, FEAT={}, DEF={}, HERE={}, MODEL={}, MY={};
 async function pull(){
   if(!me.nick)return;
   try{
-    const [s,v,f,d,h]=await Promise.all([
+    const [s,v,f,d,h,mo]=await Promise.all([
       gj(`frayer/${cls()}/state`),gj(`frayer/${cls()}/votes`),
-      gj(`frayer/${cls()}/feat`),gj(`frayer/${cls()}/def`),gj(`frayer/${cls()}/here`)]);
+      gj(`frayer/${cls()}/feat`),gj(`frayer/${cls()}/def`),gj(`frayer/${cls()}/here`),
+      gj(`frayer/${cls()}/model`)]);
     ST=Object.assign({phase:"wait",idx:0,at:0,done:false,flip:{}},s||{});
-    VOTE=v||{};FEAT=f||{};DEF=d||{};HERE=h||{};
+    VOTE=v||{};FEAT=f||{};DEF=d||{};HERE=h||{};MODEL=mo||{};
     setNet(true);
   }catch(e){setNet(false);}
 }
@@ -363,6 +390,25 @@ function paint(){
     M.querySelectorAll(".flip").forEach(b=>b.onclick=async()=>{
       const k=b.dataset.k;ST.flip=Object.assign({},ST.flip,{[k]:true});paint();
       try{await pj(`frayer/${cls()}/state/flip/${k}`,true);}catch(e){}});
+    return;}
+
+  if(ph==="model"){
+    const ex=[],non=[];CARDS.forEach(c=>(winner(c.id)==="ex"?ex:non).push(c));
+    const cell=c=>`<div class="fcard"><span class="lab">${c.id}</span>${c.svg}
+      <p>${esc(c.cap)}</p></div>`;
+    M.innerHTML=`<div class="hero" style="padding:14px 8px"><p class="big">작도 정리표</p>
+      <p>공책이나 학습지에 그대로 옮겨 적으세요.</p></div>
+      <div class="frayer">
+        <div class="q tl"><h3>작도란 무엇인가</h3>
+          <p class="ans">${MODEL.def?esc(MODEL.def):"<i>아직 정하지 않았어요</i>"}</p></div>
+        <div class="q tr"><h3>특징</h3>
+          <p class="ans">${MODEL.feat?esc(MODEL.feat):"<i>아직 정하지 않았어요</i>"}</p></div>
+        <div class="q bl"><h3>해당되는 예 · 작도이다</h3>
+          <div class="fgrid">${ex.map(cell).join("")}</div></div>
+        <div class="q br"><h3>해당되지 않는 예 · 작도가 아니다</h3>
+          <div class="fgrid">${non.map(cell).join("")}</div></div>
+        <div class="core">작도</div>
+      </div>`;
     return;}
 
   if(ph==="define"){

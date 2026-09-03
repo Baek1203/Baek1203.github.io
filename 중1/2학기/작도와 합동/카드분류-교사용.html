@@ -102,6 +102,31 @@
   .word em{font-style:normal;opacity:.6;margin-left:7px;font-size:14px}
   .word.top{background:var(--sun);color:#4A3300;font-size:20px}
 
+  .frayer{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border:4px solid var(--ink);border-radius:22px;overflow:hidden;background:#fff}
+  .frayer .q{padding:18px 20px 20px;min-height:26vh}
+  .frayer .tl{border-right:3px solid var(--ink);border-bottom:3px solid var(--ink)}
+  .frayer .tr{border-bottom:3px solid var(--ink)}
+  .frayer .bl{border-right:3px solid var(--ink);background:#F4FBF8}
+  .frayer .br{background:#FFF6F2}
+  .frayer h3{margin:0 0 12px;font:900 clamp(15px,1.7vw,22px)/1 var(--f);color:var(--ink)}
+  .frayer .bl h3{color:#1F7A64}.frayer .br h3{color:#A9432A}
+  .frayer input{width:100%;font:800 clamp(16px,1.7vw,24px)/1.5 var(--f);padding:11px 13px;
+    border:0;border-bottom:3px solid var(--sun);background:#FFFDF5;border-radius:8px 8px 0 0;color:var(--ink)}
+  .frayer input:focus{outline:0;background:#FFF8E6}
+  .sugg{display:flex;flex-direction:column;gap:6px;margin-top:11px}
+  .sugg button{text-align:left;font:700 12.5px/1.5 var(--f);padding:9px 11px;border-radius:10px;
+    cursor:pointer;border:1.5px solid var(--line);background:#FCFAF6;color:var(--soft)}
+  .sugg button:hover{border-color:var(--sun);color:var(--ink)}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .fcard{background:#fff;border:2px solid var(--line);border-radius:14px;padding:9px 10px 11px;
+    position:relative}
+  .fcard .lab{position:absolute;right:10px;top:8px;font:900 13px/1 var(--f);color:#BDB6C6}
+  .fcard svg{width:100%;height:clamp(56px,6.6vw,88px);display:block}
+  .fcard p{margin:7px 2px 0;font:800 clamp(12px,1.15vw,16px)/1.45 var(--f);color:#4A4756}
+  .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    background:var(--ink);color:#fff;border-radius:99px;padding:14px 30px;
+    font:900 clamp(18px,2.1vw,28px)/1 var(--f);box-shadow:0 0 0 7px #fff}
   .flip{background:#fff;border-radius:26px;padding:22px;border:4px dashed #E2DAD0;
     text-align:center;cursor:pointer}
   .flip.open{border-style:solid;border-color:var(--sun);background:var(--sun-l)}
@@ -146,21 +171,21 @@ const setNet=ok=>{if(ON===ok)return;ON=ok;
 
 const DUR=18000, RESD=5000;
 const PH=[["wait","대기"],["cards","카드 분류"],["sort","분류 결과"],
-  ["feature","특징 쓰기"],["tools","도구 정리"],["define","정의 쓰기"]];
+  ["feature","특징 쓰기"],["tools","도구 정리"],["define","정의 쓰기"],["model","정리표"]];
 let V={cls:localStorage.getItem("fr.cls")||"1-1",showAns:false,auto:true};
-let ST={phase:"wait",idx:0,at:0,done:false,flip:{}},VOTE={},FEAT={},DEF={},HERE={};
+let ST={phase:"wait",idx:0,at:0,done:false,flip:{}},VOTE={},FEAT={},DEF={},HERE={},MODEL={};
 
 async function pull(){
   try{
-    const [s,v,f,d,h]=await Promise.all([
+    const [s,v,f,d,h,mo]=await Promise.all([
       gj(`frayer/${V.cls}/state`),gj(`frayer/${V.cls}/votes`),
       gj(`frayer/${V.cls}/feat`),gj(`frayer/${V.cls}/def`),gj(`frayer/${V.cls}/here`)]);
     ST=Object.assign({phase:"wait",idx:0,at:0,done:false,flip:{}},s||{});
-    VOTE=v||{};FEAT=f||{};DEF=d||{};HERE=h||{};setNet(true);
+    VOTE=v||{};FEAT=f||{};DEF=d||{};HERE=h||{};MODEL=mo||{};setNet(true);
   }catch(e){setNet(false);}
   paint();
 }
-const push=async o=>{ST=Object.assign({},ST,o);paint();
+const push=async o=>{ST=Object.assign({},ST,o);paint(1);
   try{await pj(`frayer/${V.cls}/state`,ST);setNet(true);}catch(e){setNet(false);}};
 const tally=id=>{const o=VOTE[id]||{};let e=0,n=0;
   for(const k in o){if(o[k]==="ex")e++;else n++;}return{e,n};};
@@ -204,8 +229,8 @@ function bar(){
     push(k==="cards"?{phase:"cards",idx:0,done:false,at:Date.now()}:{phase:k});});
   const g=id=>$(id);
   if(g("next"))g("next").onclick=()=>{g("next").blur();step();};
-  if(g("auto"))g("auto").onclick=()=>{V.auto=!V.auto;paint();};
-  if(g("ans"))g("ans").onclick=()=>{V.showAns=!V.showAns;paint();};
+  if(g("auto"))g("auto").onclick=()=>{g("auto").blur();V.auto=!V.auto;paint(1);};
+  if(g("ans"))g("ans").onclick=()=>{g("ans").blur();V.showAns=!V.showAns;paint(1);};
   if(g("shareF"))g("shareF").onclick=()=>push({share:!ST.share});
   if(g("shareD"))g("shareD").onclick=()=>push({shareD:!ST.shareD});
   g("reset").onclick=async()=>{
@@ -280,7 +305,14 @@ const KEYS=[["재지 않",/재지\s*않|안\s*재|재지않/],["눈금",/눈금/
   ["자",/(^|[^숫])자[^리]/],["옮기",/옮기|옮겨/],["그리",/그리|그린|그려/],
   ["숫자",/숫자/],["길이",/길이/],["각",/각(도|을|이|과)?/]];
 
-function paint(){
+const EDITING=()=>{const a=document.activeElement;
+  return !!(a&&a.tagName==="INPUT"&&document.querySelector(".body").contains(a));};
+function paint(force){
+  if(!force&&(EDITING()||V.drag))return;
+  const bd=document.querySelector(".body"),sc=bd?bd.scrollTop:0;
+  paintNow();if(bd&&sc)bd.scrollTop=sc;
+}
+function paintNow(){
   $("cnt").textContent=`${liveCount()}명 접속`;
   bar();
   const M=$("main"),ph=ST.phase;
@@ -331,6 +363,37 @@ function paint(){
       <p class="hint2">두 도구 모두 <b>새로운 길이나 각을 만들어 내지 못합니다.</b> 이미 있는 것을 옮길 뿐입니다.</p>`;
     M.querySelectorAll(".flip").forEach(b=>b.onclick=()=>
       push({flip:Object.assign({},ST.flip,{[b.dataset.k]:true})}));
+    return;}
+
+  if(ph==="model"){
+    const ex=[],non=[];CARDS.forEach(c=>(winner(c.id)==="ex"?ex:non).push(c));
+    const dd=Object.values(DEF).filter(x=>x&&x.text&&x.text.trim()).slice(0,3);
+    const ff=Object.values(FEAT).filter(x=>x&&x.text&&x.text.trim()).slice(0,3);
+    const cell=c=>`<div class="fcard"><span class="lab">${c.id}</span>${c.svg}
+      <p>${esc(c.cap)}</p></div>`;
+    M.innerHTML=`<div class="frayer">
+      <div class="q tl"><h3>작도란 무엇인가</h3>
+        <input id="mdef" value="${esc(MODEL.def)}" placeholder="우리 반이 정한 정의를 적으세요">
+        <div class="sugg">${dd.map(x=>`<button data-d="${esc(x.text)}">${esc(x.text)}</button>`).join("")}</div></div>
+      <div class="q tr"><h3>특징</h3>
+        <input id="mfeat" value="${esc(MODEL.feat)}" placeholder="왼쪽 무리가 하지 않고 있는 것">
+        <div class="sugg">${ff.map(x=>`<button data-f="${esc(x.text)}">${esc(x.text)}</button>`).join("")}</div></div>
+      <div class="q bl ex"><h3>해당되는 예 · 작도이다</h3>
+        <div class="fgrid">${ex.map(cell).join("")}</div></div>
+      <div class="q br non"><h3>해당되지 않는 예 · 작도가 아니다</h3>
+        <div class="fgrid">${non.map(cell).join("")}</div></div>
+      <div class="core">작도</div>
+    </div>`;
+    /* 칸마다 따로 저장한다. 한 칸을 고칠 때 다른 칸이 지워지지 않게. */
+    const sv=async(k,v)=>{
+      MODEL=Object.assign({},MODEL,{[k]:v});
+      try{await pj(`frayer/${V.cls}/model/${k}`,v);setNet(true);}catch(e){setNet(false);}};
+    $("mdef").onchange=()=>sv("def",$("mdef").value);
+    $("mfeat").onchange=()=>sv("feat",$("mfeat").value);
+    M.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{
+      b.blur();$("mdef").value=b.dataset.d;sv("def",b.dataset.d);paint(1);});
+    M.querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{
+      b.blur();$("mfeat").value=b.dataset.f;sv("feat",b.dataset.f);paint(1);});
     return;}
 
   if(ph==="define"){

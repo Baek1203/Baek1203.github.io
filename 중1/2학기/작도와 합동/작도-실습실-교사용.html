@@ -484,12 +484,12 @@ async function paintNote(){
 
 /* ================= 일반화 게시판 ================= */
 const LESS=[
-  {n:"1",label:"1차시 · 측정 없이 옮기기",frame:"작도는"},
-  {n:"2",label:"2차시 · 삼각형이 되기 위한 조건",frame:"삼각형이 만들어지기 위해서는"},
-  {n:"4",label:"4차시 · 무엇을 알면 하나로 정해질까",frame:"삼각형이 하나로 정해지는 것은"},
-  {n:"5",label:"5차시 · 같다고 말할 근거",frame:"삼각형이 하나로 정해지는 조건은"},
-  {n:"6",label:"6차시 · 최소한의 정보로 결정하기",frame:"주어진 조건으로 삼각형이 하나로 정해지지 않으면"},
-  {n:"u",label:"단원 일반화 — 스트랜드 3 + 4의 종합",frame:"삼각형을 하나로 정하는 조건이 같으면",unit:true}
+  {n:"1",label:"① 도구 감식 · 1차시",frame:"작도는"},
+  {n:"2",label:"② 형태 감식 · 2차시",frame:"삼각형이 만들어지기 위해서는"},
+  {n:"4",label:"③ 결정 감식 · 4차시",frame:"삼각형이 하나로 정해지는 것은"},
+  {n:"5",label:"④ 대조 감식 · 5차시",frame:"삼각형이 하나로 정해지는 조건은"},
+  {n:"6",label:"⑤ 최종 판정 · 6차시",frame:"주어진 조건으로 삼각형이 하나로 정해지지 않으면"},
+  {n:"u",label:"★ 수사 원칙 · 단원 종합",frame:"삼각형을 하나로 정하는 조건이 같으면",unit:true}
 ];
 let GEN={},MINE={},HYP={},CHART={},OPEN={},SELF={};
 V.gpick=null; V.big=false; V.chart="det";
@@ -510,7 +510,7 @@ function paintGen(){
     const list=LESS.filter(L=>GEN[L.n]&&GEN[L.n].posted&&GEN[L.n].text);
     $("paneGen").innerHTML=`<div class="bigwrap">
       ${list.length?list.map(L=>`<div class="bigline${L.unit?" unit":""}">
-        <span>${L.unit?"단원":L.n+"차시"}</span><b>${esc(GEN[L.n].text)}</b></div>`).join("")
+        <span>${L.unit?"수사 원칙":L.n+"차시"}</span><b>${esc(GEN[L.n].text)}</b></div>`).join("")
         :`<p class="muted">게시된 문장이 없습니다.</p>`}</div>`;
     return;
   }
