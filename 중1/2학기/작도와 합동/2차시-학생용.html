@@ -116,6 +116,18 @@
     font:900 15px/1 var(--f);background:var(--ink);color:#fff}
   .go2{width:100%;margin-top:8px;padding:13px;border-radius:16px;cursor:pointer;
     font:800 12.5px/1 var(--f);background:#fff;border:2px solid var(--line);color:var(--soft)}
+  .simsheet{width:min(560px,100%);padding:20px 20px 18px}
+  .simh{margin:0 0 8px;font:900 18px/1.3 var(--f)}
+  .simh em{font-style:normal;color:var(--soft);font-weight:800;font-size:15px;margin-left:8px}
+  .simhint{margin:8px 0 0;font:700 13px/1.7 var(--f);color:var(--soft);text-align:center}
+  .simv{margin:10px 0 0;border-radius:14px;padding:13px 15px;font:800 14.5px/1.6 var(--f);
+    text-align:center}
+  .simv.ok{background:var(--mint-l);border:2px solid var(--mint);color:#14634F}
+  .simv.no{background:var(--peach-l);border:2px solid var(--peach);color:#9A3A22}
+  .simact{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+  .simact button{margin:0}
+  .try{width:100%;margin-top:9px;padding:12px;border-radius:14px;cursor:pointer;
+    font:900 13.5px/1 var(--f);background:var(--lav);border:0;color:#fff}
   :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 </style>
 </head>
@@ -129,6 +141,11 @@
   </div>
   <div class="body"><div class="mid" id="main"></div></div>
 </div>
+
+<div class="modal" id="simModal" hidden><div class="sheet simsheet">
+  <div id="simBody"></div>
+  <button class="go2" id="simX" style="margin-top:10px">닫기</button>
+</div></div>
 
 <div class="modal" id="idModal" hidden><div class="sheet">
   <h1>도형 수사대 입장</h1>
@@ -455,10 +472,14 @@ function paint(){
           <button class="n${STRIP[i]==="no"?" on":""}" data-i="${i}" data-v="no"${
             lock?" disabled":""}>안 됐다</button>
         </div>
+        ${lock?"":`<button class="try" data-sim="${i}">직접 만들어 보기</button>`}
         ${FINAL[i]?`<div class="fin ${FINAL[i]}">우리 반 결론 · ${
           FINAL[i]==="ok"?"성공":"실패"}</div>`:""}
       </div>`).join("")}</div>`;
-    if(!lock)M.querySelectorAll(".yn button").forEach(b=>b.onclick=()=>mark(+b.dataset.i,b.dataset.v));
+    if(!lock){
+      M.querySelectorAll(".yn button").forEach(b=>b.onclick=()=>mark(+b.dataset.i,b.dataset.v));
+      M.querySelectorAll("[data-sim]").forEach(b=>b.onclick=()=>simOpen(+b.dataset.sim));
+    }
     return;}
 
   if(ph==="chart"){
@@ -480,7 +501,7 @@ let sig="";
 async function tick(){
   await pull();
   const s=JSON.stringify([ST,MY.a,STRIP,FINAL,Object.keys(RANK).length,Object.keys(HERE).length]);
-  if(s===sig)return;sig=s;paint();
+  if(s===sig)return;sig=s;if(SIM)return;paint();
 }
 setInterval(tick,1500);
 setInterval(()=>{
@@ -493,6 +514,108 @@ setInterval(()=>{
   if(s)s.textContent=Math.ceil(p*QDUR/1000)+"초";
   if(p<=0)paint();
 },80);
+
+
+/* ══════════ 종이띠 만들기 — 직접 움직여 보기 ══════════ */
+let SIM=null;   /* {i, base, arms, th1, th2, snap, flat} */
+const SU=32;    /* 1 = 32px */
+
+function simOpen(i){
+  const v=SETS[i].v.slice();
+  const mx=Math.max(...v), rest=v.filter((x,k)=>k!==v.indexOf(mx));
+  const base=mx, arms=[...v];arms.splice(v.indexOf(mx),1);
+  SIM={i,base,arms,th1:-0.45,th2:-(Math.PI-0.45),snap:false,flat:false,moved:false};
+  $("simModal").hidden=false;paintSim();
+}
+function simClose(){SIM=null;$("simModal").hidden=true;paint();}
+const simP1=()=>({x:60,y:210});
+const simP2=()=>({x:60+SIM.base*SU,y:210});
+const simE1=()=>{const p=simP1();return {x:p.x+SIM.arms[0]*SU*Math.cos(SIM.th1),
+  y:p.y+SIM.arms[0]*SU*Math.sin(SIM.th1)};};
+const simE2=()=>{const p=simP2();return {x:p.x+SIM.arms[1]*SU*Math.cos(SIM.th2),
+  y:p.y+SIM.arms[1]*SU*Math.sin(SIM.th2)};};
+
+function paintSim(){
+  const s=SIM;if(!s)return;
+  const P1=simP1(),P2=simP2();
+  let E1=simE1(),E2=simE2();
+  const gap=Math.hypot(E1.x-E2.x,E1.y-E2.y);
+  if(!s.snap&&s.moved&&gap<11){                       /* 두 끝이 만나면 붙는다 */
+    s.snap=true;
+    const m={x:(E1.x+E2.x)/2,y:(E1.y+E2.y)/2};
+    s.th1=Math.atan2(m.y-P1.y,m.x-P1.x);
+    s.th2=Math.atan2(m.y-P2.y,m.x-P2.x);
+    E1=simE1();E2=simE2();
+    const h=Math.abs(((P2.x-P1.x)*(P1.y-E1.y)-(P1.x-E1.x)*(P2.y-P1.y))/Math.hypot(P2.x-P1.x,P2.y-P1.y));
+    s.flat=h<9;
+  }
+  const strip=(a,b,col)=>`<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}"
+    x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="${col}" stroke-width="17"
+    stroke-linecap="round" opacity=".92"/>`;
+  const W=60+SIM.base*SU+60;
+  let g=`<svg id="simSvg" viewBox="0 -40 ${Math.max(W,420)} 300"
+    style="width:100%;height:min(46vh,340px);display:block;touch-action:none">`;
+  if(s.snap&&!s.flat)
+    g+=`<polygon points="${P1.x},${P1.y} ${P2.x},${P2.y} ${E1.x.toFixed(1)},${E1.y.toFixed(1)}"
+      fill="#DFF6EF" stroke="none"/>`;
+  g+=strip(P1,P2,"#FFB394");
+  g+=strip(P1,E1,"#7FD9C1");
+  g+=strip(P2,E2,"#A99BE8");
+  /* 손잡이 */
+  const hand=(p,on)=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="13"
+    fill="#fff" stroke="${on?"#5FCBB0":"#8C8899"}" stroke-width="4"/>`;
+  if(!s.snap){g+=hand(E1);g+=hand(E2);}
+  else g+=`<circle cx="${E1.x.toFixed(1)}" cy="${E1.y.toFixed(1)}" r="10" fill="#3B3A45"/>`;
+  g+=`<circle cx="${P1.x}" cy="${P1.y}" r="8" fill="#3B3A45"/>
+      <circle cx="${P2.x}" cy="${P2.y}" r="8" fill="#3B3A45"/>`;
+  g+=`<text x="${(P1.x+P2.x)/2}" y="${P1.y+34}" text-anchor="middle" font-size="19"
+    font-weight="800" fill="#6B6577" font-family="sans-serif">${s.base}</text>`;
+  g+=`<text x="${((P1.x+E1.x)/2-16).toFixed(1)}" y="${((P1.y+E1.y)/2).toFixed(1)}"
+    text-anchor="middle" font-size="19" font-weight="800" fill="#2A8570"
+    font-family="sans-serif">${s.arms[0]}</text>`;
+  g+=`<text x="${((P2.x+E2.x)/2+18).toFixed(1)}" y="${((P2.y+E2.y)/2).toFixed(1)}"
+    text-anchor="middle" font-size="19" font-weight="800" fill="#6B54C4"
+    font-family="sans-serif">${s.arms[1]}</text>`;
+  g+="</svg>";
+
+  const st=SETS[s.i];
+  let msg=`<p class="simhint">동그란 손잡이를 <b>끌어서</b> 두 띠의 끝을 만나게 해 보세요.</p>`;
+  if(s.moved&&!s.snap)msg=`<p class="simhint">아직 두 끝이 만나지 않았어요.
+    이리저리 더 움직여 보세요.</p>`;
+  if(s.snap)msg=s.flat
+    ?`<div class="simv no">두 띠가 만났지만 <b>납작해졌습니다.</b><br>이것을 삼각형이라고 할 수 있을까요?</div>`
+    :`<div class="simv ok"><b>삼각형이 만들어졌습니다!</b></div>`;
+  $("simBody").innerHTML=`<h3 class="simh">${st.n} <em>${st.v.join(" · ")}</em></h3>${g}${msg}
+    <div class="simact">
+      <button class="go2" id="simReset">처음부터</button>
+      <button class="go" id="simDone">기록하러 가기</button>
+    </div>`;
+  $("simReset").onclick=()=>{SIM=Object.assign({},SIM,{th1:-0.45,th2:-(Math.PI-0.45),snap:false,flat:false,moved:false});paintSim();};
+  $("simDone").onclick=simClose;
+  const svg=$("simSvg");
+  const pos=e=>{const r=svg.getBoundingClientRect(),vb=[0,-40,Math.max(W,420),300];
+    return {x:vb[0]+(e.clientX-r.left)/r.width*vb[2],
+            y:vb[1]+(e.clientY-r.top)/r.height*vb[3]};};
+  let grab=null;
+  svg.onpointerdown=e=>{
+    if(SIM.snap)return;
+    const p=pos(e),a=simE1(),b=simE2();
+    const da=Math.hypot(p.x-a.x,p.y-a.y),db=Math.hypot(p.x-b.x,p.y-b.y);
+    if(Math.min(da,db)>40)return;
+    grab=da<db?1:2;svg.setPointerCapture&&svg.setPointerCapture(e.pointerId);
+  };
+  svg.onpointermove=e=>{
+    if(!grab||SIM.snap)return;
+    const p=pos(e),h=grab===1?simP1():simP2();
+    const t=Math.atan2(p.y-h.y,p.x-h.x);
+    if(grab===1)SIM.th1=t;else SIM.th2=t;
+    SIM.moved=true;paintSim();
+  };
+  svg.onpointerup=()=>{grab=null;};
+}
+
+$("simX").onclick=simClose;
+$("simModal").addEventListener("click",e=>{if(e.target===$("simModal"))simClose();});
 
 paintMe();
 (async()=>{hello();await pull();paint();if(!me.nick)setTimeout(()=>openId(1),300);})();
