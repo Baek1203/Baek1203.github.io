@@ -899,6 +899,16 @@ function render(){
   const C=S.compass,showC=(S.tool==="compass");
   let g="";
 
+  for(const z of S.items.filter(i=>i.t==="Z")){          /* 구역 배경과 이름표 */
+    const T=z.tone==="work"
+      ?{bg:"#F3F7FB",ln:"#BFCEDE",tx:"#4A6280"}
+      :{bg:"#FFF8E6",ln:"#E4CF9E",tx:"#8A6A0E"};
+    g+=`<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" rx="14"
+      fill="${T.bg}" stroke="${T.ln}" stroke-width="2" stroke-dasharray="8 6"/>`;
+    if(z.label)g+=`<text x="${z.x+16}" y="${z.y+25}" font-family="var(--sans)"
+      font-size="14" font-weight="800" fill="${T.tx}">${z.label}</text>`;
+  }
+
   for(const a of S.items.filter(i=>i.t==="A")){
     const c=pt(a.c),r=radiusOf(a),d=arcPath(c.x,c.y,r,a.a0,a.sweep);
     g+=d?`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="2.3" stroke-linecap="round" opacity=".8"/>`
@@ -1842,13 +1852,25 @@ TASKS.drill={
 let XT=null, XSENT=false;
 function xBuild(){
   const it=(XT&&XT.items)||[];
+  if(!it.length)return [];                       /* 조건이 오기 전에는 빈 화면 */
   const segs=it.filter(x=>x.t==="seg"), angs=it.filter(x=>x.t==="ang");
-  let out=baseLine(160), si=0, ai=0;
+  /* ① 전달된 조건 구역 */
+  let out=[{t:"Z",x:22,y:14,w:756,h:238,label:"선생님이 보낸 조건",tone:"cond"}];
+  let si=0,ai=0;
   const SL=[["P","Q","a"],["R","S","b"]], AL=[["O","X","Y","g1"],["O′","X′","Y′","g2"]];
-  const segY=[64,118];
-  for(const s of segs){const L=SL[si];out=out.concat(gSeg(L[0],L[1],L[2],68,segY[si],s.cm));si++;}
-  const ax=segs.length?[470,470]:[150,470];
-  for(const a of angs){const L=AL[ai];out=out.concat(gAng(L[0],L[1],L[2],L[3],ax[ai],202,a.deg,130));ai++;}
+  const segY=[86,146];
+  for(const s of segs){const L=SL[si];out=out.concat(gSeg(L[0],L[1],L[2],74,segY[si],s.cm));si++;}
+  const ax=segs.length?[492,492]:[176,516];
+  for(const a of angs){const L=AL[ai];
+    out=out.concat(gAng(L[0],L[1],L[2],L[3],ax[ai],228,a.deg,128));ai++;}
+  /* ② 작도 구역 — 직선 l과 점 A만 */
+  out=out.concat([
+    {t:"Z",x:22,y:272,w:756,h:234,label:"여기에 삼각형을 작도하세요",tone:"work"},
+    PT("",56,420,{hidden:true}), PT("",744,420,{hidden:true}),
+    {t:"L",kind:"line",p1:"#"+(out.length+1),p2:"#"+(out.length+2),given:true,
+     name:"l",key:"l",labelPos:{x:750,y:408}},
+    PT("A",188,420)
+  ]);
   return out;
 }
 function xCheck(st){
@@ -1878,6 +1900,7 @@ function xDesc(){
 }
 TASKS.t4={
   kind:"tri",fab:"submit",xboard:true,noConfetti:true,lock:true,
+  pool:["C","D","E","F","G","H","J","K","M","N"],
   win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요.",
   prompt:()=>xDesc(),
   build:()=>xBuild(),
