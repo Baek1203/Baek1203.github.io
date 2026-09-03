@@ -356,7 +356,7 @@ function paintNow(){
 
   if(ph==="wait"){
     M.innerHTML=`<div class="hero"><p class="big">${live()}명 들어왔어요</p>
-      <p>위에서 <b>6요소</b>를 누르면 지도를 시작합니다.</p></div>`;return;}
+      <p>곧 시작합니다.</p></div>`;return;}
 
   if(ph==="intro"||ph==="oppo"){
     const list=ph==="intro"?INTRO:OPPO;
@@ -404,7 +404,7 @@ function paintNow(){
 
   if(ph==="strips"){
     M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">종이띠로 만들어 보기</p>
-      <p>여섯 세트를 직접 이어 붙이게 하고, 결과를 각자 기기에 기록하게 하세요.</p></div>
+      <p>여섯 세트를 직접 이어 붙여 보고, 결과를 각자 기기에 기록하세요.</p></div>
       <table class="g"><tr><th>세트</th><th>세 길이</th><th>띠</th><th>지금까지 기록</th></tr>
       ${SETS.map((st,i)=>{
         const vals=Object.values(STR).map(x=>x[i]).filter(Boolean);
@@ -413,11 +413,11 @@ function paintNow(){
           <td style="width:34%">${stripSVG(st.v,260)}</td>
           <td>${vals.length?`${y} : ${n}`:"—"}</td></tr>`;}).join("")}
       </table>
-      <p class="hint">기록이 모이면 위의 <b>성공·실패 집계</b>로 넘어가세요.</p>`;return;}
+      <p class="hint">여섯 세트를 모두 해 봅니다.</p>`;return;}
 
   if(ph==="tally"){
     M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">우리 반의 기록</p>
-      <p>아이들이 표시한 결과입니다. 의견을 모아 아래에서 최종 판정을 눌러 주세요.</p></div>
+      <p>우리 반이 표시한 결과입니다. 함께 이야기하고 결론을 정합니다.</p></div>
       <table class="g"><tr><th>세트</th><th>세 길이</th><th>됐다</th><th>안 됐다</th>
         <th style="width:24%">비율</th><th style="width:20%">최종 판정</th></tr>
       ${SETS.map((st,i)=>{
@@ -434,7 +434,7 @@ function paintNow(){
             <button class="n" data-i="${i}" data-v="no" aria-pressed="${FIN[i]==="no"}">실패</button>
           </div></td></tr>`;}).join("")}
       </table>
-      <p class="hint">최종 판정은 아이들 화면의 종이띠 칸에도 <b>우리 반 결론</b>으로 표시됩니다.</p>`;
+      <p class="hint">정한 결론은 각자 기기의 종이띠 칸에도 <b>우리 반 결론</b>으로 표시됩니다.</p>`;
     M.querySelectorAll(".pick button").forEach(b=>b.onclick=async()=>{
       b.blur();FIN[b.dataset.i]=b.dataset.v;paint(1);
       try{await pj(`t2/${V.cls}/final`,FIN);setNet(true);}catch(e){setNet(false);}});
@@ -442,15 +442,14 @@ function paintNow(){
 
   if(ph==="chart"){
     M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">교차 비교 차트</p>
-      <p>칸을 눌러 하나씩 열어 주세요. 아이들 화면에도 같이 열립니다.</p></div>
+      <p>칸을 하나씩 열어 봅니다.</p></div>
       <table class="g"><tr>${CH_HEAD.map(h=>`<th>${h}</th>`).join("")}</tr>
       ${CH_ROWS.map((r,ri)=>`<tr>${r.map((v,ci)=>{
         if(ci===0)return `<td class="set">${v}</td>`;
         const open=(ST.open||{})[ri+"-"+ci];
         return `<td class="${open?"cellbtn":"hide"}" data-k="${ri}-${ci}">${open?v:"?"}</td>`;
       }).join("")}</tr>`).join("")}</table>
-      <p class="hint"><b>대소</b> 칸만 보고도 성공 여부를 알 수 있는지 물어보세요.<br>
-        가장 긴 변이 나머지 두 변의 합보다 <b>짧아야</b> 삼각형이 됩니다.</p>`;
+      <p class="hint"><b>대소</b> 칸만 보고도 성공 여부를 알 수 있을까요?</p>`;
     M.querySelectorAll("[data-k]").forEach(td=>td.onclick=()=>{
       const o=Object.assign({},ST.open);
       if(o[td.dataset.k])delete o[td.dataset.k];else o[td.dataset.k]=true;
