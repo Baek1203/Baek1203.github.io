@@ -50,6 +50,8 @@
   .b.go{background:var(--sun);border-color:var(--sun);color:#2A2008;font-weight:900}
   .b.go:disabled{background:#3A3846;border-color:#3A3846;color:#6C667A;cursor:default}
   .b.rev{background:var(--red);border-color:var(--red);color:#fff;font-weight:900}
+  .b.danger{border-color:#5A3A36;color:#FFB3A6;background:#2E2226}
+  .b.danger:hover{border-color:#8A4A42;color:#FFD2C9}
   .b.wide{grid-column:1/-1}
   .stat{font:800 13px/1.7 var(--f);color:var(--soft)}
   .stat b{color:var(--ink)}
@@ -176,6 +178,21 @@ async function send(){
   }catch(e){setNet(false);}
   paint();
 }
+async function wipe(){
+  if(!confirm(`${V.cls} 반의 조건 전달 실험을 처음 상태로 되돌립니다.\n\n`+
+    "보낸 조건 · 학생 제출 · 정답 공개 · 판정이 모두 지워지고,\n"+
+    "학생 화면은 빈 작도판으로 돌아갑니다."))return;
+  try{
+    await dj(`t2x/${V.cls}`);setNet(true);
+    SENT=null;ANS=null;SUBS={};SEL=[];
+  }catch(e){setNet(false);}
+  paint();
+}
+function shuffle(){
+  let n=PI;
+  if(POOL.length>1){while(n===PI)n=Math.floor(Math.random()*POOL.length);}
+  PI=n;localStorage.setItem("send.pi",PI);TRI=build(POOL[PI]);SEL=[];paint();
+}
 async function reveal(){
   const P=coords(TRI);
   const v=[[P.A.x,P.A.y],[P.B.x,P.B.y],[P.C.x,P.C.y]];
@@ -215,19 +232,24 @@ function paint(){
       <div class="grid2" style="margin-top:10px">
         <button class="b rev wide" id="rev"${SENT?"":" disabled"}>${
           ANS?"정답 다시 공개":"정답 삼각형 공개"}</button>
+        <button class="b wide danger" id="wipe">처음부터 다시 시작</button>
       </div>
       <p class="tip" style="margin:10px 0 0">공개하면 전자칠판 화면에 원래 삼각형이 뜹니다.
-        그전에는 어디에도 저장되지 않습니다.</p>
+        그전에는 어디에도 저장되지 않습니다.<br>
+        <b>다시 시작</b>은 보낸 조건·제출·판정을 모두 지웁니다.</p>
     </div>
     <div class="box"><h3>삼각형 바꾸기</h3>
       <div class="grid2">${POOL.map((p,i)=>
         `<button class="b${i===PI?" go":""}" data-p="${i}">${i+1}. ${p.c}·${p.b}·${p.A}°</button>`
-        ).join("")}</div>
+        ).join("")}
+        <button class="b wide" id="shuf">🎲 다른 삼각형으로</button></div>
       <p class="tip" style="margin:10px 0 0">두 변과 끼인각으로 정해진 삼각형입니다.
         바꾸면 고른 조건이 지워집니다.</p>
     </div>`;
   $("send").onclick=send;
   $("rev").onclick=reveal;
+  $("wipe").onclick=wipe;
+  $("shuf").onclick=shuffle;
   $("panel").querySelectorAll("[data-x]").forEach(b=>b.onclick=()=>toggle(b.dataset.x));
   $("panel").querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
     PI=+b.dataset.p;localStorage.setItem("send.pi",PI);TRI=build(POOL[PI]);SEL=[];paint();});
