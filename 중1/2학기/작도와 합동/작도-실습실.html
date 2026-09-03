@@ -1642,31 +1642,6 @@ function mkAAA(d1,d2,d3,extra){
   },extra||{});
 }
 
-/* ---- 과제 4 · 이 세 변으로 삼각형이 될까 ---- */
-TASKS.t4={
-  prompt:V=>`세 변의 길이가 각각 선분 <b>a</b>, <b>b</b>, <b>c</b>와 같은 삼각형을 작도해 보시오. <b>${V.label}</b>`,
-  kind:"tri",fab:"none",quiet:true,
-  variants:[{label:"세트 ①",v:[3,4,6]},{label:"세트 ②",v:[5,5,5]},{label:"세트 ③",v:[4,4,5]},
-            {label:"세트 ④",v:[3,4,7]},{label:"세트 ⑤",v:[3,4,9]},{label:"세트 ⑥",v:[2,5,9]}],
-  build:V=>[].concat(baseLine(120),gSeg("P","Q","a",64,66,V.v[0]),
-    gSeg("R","S","b",64,116,V.v[1]),gSeg("T","U","c",64,166,V.v[2])),
-  steps(st){
-    const V=this.variants[st.variant],B=byLabel(st,"B"),C=baseSecond(st,"a");
-    const a2=C&&(arcR(st,"c",B.id)||arcR(st,"b",B.id));
-    const a3=C&&(arcR(st,"b",C.id)||arcR(st,"c",C.id));
-    const A=(a2&&a3)?xpt(st,a2.id,a3.id):null;
-    return[
-      {t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 B를 중심으로 원을 그린다",ok:!!arcR(st,"a",B.id)},
-      {t:"원과 직선 l이 만나는 점을 찍는다",ok:!!C},
-      {t:"두 점에서 <u>남은 두 선분</u>만큼 원을 각각 그린다",ok:!!(a2&&a3&&a2.id!==a3.id)},
-      {t:"두 원이 만나는 점을 찍는다",ok:!!A},
-      {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
-    ];
-  },
-  check(st){const V=this.variants[st.variant];return ckSSS(st,V.v[0],V.v[1],V.v[2]);},
-  win:"삼각형이 만들어졌습니다.",noConfetti:true,lock:true
-};
-
 /* ---- 과제 5 · 6 · 7 ---- */
 TASKS.t5=mkSSS(7,5,4,{lock:true,win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
 TASKS.t6=mkSAS(6,4,50,{lock:true,win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
@@ -1861,6 +1836,64 @@ TASKS.drill={
 };
 
 /* ==================================================================
+   확장 ⑧-1 — 조사 1 · 조건 전달 실험 (과제 정의)
+   선생님이 삼각형의 여섯 요소 중 둘만 보내 준다.
+   ================================================================== */
+let XT=null, XSENT=false;
+function xBuild(){
+  const it=(XT&&XT.items)||[];
+  const segs=it.filter(x=>x.t==="seg"), angs=it.filter(x=>x.t==="ang");
+  let out=baseLine(160), si=0, ai=0;
+  const SL=[["P","Q","a"],["R","S","b"]], AL=[["O","X","Y","g1"],["O′","X′","Y′","g2"]];
+  const segY=[64,118];
+  for(const s of segs){const L=SL[si];out=out.concat(gSeg(L[0],L[1],L[2],68,segY[si],s.cm));si++;}
+  const ax=segs.length?[470,470]:[150,470];
+  for(const a of angs){const L=AL[ai];out=out.concat(gAng(L[0],L[1],L[2],L[3],ax[ai],202,a.deg,130));ai++;}
+  return out;
+}
+function xCheck(st){
+  const it=(XT&&XT.items)||[];
+  if(!it.length)return {none:true,msg:"아직 조건을 받지 못했습니다."};
+  const ts=tris(st);
+  if(!ts.length)return {none:true,msg:"삼각형이 아직 완성되지 않았습니다."};
+  for(const t of ts){
+    let ok=true;
+    for(const c of it){
+      if(c.t==="seg"){if(!t.sides.some(s=>nr(s,c.cm*CM,LT)))ok=false;}
+      else{if(!t.angles.some(a=>nr(a,c.deg,AT+0.4)))ok=false;}
+    }
+    if(ok)return {ok:true,tri:t.pts.map(p=>({x:p.x,y:p.y})),m:t};
+  }
+  return {ok:false,msg:"두 조건을 모두 만족하는 삼각형이 아닙니다."};
+}
+function xDesc(){
+  const it=(XT&&XT.items)||[];
+  if(!it.length)return "선생님이 조건을 보내면 여기에 나타납니다.";
+  const names=[];let si=0,ai=0;
+  for(const c of it){
+    if(c.t==="seg"){names.push(`<b>선분 ${["a","b"][si]}</b>`);si++;}
+    else{names.push(`<b>${["∠XOY","∠X′O′Y′"][ai]}</b>`);ai++;}
+  }
+  return `목격자가 알려 준 것은 ${names.join("와 ")} <b>두 가지뿐</b>입니다. 이것만으로 삼각형을 작도하시오.`;
+}
+TASKS.t4={
+  kind:"tri",fab:"submit",xboard:true,noConfetti:true,lock:true,
+  win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요.",
+  prompt:()=>xDesc(),
+  build:()=>xBuild(),
+  steps(st){
+    const it=(XT&&XT.items)||[],c=xCheck(st);
+    return[
+      {t:"선생님이 보낸 <b>두 조건</b>을 확인한다",ok:it.length>0},
+      {t:"조건을 그대로 옮겨 삼각형을 작도한다",ok:!!c.ok},
+      {t:"<b>게시판에 내기</b>로 제출한다",ok:XSENT}
+    ];
+  },
+  check(st){return xCheck(st);}
+};
+
+
+/* ==================================================================
    확장 ④ — 연습장 (1차시부터 상시 개방)
    선분과 각을 옮겨 붙이는 연습만 담는다.
    삼각형을 조건으로 작도하는 과제는 넣지 않는다 — 3·4차시의 발견을
@@ -2051,7 +2084,7 @@ const TASKLIST=[
   {id:"par",label:"훈련 3 · 나란한 선 긋기"},
   {id:"drill",label:"★ 감식 훈련"},
   {id:"pg", label:"훈련장"},
-  {id:"t4", label:"조사 1 · 세 변이 삼각형이 되려면",lockName:"조사 1"},
+  {id:"t4", label:"조사 1 · 조건 두 개로",lockName:"조사 1"},
   {id:"t5", label:"조사 2 · 세 변을 알 때",       lockName:"조사 2"},
   {id:"t6", label:"조사 3 · 두 변과 그 사이 각",   lockName:"조사 3"},
   {id:"t7", label:"조사 4 · 한 변과 양 끝 각",     lockName:"조사 4"},
@@ -2320,7 +2353,7 @@ const WHY={
   par:"두 선을 나란히 놓는 법입니다. 옮긴 각이 왜 같은지를 설명해 줍니다.",
   drill:"훈련 1·2에서 배운 것을 <b>혼자 힘으로</b> 다시 해 봅니다. 네 문항을 차례로 푸세요.",
   pg:"정답이 없는 훈련장입니다. 손에 익을 때까지 마음껏 해 보세요.",
-  t4:"진술의 세 길이로 <b>삼각형이 아예 안 되는 경우</b>가 있습니다. 그런 진술은 수사에서 걸러야 합니다.",
+  t4:"목격자가 <b>두 가지만</b> 알려 줬습니다. 그것만으로 몽타주를 그릴 수 있을까요?",
   t5:"진술이 <b>세 변</b>을 알려 줄 때 몽타주를 그리는 법입니다.",
   t6:"진술이 <b>두 변과 그 사이 각</b>을 알려 줄 때입니다. ‘사이’인지가 중요합니다.",
   t7:"진술이 <b>한 변과 그 양 끝 각</b>을 알려 줄 때입니다.",
@@ -2488,7 +2521,53 @@ window.addEventListener("keydown",e=>{if(e.key==="Escape"){
 const _onTask=window.ONTASK;
 window.ONTASK=function(T,V){
   _onTask(T,V);
-  $("why").innerHTML=WHY[S.taskId]||"";
+  
+/* ── 확장 ⑧-2 · 조건 받기와 제출 ── */
+XT=LS.get("xtask",null);
+async function xPull(){
+  if(!me.nick)return;
+  try{
+    const t=await dbGet(`t2x/${cls()}/task`);
+    XSENT=!!(await dbGet(`t2x/${cls()}/subs/${me.no}`));
+    if(JSON.stringify(t)!==JSON.stringify(XT)){
+      XT=t;LS.set("xtask",XT);
+      if(S&&S.taskId==="t4"){LS.del(`save:${cls()}:${me.no}:t4:0`);loadTask("t4");}
+    }
+    setNet(true);
+  }catch(e){setNet(false);}
+}
+setInterval(xPull,2500);
+const _send=sendWork, _cancel=cancelWork, _pf=paintFab;
+sendWork=async function(){
+  if(!S||S.taskId!=="t4")return _send();
+  if(!me.nick)return openId(true);
+  const c=xCheck(S);
+  if(!c.ok)return toast(c.msg||"아직 조건에 맞는 삼각형이 아닙니다.");
+  try{
+    await dbPut(`t2x/${cls()}/subs/${me.no}`,
+      {nick:me.nick,tri:c.tri,at:Date.now(),tag:(XT&&XT.tag)||""});
+    XSENT=true;setNet(true);toast("제출했습니다. 선생님 화면에 올라갑니다.");
+  }catch(e){setNet(false);toast("연결이 되지 않아 보내지 못했습니다.");}
+  render();
+};
+cancelWork=async function(){
+  if(!S||S.taskId!=="t4")return _cancel();
+  try{await dbDel(`t2x/${cls()}/subs/${me.no}`);XSENT=false;toast("제출을 취소했습니다.");}
+  catch(e){setNet(false);}
+  render();
+};
+paintFab=function(){
+  if(!S||S.taskId!=="t4")return _pf();
+  const f=$("overlay");f.style.display="";
+  f.textContent=XSENT?"제출 취소":"게시판에 내기";
+  let ok=false;try{ok=!!xCheck(S).ok;}catch(e){}
+  f.classList.toggle("ready",!XSENT&&ok);
+  f.onclick=XSENT?cancelWork:sendWork;
+  $("mini").hidden=true;
+};
+xPull();
+
+$("why").innerHTML=WHY[S.taskId]||"";
   $("cardBtn").style.display=(S.taskId==="t10")?"":"none";
   paintReady();
 };
