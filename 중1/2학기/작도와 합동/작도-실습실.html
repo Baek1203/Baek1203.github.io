@@ -486,7 +486,7 @@
 <tr><th>잡는 곳</th><th>하는 일</th></tr>
 <tr><td>중심쪽 다리</td><td>옮기기 (점에 자석처럼 붙습니다)</td></tr>
 <tr><td>바깥쪽 다리</td><td>벌리기 (점 위에서 놓으면 “그 선분만큼”)</td></tr>
-<tr><td>가운데 손잡이</td><td>돌려서 호 그리기</td></tr>
+<tr><td>가운데 손잡이</td><td>돌려서 원 그리기</td></tr>
 </table>
 <div class="key"><b>침을 옮겨도 벌림은 그대로입니다.</b> 이것이 작도의 핵심입니다.</div></section>
 
@@ -565,8 +565,8 @@ const TASKS={
       const wrong=link&&link.kind!=="segment";
       return[
         {t:"컴퍼스를 선분 AB만큼 벌린다",ok:w},
-        {t:"벌림을 그대로 둔 채 침을 점 P로 옮겨 호를 그린다",ok:!!arc},
-        {t:"호와 직선 l이 만나는 점을 찍는다",ok:!!Q},
+        {t:"벌림을 그대로 둔 채 침을 점 P로 옮겨 원을 그린다",ok:!!arc},
+        {t:"원과 직선 l이 만나는 점을 찍는다",ok:!!Q},
         {t:"눈금 없는 자로 점 P와 그 점을 <u>선분</u>으로 잇는다"+
            (wrong?` <b>— 지금 그은 것은 ${KIND[link.kind]}입니다</b>`:""),
          ok:!!(link&&link.kind==="segment")}
@@ -645,12 +645,12 @@ const TASKS={
       const a3=(X&&Y&&D)&&arcsOf(st).find(a=>a.c===D.id&&same2(rPts(a),[X.id,Y.id]));
       const C=(a2&&a3)&&xpt(st,a2.id,a3.id);
       return[
-        {t:"컴퍼스를 적당히 벌려 점 O를 중심으로 호를 그린다",ok:!!a1},
-        {t:"그 호가 두 변과 만나는 점 <b>X</b>, <b>Y</b>를 찍는다",ok:!!(X&&Y)},
-        {t:"벌림을 그대로 둔 채 침을 점 P로 옮겨 호를 그린다",ok:!!a2},
-        {t:"그 호가 반직선 PQ와 만나는 점 <b>D</b>를 찍는다",ok:!!D},
-        {t:"컴퍼스를 <b>선분 XY</b>만큼 벌려, 점 D를 중심으로 호를 그린다",ok:!!a3},
-        {t:"두 호가 만나는 점 <b>C</b>를 찍는다",ok:!!C},
+        {t:"컴퍼스를 적당히 벌려 점 O를 중심으로 원을 그린다",ok:!!a1},
+        {t:"그 원이 두 변과 만나는 점 <b>X</b>, <b>Y</b>를 찍는다",ok:!!(X&&Y)},
+        {t:"벌림을 그대로 둔 채 침을 점 P로 옮겨 원을 그린다",ok:!!a2},
+        {t:"그 원이 반직선 PQ와 만나는 점 <b>D</b>를 찍는다",ok:!!D},
+        {t:"컴퍼스를 <b>선분 XY</b>만큼 벌려, 점 D를 중심으로 원을 그린다",ok:!!a3},
+        {t:"두 원이 만나는 점 <b>C</b>를 찍는다",ok:!!C},
         {t:"눈금 없는 자로 점 P와 점 C를 잇는다",ok:!!(C&&joined(st,Pp.id,C.id))}
       ];
     },
@@ -703,10 +703,10 @@ const TASKS={
       const c=this.check(st);
       return[
         {t:"눈금 없는 자로 점 P와 점 Q를 잇는다",ok:!!t},
-        {t:"컴퍼스를 적당히 벌려 점 Q를 중심으로 호를 그리고, 직선 l·PQ와 만나는 두 점을 찍는다",ok:!!(pA&&pB)},
-        {t:"벌림을 그대로 둔 채 침을 점 P로 옮겨 호를 그리고, 직선 PQ와 만나는 점을 찍는다",ok:!!pC},
-        {t:"컴퍼스를 2번의 두 점만큼 벌려, 3번 점을 중심으로 호를 그린다",ok:!!a3},
-        {t:"두 호가 만나는 점을 찍는다",ok:!!pD},
+        {t:"컴퍼스를 적당히 벌려 점 Q를 중심으로 원을 그리고, 직선 l·PQ와 만나는 두 점을 찍는다",ok:!!(pA&&pB)},
+        {t:"벌림을 그대로 둔 채 침을 점 P로 옮겨 원을 그리고, 직선 PQ와 만나는 점을 찍는다",ok:!!pC},
+        {t:"컴퍼스를 2번의 두 점만큼 벌려, 3번 점을 중심으로 원을 그린다",ok:!!a3},
+        {t:"두 원이 만나는 점을 찍는다",ok:!!pD},
         {t:"눈금 없는 자로 점 P와 그 점을 잇는다 — 직선 l과 <u>평행</u>해야 한다",ok:!!c.ok}
       ];
     },
@@ -995,7 +995,7 @@ function compassSVG(){
     g+=`<circle cx="${f(drag.snap.x)}" cy="${f(drag.snap.y)}" r="13" fill="none" stroke="${H}" stroke-width="3.5"/>`;
   }
 
-  const CAP={needle:"끌면 컴퍼스가 옮겨집니다",pencil:"끌면 벌림이 바뀝니다",hinge:"끌면 호가 그려집니다"};
+  const CAP={needle:"끌면 컴퍼스가 옮겨집니다",pencil:"끌면 벌림이 바뀝니다",hinge:"끌면 원이 그려집니다"};
   if(part&&!drag){
     const at=part==="needle"?c:part==="pencil"?tip:knob;
     g+=bubble(at.x,at.y+(part==="hinge"?-26:34),CAP[part]);
@@ -1094,7 +1094,7 @@ function paintToolbar(){
   }else if(S.tool==="point"){
     h=cell("점","두 도형이 만나는 자리에 생기는 <b>속 빈 점</b>을 클릭하세요","");
   }else{
-    h=cell("지우개","내가 그린 <b>선이나 호</b> 위를 클릭하거나 문지르면 지워집니다","");
+    h=cell("지우개","내가 그린 <b>선이나 원</b> 위를 클릭하거나 문지르면 지워집니다","");
   }
   $("toolbar").innerHTML=h;
 }
@@ -1146,9 +1146,9 @@ function hitCurve(pos){
   return best;
 }
 function meet(u,v){
-  const nm=i=>i.t==="A"?"호":({segment:"선분",ray:"반직선",line:"직선"}[i.kind]);
-  const a=nm(u),b=nm(v),ga=n=>n==="호"?"가":"이";
-  return a===b?`두 ${a}${ga(a)}`:`${a}${a==="호"?"와":"과"} ${b}${ga(b)}`;
+  const nm=i=>i.t==="A"?"원":({segment:"선분",ray:"반직선",line:"직선"}[i.kind]);
+  const a=nm(u),b=nm(v),ga=n=>n==="원"?"이":"이";
+  return a===b?`두 ${a}${ga(a)}`:`${a}${a==="원"?"과":"과"} ${b}${ga(b)}`;
 }
 function promote(c){
   if(c.id)return c.id;
@@ -1318,7 +1318,7 @@ window.addEventListener("pointerup",()=>{
   if(!drag||busy)return;
   const d=drag,C=S.compass;drag=null;
   if(d.mode==="erase"){
-    if(!d.hit){S.undo.pop();toast("지울 것 위로 지나가며 문질러 보세요. 내가 그린 선과 호만 지워집니다.");}
+    if(!d.hit){S.undo.pop();toast("지울 것 위로 지나가며 문질러 보세요. 내가 그린 선과 원만 지워집니다.");}
     render();return;
   }
   if(d.mode==="move"){
@@ -1326,7 +1326,7 @@ window.addEventListener("pointerup",()=>{
       const keep=C.r>=1;
       C.center=promote(d.snap.ref);
       if(keep)toast(`침을 점 ${pt(C.center).label} 위에 올렸습니다. 벌림은 그대로입니다.`);
-    }else toast(candidateNear(needle())?NEEDPT:"침이 점 위에 있어야 호를 그릴 수 있습니다.");
+    }else toast(candidateNear(needle())?NEEDPT:"침이 점 위에 있어야 원을 그릴 수 있습니다.");
     recompute();render();return;
   }
   if(d.mode==="open"){
@@ -1339,19 +1339,19 @@ window.addEventListener("pointerup",()=>{
     }
   }else if(d.mode==="draw"){
     const span=Math.min(d.hi-d.lo,TAU);
-    if(span<0.08)toast("연필 끝을 잡고 빙 돌리면 호가 그려집니다.");
+    if(span<0.08)toast("연필 끝을 잡고 빙 돌리면 원이 그려집니다.");
     else{
       S.items.push({t:"A",id:"i"+(S.nextId++),c:C.center,
         r:C.from?{k:"pts",a:C.from[0],b:C.from[1]}:{k:"num",v:C.r},
         a0:norm2pi(d.a0+d.lo),sweep:span});
       const A0=S.items[S.items.length-1];
       ev({op:"arc",c:C.center,r:A0.r,a0:f(A0.a0),sweep:f(A0.sweep)},
-         `${C.used>0?"컴퍼스 벌림을 그대로 둔 채, ":""}점 ${eul(pt(C.center).label)} 중심으로 호를 그렸다.`);
+         `${C.used>0?"컴퍼스 벌림을 그대로 둔 채, ":""}점 ${eul(pt(C.center).label)} 중심으로 원을 그렸다.`);
       C.used++;recompute();
       const arc=S.items[S.items.length-1];
       if(!candidates().some(k=>k.a===arc.id||k.b===arc.id))
-        toast(TASKS[S.taskId].quiet?"이 호는 아무것과도 만나지 않았습니다."
-              :"이 호는 아무것과도 만나지 않았습니다. 벌림이나 돌린 범위를 바꿔 보세요.");
+        toast(TASKS[S.taskId].quiet?"이 원은 아무것과도 만나지 않았습니다."
+              :"이 원은 아무것과도 만나지 않았습니다. 벌림이나 돌린 범위를 바꿔 보세요.");
     }
   }
   recompute();render();
@@ -1551,10 +1551,10 @@ function mkSSS(a,b,c,extra){
       const a3=C&&(arcR(st,"b",C.id)||arcR(st,"c",C.id));
       const A=(a2&&a3)?xpt(st,a2.id,a3.id):null;
       return[
-        {t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 B를 중심으로 호를 그린다",ok:!!arcR(st,"a",B.id)},
-        {t:"호와 직선 l이 만나는 점을 찍는다",ok:!!C},
-        {t:"두 점에서 <u>남은 두 선분</u>만큼 호를 각각 그린다",ok:!!(a2&&a3&&a2.id!==a3.id)},
-        {t:"두 호가 만나는 점을 찍는다",ok:!!A},
+        {t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 B를 중심으로 원을 그린다",ok:!!arcR(st,"a",B.id)},
+        {t:"원과 직선 l이 만나는 점을 찍는다",ok:!!C},
+        {t:"두 점에서 <u>남은 두 선분</u>만큼 원을 각각 그린다",ok:!!(a2&&a3&&a2.id!==a3.id)},
+        {t:"두 원이 만나는 점을 찍는다",ok:!!A},
         {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
       ];
     },
@@ -1610,8 +1610,8 @@ function mkSSA(a,b,deg,extra){
       return[
         {t:"직선 l 위 점 B에 <u>선분 a</u>를 옮겨, 두 번째 점을 찍는다",ok:!!C},
         {t:"점 B에 <u>∠XOY와 크기가 같은 각</u>을 작도한다",ok:hasAngleAt(st,B,C,deg)},
-        {t:"두 번째 점을 중심으로 <u>선분 b</u>만큼 호를 그린다",ok:!!a3},
-        {t:"호가 각의 변과 만나는 점을 찍는다",ok:st.items.some(p=>p.t==="P"&&p.def.k==="x"&&a3&&(p.def.a===a3.id||p.def.b===a3.id))},
+        {t:"두 번째 점을 중심으로 <u>선분 b</u>만큼 원을 그린다",ok:!!a3},
+        {t:"원이 각의 변과 만나는 점을 찍는다",ok:st.items.some(p=>p.t==="P"&&p.def.k==="x"&&a3&&(p.def.a===a3.id||p.def.b===a3.id))},
         {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
       ];
     },
@@ -1632,8 +1632,8 @@ function mkAAA(d1,d2,d3,extra){
       const C=a1?xpt(st,a1.id,l.id):null;
       const has=(V,ref)=>[d1,d2,d3].some(d=>hasAngleAt(st,V,ref,d));
       return[
-        {t:"컴퍼스를 <u>적당히</u> 벌려 점 B를 중심으로 호를 그린다 — 첫 변의 길이는 내가 정한다",ok:!!a1},
-        {t:"호와 직선 l이 만나는 점을 찍는다",ok:!!C},
+        {t:"컴퍼스를 <u>적당히</u> 벌려 점 B를 중심으로 원을 그린다 — 첫 변의 길이는 내가 정한다",ok:!!a1},
+        {t:"원과 직선 l이 만나는 점을 찍는다",ok:!!C},
         {t:"두 점에 <u>주어진 각 중 두 개</u>를 각각 옮겨 작도한다",ok:!!(C&&has(B,C)&&has(C,B))},
         {t:"두 변이 만나는 점을 찍고 삼각형을 완성한다",ok:this.check(st).ok}
       ];
@@ -1656,10 +1656,10 @@ TASKS.t4={
     const a3=C&&(arcR(st,"b",C.id)||arcR(st,"c",C.id));
     const A=(a2&&a3)?xpt(st,a2.id,a3.id):null;
     return[
-      {t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 B를 중심으로 호를 그린다",ok:!!arcR(st,"a",B.id)},
-      {t:"호와 직선 l이 만나는 점을 찍는다",ok:!!C},
-      {t:"두 점에서 <u>남은 두 선분</u>만큼 호를 각각 그린다",ok:!!(a2&&a3&&a2.id!==a3.id)},
-      {t:"두 호가 만나는 점을 찍는다",ok:!!A},
+      {t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 B를 중심으로 원을 그린다",ok:!!arcR(st,"a",B.id)},
+      {t:"원과 직선 l이 만나는 점을 찍는다",ok:!!C},
+      {t:"두 점에서 <u>남은 두 선분</u>만큼 원을 각각 그린다",ok:!!(a2&&a3&&a2.id!==a3.id)},
+      {t:"두 원이 만나는 점을 찍는다",ok:!!A},
       {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
     ];
   },
@@ -1782,7 +1782,7 @@ TASKS.drill={
       const Q=arc&&xpt(st,arc.id,l.id);
       return[
         {t:"컴퍼스를 <u>선분 AB</u>만큼 벌린다",ok:w},
-        {t:"벌림을 그대로 둔 채 점 P를 중심으로 호를 그려, 직선 l과 만나는 점을 찍는다",ok:!!Q},
+        {t:"벌림을 그대로 둔 채 점 P를 중심으로 원을 그려, 직선 l과 만나는 점을 찍는다",ok:!!Q},
         {t:"눈금 없는 자로 두 점을 <u>선분</u>으로 잇는다",ok:this.check(st).ok}
       ];
     }
@@ -1793,10 +1793,10 @@ TASKS.drill={
     const D=a2&&xpt(st,a2.id,KEY(st,"PQ").id);
     const a3=(X&&Y&&D)&&arcsOf(st).find(a=>a.c===D.id&&same2(rPts(a),[X.id,Y.id]));
     return[
-      {t:"점 O를 중심으로 호를 그려, 두 변과 만나는 점 <b>X · Y</b>를 찍는다",ok:!!(X&&Y)},
-      {t:"<u>같은 벌림</u>으로 점 P에서 호를 그려, 반직선 PQ와 만나는 점 <b>D</b>를 찍는다",ok:!!D},
-      {t:"컴퍼스를 <u>선분 XY</u>만큼 벌려, 점 D를 중심으로 호를 그린다",ok:!!a3},
-      {t:"두 호가 만나는 점 <b>C</b>를 찍고, 점 P와 잇는다",ok:this.check(st).ok}
+      {t:"점 O를 중심으로 원을 그려, 두 변과 만나는 점 <b>X · Y</b>를 찍는다",ok:!!(X&&Y)},
+      {t:"<u>같은 벌림</u>으로 점 P에서 원을 그려, 반직선 PQ와 만나는 점 <b>D</b>를 찍는다",ok:!!D},
+      {t:"컴퍼스를 <u>선분 XY</u>만큼 벌려, 점 D를 중심으로 원을 그린다",ok:!!a3},
+      {t:"두 원이 만나는 점 <b>C</b>를 찍고, 점 P와 잇는다",ok:this.check(st).ok}
     ];
   },
 
@@ -1880,8 +1880,8 @@ const PG=[
  prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>선분 a + 선분 b</b>인 선분을 작도하시오.`,
  build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,74,5),gSeg("T","U","b",70,128,3)),
  steps(st){const B=byLabel(st,"B"),C=baseSecond(st,"a");
-   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려 점 B를 중심으로 호를 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
-     {t:"벌림을 <u>선분 b</u>만큼으로 바꿔, 그 점을 중심으로 호를 그린다",ok:!!(C&&arcR(st,"b",C.id))},
+   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
+     {t:"벌림을 <u>선분 b</u>만큼으로 바꿔, 그 점을 중심으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
      {t:"새로 생긴 점까지 선분을 긋는다",ok:this.check(st).ok}];},
  check(st){return anySeg(st,8*CM)?{ok:true}:{ok:false};}},
 /* ② 선분 빼기 */
@@ -1889,8 +1889,8 @@ const PG=[
  prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>선분 a − 선분 b</b>인 선분을 작도하시오.`,
  build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,74,7),gSeg("T","U","b",70,128,3)),
  steps(st){const B=byLabel(st,"B"),C=baseSecond(st,"a");
-   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려 점 B를 중심으로 호를 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
-     {t:"벌림을 <u>선분 b</u>만큼으로 바꿔, 그 점을 중심으로 <b>되돌아오는 쪽</b>으로 호를 그린다",ok:!!(C&&arcR(st,"b",C.id))},
+   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
+     {t:"벌림을 <u>선분 b</u>만큼으로 바꿔, 그 점을 중심으로 <b>되돌아오는 쪽</b>으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
      {t:"점 B에서 새로 생긴 점까지 선분을 긋는다",ok:this.check(st).ok}];},
  check(st){return anySeg(st,4*CM)?{ok:true}:{ok:false};}},
 /* ③ 각 잇기 */
@@ -1925,7 +1925,7 @@ const PG=[
      Math.abs(D2(get(st,i.p1),get(st,i.p2))-r)<=LT+0.8).length;
    return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 O를 중심으로 <b>한 바퀴</b> 돌린다",ok:!!big},
      {t:"원과 직선 l이 만나는 점을 찍는다",ok:n>=1},
-     {t:"<u>벌림을 그대로 둔 채</u> 그 점을 중심으로 호를 그려, 원과 만나는 점을 찍는다",ok:n>=3},
+     {t:"<u>벌림을 그대로 둔 채</u> 그 점을 중심으로 원을 그려, 원과 만나는 점을 찍는다",ok:n>=3},
      {t:"같은 방법으로 원 위의 <b>여섯 점</b>을 모두 찍는다",ok:n>=6},
      {t:"이웃한 점끼리 이어 정육각형을 완성한다",ok:sides>=6}];},
  check(st){const O=byLabel(st,"O"),r=4*CM;
@@ -1941,7 +1941,7 @@ const PG=[
    const seg=st.items.filter(i=>i.t==="L"&&!i.given).length;
    const arc=arcsA(st).length,pts=st.items.filter(p=>p.t==="P"&&!p.given).length;
    const closed=tris(st).length;
-   return[{t:"호를 하나 그려 보았다",ok:arc>=1},
+   return[{t:"원을 하나 그려 보았다",ok:arc>=1},
      {t:"점을 세 개 이상 찍었다",ok:pts>=3},
      {t:"선을 세 개 이상 그었다",ok:seg>=3},
      {t:"모서리가 이어진 도형을 하나 완성했다",ok:closed>=1},
@@ -2149,7 +2149,7 @@ function buildTabs(){
 function paintVariants(T){
   const row=$("vrow");
   if(!T.variants){row.hidden=true;row.innerHTML="";return;}
-  const lockV=(T===TASKS.t10)&&LS.get("caseFix:"+me.no,null);
+  const lockV=(T===TASKS.t10)?LS.get("caseFix:"+me.no,null):null;
   row.hidden=false;
   row.innerHTML=T.variants.map((v,i)=>
     `<button class="vb${S.variant===i?" on":""}" data-i="${i}"
