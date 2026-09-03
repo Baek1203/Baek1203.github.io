@@ -159,6 +159,7 @@
       <button data-view="note" aria-pressed="false">보고서</button>
       <button data-view="gen" aria-pressed="false">일반화</button>
       <button data-view="chart" aria-pressed="false">차트</button>
+      <button data-view="relay" aria-pressed="false">조건 전달</button>
       <button data-view="lock" aria-pressed="false">개방</button>
     </div>
     <div class="spacer"></div>
@@ -181,6 +182,7 @@
     </div>
     <div class="pane" id="paneGen"></div>
     <div class="pane" id="paneChart"></div>
+    <div class="pane" id="paneRelay"></div>
     <div class="pane" id="paneLock"></div>
   </div>
 </div>
@@ -271,6 +273,7 @@ async function pull(force){
     await pullGen();
     setNet(true);
   }catch(e){setNet(false);}
+  if(V.view==="relay")await pullX();
   paint(force);
 }
 const subList=()=>Object.keys(DATA.subs).map(k=>Object.assign({no:k},DATA.subs[k]));
@@ -657,6 +660,77 @@ async function loadAllNotes(){
   }
 }
 
+/* ================= 조건 전달 실험 ================= */
+let XT=null,XS={},XA=null,XM={};
+async function pullX(){
+  try{
+    const [t,s,a,m]=await Promise.all([gj2(`t2x/${V.cls}/task`),gj2(`t2x/${V.cls}/subs`),
+      gj2(`t2x/${V.cls}/answer`),gj2(`t2x/${V.cls}/mark`)]);
+    XT=t||null;XS=s||{};XA=a||null;XM=m||{};
+  }catch(e){}
+}
+const gj2=dbGet;
+const xFit=(t,w,h,pad)=>{
+  const xs=t.map(p=>p.x||p[0]),ys=t.map(p=>p.y||p[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const k=Math.min((w-pad*2)/Math.max(1,x1-x0),(h-pad*2)/Math.max(1,y1-y0));
+  return t.map(p=>({x:((p.x||p[0])-(x0+x1)/2)*k+w/2,y:((p.y||p[1])-(y0+y1)/2)*k+h/2}));
+};
+const xPoly=(t,col,fill,sw)=>`<polygon points="${t.map(p=>
+  `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" fill="${fill||"none"}" stroke="${col}"
+  stroke-width="${sw||2.6}" stroke-linejoin="round"/>`;
+function xSame(a,b){
+  const s=t=>[D2(t[0],t[1]),D2(t[1],t[2]),D2(t[2],t[0])].sort((x,y)=>x-y);
+  const p=s(a),q=s(b),k=q[2]/Math.max(1,p[2]);
+  return p.every((v,i)=>Math.abs(v*k-q[i])<Math.max(4,q[2]*0.03));
+}
+function paintRelay(){
+  const rows=Object.keys(XS).map(k=>Object.assign({no:k},XS[k])).sort((a,b)=>a.at-b.at);
+  let h=`<h2 class="sec">조건 전달 실험 — 두 조건만으로 그린 삼각형</h2>`;
+  h+=`<div class="xhead">
+    <div class="xbox"><b>보낸 조건</b>${XT&&XT.items
+      ?`<span>${XT.items.map(i=>i.t==="seg"?`선분 ${i.cm}`:`각 ${i.deg}°`).join(" / ")}</span>`
+      :`<span class="muted">아직 보내지 않았습니다</span>`}</div>
+    <div class="xbox"><b>제출</b><span>${rows.length}명</span></div>
+    ${XA?`<div class="xbox ok"><b>정답 공개됨</b><span>아래에서 하나씩 판정하세요</span></div>`
+        :`<div class="xbox"><b>정답</b><span class="muted">아직 공개하지 않았습니다</span></div>`}
+  </div>`;
+  if(XA&&XA.v){
+    const t=xFit(XA.v.map(p=>({x:p[0],y:p[1]})),420,260,26);
+    h+=`<div class="xans"><h3>원래 삼각형</h3>
+      <svg viewBox="0 0 420 260">${xPoly(t,"#C0342A","#C0342A12",4)}</svg>
+      <p>세 변 ${XA.sides?[XA.sides.AB,XA.sides.BC,XA.sides.CA].join(" · "):""} /
+        세 각 ${XA.angles?[XA.angles.A,XA.angles.B,XA.angles.C].join("° · ")+"°":""}</p></div>`;
+  }
+  if(!rows.length)h+=`<p class="hint2">학생이 제출하면 여기에 나타납니다.</p>`;
+  else h+=`<div class="xgrid">${rows.map(r=>{
+    const t=xFit(r.tri,240,170,20);
+    const auto=(XA&&XA.v)?xSame(r.tri,XA.v.map(p=>({x:p[0],y:p[1]}))):null;
+    const mk=XM[r.no];
+    return `<div class="xc ${mk==="o"?"o":mk==="x"?"x":""}">
+      <span class="nm">${esc(r.nick||r.no)}</span>
+      <svg viewBox="0 0 240 170">${xPoly(t,mk==="o"?"#2A7148":mk==="x"?"#C0342A":"#1C1A16",
+        mk==="o"?"#2A714812":mk==="x"?"#C0342A10":"#1C1A1608",3)}</svg>
+      ${XA?`<div class="xb">
+        <button data-m="o" data-no="${esc(r.no)}" aria-pressed="${mk==="o"}">같다</button>
+        <button data-m="x" data-no="${esc(r.no)}" aria-pressed="${mk==="x"}">다르다</button>
+        ${auto!=null?`<em>자동: ${auto?"같음":"다름"}</em>`:""}</div>`:""}
+    </div>`;}).join("")}</div>`;
+  if(XA){
+    const o=Object.values(XM).filter(v=>v==="o").length;
+    const x=Object.values(XM).filter(v=>v==="x").length;
+    h+=`<p class="hint2">같다 <b>${o}명</b> · 다르다 <b>${x}명</b><br>
+      두 조건만으로는 <b>사람마다 다른 삼각형</b>이 나옵니다.
+      “무엇을 더 알려 줬어야 했을까요?”를 물어보세요.</p>`;
+  }
+  $("paneRelay").innerHTML=h;
+  $("paneRelay").querySelectorAll("[data-m]").forEach(b=>b.onclick=async()=>{
+    b.blur();XM[b.dataset.no]=(XM[b.dataset.no]===b.dataset.m)?null:b.dataset.m;
+    if(!XM[b.dataset.no])delete XM[b.dataset.no];
+    paint(1);
+    try{await dbPut(`t2x/${V.cls}/mark`,XM);setNet(true);}catch(e){setNet(false);}});
+}
+
 /* ================= 개방 ================= */
 function paintLock(){
   $("paneLock").innerHTML=`<div class="locks">
@@ -764,7 +838,7 @@ function paint(force){
 }
 function paintNow(){
   document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===V.view));
-  ["prog","board","trace","note","gen","chart","lock"].forEach(k=>
+  ["prog","board","trace","note","gen","chart","relay","lock"].forEach(k=>
     $("pane"+k[0].toUpperCase()+k.slice(1)).classList.toggle("on",V.view===k));
   const t=TASKS.find(x=>x.id===V.task)||{};
   $("count").textContent=`${subList().length}명 접수 · ${Object.keys(DATA.prog).length}명 접속`;
@@ -775,6 +849,7 @@ function paintNow(){
   if(V.view==="note")paintNote();
   if(V.view==="gen")paintGen();
   if(V.view==="chart")paintChart();
+  if(V.view==="relay")paintRelay();
   if(V.view==="lock")paintLock();
 }
 async function promote(){
