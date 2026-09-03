@@ -117,8 +117,7 @@
     background:#fff;border:2px solid var(--ink);color:var(--ink);transition:.2s}
   .fab:hover{background:#F6F1E6}
   .fab.ready{background:var(--gold);border-color:var(--gold);color:#231B06;
-    animation:pulse 1.7s ease-in-out 3}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,138,16,.6)}50%{box-shadow:0 0 0 12px rgba(201,138,16,0)}}
+    box-shadow:0 0 0 4px rgba(201,138,16,.28)}
 
   .confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:7}
   .confetti i{position:absolute;left:50%;top:36%;opacity:0;border-radius:2px;
@@ -227,6 +226,22 @@
   .idrow label{flex:0 0 44px;font:800 12.5px/1 var(--sans);color:var(--ink-soft)}
   .idrow input,.idrow select{flex:1;font:600 15px/1 var(--sans);padding:12px 13px;border-radius:9px;
     border:1.5px solid var(--rule);background:#FCFAF3;color:var(--ink)}
+  .xok,.xwait{border-radius:9px;padding:10px 12px;font:800 12.5px/1.4 var(--sans)}
+  .xok{background:#E4F1E8;border:1.5px solid #B6D9C4;color:#1F5C39}
+  .xwait{background:#F4EFE3;border:1.5px solid var(--rule);color:var(--ink-soft)}
+  .xok em,.xwait em{display:block;font-style:normal;font-weight:600;font-size:11px;
+    margin-top:5px;opacity:.85}
+  .xpair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .xhalf{background:#fff;border:2px solid var(--rule);border-radius:12px;padding:12px}
+  .xhalf.ans{border-color:var(--red);background:#FDF3F1}
+  .xhalf h3{margin:0 0 8px;font:800 12.5px/1 var(--sans);color:var(--ink-soft)}
+  .xhalf.ans h3{color:var(--red)}
+  .xhalf svg{width:100%;height:150px;display:block}
+  .verd2{margin-top:14px;border-radius:12px;padding:13px 15px;border:2px solid}
+  .verd2 b{font:800 14.5px/1.4 var(--sans)}
+  .verd2 small{display:block;font:600 12.5px/1.6 var(--sans);margin-top:5px;opacity:.9}
+  .verd2.y{background:#E4F1E8;border-color:#B6D9C4;color:#1F5C39}
+  .verd2.n{background:#F8E3E1;border-color:#E3B6B1;color:#8E2A22}
   .idmsg{margin:2px 0 8px;font:600 12px/1.5 var(--sans);color:var(--ink-soft);min-height:1px}
   .idmsg.bad{color:#8E2A22}
   .mbtn.ghost2{width:100%;margin-top:8px;background:none;border:1.5px solid var(--rule);
@@ -449,6 +464,11 @@
 </div>
 
 
+
+<div class="modal" id="xresModal" hidden><div class="sheet">
+  <header><div><h1>원래 삼각형이 공개되었습니다</h1><p>내가 그린 것과 견주어 보세요</p></div>
+    <div class="acts"><button class="mbtn solid" id="xresClose">닫기</button></div></header>
+  <div class="mbody" id="xresBody"></div></div></div>
 
 <div class="modal" id="briefModal" hidden><div class="sheet">
   <header><div><h1>임무 브리핑</h1><p>도형 수사대 · 감식관</p></div>
@@ -2332,8 +2352,9 @@ function paintLog(){
     <p class="lgtip">이 기록은 <b>무엇을 했는지</b>만 적습니다. <b>왜 그렇게 했는지</b>는 활동지에 직접 쓰세요.</p>`;
 }
 const _paintUI=paintUI;
-paintUI=function(){_paintUI();try{reportProgress();paintLog();if(TASKS[S.taskId].fab==="submit")
-  $("overlay").classList.toggle("ready",!submitted()&&TASKS[S.taskId].check(S).ok);}catch(e){}};
+paintUI=function(){_paintUI();try{reportProgress();paintLog();
+  if(TASKS[S.taskId].fab==="submit"&&S.taskId!=="t4")
+    $("overlay").classList.toggle("ready",!submitted()&&TASKS[S.taskId].check(S).ok);}catch(e){}};
 
 /* ---- 처음부터 = 저장분도 지움 ---- */
 $("clear").onclick=()=>{if(me.no)LS.del(skey());loadTask(S.taskId,S.variant);};
@@ -2547,11 +2568,20 @@ window.ONTASK=function(T,V){
   
 /* ── 확장 ⑧-2 · 조건 받기와 제출 ── */
 XT=LS.get("xtask",null);
+let XN=0, XANS=null, XMY=null, XMARK=null, XSEEN=LS.get("xseen","");
 async function xPull(){
   if(!me.nick)return;
   try{
-    const t=await dbGet(`t2x/${cls()}/task`);
-    XSENT=!!(await dbGet(`t2x/${cls()}/subs/${me.no}`));
+    const [t,mine,subs,ans,mk]=await Promise.all([
+      dbGet(`t2x/${cls()}/task`),dbGet(`t2x/${cls()}/subs/${me.no}`),
+      dbGet(`t2x/${cls()}/subs`),dbGet(`t2x/${cls()}/answer`),
+      dbGet(`t2x/${cls()}/mark/${me.no}`)]);
+    XMY=mine||null;XSENT=!!mine;XN=Object.keys(subs||{}).length;
+    XANS=ans||null;XMARK=mk||null;
+    if(XANS&&XSEEN!==String(XANS.at)&&S&&S.taskId==="t4"){
+      XSEEN=String(XANS.at);LS.set("xseen",XSEEN);xShow();
+    }
+    if(S&&S.taskId==="t4")xPanel();
     if(JSON.stringify(t)!==JSON.stringify(XT)){
       XT=t;LS.set("xtask",XT);
       if(S&&S.taskId==="t4"){LS.del(`save:${cls()}:${me.no}:t4:0`);loadTask("t4");}
@@ -2571,13 +2601,13 @@ sendWork=async function(){
       {nick:me.nick,tri:c.tri,at:Date.now(),tag:(XT&&XT.tag)||""});
     XSENT=true;setNet(true);toast("제출했습니다. 선생님 화면에 올라갑니다.");
   }catch(e){setNet(false);toast("연결이 되지 않아 보내지 못했습니다.");}
-  render();
+  paintFab();render();
 };
 cancelWork=async function(){
   if(!S||S.taskId!=="t4")return _cancel();
   try{await dbDel(`t2x/${cls()}/subs/${me.no}`);XSENT=false;toast("제출을 취소했습니다.");}
   catch(e){setNet(false);}
-  render();
+  paintFab();render();
 };
 paintFab=function(){
   if(!S||S.taskId!=="t4")return _pf();
@@ -2586,8 +2616,49 @@ paintFab=function(){
   let ok=false;try{ok=!!xCheck(S).ok;}catch(e){}
   f.classList.toggle("ready",!XSENT&&ok);
   f.onclick=XSENT?cancelWork:sendWork;
-  $("mini").hidden=true;
+  xPanel();
 };
+/* 왼쪽 아래 알림 칸 */
+function xPanel(){
+  const box=$("mini");
+  if(!S||S.taskId!=="t4"){box.hidden=true;return;}
+  box.hidden=false;
+  let h="";
+  if(XSENT)h+=`<div class="xok">제출했습니다<em>선생님 화면(전자칠판)에 내 삼각형이
+    코드네임과 함께 올라갔습니다.</em></div>`;
+  else h+=`<div class="xwait">아직 내지 않았습니다<em>삼각형을 완성하면 위 단추가 금색으로 바뀝니다.</em></div>`;
+  h+=`<div class="mtx">우리 반 <b>${XN}명</b> 제출${XMARK?` · 선생님 판정 <b>${
+    XMARK==="o"?"같다":"다르다"}</b>`:""}</div>`;
+  if(XANS)h+=`<button class="peek" id="xseeBtn" style="margin-top:8px">원래 삼각형과 견주어 보기</button>`;
+  box.innerHTML=h;
+  const b=$("xseeBtn");if(b)b.onclick=()=>xShow();
+}
+/* 내 것과 원래 것을 나란히 */
+function xShow(){
+  if(!XANS)return;
+  const mine=(XMY&&XMY.tri)||(()=>{try{const c=xCheck(S);return c.ok?c.tri:null;}catch(e){return null;}})();
+  const ans=XANS.v.map(p=>({x:p[0],y:p[1]}));
+  const W=300,H=220;
+  const box=t=>t?`<svg viewBox="0 0 ${W} ${H}">${poly(fit(t,W,H,26),"#1C1A16","#1C1A1608",3)}</svg>`
+                :`<p class="muted">없음</p>`;
+  const same=mine?same3(mine,ans):null;
+  $("xresBody").innerHTML=`
+    <div class="xpair">
+      <div class="xhalf"><h3>내 몽타주</h3>${box(mine)}</div>
+      <div class="xhalf ans"><h3>원래 삼각형</h3>${box(ans)}</div>
+    </div>
+    ${mine?`<div class="verd2 ${same?"y":"n"}">
+      <b>${same?"내 것과 원래 것이 포개어집니다":"내 것과 원래 것은 다릅니다"}</b>
+      <small>${same?"우연히 같았습니다. 다른 친구들은 어땠을까요?"
+        :"같은 조건을 받았는데 다른 삼각형이 나왔습니다. 무엇을 더 알려 줬어야 했을까요?"}</small>
+    </div>`:`<div class="verd2 n"><b>제출한 삼각형이 없습니다</b></div>`}
+    ${XANS.sides?`<p class="muted" style="margin-top:12px">원래 삼각형 · 세 변
+      ${[XANS.sides.AB,XANS.sides.BC,XANS.sides.CA].join(" · ")} / 세 각
+      ${[XANS.angles.A,XANS.angles.B,XANS.angles.C].join("° · ")}°</p>`:""}`;
+  $("xresModal").hidden=false;
+}
+$("xresClose").onclick=()=>$("xresModal").hidden=true;
+$("xresModal").addEventListener("click",e=>{if(e.target===$("xresModal"))$("xresModal").hidden=true;});
 xPull();
 
 $("why").innerHTML=WHY[S.taskId]||"";
