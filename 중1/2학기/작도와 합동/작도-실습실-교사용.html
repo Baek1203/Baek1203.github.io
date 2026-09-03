@@ -142,6 +142,55 @@
   .lk span{font:600 12px/1 var(--sans);color:var(--ink-soft)}
   .hint{margin-top:14px;background:#FFF8E6;border-left:4px solid var(--gold);border-radius:0 8px 8px 0;
     padding:11px 14px;font:600 12.5px/1.7 var(--sans)}
+  /* 신호등 자기평가 */
+  .lbar{display:flex;height:16px;border-radius:99px;overflow:hidden;background:#EDE6D5;
+    margin:11px 0 9px}
+  .lbar i{display:block;height:100%}
+  .lkey{display:flex;gap:14px;flex-wrap:wrap;font:700 11.5px/1 var(--sans);color:var(--ink-soft)}
+  .lkey i{display:inline-block;width:10px;height:10px;border-radius:99px;margin-right:5px;
+    vertical-align:-1px}
+  .lkey b{color:var(--ink)}
+  /* 조건 전달 실험 */
+  .xwrap{display:grid;grid-template-columns:1fr 330px;gap:20px;align-items:start}
+  @media (max-width:1100px){.xwrap{grid-template-columns:1fr}}
+  .xbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}
+  .xtag{background:#fff;border:2px solid var(--rule);border-radius:999px;padding:10px 16px;
+    font:800 clamp(13px,1.35vw,18px)/1 var(--sans)}
+  .xtag b{color:var(--ink-soft);margin-right:9px;font-size:.82em}
+  .xtag em{font-style:normal;color:#B4AC9A;font-weight:700}
+  .xtag.g{background:#F1F8F4;border-color:#8BC5A6;color:#1F5C39}
+  .xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(188px,1fr));gap:13px}
+  .xc{background:#fff;border:3px solid var(--rule);border-radius:16px;padding:10px 11px 11px;
+    position:relative}
+  .xc.o{border-color:#3E9B72;background:#EEF8F2}
+  .xc.x{border-color:#D6564A;background:#FDF1EF}
+  .xc .bg{position:absolute;right:10px;top:7px;font:900 22px/1 var(--sans)}
+  .xc.o .bg{color:#3E9B72}
+  .xc.x .bg{color:#D6564A}
+  .xc .nm{display:block;font:800 clamp(13px,1.35vw,17px)/1 var(--sans);margin-bottom:7px}
+  .xc.o .nm{color:#1F5C39}
+  .xc.x .nm{color:#8E2A22}
+  .xc svg{width:100%;height:clamp(96px,10vw,138px);display:block}
+  .xb{display:flex;gap:5px;align-items:center;margin-top:8px}
+  .xb button{flex:1;font:800 12px/1 var(--sans);padding:9px 4px;border-radius:9px;cursor:pointer;
+    border:1.5px solid var(--rule);background:#fff;color:var(--ink-soft)}
+  .xb button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .xb em{font:700 10.5px/1 var(--sans);font-style:normal;color:#C0B8A6}
+  .xright{position:sticky;top:0}
+  .xans{background:#fff;border:3px dashed var(--rule);border-radius:20px;padding:16px 18px;
+    text-align:center}
+  .xans.on{border-style:solid;border-color:var(--red);box-shadow:0 8px 26px rgba(192,52,42,.14)}
+  .xans h3{margin:0 0 10px;font:900 14px/1 var(--sans);color:var(--ink-soft)}
+  .xans.on h3{color:var(--red)}
+  .xans svg{width:100%;height:200px;display:block}
+  .xans dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:12px 0 0;text-align:left}
+  .xans dt{font:800 12px/1.6 var(--sans);color:var(--ink-soft)}
+  .xans dd{margin:0;font:800 14px/1.6 var(--sans)}
+  .xans .xq{margin:14px 0 0;font:800 13px/1.7 var(--sans);color:var(--ink);
+    background:#FFF8E6;border-radius:10px;padding:11px 13px}
+  .xhold p{margin:10px 0 0;font:800 13.5px/1.6 var(--sans);color:var(--ink-soft)}
+  .xhold em{display:block;font-style:normal;font-weight:600;font-size:12px;margin-top:7px;
+    color:#A79F8D;line-height:1.7}
   :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 </style>
 </head>
@@ -448,8 +497,7 @@ async function paintTrace(){
         아직 제출하지 않았습니다. 기록은 제출할 때 올라갑니다.</p>`
     :`<h3>${esc(t.nick||"")} · ${esc((TASKS.find(x=>x.id===V.task)||{}).n||V.task)}</h3>
       <ol>${(t.lines||[]).map(l=>`<li>${esc(l)}</li>`).join("")}</ol>
-      <p class="muted" style="margin-top:14px">이 기록은 <b>무엇을 했는지</b>만 담습니다.
-        “왜 그렇게 했는지”는 학생의 활동지에서 확인하세요.</p>`;
+      <p class="muted" style="margin-top:14px">이 기록에는 <b>무엇을 했는지</b>만 담깁니다.</p>`;
 }
 
 /* ================= 보고서(기록장) ================= */
@@ -686,46 +734,54 @@ function xSame(a,b){
 }
 function paintRelay(){
   const rows=Object.keys(XS).map(k=>Object.assign({no:k},XS[k])).sort((a,b)=>a.at-b.at);
-  let h=`<h2 class="sec">조건 전달 실험 — 두 조건만으로 그린 삼각형</h2>`;
-  h+=`<div class="xhead">
-    <div class="xbox"><b>보낸 조건</b>${XT&&XT.items
-      ?`<span>${XT.items.map(i=>i.t==="seg"?`선분 ${i.cm}`:`각 ${i.deg}°`).join(" / ")}</span>`
-      :`<span class="muted">아직 보내지 않았습니다</span>`}</div>
-    <div class="xbox"><b>제출</b><span>${rows.length}명</span></div>
-    ${XA?`<div class="xbox ok"><b>정답 공개됨</b><span>아래에서 하나씩 판정하세요</span></div>`
-        :`<div class="xbox"><b>정답</b><span class="muted">아직 공개하지 않았습니다</span></div>`}
+  const ansPts=(XA&&XA.v)?XA.v.map(p=>({x:p[0],y:p[1]})):null;
+  const o=Object.values(XM).filter(v=>v==="o").length;
+  const x=Object.values(XM).filter(v=>v==="x").length;
+
+  let L=`<div class="xbar">
+    <span class="xtag"><b>보낸 조건</b>${XT&&XT.items
+      ?XT.items.map(i=>i.t==="seg"?`선분 ${i.cm}`:`각 ${i.deg}°`).join(" · ")
+      :`<em>아직 보내지 않았습니다</em>`}</span>
+    <span class="xtag"><b>제출</b>${rows.length}명</span>
+    ${XA?`<span class="xtag g"><b>판정</b>같다 ${o} · 다르다 ${x}</span>`:""}
   </div>`;
-  if(XA&&XA.v){
-    const t=xFit(XA.v.map(p=>({x:p[0],y:p[1]})),420,260,26);
-    h+=`<div class="xans"><h3>원래 삼각형</h3>
-      <svg viewBox="0 0 420 260">${xPoly(t,"#C0342A","#C0342A12",4)}</svg>
-      <p>세 변 ${XA.sides?[XA.sides.AB,XA.sides.BC,XA.sides.CA].join(" · "):""} /
-        세 각 ${XA.angles?[XA.angles.A,XA.angles.B,XA.angles.C].join("° · ")+"°":""}</p></div>`;
+  L+=!rows.length
+    ?`<p class="hint2" style="margin-top:34px">아직 제출한 몽타주가 없습니다.</p>`
+    :`<div class="xgrid">${rows.map(r=>{
+        const t2=xFit(r.tri,220,150,18), mk=XM[r.no];
+        const auto=ansPts?xSame(r.tri,ansPts):null;
+        const col=mk==="o"?"#2A7148":mk==="x"?"#C0342A":"#1C1A16";
+        return `<div class="xc ${mk||""}">
+          ${mk?`<span class="bg">${mk==="o"?"○":"✕"}</span>`:""}
+          <span class="nm">${esc(r.nick||r.no)}</span>
+          <svg viewBox="0 0 220 150">${xPoly(t2,col,col+"14",3.2)}</svg>
+          ${XA?`<div class="xb">
+            <button data-m="o" data-no="${esc(r.no)}" aria-pressed="${mk==="o"}">같다</button>
+            <button data-m="x" data-no="${esc(r.no)}" aria-pressed="${mk==="x"}">다르다</button>
+            ${auto!=null&&!mk?`<em>${auto?"같음?":"다름?"}</em>`:""}</div>`:""}
+        </div>`;}).join("")}</div>`;
+
+  let R=`<div class="xans${XA?" on":""}"><h3>원래 삼각형</h3>`;
+  if(ansPts){
+    const t3=xFit(ansPts,300,230,26);
+    R+=`<svg viewBox="0 0 300 230">${xPoly(t3,"#C0342A","#C0342A14",4.5)}</svg>
+      ${XA.sides?`<dl><dt>세 변</dt><dd>${[XA.sides.AB,XA.sides.BC,XA.sides.CA].join(" · ")}</dd>
+        <dt>세 각</dt><dd>${[XA.angles.A,XA.angles.B,XA.angles.C].join("° · ")}°</dd></dl>`:""}
+      <p class="xq">두 조건만으로는 <b>사람마다 다른 삼각형</b>이 나옵니다.<br>
+        “무엇을 더 알려 줬어야 했을까요?”</p>`;
+  }else{
+    R+=`<div class="xhold">
+      <svg viewBox="0 0 300 230"><polygon points="60,190 240,190 150,50" fill="none"
+        stroke="#D8CEB4" stroke-width="4" stroke-dasharray="10 9"/></svg>
+      <p>아직 봉인되어 있습니다<em>모두의 몽타주가 모이면 열립니다</em></p></div>`;
   }
-  if(!rows.length)h+=`<p class="hint2">학생이 제출하면 여기에 나타납니다.</p>`;
-  else h+=`<div class="xgrid">${rows.map(r=>{
-    const t=xFit(r.tri,240,170,20);
-    const auto=(XA&&XA.v)?xSame(r.tri,XA.v.map(p=>({x:p[0],y:p[1]}))):null;
-    const mk=XM[r.no];
-    return `<div class="xc ${mk==="o"?"o":mk==="x"?"x":""}">
-      <span class="nm">${esc(r.nick||r.no)}</span>
-      <svg viewBox="0 0 240 170">${xPoly(t,mk==="o"?"#2A7148":mk==="x"?"#C0342A":"#1C1A16",
-        mk==="o"?"#2A714812":mk==="x"?"#C0342A10":"#1C1A1608",3)}</svg>
-      ${XA?`<div class="xb">
-        <button data-m="o" data-no="${esc(r.no)}" aria-pressed="${mk==="o"}">같다</button>
-        <button data-m="x" data-no="${esc(r.no)}" aria-pressed="${mk==="x"}">다르다</button>
-        ${auto!=null?`<em>자동: ${auto?"같음":"다름"}</em>`:""}</div>`:""}
-    </div>`;}).join("")}</div>`;
-  if(XA){
-    const o=Object.values(XM).filter(v=>v==="o").length;
-    const x=Object.values(XM).filter(v=>v==="x").length;
-    h+=`<p class="hint2">같다 <b>${o}명</b> · 다르다 <b>${x}명</b><br>
-      두 조건만으로는 <b>사람마다 다른 삼각형</b>이 나옵니다.
-      “무엇을 더 알려 줬어야 했을까요?”를 물어보세요.</p>`;
-  }
-  $("paneRelay").innerHTML=h;
+  R+=`</div>`;
+
+  $("paneRelay").innerHTML=`<div class="xwrap"><div class="xleft">${L}</div>
+    <aside class="xright">${R}</aside></div>`;
   $("paneRelay").querySelectorAll("[data-m]").forEach(b=>b.onclick=async()=>{
-    b.blur();XM[b.dataset.no]=(XM[b.dataset.no]===b.dataset.m)?null:b.dataset.m;
+    b.blur();
+    XM[b.dataset.no]=(XM[b.dataset.no]===b.dataset.m)?null:b.dataset.m;
     if(!XM[b.dataset.no])delete XM[b.dataset.no];
     paint(1);
     try{await dbPut(`t2x/${V.cls}/mark`,XM);setNet(true);}catch(e){setNet(false);}});
@@ -739,8 +795,7 @@ function paintLock(){
     ${TASKS.filter(t=>t.lock).map(t=>`<label class="lk">
       <input type="checkbox" data-k="${t.id}" ${DATA.unlocked[t.id]?"checked":""}>
       <b>${t.n}</b><span>${LESSON[t.id]||""}</span></label>`).join("")}
-    <div class="hint">과제 1~3과 연습장은 항상 열려 있습니다.<br>
-      4차시에는 <b>과제 8을 먼저</b> 열고, 게시판에서 두 무리로 갈라지는 것을 확인한 뒤에 과제 9를 여세요.</div>
+    <div class="hint">과제 1~3과 연습장은 항상 열려 있습니다.</div>
   </div>`;
   $("paneLock").querySelectorAll("input").forEach(i=>i.onchange=async()=>{
     DATA.unlocked[i.dataset.k]=i.checked;
