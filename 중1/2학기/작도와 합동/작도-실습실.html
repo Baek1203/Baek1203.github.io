@@ -1698,6 +1698,169 @@ TASKS.t10={
 };
 
 /* ==================================================================
+   확장 ⑦ — 감식 훈련 (작도 연습 4문항)
+   ① 선분 옮기기 2문항  ② 각 옮기기 2문항(예각·둔각)
+   훈련 1·2에서 배운 절차를 스스로 다시 해 보는 자리다.
+   ================================================================== */
+const DRILL=[
+/* ① 선분 — 수평 직선 위로 */
+{label:"문항 ①",kind:"seg",
+ prompt:"선분 <b>AB</b>와 길이가 같은 선분을, 직선 <b>l</b> 위에 점 <b>P</b>에서 시작하도록 작도하시오.",
+ build:()=>[
+   PT("A",128,120), PT("B",312,120),
+   {t:"L",kind:"segment",p1:"A",p2:"B",given:true,key:"AB"},
+   PT("",84,404,{hidden:true}), PT("",724,404,{hidden:true}),
+   {t:"L",kind:"line",p1:"#3",p2:"#4",given:true,name:"l",key:"l",labelPos:{x:740,y:390}},
+   PT("P",196,404)]},
+/* ② 선분 — 기울어진 반직선 위로 */
+{label:"문항 ②",kind:"seg",
+ prompt:"선분 <b>AB</b>와 길이가 같은 선분을, 직선 <b>l</b> 위에 점 <b>P</b>에서 시작하도록 작도하시오.",
+ build:()=>[
+   PT("A",120,100), PT("B",258,232),
+   {t:"L",kind:"segment",p1:"A",p2:"B",given:true,key:"AB"},
+   PT("",372,470,{hidden:true}), PT("",752,148,{hidden:true}),
+   {t:"L",kind:"line",p1:"#3",p2:"#4",given:true,name:"l",key:"l",labelPos:{x:760,y:140}},
+   PT("P",436,416)]},
+/* ③ 각 — 예각 */
+{label:"문항 ③ · 예각",kind:"ang",deg:42,
+ ox:150,oy:392,r:218,px:470,py:392,qx:726,
+ prompt:"<b>∠AOB</b>와 크기가 같은 각을, 반직선 <b>PQ</b>를 한 변으로 하여 작도하시오."},
+/* ④ 각 — 둔각 (옮긴 각이 왼쪽 위로 뻗으므로 두 도형을 넉넉히 떼어 놓는다) */
+{label:"문항 ④ · 둔각",kind:"ang",deg:124,
+ ox:168,oy:296,r:170,px:548,py:438,qx:742,
+ prompt:"<b>∠AOB</b>와 크기가 같은 각을, 반직선 <b>PQ</b>를 한 변으로 하여 작도하시오."}
+];
+function angBuild(d){
+  const th=-d.deg*Math.PI/180;
+  return [
+    PT("O",d.ox,d.oy), PT("B",d.ox+d.r,d.oy),
+    PT("A",d.ox+d.r*Math.cos(th),d.oy+d.r*Math.sin(th)),
+    {t:"L",kind:"segment",p1:"O",p2:"B",given:true,key:"OB",over:24},
+    {t:"L",kind:"segment",p1:"O",p2:"A",given:true,key:"OA",over:24},
+    PT("P",d.px,d.py), PT("Q",d.qx,d.py),
+    {t:"L",kind:"segment",p1:"P",p2:"Q",given:true,key:"PQ",over:28}
+  ];
+}
+TASKS.drill={
+  fab:"overlay",
+  variants:DRILL.map((d,i)=>({label:d.label,i})),
+  prompt:V=>DRILL[V.i].prompt,
+  build:V=>DRILL[V.i].kind==="seg"?DRILL[V.i].build():angBuild(DRILL[V.i]),
+  pool:["C","D","E","F","G","H","J","K"],
+  win:"맞았습니다. 다음 문항으로 넘어가세요.",
+
+  nameFor(st,c){
+    if(DRILL[st.variant].kind!=="ang")return null;
+    const O=byLabel(st,"O"),Pp=byLabel(st,"P");
+    const A=byLabel(st,"A"),B=byLabel(st,"B"),Q=byLabel(st,"Q");
+    if(!O||!Pp)return null;
+    const OA=KEY(st,"OA"),OB=KEY(st,"OB"),PQ=KEY(st,"PQ");
+    const it=id=>get(st,id);
+    const arc=[c.a,c.b].map(it).find(x=>x&&x.t==="A");
+    const onRay=(V,T)=>((c.x-V.x)*(T.x-V.x)+(c.y-V.y)*(T.y-V.y))>0;
+    const hits=id=>c.a===id||c.b===id;
+    if(arc&&arc.c===O.id){
+      if(OA&&hits(OA.id)&&onRay(O,A))return "X";
+      if(OB&&hits(OB.id)&&onRay(O,B))return "Y";
+    }
+    if(arc&&arc.c===Pp.id&&PQ&&hits(PQ.id)&&onRay(Pp,Q))return "D";
+    const a1=it(c.a),a2=it(c.b);
+    if(a1&&a2&&a1.t==="A"&&a2.t==="A"){
+      const D=byLabel(st,"D"),cs=[a1.c,a2.c];
+      if(D&&cs.indexOf(Pp.id)>=0&&cs.indexOf(D.id)>=0&&c.y<Pp.y-4)return "C";
+    }
+    return null;
+  },
+
+  steps(st){
+    const d=DRILL[st.variant];
+    if(d.kind==="seg"){
+      const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P"),l=KEY(st,"l");
+      const AB=[A.id,B.id];
+      const w=same2(st.compass.from,AB)||arcsOf(st).some(a=>same2(rPts(a),AB));
+      const arc=arcsOf(st).find(a=>a.c===Pp.id&&same2(rPts(a),AB));
+      const Q=arc&&xpt(st,arc.id,l.id);
+      return[
+        {t:"컴퍼스를 <u>선분 AB</u>만큼 벌린다",ok:w},
+        {t:"벌림을 그대로 둔 채 점 P를 중심으로 호를 그려, 직선 l과 만나는 점을 찍는다",ok:!!Q},
+        {t:"눈금 없는 자로 두 점을 <u>선분</u>으로 잇는다",ok:this.check(st).ok}
+      ];
+    }
+    const O=byLabel(st,"O"),Pp=byLabel(st,"P");
+    const a1=arcsOf(st).find(a=>a.c===O.id);
+    const X=a1&&xpt(st,a1.id,KEY(st,"OA").id), Y=a1&&xpt(st,a1.id,KEY(st,"OB").id);
+    const a2=a1&&arcsOf(st).find(a=>a.c===Pp.id&&Math.abs(radiusOf(a)-radiusOf(a1))<0.01);
+    const D=a2&&xpt(st,a2.id,KEY(st,"PQ").id);
+    const a3=(X&&Y&&D)&&arcsOf(st).find(a=>a.c===D.id&&same2(rPts(a),[X.id,Y.id]));
+    return[
+      {t:"점 O를 중심으로 호를 그려, 두 변과 만나는 점 <b>X · Y</b>를 찍는다",ok:!!(X&&Y)},
+      {t:"<u>같은 벌림</u>으로 점 P에서 호를 그려, 반직선 PQ와 만나는 점 <b>D</b>를 찍는다",ok:!!D},
+      {t:"컴퍼스를 <u>선분 XY</u>만큼 벌려, 점 D를 중심으로 호를 그린다",ok:!!a3},
+      {t:"두 호가 만나는 점 <b>C</b>를 찍고, 점 P와 잇는다",ok:this.check(st).ok}
+    ];
+  },
+
+  check(st){
+    const d=DRILL[st.variant];
+    if(d.kind==="seg"){
+      const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P");
+      const l=st.items.find(i=>i.name==="l");
+      const L1=get(st,l.p1),L2=get(st,l.p2),tgt=d2(A,B);
+      const segs=st.items.filter(i=>i.t==="L"&&!i.given&&i.kind==="segment"&&(i.p1===Pp.id||i.p2===Pp.id));
+      const rs=segs.map(ln=>{
+        const Q=get(st,ln.p1===Pp.id?ln.p2:ln.p1),len=d2(Pp,Q);
+        const off=Math.abs((L2.x-L1.x)*(L1.y-Q.y)-(L1.x-Q.x)*(L2.y-L1.y))/d2(L1,L2);
+        return {ok:len>6&&Math.abs(len-tgt)<0.9&&off<0.9,Q,len};
+      });
+      const best=rs.find(r=>r.ok)||rs[0];
+      if(!best){
+        const other=st.items.find(i=>i.t==="L"&&!i.given&&(i.p1===Pp.id||i.p2===Pp.id));
+        return {none:true,msg:other
+          ?`점 P에서 ${KIND[other.kind]}을 그었습니다. 옮겨야 하는 것은 선분입니다.`
+          :"점 P에서 시작하는 선분이 아직 없습니다."};
+      }
+      return {ok:best.ok,answer:[Pp,best.Q],target:[A,B],
+        msg:best.len>tgt?"작도한 선분이 선분 AB보다 깁니다.":"작도한 선분이 선분 AB보다 짧습니다."};
+    }
+    const O=byLabel(st,"O"),A=byLabel(st,"A"),B=byLabel(st,"B");
+    const Pp=byLabel(st,"P"),Q=byLabel(st,"Q");
+    const a1=normPi(ang(O,A)-ang(O,B));
+    const lns=st.items.filter(i=>i.t==="L"&&!i.given&&(i.p1===Pp.id||i.p2===Pp.id));
+    const rs=lns.map(ln=>{
+      const R=get(st,ln.p1===Pp.id?ln.p2:ln.p1),a2=normPi(ang(Pp,R)-ang(Pp,Q));
+      return {ok:d2(Pp,R)>6&&Math.abs(Math.abs(a1)-Math.abs(a2))<0.5*Math.PI/180,R,a2};
+    });
+    const best=rs.find(r=>r.ok)||rs[0];
+    if(!best)return {none:true,msg:"점 P에서 뻗어 나가는 변이 아직 없습니다."};
+    return {ok:best.ok,a1,a2:best.a2,O,A,B,Pp,Q,R:best.R,
+      msg:Math.abs(best.a2)>Math.abs(a1)?"작도한 각이 ∠AOB보다 큽니다.":"작도한 각이 ∠AOB보다 작습니다."};
+  },
+
+  overlay(st){
+    const d=DRILL[st.variant],c=this.check(st);
+    if(c.none)return c;
+    if(d.kind==="seg"){
+      const [Pp,Q]=c.answer,[A,B]=c.target;
+      const u=ang(Pp,Q),L=d2(A,B);
+      return Object.assign(c,{
+        segs:[[Pp,{x:Pp.x+L*Math.cos(u),y:Pp.y+L*Math.sin(u)}]],
+        pivot:Pp,dTheta:ang(A,B)-u,dPos:{x:A.x-Pp.x,y:A.y-Pp.y},
+        title:"점 P를 점 A에 맞추어 미끄러뜨립니다."});
+    }
+    const {O,A,B,Pp,Q,a1,a2}=c;
+    const u=ang(Pp,Q),s=Math.sign(a1)||1,mag=Math.abs(a2);
+    const L1=d2(O,B)+KEY(st,"OB").over,L2=d2(O,A)+KEY(st,"OA").over;
+    return Object.assign(c,{
+      segs:[[Pp,{x:Pp.x+L1*Math.cos(u),y:Pp.y+L1*Math.sin(u)}],
+            [Pp,{x:Pp.x+L2*Math.cos(u+s*mag),y:Pp.y+L2*Math.sin(u+s*mag)}]],
+      marks:[{c:Pp,r:56,a0:u,sw:s*mag}],pivot:Pp,
+      dTheta:ang(O,B)-u,dPos:{x:O.x-Pp.x,y:O.y-Pp.y},
+      flipped:Math.sign(a2)!==s,
+      title:"점 P를 점 O에, 변 PQ를 변 OB에 맞추어 미끄러뜨립니다."});
+  }
+};
+
+/* ==================================================================
    확장 ④ — 연습장 (1차시부터 상시 개방)
    선분과 각을 옮겨 붙이는 연습만 담는다.
    삼각형을 조건으로 작도하는 과제는 넣지 않는다 — 3·4차시의 발견을
@@ -1886,6 +2049,7 @@ const TASKLIST=[
   {id:"seg",label:"훈련 1 · 길이를 그대로 옮기기"},
   {id:"ang",label:"훈련 2 · 각을 그대로 옮기기"},
   {id:"par",label:"훈련 3 · 나란한 선 긋기"},
+  {id:"drill",label:"★ 감식 훈련"},
   {id:"pg", label:"훈련장"},
   {id:"t4", label:"조사 1 · 세 변이 삼각형이 되려면",lockName:"조사 1"},
   {id:"t5", label:"조사 2 · 세 변을 알 때",       lockName:"조사 2"},
@@ -2154,6 +2318,7 @@ const WHY={
   seg:"현장의 길이를 <b>재지 않고 그대로 옮기는</b> 법입니다. 몽타주 작도의 첫걸음입니다.",
   ang:"각을 <b>재지 않고 옮기는</b> 법입니다. 진술에 각이 나오면 반드시 씁니다.",
   par:"두 선을 나란히 놓는 법입니다. 옮긴 각이 왜 같은지를 설명해 줍니다.",
+  drill:"훈련 1·2에서 배운 것을 <b>혼자 힘으로</b> 다시 해 봅니다. 네 문항을 차례로 푸세요.",
   pg:"정답이 없는 훈련장입니다. 손에 익을 때까지 마음껏 해 보세요.",
   t4:"진술의 세 길이로 <b>삼각형이 아예 안 되는 경우</b>가 있습니다. 그런 진술은 수사에서 걸러야 합니다.",
   t5:"진술이 <b>세 변</b>을 알려 줄 때 몽타주를 그리는 법입니다.",
