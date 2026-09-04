@@ -182,7 +182,7 @@
   .xans.on{border-style:solid;border-color:var(--red);box-shadow:0 8px 26px rgba(192,52,42,.14)}
   .xans h3{margin:0 0 10px;font:900 14px/1 var(--sans);color:var(--ink-soft)}
   .xans.on h3{color:var(--red)}
-  .xans svg{width:100%;height:200px;display:block}
+  .xans svg{width:100%;height:250px;display:block}
   .xans dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:12px 0 0;text-align:left}
   .xans dt{font:800 12px/1.6 var(--sans);color:var(--ink-soft)}
   .xans dd{margin:0;font:800 14px/1.6 var(--sans)}
@@ -732,6 +732,49 @@ function xSame(a,b){
   const p=s(a),q=s(b),k=q[2]/Math.max(1,p[2]);
   return p.every((v,i)=>Math.abs(v*k-q[i])<Math.max(4,q[2]*0.03));
 }
+function ansSVG(A,W,H,sc){
+  sc=sc||1;
+  const P=xFit(A.v.map(p=>({x:p[0],y:p[1]})),W,H,46*sc);
+  const N=["A","B","C"];
+  const cx=(P[0].x+P[1].x+P[2].x)/3, cy=(P[0].y+P[1].y+P[2].y)/3;
+  const S=A.sides||{}, G=A.angles||{};
+  let g=`<polygon points="${P.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}"
+    fill="#C0342A10" stroke="#C0342A" stroke-width="${(4*sc).toFixed(1)}"
+    stroke-linejoin="round"/>`;
+  /* 각 — 호와 크기 */
+  for(let i=0;i<3;i++){
+    const v=P[i],u=P[(i+2)%3],w=P[(i+1)%3];
+    const a1=Math.atan2(u.y-v.y,u.x-v.x),a2=Math.atan2(w.y-v.y,w.x-v.x);
+    let dd=a2-a1;while(dd>Math.PI)dd-=2*Math.PI;while(dd<-Math.PI)dd+=2*Math.PI;
+    const r=26*sc, Q=t2=>`${(v.x+r*Math.cos(t2)).toFixed(1)},${(v.y+r*Math.sin(t2)).toFixed(1)}`;
+    g+=`<path d="M${Q(a1)} A ${r} ${r} 0 0 ${dd>0?1:0} ${Q(a2)}" fill="none"
+      stroke="#C0342A" stroke-width="${(2.2*sc).toFixed(1)}" opacity=".7"/>`;
+    const tm=a1+dd/2,rr=r+17*sc, val=G[N[i]];
+    if(val!=null)g+=`<text x="${(v.x+rr*Math.cos(tm)).toFixed(1)}"
+      y="${(v.y+rr*Math.sin(tm)+4*sc).toFixed(1)}" text-anchor="middle"
+      font-size="${(13*sc).toFixed(1)}" font-weight="800" fill="#8E2A22"
+      font-family="var(--sans)">${val}°</text>`;
+  }
+  /* 변 — 길이 */
+  [[0,1,"AB"],[1,2,"BC"],[2,0,"CA"]].forEach(([i,j,k])=>{
+    const val=S[k];if(val==null)return;
+    const mx=(P[i].x+P[j].x)/2,my=(P[i].y+P[j].y)/2;
+    let dx=mx-cx,dy=my-cy;const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;
+    g+=`<text x="${(mx+dx*17*sc).toFixed(1)}" y="${(my+dy*17*sc+5*sc).toFixed(1)}"
+      text-anchor="middle" font-size="${(16*sc).toFixed(1)}" font-weight="800"
+      fill="#1C1A16" font-family="var(--sans)">${val}</text>`;
+  });
+  /* 꼭짓점 */
+  P.forEach((p,i)=>{
+    let dx=p.x-cx,dy=p.y-cy;const L=Math.hypot(dx,dy)||1;dx/=L;dy/=L;
+    g+=`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${(4.5*sc).toFixed(1)}"
+      fill="#C0342A"/>
+      <text x="${(p.x+dx*20*sc).toFixed(1)}" y="${(p.y+dy*20*sc+6*sc).toFixed(1)}"
+        text-anchor="middle" font-size="${(18*sc).toFixed(1)}" font-weight="800"
+        fill="#C0342A" font-family="Georgia,serif">${N[i]}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`;
+}
 function paintRelay(){
   const rows=Object.keys(XS).map(k=>Object.assign({no:k},XS[k])).sort((a,b)=>a.at-b.at);
   const ansPts=(XA&&XA.v)?XA.v.map(p=>({x:p[0],y:p[1]})):null;
@@ -763,11 +806,8 @@ function paintRelay(){
 
   let R=`<div class="xans${XA?" on":""}"><h3>원래 삼각형</h3>`;
   if(ansPts){
-    const t3=xFit(ansPts,300,230,26);
-    R+=`<svg viewBox="0 0 300 230">${xPoly(t3,"#C0342A","#C0342A14",4.5)}</svg>
-      ${XA.sides?`<dl><dt>세 변</dt><dd>${[XA.sides.AB,XA.sides.BC,XA.sides.CA].join(" · ")}</dd>
-        <dt>세 각</dt><dd>${[XA.angles.A,XA.angles.B,XA.angles.C].join("° · ")}°</dd></dl>`:""}
-      <p class="xq">두 조건만으로는 <b>사람마다 다른 삼각형</b>이 나옵니다.<br>
+    R+=ansSVG(XA,300,260)+
+      `<p class="xq">두 조건만으로는 <b>사람마다 다른 삼각형</b>이 나옵니다.<br>
         “무엇을 더 알려 줬어야 했을까요?”</p>`;
   }else{
     R+=`<div class="xhold">
