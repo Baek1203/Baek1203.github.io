@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>삼각형이 되는 조건</title>
+<title>종이띠로 삼각형 만들기</title>
 <style>
   :root{
     --bg:#FFF6EC; --card:#FFFFFF; --ink:#3B3A45; --soft:#8C8899;
@@ -26,82 +26,54 @@
   .chip.off{background:var(--peach-l);border-color:var(--peach);color:#A9432A}
   .me{font:800 12px/1 var(--f);padding:9px 13px;border-radius:99px;background:var(--sun-l);
     border:2px solid var(--sun);color:#8A5E00;cursor:pointer}
-  .body{flex:1;min-height:0;overflow:auto;padding:6px 15px 34px}
-  .mid{max-width:660px;margin:0 auto}
+  .body{flex:1;min-height:0;overflow:auto;padding:6px 15px 40px}
+  .mid{max-width:680px;margin:0 auto}
 
-  .hero{text-align:center;padding:30px 16px}
-  .hero .big{font:900 23px/1.35 var(--f);margin:0 0 8px}
+  .hero{text-align:center;padding:18px 10px 8px}
+  .hero .big{font:900 22px/1.35 var(--f);margin:0 0 7px}
   .hero p{font:700 13px/1.7 var(--f);color:var(--soft);margin:0}
-  .dots{display:flex;gap:7px;justify-content:center;margin-top:20px}
-  .dots i{width:11px;height:11px;border-radius:99px;background:#E6DFD4;animation:bob 1.4s infinite}
-  .dots i:nth-child(2){animation-delay:.16s;background:#F3D8C8}
-  .dots i:nth-child(3){animation-delay:.32s;background:#D8D0F3}
-  @keyframes bob{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+  .prog{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);
+    border-radius:16px;padding:12px 15px;margin:12px 0 16px}
+  .prog b{font:900 14px/1 var(--f)}
+  .prog .bar{flex:1;height:11px;border-radius:99px;background:#EFE7DC;overflow:hidden}
+  .prog .bar i{display:block;height:100%;background:var(--mint)}
 
-  .stage{background:var(--card);border-radius:24px;padding:16px 16px 18px;
-    box-shadow:0 10px 30px rgba(90,70,50,.10);border:2px solid #fff;margin-bottom:14px}
-  .stage h2{margin:0 0 10px;font:900 16px/1.4 var(--f);text-align:center}
-  .fig{background:var(--bg);border-radius:18px;padding:10px}
-  .fig svg{width:100%;height:min(34vh,250px);display:block}
-  .lines{margin:12px 0 0;display:grid;gap:8px}
-  .ln{background:var(--lav-l);border:2px solid #DCD4FA;border-radius:14px;padding:11px 14px;
-    font:800 14.5px/1.6 var(--f)}
-  .ln b{color:var(--lav)}
-  .ln.sun{background:var(--sun-l);border-color:var(--sun)}
-
-  .ring{display:block;margin:0 auto 4px}
-  .secs{text-align:center;font:900 15px/1 var(--f);color:var(--sun);margin:0 0 8px}
-  .qn{text-align:center;font:900 12px/1 var(--f);color:var(--soft);letter-spacing:.06em}
-  .qq{text-align:center;font:900 clamp(16px,4.4vw,20px)/1.5 var(--f);margin:10px 0 2px}
-  .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-  .opts button{border:3px solid var(--line);border-radius:18px;padding:16px 8px;cursor:pointer;
-    font:900 17px/1.2 var(--f);background:#fff;color:var(--ink);transition:transform .12s}
-  .opts button:active{transform:translateY(1px)}
-  .opts button.on{border-color:var(--lav);background:var(--lav-l);color:#4A3D9E}
-  .opts button.ok{border-color:var(--mint);background:var(--mint-l);color:#14634F}
-  .opts button.no{border-color:var(--peach);background:var(--peach-l);color:#9A3A22}
-  .opts button:disabled{cursor:default}
-  .verd{margin-top:14px;border-radius:16px;padding:13px 15px;font:800 14px/1.6 var(--f)}
-  .verd.ok{background:var(--mint-l);border:2px solid var(--mint);color:#14634F}
-  .verd.no{background:var(--peach-l);border:2px solid var(--peach);color:#9A3A22}
-  .pts{float:right;font:900 15px/1 var(--f)}
-
-  .rank{display:grid;gap:8px;margin-top:12px}
-  .rk{display:flex;align-items:center;gap:11px;background:#fff;border:2px solid var(--line);
-    border-radius:14px;padding:12px 14px;font:800 14.5px/1 var(--f)}
-  .rk .no{width:30px;text-align:center;font:900 16px/1 var(--f);color:var(--soft)}
-  .rk .sc{margin-left:auto;font:900 16px/1 var(--f);color:var(--lav)}
-  .rk.me{border-color:var(--sun);background:var(--sun-l)}
-  .rk.top1 .no{color:#D89A08}.rk.top2 .no{color:#9AA0AE}.rk.top3 .no{color:#B98357}
-
-  .sets{display:grid;gap:11px}
-  .set{background:#fff;border:2px solid var(--line);border-radius:18px;padding:13px 15px}
-  .set h3{margin:0 0 6px;font:900 15px/1 var(--f)}
-  .set h3 em{font-style:normal;color:var(--soft);font-weight:800;margin-left:7px;font-size:13px}
-  .set svg{width:100%;height:78px;display:block;margin:4px 0 10px}
+  .sets{display:grid;gap:12px}
+  .set{background:#fff;border:2px solid var(--line);border-radius:20px;padding:14px 16px}
+  .set.done{border-color:var(--mint)}
+  .set h3{margin:0 0 6px;font:900 16px/1 var(--f)}
+  .set h3 em{font-style:normal;color:var(--soft);font-weight:800;margin-left:8px;font-size:14px}
+  .set svg.tape{width:100%;height:84px;display:block;margin:4px 0 10px}
+  .try{width:100%;margin-bottom:9px;padding:13px;border-radius:14px;cursor:pointer;
+    font:900 14px/1 var(--f);background:var(--lav);border:0;color:#fff}
+  .try:active{transform:translateY(1px)}
   .yn{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-  .yn button:disabled{opacity:.5;cursor:default}
-  .yn button{border:3px solid var(--line);border-radius:14px;padding:13px 6px;cursor:pointer;
+  .yn button{border:3px solid var(--line);border-radius:14px;padding:14px 6px;cursor:pointer;
     font:900 14.5px/1.2 var(--f);background:#fff;color:var(--ink)}
   .yn .y.on{border-color:var(--mint);background:var(--mint-l);color:#14634F}
   .yn .n.on{border-color:var(--peach);background:var(--peach-l);color:#9A3A22}
-  .fin{margin-top:10px;border-radius:12px;padding:10px 13px;font:800 13px/1.5 var(--f)}
+  .fin{margin-top:10px;border-radius:12px;padding:11px 14px;font:800 13px/1.5 var(--f)}
   .fin.ok{background:var(--mint-l);color:#14634F}
   .fin.no{background:var(--peach-l);color:#9A3A22}
-
-  table.ch{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}
-  table.ch th{background:var(--lav-l);font:900 12.5px/1.35 var(--f);padding:11px 5px;
-    border:1.5px solid var(--line);text-align:center}
-  table.ch td{border:1.5px solid var(--line);padding:11px 5px;text-align:center;
-    font:800 14px/1.3 var(--f)}
-  table.ch td.first{background:#FBF8F2}
-  table.ch td.hide{background:#F3EFE7;color:transparent}
-  .note{font:700 12px/1.7 var(--f);color:var(--soft);text-align:center;margin:14px 0 0}
+  .tail{margin:22px 0 0;text-align:center;font:700 13px/1.8 var(--f);color:var(--soft)}
 
   .modal{position:fixed;inset:0;background:rgba(59,58,69,.45);display:grid;place-items:center;
-    padding:18px;z-index:40}
+    padding:16px;z-index:40}
   .modal[hidden]{display:none}
   .sheet{background:#fff;border-radius:24px;width:min(400px,100%);padding:24px}
+  .simsheet{width:min(900px,98vw);padding:22px 24px 20px;user-select:none;-webkit-user-select:none}
+  #simSvg{width:100%;height:min(56vh,420px);display:block;touch-action:none;
+    -webkit-user-select:none;user-select:none}
+  #simSvg *{-webkit-user-select:none;user-select:none}
+  .simh{margin:0 0 4px;font:900 20px/1.3 var(--f)}
+  .simh em{font-style:normal;color:var(--soft);font-weight:800;font-size:15px;margin-left:8px}
+  .simhint{margin:8px 0 0;font:700 14px/1.7 var(--f);color:var(--soft);text-align:center}
+  .simv{margin:10px 0 0;border-radius:14px;padding:14px 16px;font:800 16px/1.6 var(--f);
+    text-align:center}
+  .simv.ok{background:var(--mint-l);border:2px solid var(--mint);color:#14634F}
+  .simv.no{background:var(--peach-l);border:2px solid var(--peach);color:#9A3A22}
+  .simact{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+  .simact button{margin:0}
   .sheet h1{margin:0 0 5px;font:900 19px/1.3 var(--f)}
   .sheet p{margin:0 0 15px;font:700 12.5px/1.6 var(--f);color:var(--soft)}
   .row{display:flex;align-items:center;gap:9px;margin:11px 0}
@@ -116,28 +88,13 @@
     font:900 15px/1 var(--f);background:var(--ink);color:#fff}
   .go2{width:100%;margin-top:8px;padding:13px;border-radius:16px;cursor:pointer;
     font:800 12.5px/1 var(--f);background:#fff;border:2px solid var(--line);color:var(--soft)}
-  .simsheet{width:min(900px,98vw);padding:22px 24px 20px;user-select:none;-webkit-user-select:none}
-  #simSvg{width:100%;height:min(56vh,420px);display:block;touch-action:none;
-    -webkit-user-select:none;user-select:none}
-  #simSvg *{-webkit-user-select:none;user-select:none}
-  .simh{margin:0 0 4px;font:900 20px/1.3 var(--f)}
-  .simh em{font-style:normal;color:var(--soft);font-weight:800;font-size:15px;margin-left:8px}
-  .simhint{margin:8px 0 0;font:700 14px/1.7 var(--f);color:var(--soft);text-align:center}
-  .simv{margin:10px 0 0;border-radius:14px;padding:14px 16px;font:800 16px/1.6 var(--f);
-    text-align:center}
-  .simv.ok{background:var(--mint-l);border:2px solid var(--mint);color:#14634F}
-  .simv.no{background:var(--peach-l);border:2px solid var(--peach);color:#9A3A22}
-  .simact{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
-  .simact button{margin:0}
-  .try{width:100%;margin-top:9px;padding:12px;border-radius:14px;cursor:pointer;
-    font:900 13.5px/1 var(--f);background:var(--lav);border:0;color:#fff}
   :focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 </style>
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <span class="logo">삼각형이 <b>되는 조건</b></span>
+    <span class="logo">종이띠로 <b>삼각형 만들기</b></span>
     <span class="sp"></span>
     <span class="chip" id="net">연결 확인 중</span>
     <button class="me" id="me">입장하기</button>
@@ -324,7 +281,7 @@ async function enter(force){
   me=Object.assign({},me,{cls:c,nick:nk,no:nk});LS.set("me",me);
   if(o!=="off")pj(`codes/${c}/${nk}`,{dev:DEV,at:Date.now()}).catch(()=>{});
   busy=false;note("");$("idGo").textContent="들어가기";delete $("idGo").dataset.f;
-  $("idModal").hidden=true;paintMe();hello();await pull();paint();
+  $("idModal").hidden=true;paintMe();STRIP={};await pull();paint();
 }
 $("idGo").onclick=()=>enter($("idGo").dataset.f==="1");
 $("idDice").onclick=()=>{$("idNick").value=rnd(NA)+rnd(NB);note("");
@@ -332,192 +289,26 @@ $("idDice").onclick=()=>{$("idNick").value=rnd(NA)+rnd(NB);note("");
 $("idHand").onclick=()=>{
   if(!confirm("이 기기의 코드네임을 지웁니다."))return;
   LS.del("me");me={cls:me.cls,nick:"",no:"",group:"",color:"#5FCBB0"};
-  $("idNick").value="";paintMe();openId(1);paint();};
+  STRIP={};$("idNick").value="";paintMe();openId(1);paint();};
 $("me").onclick=()=>openId();
 $("idModal").addEventListener("click",e=>{
   if(e.target===$("idModal")&&$("idModal").dataset.f!=="1")$("idModal").hidden=true;});
-async function hello(){
-  if(!me.nick)return;
-  try{await pj(`t2/${cls()}/here/${me.no}`,{nick:me.nick,at:Date.now()});setNet(true);}
-  catch(e){setNet(false);}
-}
-setInterval(hello,25000);
 
 /* ── 자료 ── */
-let ST={phase:"wait",step:0,qi:0,qat:0,qdone:false,open:{}},MY={},STRIP={},FINAL={},RANK={},HERE={};
+let STRIP={}, FINAL={};
 async function pull(){
   if(!me.nick)return;
   try{
-    const [s,q,st,fi,rk,he]=await Promise.all([
-      gj(`t2/${cls()}/state`),gj(`t2/${cls()}/quiz/${me.no}`),
-      gj(`t2/${cls()}/strips/${me.no}`),gj(`t2/${cls()}/final`),
-      gj(`t2/${cls()}/quiz`),gj(`t2/${cls()}/here`)]);
-    ST=Object.assign({phase:"wait",step:0,qi:0,qat:0,qdone:false,open:{}},s||{});
-    MY=q||{};STRIP=st||{};FINAL=fi||{};RANK=rk||{};HERE=he||{};setNet(true);
+    const [st,fi]=await Promise.all([
+      gj(`t2/${cls()}/strips/${me.no}`),gj(`t2/${cls()}/final`)]);
+    STRIP=st||{};FINAL=fi||{};setNet(true);
   }catch(e){setNet(false);}
-}
-const myAns=i=>((MY.a||{})[i]||null);
-const myScore=()=>Object.values(MY.a||{}).reduce((s,x)=>s+(x.pts||0),0);
-
-async function answer(i,k){
-  if(myAns(i))return;
-  const left=Math.max(0,QDUR-(Date.now()-(ST.qat||0)));
-  if(!left||ST.qdone)return;
-  const ok=k===QUIZ[i].a;
-  const pts=ok?Math.round(100+QMAX/2*(left/QDUR)):0;
-  const rec={k,ok,pts,ms:QDUR-left};
-  MY.a=Object.assign({},MY.a,{[i]:rec});paint();
-  try{await pj(`t2/${cls()}/quiz/${me.no}`,
-    Object.assign({},MY,{nick:me.nick,at:Date.now()}));setNet(true);}catch(e){setNet(false);}
 }
 async function mark(i,v){
   STRIP[i]=v;paint();
   try{await pj(`t2/${cls()}/strips/${me.no}`,
     Object.assign({},STRIP,{nick:me.nick,at:Date.now()}));setNet(true);}catch(e){setNet(false);}
 }
-
-/* ── 그리기 ── */
-function ring(p){
-  const r=21,c=2*Math.PI*r;
-  return `<svg class="ring" width="50" height="50" viewBox="0 0 50 50">
-    <circle cx="25" cy="25" r="${r}" fill="none" stroke="#EFE7DC" stroke-width="5"/>
-    <circle cx="25" cy="25" r="${r}" fill="none" stroke="var(--sun)" stroke-width="5"
-      stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p)}"
-      transform="rotate(-90 25 25)"/></svg>`;
-}
-const INTRO=[
-  "삼각형은 <b>△ABC</b>처럼 나타냅니다.",
-  "세 <b>꼭짓점</b> A, B, C",
-  "세 <b>변</b> AB, BC, CA",
-  "세 <b>각</b> ∠A, ∠B, ∠C",
-  "그래서 삼각형에는 <b>여섯 개</b>의 요소가 있습니다."
-];
-const OPPO=[
-  "<b>대(對)</b> 는 <b>마주 본다</b>는 뜻입니다.",
-  "∠A와 마주 보는 변은 <b>변 BC</b> — 이것을 <b>∠A의 대변</b>이라 합니다.",
-  "변 BC와 마주 보는 각은 <b>∠A</b> — 이것을 <b>변 BC의 대각</b>이라 합니다.",
-  "∠B ↔ 변 CA · ∠C ↔ 변 AB 도 마찬가지입니다."
-];
-function paint(){
-  paintMe();
-  const M=$("main");
-  if(!me.nick){M.innerHTML=`<div class="hero"><p class="big">먼저 입장하세요</p>
-    <p>오른쪽 위 <b>입장하기</b>를 누르면 시작합니다.</p></div>`;return;}
-  const ph=ST.phase,s=ST.step||0;
-
-  if(ph==="wait"){
-    M.innerHTML=`<div class="hero"><p class="big">준비됐어요!</p>
-      <p>선생님이 시작하면 화면이 바뀝니다.<br>지금 <b>${Object.keys(HERE).length}명</b>이 들어와 있어요.</p>
-      <div class="dots"><i></i><i></i><i></i></div></div>`;return;}
-
-  if(ph==="intro"||ph==="oppo"){
-    const list=ph==="intro"?INTRO:OPPO;
-    const opt=ph==="intro"
-      ?{v:s>=1,s:s>=2,a:s>=3}
-      :{v:true,s:true,a:true,hiS:s>=1?"BC":null,hiA:s>=1?"A":null};
-    M.innerHTML=`<div class="stage">
-      <h2>${ph==="intro"?"삼각형의 여섯 요소":"대변과 대각"}</h2>
-      <div class="fig">${triSVG(T1,opt)}</div>
-      <div class="lines">${list.slice(0,s+1).map((x,i)=>
-        `<div class="ln${i===s?" sun":""}">${x}</div>`).join("")}</div>
-    </div>`;return;}
-
-  if(ph==="quiz"){
-    const i=ST.qi|0,Q=QUIZ[i],mine=myAns(i);
-    const left=Math.max(0,QDUR-(Date.now()-(ST.qat||0)));
-    const shut=ST.qdone||!left||!!mine;
-    let h=`<div class="stage">${ST.qdone?"":ring(left/QDUR)}
-      ${ST.qdone?"":`<p class="secs">${Math.ceil(left/1000)}초</p>`}
-      <p class="qn">${i+1} / ${QUIZ.length} · 내 점수 ${myScore()}</p>
-      <p class="qq">${Q.q}</p>
-      <div class="fig">${triSVG(Q.t,{v:true,s:true,a:true})}</div>
-      <div class="opts">${Q.o.map((o,k)=>{
-        let cl="";
-        if(ST.qdone)cl=(k===Q.a)?" ok":((mine&&mine.k===k)?" no":"");
-        else if(mine&&mine.k===k)cl=" on";
-        return `<button class="${cl.trim()}" data-k="${k}"${shut?" disabled":""}>${o}</button>`;
-      }).join("")}</div>`;
-    if(ST.qdone)h+=`<div class="verd ${mine&&mine.ok?"ok":"no"}">
-      <span class="pts">${mine&&mine.ok?"+"+mine.pts:"+0"}</span>
-      ${mine?(mine.ok?"맞았어요!":"아쉬워요."):"시간이 지났어요."}<br>${Q.why}</div>`;
-    else if(mine)h+=`<div class="verd ok" style="background:var(--lav-l);border-color:var(--lav);color:#4A3D9E">
-      냈습니다. 결과는 시간이 끝나면 보여요.</div>`;
-    M.innerHTML=h+"</div>";
-    M.querySelectorAll(".opts button").forEach(b=>b.onclick=()=>answer(i,+b.dataset.k));
-    return;}
-
-  if(ph==="rank"){
-    const rows=Object.keys(RANK).map(k=>({no:k,nick:(RANK[k]||{}).nick||k,
-      sc:Object.values((RANK[k]||{}).a||{}).reduce((s,x)=>s+(x.pts||0),0)}))
-      .sort((a,b)=>b.sc-a.sc);
-    const mi=rows.findIndex(r=>r.no===me.no);
-    M.innerHTML=`<div class="hero" style="padding:16px 8px"><p class="big">
-      ${mi>=0?`${mi+1}등 · ${rows[mi].sc}점`:"기록이 없어요"}</p>
-      <p>모두 ${rows.length}명이 풀었어요.</p></div>
-      <div class="rank">${rows.slice(0,10).map((r,i)=>
-        `<div class="rk${r.no===me.no?" me":""} top${i+1}">
-          <span class="no">${i+1}</span>${esc(r.nick)}<span class="sc">${r.sc}</span></div>`).join("")}
-      </div>${mi>=10?`<div class="rank"><div class="rk me">
-        <span class="no">${mi+1}</span>${esc(rows[mi].nick)}<span class="sc">${rows[mi].sc}</span>
-      </div></div>`:""}`;return;}
-
-  if(ph==="strips"||ph==="tally"){
-    const lock=(ph==="tally");
-    M.innerHTML=`<div class="hero" style="padding:14px 8px"><p class="big">종이띠로 만들어 보기</p>
-      <p>${lock?"기록은 끝났습니다. 우리 반의 결론이 하나씩 정해집니다."
-             :"세 띠를 이어 붙여 삼각형이 되는지 직접 해 보고, 결과를 눌러 기록하세요."}</p></div>
-      <div class="sets">${SETS.map((st,i)=>`<div class="set">
-        <h3>${st.n}<em>${st.v.join(" · ")}</em></h3>
-        ${stripSVG(st.v)}
-        <div class="yn">
-          <button class="y${STRIP[i]==="ok"?" on":""}" data-i="${i}" data-v="ok"${
-            lock?" disabled":""}>삼각형이 됐다</button>
-          <button class="n${STRIP[i]==="no"?" on":""}" data-i="${i}" data-v="no"${
-            lock?" disabled":""}>안 됐다</button>
-        </div>
-        ${lock?"":`<button class="try" data-sim="${i}">직접 만들어 보기</button>`}
-        ${FINAL[i]?`<div class="fin ${FINAL[i]}">우리 반 결론 · ${
-          FINAL[i]==="ok"?"성공":"실패"}</div>`:""}
-      </div>`).join("")}</div>`;
-    if(!lock){
-      M.querySelectorAll(".yn button").forEach(b=>b.onclick=()=>mark(+b.dataset.i,b.dataset.v));
-      M.querySelectorAll("[data-sim]").forEach(b=>b.onclick=()=>simOpen(+b.dataset.sim));
-    }
-    return;}
-
-  if(ph==="chart"){
-    M.innerHTML=`<div class="hero" style="padding:14px 8px"><p class="big">교차 비교 차트</p>
-      <p>선생님이 여는 칸이 하나씩 채워집니다.</p></div>
-      <table class="ch"><tr>${CH_HEAD.map(h=>`<th>${h}</th>`).join("")}</tr>
-      ${CH_ROWS.map((r,ri)=>`<tr>${r.map((v,ci)=>{
-        if(ci===0)return `<td class="first">${v}</td>`;
-        const open=(ST.open||{})[ri+"-"+ci];
-        return `<td class="${open?"":"hide"}">${open?v:"·"}</td>`;
-      }).join("")}</tr>`).join("")}</table>
-      <p class="note">모두 열리면 <b>대소</b> 칸만 보고도 성공 여부를 알 수 있는지 살펴보세요.</p>`;
-    return;}
-  M.innerHTML=`<div class="hero"><p class="big">잠시만요</p></div>`;
-}
-
-/* ── 새로 고침 ── */
-let sig="";
-async function tick(){
-  await pull();
-  const s=JSON.stringify([ST,MY.a,STRIP,FINAL,Object.keys(RANK).length,Object.keys(HERE).length]);
-  if(s===sig)return;sig=s;if(SIM)return;paint();
-}
-setInterval(tick,1500);
-setInterval(()=>{
-  if(ST.phase!=="quiz"||ST.qdone)return;
-  const el=document.querySelector(".ring");if(!el)return;
-  const p=Math.max(0,QDUR-(Date.now()-(ST.qat||0)))/QDUR;
-  const r=21,cc=2*Math.PI*r;
-  el.querySelectorAll("circle")[1].setAttribute("stroke-dashoffset",cc*(1-p));
-  const s=document.querySelector(".secs");
-  if(s)s.textContent=Math.ceil(p*QDUR/1000)+"초";
-  if(p<=0)paint();
-},80);
-
 
 /* ══════════ 종이띠 만들기 — 직접 움직여 보기 ══════════ */
 let SIM=null;
@@ -637,11 +428,55 @@ function simFrame(){
     :`<div class="simv ok"><b>삼각형이 만들어졌습니다!</b></div>`;
   $("simMsg").innerHTML=msg;
 }
+
+
 $("simX").onclick=simClose;
 $("simModal").addEventListener("click",e=>{if(e.target===$("simModal"))simClose();});
 
+/* ── 그리기 ── */
+function paint(){
+  paintMe();
+  const M=$("main");
+  if(!me.nick){M.innerHTML=`<div class="hero" style="padding:40px 16px">
+    <p class="big">먼저 입장하세요</p>
+    <p>오른쪽 위 <b>입장하기</b>를 누르면 시작합니다.</p></div>`;return;}
+  const done=SETS.filter((s,i)=>STRIP[i]).length;
+  let h=`<div class="hero"><p class="big">세 띠로 삼각형이 될까?</p>
+    <p>여섯 세트를 하나씩 해 보고, 결과를 기록하세요.</p></div>
+    <div class="prog"><b>${done} / ${SETS.length}</b>
+      <span class="bar"><i style="width:${Math.round(done/SETS.length*100)}%"></i></span></div>
+    <div class="sets">${SETS.map((st,i)=>`<div class="set${STRIP[i]?" done":""}">
+      <h3>${st.n}<em>${st.v.join(" · ")}</em></h3>
+      ${stripSVG(st.v).replace("<svg ",'<svg class="tape" ')}
+      <button class="try" data-sim="${i}">직접 만들어 보기</button>
+      <div class="yn">
+        <button class="y${STRIP[i]==="ok"?" on":""}" data-i="${i}" data-v="ok">삼각형이 됐다</button>
+        <button class="n${STRIP[i]==="no"?" on":""}" data-i="${i}" data-v="no">안 됐다</button>
+      </div>
+      ${FINAL[i]?`<div class="fin ${FINAL[i]}">우리 반 결론 · ${
+        FINAL[i]==="ok"?"성공":"실패"}</div>`:""}
+    </div>`).join("")}</div>
+    <p class="tail">${done===SETS.length
+      ?"여섯 세트를 모두 기록했어요. 선생님 화면에서 우리 반 결과를 함께 봅니다."
+      :"기록은 자동으로 저장됩니다. 언제든 고칠 수 있어요."}</p>`;
+  M.innerHTML=h;
+  M.querySelectorAll(".yn button").forEach(b=>b.onclick=()=>mark(+b.dataset.i,b.dataset.v));
+  M.querySelectorAll("[data-sim]").forEach(b=>b.onclick=()=>simOpen(+b.dataset.sim));
+}
+
+/* ── 새로 고침 ── */
+let sig="";
+async function tick(){
+  await pull();
+  const s=JSON.stringify([STRIP,FINAL]);
+  if(s===sig)return;sig=s;
+  if(SIM)return;
+  paint();
+}
+setInterval(tick,2500);
+
 paintMe();
-(async()=>{hello();await pull();paint();if(!me.nick)setTimeout(()=>openId(1),300);})();
+(async()=>{await pull();paint();if(!me.nick)setTimeout(()=>openId(1),300);})();
 </script>
 </body>
 </html>
