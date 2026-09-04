@@ -246,48 +246,21 @@ let ON=null;
 const setNet=ok=>{if(ON===ok)return;ON=ok;
   $("net").className="chip "+(ok?"on":"off");$("net").textContent=ok?"연결됨":"연결 안 됨";};
 
-const PH=[["wait","대기"],["intro","6요소"],["oppo","대변·대각"],["quiz","퀴즈"],
-  ["rank","랭킹"],["strips","종이띠"],["tally","성공·실패 집계"],["chart","교차 비교"]];
+const PH=[["intro","6요소"],["oppo","대변·대각"],["strips","종이띠 결과"],["chart","교차 비교"]];
 const STEPS={intro:5,oppo:4};
-let V={cls:localStorage.getItem("t2.cls")||"1-1",auto:true};
-let ST={phase:"wait",step:0,qi:0,qat:0,qdone:false,open:{}};
-let QZ={},STR={},FIN={},HERE={};
+let V={cls:localStorage.getItem("t2.cls")||"1-1"};
+let ST={phase:"intro",step:0,open:{}};      /* 이 화면에서만 쓰는 상태 */
+let STR={},FIN={};
 
 async function pull(force){
   try{
-    const [s,q,st,fi,he]=await Promise.all([
-      gj(`t2/${V.cls}/state`),gj(`t2/${V.cls}/quiz`),gj(`t2/${V.cls}/strips`),
-      gj(`t2/${V.cls}/final`),gj(`t2/${V.cls}/here`)]);
-    ST=Object.assign({phase:"wait",step:0,qi:0,qat:0,qdone:false,open:{}},s||{});
-    QZ=q||{};STR=st||{};FIN=fi||{};HERE=he||{};setNet(true);
+    const [st,fi]=await Promise.all([gj(`t2/${V.cls}/strips`),gj(`t2/${V.cls}/final`)]);
+    STR=st||{};FIN=fi||{};setNet(true);
   }catch(e){setNet(false);}
   paint(force);
 }
-const push=async o=>{ST=Object.assign({},ST,o);paint(1);
-  try{await pj(`t2/${V.cls}/state`,ST);setNet(true);}catch(e){setNet(false);}};
-const live=()=>{const n=Date.now();
-  return Object.values(HERE||{}).filter(h=>h&&h.at&&n-h.at<20*60*1000).length;};
-
-/* 퀴즈 진행 */
-function qstep(){
-  if(ST.phase!=="quiz")return;
-  if(!ST.qdone)push({qdone:true});
-  else if(ST.qi<QUIZ.length-1)push({qi:ST.qi+1,qdone:false,qat:Date.now()});
-  else push({phase:"rank"});
-}
-setInterval(()=>{
-  if(!V.auto||ST.phase!=="quiz")return;
-  const el=Date.now()-(ST.qat||0);
-  if(!ST.qdone&&el>QDUR)qstep();
-  else if(ST.qdone&&el>QDUR+QRES)qstep();
-},500);
-setInterval(()=>{
-  if(ST.phase!=="quiz"||ST.qdone)return;
-  const b=document.querySelector(".tl i");if(!b)return;
-  const p=Math.max(0,1-(Date.now()-(ST.qat||0))/QDUR);
-  b.style.width=(p*100).toFixed(1)+"%";
-  const s=document.querySelector(".secs");if(s)s.textContent=Math.ceil(p*QDUR/1000)+"초";
-},80);
+const push=o=>{ST=Object.assign({},ST,o);paint(1);};
+const live=()=>Object.keys(STR||{}).length;
 
 const INTRO=[
   "삼각형은 <b>△ABC</b>처럼 나타냅니다.",
@@ -308,22 +281,19 @@ function bar(){
   h+=`<span class="sp"></span>`;
   if(STEPS[ST.phase])h+=`<button class="btn" id="back">◀</button>
     <button class="btn go" id="fwd">다음 ▶ ${(ST.step||0)+1}/${STEPS[ST.phase]}</button>`;
-  if(ST.phase==="quiz")h+=`<button class="btn go" id="qnext">${ST.qdone?"다음 문제":"정답 보기"}</button>
-    <button class="btn" id="auto" aria-pressed="${V.auto}">자동 넘김</button>`;
+
   if(ST.phase==="chart")h+=`<button class="btn" id="openRow">한 줄 열기</button>
     <button class="btn" id="openAll">전부 열기</button>
     <button class="btn" id="closeAll">모두 덮기</button>`;
   h+=`<button class="btn warn" id="reset">이 반 초기화</button>`;
   $("bar").innerHTML=h;
   $("bar").querySelectorAll("[data-ph]").forEach(b=>b.onclick=()=>{
-    const k=b.dataset.ph;b.blur();
-    push(k==="quiz"?{phase:"quiz",qi:0,qdone:false,qat:Date.now(),step:0}:{phase:k,step:0});});
+    const k=b.dataset.ph;b.blur();push({phase:k,step:0});});
   const g=id=>$(id);
   if(g("fwd"))g("fwd").onclick=()=>{g("fwd").blur();
     push({step:Math.min((ST.step||0)+1,STEPS[ST.phase]-1)});};
   if(g("back"))g("back").onclick=()=>{g("back").blur();push({step:Math.max((ST.step||0)-1,0)});};
-  if(g("qnext"))g("qnext").onclick=()=>{g("qnext").blur();qstep();};
-  if(g("auto"))g("auto").onclick=()=>{g("auto").blur();V.auto=!V.auto;paint(1);};
+
   if(g("openRow"))g("openRow").onclick=()=>{
     const o=Object.assign({},ST.open);
     for(let ri=0;ri<CH_ROWS.length;ri++){
@@ -337,9 +307,9 @@ function bar(){
     push({open:o});};
   if(g("closeAll"))g("closeAll").onclick=()=>push({open:{}});
   g("reset").onclick=async()=>{
-    if(!confirm(`${V.cls} 반의 퀴즈·종이띠 기록을 모두 지웁니다. 계속할까요?`))return;
-    for(const k of ["quiz","strips","final","here"]){try{await dj(`t2/${V.cls}/${k}`);}catch(e){}}
-    QZ={};STR={};FIN={};HERE={};push({phase:"wait",step:0,qi:0,qdone:false,open:{}});};
+    if(!confirm(`${V.cls} 반의 종이띠 기록과 결론을 지웁니다. 계속할까요?`))return;
+    for(const k of ["strips","final","quiz","here","state"]){try{await dj(`t2/${V.cls}/${k}`);}catch(e){}}
+    STR={};FIN={};push({phase:"intro",step:0,open:{}});};
 }
 
 const EDIT=()=>{const a=document.activeElement;
@@ -350,13 +320,9 @@ function paint(force){
   paintNow();if(bd&&sc)bd.scrollTop=sc;
 }
 function paintNow(){
-  $("cnt").textContent=`${live()}명 접속`;
+  $("cnt").textContent=`${live()}명 기록`;
   bar();
   const M=$("main"),ph=ST.phase,s=ST.step||0;
-
-  if(ph==="wait"){
-    M.innerHTML=`<div class="hero"><p class="big">${live()}명 들어왔어요</p>
-      <p>곧 시작합니다.</p></div>`;return;}
 
   if(ph==="intro"||ph==="oppo"){
     const list=ph==="intro"?INTRO:OPPO;
@@ -368,67 +334,21 @@ function paintNow(){
         `<div class="ln${i===s?" sun":""}${i>s?" dim":""}"${i>s?' style="visibility:hidden"':""}>${x}</div>`
         ).join("")}</div></div>`;return;}
 
-  if(ph==="quiz"){
-    const i=ST.qi|0,Q=QUIZ[i];
-    const subs=Object.values(QZ).map(x=>(x.a||{})[i]).filter(Boolean);
-    const cnt=Q.o.map((_,k)=>subs.filter(x=>x.k===k).length);
-    const el=Date.now()-(ST.qat||0),p=ST.qdone?0:Math.max(0,1-el/QDUR);
-    let h=`<div class="qwrap"><p class="qn">${i+1} / ${QUIZ.length}</p>
-      <p class="qq">${Q.q}</p>`;
-    if(!ST.qdone)h+=`<div class="tl"><i style="width:${(p*100).toFixed(1)}%"></i></div>
-      <p class="secs">${Math.ceil(p*QDUR/1000)}초</p>`;
-    h+=`<div class="qgrid"><div class="fig">${triSVG(Q.t,
-      Object.assign({v:true,s:true,a:true},ST.qdone?qHi(i):{}))}</div>
-      <div class="opts">${Q.o.map((o,k)=>
-        `<div class="opt${ST.qdone&&k===Q.a?" ok":""}"><em>${"①②③④"[k]}</em>${o}
-          ${ST.qdone?`<span class="n">${cnt[k]}명</span>`:""}</div>`).join("")}</div></div>`;
-    if(ST.qdone){
-      const ok=subs.filter(x=>x.ok).length;
-      h+=`<div class="why">${Q.why}</div>
-        <p class="vc">${subs.length}명 제출 · 맞은 사람 <b>${ok}명</b></p>`;
-    }else h+=`<p class="vc">${subs.length}명 제출 · 결과는 아직 가려 둡니다</p>`;
-    M.innerHTML=h+"</div>";return;}
-
-  if(ph==="rank"){
-    const rows=Object.keys(QZ).map(k=>({nick:(QZ[k]||{}).nick||k,
-      sc:Object.values((QZ[k]||{}).a||{}).reduce((a,x)=>a+(x.pts||0),0),
-      ok:Object.values((QZ[k]||{}).a||{}).filter(x=>x.ok).length}))
-      .sort((a,b)=>b.sc-a.sc);
-    M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">퀴즈 랭킹</p>
-      <p>${rows.length}명 · 만점 ${QUIZ.length*QMAX}점</p></div>
-      <div class="rank">${rows.slice(0,10).map((r,i)=>
-        `<div class="rk t${i+1}"><span class="no">${i+1}</span>${esc(r.nick)}
-          <span class="sc">${r.sc}<span style="font-size:.62em;color:var(--soft)">
-          · ${r.ok}/${QUIZ.length}</span></span></div>`).join("")}</div>
-      <p class="hint">빨리 맞힐수록 점수가 높습니다. 한 문제 최대 ${QMAX}점.</p>`;return;}
-
   if(ph==="strips"){
-    M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">종이띠로 만들어 보기</p>
-      <p>여섯 세트를 직접 이어 붙여 보고, 결과를 각자 기기에 기록하세요.</p></div>
-      <table class="g"><tr><th>세트</th><th>세 길이</th><th>띠</th><th>지금까지 기록</th></tr>
+    const rows=Object.values(STR);
+    M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">종이띠 · 우리 반의 결과</p>
+      <p>${rows.length}명이 기록했습니다. 함께 이야기하고 아래에서 결론을 정합니다.</p></div>
+      <table class="g"><tr><th>세트</th><th>세 길이</th><th style="width:26%">띠</th>
+        <th>됐다</th><th>안 됐다</th><th style="width:18%">비율</th><th style="width:18%">우리 반 결론</th></tr>
       ${SETS.map((st,i)=>{
         const vals=Object.values(STR).map(x=>x[i]).filter(Boolean);
         const y=vals.filter(v=>v==="ok").length,n=vals.filter(v=>v==="no").length;
+        const tt=Math.max(1,y+n);
         return `<tr><td class="set">${st.n}</td><td>${st.v.join(" · ")}</td>
-          <td style="width:34%">${stripSVG(st.v,260)}</td>
-          <td>${vals.length?`${y} : ${n}`:"—"}</td></tr>`;}).join("")}
-      </table>
-      <p class="hint">여섯 세트를 모두 해 봅니다.</p>`;return;}
-
-  if(ph==="tally"){
-    M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">우리 반의 기록</p>
-      <p>우리 반이 표시한 결과입니다. 함께 이야기하고 결론을 정합니다.</p></div>
-      <table class="g"><tr><th>세트</th><th>세 길이</th><th>됐다</th><th>안 됐다</th>
-        <th style="width:24%">비율</th><th style="width:20%">최종 판정</th></tr>
-      ${SETS.map((st,i)=>{
-        const vals=Object.values(STR).map(x=>x[i]).filter(Boolean);
-        const y=vals.filter(v=>v==="ok").length,n=vals.filter(v=>v==="no").length;
-        const t=Math.max(1,y+n);
-        return `<tr><td class="set">${st.n}</td><td>${st.v.join(" · ")}</td>
-          <td>${y}</td><td>${n}</td>
+          <td>${stripSVG(st.v,240)}</td><td>${y}</td><td>${n}</td>
           <td><div class="bars">
-            <i style="width:${Math.round(y/t*100)}%;background:var(--mint)"></i>
-            <i style="width:${Math.round(n/t*100)}%;background:var(--peach)"></i></div></td>
+            <i style="width:${Math.round(y/tt*100)}%;background:var(--mint)"></i>
+            <i style="width:${Math.round(n/tt*100)}%;background:var(--peach)"></i></div></td>
           <td><div class="pick">
             <button class="y" data-i="${i}" data-v="ok" aria-pressed="${FIN[i]==="ok"}">성공</button>
             <button class="n" data-i="${i}" data-v="no" aria-pressed="${FIN[i]==="no"}">실패</button>
@@ -455,15 +375,6 @@ function paintNow(){
       if(o[td.dataset.k])delete o[td.dataset.k];else o[td.dataset.k]=true;
       push({open:o});});
     return;}
-}
-function qHi(i){
-  const Q=QUIZ[i],q=Q.q;
-  const mS=q.match(/변\s([A-Z]{2})의\s<b>대각/), mA=q.match(/∠([A-Z])의\s<b>대변/);
-  if(mA){const n=mA[1],ks=Object.keys(Q.t.sides);
-    const opp=ks.find(k=>k.indexOf(n)<0);return {hiA:n,hiS:opp};}
-  if(mS){const nm=mS[1];
-    const v=Q.t.v.map(p=>p[2]).find(x=>nm.indexOf(x)<0);return {hiS:nm,hiA:v};}
-  return {};
 }
 $("cls").value=V.cls;
 $("cls").onchange=e=>{V.cls=e.target.value;localStorage.setItem("t2.cls",V.cls);e.target.blur();pull(1);};
