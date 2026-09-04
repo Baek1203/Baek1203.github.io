@@ -397,13 +397,23 @@ function simFrame(){
   const s=SIM;if(!s||!$("simSvg"))return;
   const P1=simP1(),P2=simP2();
   let E1=simE1(),E2=simE2();
-  if(!s.snap&&s.moved&&Math.hypot(E1.x-E2.x,E1.y-E2.y)<16){
-    s.snap=true;
-    const mid={x:(E1.x+E2.x)/2,y:(E1.y+E2.y)/2};
-    s.th1=Math.atan2(mid.y-P1.y,mid.x-P1.x);
-    s.th2=Math.atan2(mid.y-P2.y,mid.x-P2.x);
-    E1=simE1();E2=simE2();
-    s.flat=Math.abs(E1.y)<11;
+  if(!s.snap&&s.moved){
+    /* 두 띠가 실제로 만날 수 있는 자리를 계산해 그 점에 정확히 붙인다.
+       3·4·7처럼 딱 맞아떨어지는 경우에는 그 자리가 밑변 위이므로 납작해진다. */
+    const a=s.base*SU,b=s.arms[0]*SU,c=s.arms[1]*SU;
+    const px=(a*a+b*b-c*c)/(2*a), h2=b*b-px*px;
+    if(h2>=-0.5){
+      const h=Math.sqrt(Math.max(0,h2));
+      const mid={x:(E1.x+E2.x)/2,y:(E1.y+E2.y)/2};
+      const apex=(mid.y<=0)?{x:px,y:-h}:{x:px,y:h};
+      if(Math.hypot(E1.x-apex.x,E1.y-apex.y)<26&&Math.hypot(E2.x-apex.x,E2.y-apex.y)<26){
+        s.snap=true;
+        s.th1=Math.atan2(apex.y-P1.y,apex.x-P1.x);
+        s.th2=Math.atan2(apex.y-P2.y,apex.x-P2.x);
+        E1=simE1();E2=simE2();
+        s.flat=h<1;
+      }
+    }
   }
   const at=(id,o)=>{const el=$(id);if(el)for(const k in o)el.setAttribute(k,o[k]);};
   at("sBase",{x1:P1.x,y1:P1.y,x2:P2.x,y2:P2.y});
