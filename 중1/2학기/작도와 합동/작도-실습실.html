@@ -821,6 +821,7 @@ function recompute(){
 }
 function intersect(u,v,bounded){
   if(!u||!v)return[];
+  if((u.t!=="L"&&u.t!=="A")||(v.t!=="L"&&v.t!=="A"))return[];
   let o;
   if(u.t==="L"&&v.t==="L")o=ixLL(u,v);
   else if(u.t==="L"&&v.t==="A")o=ixLA(u,v);
@@ -1207,7 +1208,7 @@ function removeCascade(id){
       if(dead.has(it.id))continue;
       const refs=it.t==="L"?[it.p1,it.p2]
         :it.t==="A"?[it.c].concat(it.r.k==="pts"?[it.r.a,it.r.b]:[])
-        :(it.def.k==="x"?[it.def.a,it.def.b]:[]);
+        :(it.def&&it.def.k==="x")?[it.def.a,it.def.b]:[];   /* 구역 등 def 없는 항목 보호 */
       if(refs.some(r=>dead.has(r))){dead.add(it.id);grew=true;}
     }}
   S.items=S.items.filter(i=>!dead.has(i.id));
