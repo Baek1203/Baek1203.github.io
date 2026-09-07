@@ -314,6 +314,14 @@
   .pr i{font-style:normal;width:16px;text-align:center;color:#B4AC9A;font-weight:800}
   .pr em{margin-left:auto;font-style:normal;font-weight:800}
   .pr.me{background:#FFF8E6;border-radius:7px}
+  .askbox{background:#FFF8E6;border:1.5px solid var(--gold);border-radius:9px;
+    padding:11px 12px;margin-top:8px}
+  .askbox p{margin:0 0 8px;font:800 12px/1.5 var(--sans);color:#6A5210}
+  .askrow{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+  .askrow button{font:800 11.5px/1 var(--sans);padding:9px 3px;border-radius:7px;cursor:pointer;
+    border:1.5px solid var(--rule);background:#fff;color:var(--ink-soft)}
+  .askrow button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .askbox small{display:block;margin-top:7px;font:600 10.5px/1.5 var(--sans);color:#8A7A4E}
   .peek{width:100%;padding:11px;margin-bottom:4px;cursor:pointer;border-radius:9px;
     font:700 12.5px/1 var(--sans);background:#fff;border:1.5px dashed var(--rule);color:var(--ink-soft)}
   .peek:hover{border-color:var(--gold);color:#8A6A0E}
@@ -429,6 +437,7 @@
 
       <button class="fab" id="overlay">포개어 보기</button>
       <button class="notebtn hot" id="cardBtn" style="display:none">증거품 대조</button>
+      <div class="askbox" id="askbox" hidden></div>
       <div class="two">
         <button class="mini" id="undo">되돌리기</button>
         <button class="mini danger" id="clear">처음부터</button>
@@ -2068,6 +2077,15 @@ const dbDel=async p=>{const r=await fetch(`${DB_URL}/${p}.json`,{method:"DELETE"
 
 let ONLINE=null;
 const CACHE=LS.get("cache",{unlocked:{},present:{},mine:null,mode:"intake"});
+let PEND=LS.get("pend",null);          /* 못 보낸 제출 — 연결되면 저절로 다시 보낸다 */
+async function retryPend(){
+  if(!PEND||!me.nick||!S||S.taskId!==PEND.task)return;
+  try{
+    await Net.submit(PEND.tri,PEND.v);
+    PEND=null;LS.del("pend");setNet(true);
+    toast("연결이 돌아와 게시판에 냈습니다.");paintFab();
+  }catch(e){}
+}
 function setNet(ok){
   if(ONLINE===ok)return;ONLINE=ok;
   const e=$("net");if(!e)return;
@@ -2292,9 +2310,13 @@ async function sendWork(){
   if(!me.nick)return openId(true);
   const c=TASKS[S.taskId].check(S);
   if(!c.ok)return toast("아직 진술(조건)에 맞는 삼각형이 완성되지 않았습니다.");
-  try{await Net.submit(c.tri,S.variant);setNet(true);
+  try{await Net.submit(c.tri,S.variant);setNet(true);PEND=null;LS.del("pend");
     toast("게시판에 냈습니다. 선생님 화면에 올라갑니다.");}
-  catch(e){setNet(false);toast("연결이 되지 않아 보내지 못했습니다. 잠시 뒤 다시 눌러 주세요.");}
+  catch(e){
+    setNet(false);
+    PEND={task:S.taskId,tri:c.tri,v:S.variant};LS.set("pend",PEND);
+    toast("연결이 끊겼습니다. 이어지면 저절로 보냅니다.");
+  }
   paintFab();
 }
 async function cancelWork(){
@@ -2376,6 +2398,7 @@ $("who").onclick=()=>openId();
 let lastSig="";
 async function sync(){
   await Net.pull();reportProgress();
+  retryPend();
   const sig=JSON.stringify([unlockedNow(),Object.keys(Net.present()).length,!!Net.mine()]);
   if(sig!==lastSig){lastSig=sig;buildTabs();paintFab();}
 }
@@ -2877,7 +2900,7 @@ function xShow(){
 }
 $("xresClose").onclick=()=>$("xresModal").hidden=true;
 $("xresModal").addEventListener("click",e=>{if(e.target===$("xresModal"))$("xresModal").hidden=true;});
-xPull();
+xPull();pullN();
 
 const _pui=paintUI;
 paintUI=function(){
@@ -2885,11 +2908,44 @@ paintUI=function(){
   if(S&&S.taskId==="pg"&&DR.on&&!DR.flash){
     try{if(pgCheck(S).ok)pgScored();}catch(e){}
   }
+  try{paintAsk();}catch(e){}
 };
+
+/* ── 조사 화면의 한 문항 · 교사 차트가 이 답을 모읍니다 ── */
+const ASKN=["t5","t6","t7","t8","t9"];
+let NOTE1=LS.get("note1",{});
+async function saveN(task,v){
+  NOTE1[task]=v;LS.set("note1",NOTE1);paintAsk();
+  if(!me.nick)return;
+  try{await dbPut(`notes/${cls()}/${me.no}/${task}`,
+    {n:v,nick:me.nick,group:me.group,at:Date.now()});setNet(true);}catch(e){setNet(false);}
+}
+function paintAsk(){
+  const box=$("askbox");
+  if(!S||ASKN.indexOf(S.taskId)<0){box.hidden=true;return;}
+  let ok=false;try{ok=!!TASKS[S.taskId].check(S).ok;}catch(e){}
+  if(!ok&&!NOTE1[S.taskId]){box.hidden=true;return;}
+  box.hidden=false;
+  const v=NOTE1[S.taskId];
+  box.innerHTML=`<p>이 조건으로 그릴 수 있는 삼각형은 몇 개입니까?</p>
+    <div class="askrow">${["1개","2개","무수히"].map(x=>
+      `<button class="${v===x?"on":""}" data-n="${x}">${x}</button>`).join("")}</div>
+    ${v?`<small>선생님 화면의 표에 모입니다. 언제든 바꿀 수 있어요.</small>`
+       :`<small>같은 담당끼리 견주어 보고 고르세요.</small>`}`;
+  box.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>saveN(S.taskId,b.dataset.n));
+}
+async function pullN(){
+  if(!me.nick)return;
+  try{
+    const d=await dbGet(`notes/${cls()}/${me.no}`);
+    if(d){ASKN.forEach(k=>{if(d[k]&&d[k].n)NOTE1[k]=d[k].n;});LS.set("note1",NOTE1);}
+  }catch(e){}
+}
 
 /* 왼쪽 아래 칸은 과제마다 다르게 쓴다 (모둠 자리 / 실험 알림 / 훈련장 기록) */
 const _pm=paintMini;
 paintMini=function(){
+  paintAsk();
   if(S&&S.taskId==="pg")return pgPanel();
   if(S&&S.taskId==="t4")return xPanel();
   return _pm();
