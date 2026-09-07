@@ -1532,7 +1532,7 @@ function gSeg(l1,l2,name,x,y,cm){
   const x2=x+cm*CM;
   return [PT(l1,x,y),PT(l2,x2,y),
     {t:"L",kind:"segment",p1:l1,p2:l2,given:true,key:name,
-     name:String(cm),num:name,labelPos:{x:(x+x2)/2,y:y-13}}];
+     name:String(cm),num:"",labelPos:{x:(x+x2)/2,y:y-13}}];
 }
 function gAng(lo,lx,ly,key,ox,oy,deg,arm){
   const t=-deg*Math.PI/180, b=t/2;
@@ -1630,7 +1630,7 @@ function baseSecond(st,segKey){                  /* 직선 l 위에 옮겨 찍�
 /* ---- 과제 생성기 ---- */
 function mkSSS(a,b,c,extra){
   return Object.assign({
-    prompt:`세 변의 길이가 각각 선분 <b>a</b>, <b>b</b>, <b>c</b>와 같은 삼각형을, 직선 <b>l</b> 위의 점 <b>B</b>에서 시작하도록 작도하시오.`,
+    get prompt(){return `세 변의 길이가 <b>${a}</b>, <b>${b}</b>, <b>${c}</b>인 삼각형을, 직선 <b>l</b> 위의 점 <b>B</b>에서 시작하도록 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,
     build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,66,a),gSeg("R","S","b",70,116,b),gSeg("T","U","c",70,166,c)),
     steps(st){
@@ -1639,9 +1639,9 @@ function mkSSS(a,b,c,extra){
       const a3=C&&(arcR(st,"b",C.id)||arcR(st,"c",C.id));
       const A=(a2&&a3)?xpt(st,a2.id,a3.id):null;
       return[
-        {t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 B를 중심으로 원을 그린다",ok:!!arcR(st,"a",B.id)},
+        {t:`컴퍼스를 <u>길이 ${a}인 선분</u>만큼 벌려, 점 B를 중심으로 원을 그린다`,ok:!!arcR(st,"a",B.id)},
         {t:"원과 직선 l이 만나는 점을 찍는다",ok:!!C},
-        {t:"두 점에서 <u>남은 두 선분</u>만큼 원을 각각 그린다",ok:!!(a2&&a3&&a2.id!==a3.id)},
+        {t:`두 점에서 <u>${b}</u>, <u>${c}</u>만큼 원을 각각 그린다`,ok:!!(a2&&a3&&a2.id!==a3.id)},
         {t:"두 원이 만나는 점을 찍는다",ok:!!A},
         {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
       ];
@@ -1651,16 +1651,16 @@ function mkSSS(a,b,c,extra){
 }
 function mkSAS(a,c,deg,extra){
   return Object.assign({
-    prompt:`두 변의 길이가 선분 <b>a</b>, <b>c</b>와 같고 그 <b>끼인각</b>이 ∠XOY와 같은 삼각형을, 직선 <b>l</b> 위의 점 <b>B</b>에서 시작하도록 작도하시오.`,
+    get prompt(){return `두 변의 길이가 <b>${a}</b>, <b>${c}</b>이고 그 <b>사이 각</b>이 <b>${deg}°</b>인 삼각형을, 직선 <b>l</b> 위의 점 <b>B</b>에서 시작하도록 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,
     build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,66,a),gSeg("R","S","c",70,116,c),
                         gAng("O","X","Y","g",470,214,deg,146)),
     steps(st){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       return[
-        {t:"직선 l 위 점 B에 <u>선분 a</u>를 옮겨, 두 번째 점을 찍는다",ok:!!C},
-        {t:"점 B에 <u>∠XOY와 크기가 같은 각</u>을 작도한다",ok:hasAngleAt(st,B,C,deg)},
-        {t:"그 각의 다른 변 위에 <u>선분 c</u>를 옮겨 점을 찍는다",ok:!!arcR(st,"c",B.id)},
+        {t:`직선 l 위 점 B에 <u>길이 ${a}인 선분</u>을 옮겨, 두 번째 점을 찍는다`,ok:!!C},
+        {t:`점 B에 <u>${deg}°인 각</u>을 작도한다`,ok:hasAngleAt(st,B,C,deg)},
+        {t:`그 각의 다른 변 위에 <u>길이 ${c}인 선분</u>을 옮겨 점을 찍는다`,ok:!!arcR(st,"c",B.id)},
         {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
       ];
     },
@@ -1669,7 +1669,7 @@ function mkSAS(a,c,deg,extra){
 }
 function mkASA(a,d1,d2,extra){
   return Object.assign({
-    prompt:`한 변의 길이가 선분 <b>a</b>와 같고 그 <b>양 끝 각</b>이 ∠XOY, ∠X′O′Y′와 각각 같은 삼각형을 작도하시오.`,
+    get prompt(){return `한 변의 길이가 <b>${a}</b>이고 그 <b>양 끝 각</b>이 <b>${d1}°</b>, <b>${d2}°</b>인 삼각형을 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,
     build:()=>[].concat(baseLine(190),gSeg("P","Q","a",70,58,a),
                         gAng("O","X","Y","g1",330,168,d1,116),
@@ -1677,8 +1677,8 @@ function mkASA(a,d1,d2,extra){
     steps(st){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       return[
-        {t:"직선 l 위 점 B에 <u>선분 a</u>를 옮겨, 두 번째 점을 찍는다",ok:!!C},
-        {t:"점 B에 <u>∠XOY</u>와 크기가 같은 각을 작도한다",ok:hasAngleAt(st,B,C,d1)||hasAngleAt(st,B,C,d2)},
+        {t:`직선 l 위 점 B에 <u>길이 ${a}인 선분</u>을 옮겨, 두 번째 점을 찍는다`,ok:!!C},
+        {t:`점 B에 <u>${d1}°</u> 또는 <u>${d2}°</u>인 각을 작도한다`,ok:hasAngleAt(st,B,C,d1)||hasAngleAt(st,B,C,d2)},
         {t:"다른 끝점에 <u>남은 각</u>을 작도한다",ok:!!(C&&(hasAngleAt(st,C,B,d1)||hasAngleAt(st,C,B,d2)))},
         {t:"두 변이 만나는 점을 찍고 삼각형을 완성한다",ok:this.check(st).ok}
       ];
@@ -1688,7 +1688,7 @@ function mkASA(a,d1,d2,extra){
 }
 function mkSSA(a,b,deg,extra){
   return Object.assign({
-    prompt:`두 변의 길이가 선분 <b>a</b>, <b>b</b>와 같고, <b>선분 a의 한쪽 끝 각</b>이 ∠XOY와 같은 삼각형을 작도하시오.`,
+    get prompt(){return `두 변의 길이가 <b>${a}</b>, <b>${b}</b>이고, <b>길이 ${a}인 변의 한쪽 끝 각</b>이 <b>${deg}°</b>인 삼각형을 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,mirror:true,
     build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,62,a),gSeg("R","S","b",70,112,b),
                         gAng("O","X","Y","g",452,206,deg,138)),
@@ -1696,9 +1696,9 @@ function mkSSA(a,b,deg,extra){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       const a3=C&&arcR(st,"b",C.id);
       return[
-        {t:"직선 l 위 점 B에 <u>선분 a</u>를 옮겨, 두 번째 점을 찍는다",ok:!!C},
-        {t:"점 B에 <u>∠XOY와 크기가 같은 각</u>을 작도한다",ok:hasAngleAt(st,B,C,deg)},
-        {t:"두 번째 점을 중심으로 <u>선분 b</u>만큼 원을 그린다",ok:!!a3},
+        {t:`직선 l 위 점 B에 <u>길이 ${a}인 선분</u>을 옮겨, 두 번째 점을 찍는다`,ok:!!C},
+        {t:`점 B에 <u>${deg}°인 각</u>을 작도한다`,ok:hasAngleAt(st,B,C,deg)},
+        {t:`두 번째 점을 중심으로 <u>${b}</u>만큼 원을 그린다`,ok:!!a3},
         {t:"원이 각의 변과 만나는 점을 찍는다",ok:st.items.some(p=>p.t==="P"&&p.def.k==="x"&&a3&&(p.def.a===a3.id||p.def.b===a3.id))},
         {t:"세 점을 이어 삼각형을 완성한다",ok:this.check(st).ok}
       ];
@@ -1708,7 +1708,7 @@ function mkSSA(a,b,deg,extra){
 }
 function mkAAA(d1,d2,d3,extra){
   return Object.assign({
-    prompt:`세 각의 크기가 각각 ∠XOY, ∠X′O′Y′, ∠X″O″Y″와 같은 삼각형을 작도하시오. <b>첫 변의 길이는 스스로 정한다.</b>`,
+    get prompt(){return `세 각의 크기가 각각 <b>${d1}°</b>, <b>${d2}°</b>, <b>${d3}°</b>인 삼각형을 작도하시오. 첫 변의 길이는 스스로 정한다.`;},
     kind:"tri",fab:"submit",jitter:true,
     build:()=>[].concat(baseLine(170),
       gAng("O","X","Y","g1",96,150,d1,104),
@@ -1743,10 +1743,10 @@ TASKS.t9=mkAAA(40,60,80,{lock:true,noConfetti:true,
 
 /* ---- 과제 10 · 사건 파일 (잠금) ---- */
 const CASES=[
-  {label:"사건 1",say:"세 변이 각각 선분 a, b, c와 같았습니다.",mk:()=>mkSSS(7,5,4)},
-  {label:"사건 2",say:"두 변이 선분 a, c와 같았고, 그 두 변 사이의 각이 ∠XOY와 같았습니다.",mk:()=>mkSAS(6,4,50)},
-  {label:"사건 3",say:"한 변이 선분 a와 같았고, 그 변의 양 끝 각이 ∠XOY, ∠X′O′Y′와 같았습니다.",mk:()=>mkASA(7,45,65)},
-  {label:"사건 4",say:"두 변이 선분 a, b와 같았고, 선분 a의 한쪽 끝 각이 ∠XOY와 같았습니다.",mk:()=>mkSSA(8,6,40)},
+  {label:"사건 1",say:"세 변이 각각 7, 5, 4였습니다.",mk:()=>mkSSS(7,5,4)},
+  {label:"사건 2",say:"두 변이 6, 4였고, 그 두 변 사이의 각이 50°였습니다.",mk:()=>mkSAS(6,4,50)},
+  {label:"사건 3",say:"한 변이 7이었고, 그 변의 양 끝 각이 45°, 65°였습니다.",mk:()=>mkASA(7,45,65)},
+  {label:"사건 4",say:"두 변이 8, 6이었고, 길이 8인 변의 한쪽 끝 각이 40°였습니다.",mk:()=>mkSSA(8,6,40)},
   {label:"사건 5",say:"세 각이 각각 ∠XOY, ∠X′O′Y′, ∠X″O″Y″와 같았습니다.",mk:()=>mkAAA(45,60,75)}
 ];
 const CASET=CASES.map(c=>c.mk());
@@ -2011,20 +2011,20 @@ const ringPts=(st,O,r)=>st.items.filter(p=>p.t==="P"&&!p.given&&!p.hidden&&
 const PG=[
 /* ① 선분 잇기 */
 {label:"① 선분 잇기",win:"두 선분을 이어 붙였습니다.",
- prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>선분 a + 선분 b</b>인 선분을 작도하시오.`,
+ prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>5 + 3</b>인 선분을 작도하시오.`,
  build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,74,5),gSeg("T","U","b",70,128,3)),
  steps(st){const B=byLabel(st,"B"),C=baseSecond(st,"a");
-   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
-     {t:"벌림을 <u>선분 b</u>만큼으로 바꿔, 그 점을 중심으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
+   return[{t:"컴퍼스를 <u>위 선분</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
+     {t:"벌림을 <u>아래 선분</u>만큼으로 바꿔, 그 점을 중심으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
      {t:"새로 생긴 점까지 선분을 긋는다",ok:this.check(st).ok}];},
  check(st){return anySeg(st,8*CM)?{ok:true}:{ok:false};}},
 /* ② 선분 빼기 */
 {label:"② 선분 빼기",win:"두 선분의 차를 만들었습니다.",
- prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>선분 a − 선분 b</b>인 선분을 작도하시오.`,
+ prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>7 − 3</b>인 선분을 작도하시오.`,
  build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,74,7),gSeg("T","U","b",70,128,3)),
  steps(st){const B=byLabel(st,"B"),C=baseSecond(st,"a");
-   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
-     {t:"벌림을 <u>선분 b</u>만큼으로 바꿔, 그 점을 중심으로 <b>되돌아오는 쪽</b>으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
+   return[{t:"컴퍼스를 <u>위 선분</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
+     {t:"벌림을 <u>아래 선분</u>만큼으로 바꿔, 그 점을 중심으로 <b>되돌아오는 쪽</b>으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
      {t:"점 B에서 새로 생긴 점까지 선분을 긋는다",ok:this.check(st).ok}];},
  check(st){return anySeg(st,4*CM)?{ok:true}:{ok:false};}},
 /* ③ 각 잇기 */
@@ -2048,7 +2048,7 @@ const PG=[
  check(st){const B=byLabel(st,"B"),R=byLabel(st,"R");return hasAngleAt(st,B,R,70)?{ok:true}:{ok:false};}},
 /* ⑤ 정육각형 — 벌림 유지의 최고 연습 */
 {label:"⑤ 정육각형",win:"정육각형을 작도했습니다. 원의 반지름이 그대로 한 변이 되었습니다.",
- prompt:`선분 <b>a</b>를 반지름으로 하는 원을 점 <b>O</b>를 중심으로 그리고, 그 원 위에 <b>선분 a</b>를 여섯 번 옮겨 정육각형을 작도하시오.`,
+ prompt:`<b>주어진 선분</b>을 반지름으로 하는 원을 점 <b>O</b>를 중심으로 그리고, 그 원 위에 <b>같은 길이</b>를 여섯 번 옮겨 정육각형을 작도하시오.`,
  build:()=>[PT("",60,300,{hidden:true}),PT("",740,300,{hidden:true}),
    {t:"L",kind:"line",p1:"#0",p2:"#1",given:true,name:"l",key:"l",labelPos:{x:748,y:290}},
    PT("O",400,300)].concat(gSeg("P","Q","a",70,66,4)),
@@ -2057,7 +2057,7 @@ const PG=[
    const n=ringPts(st,O,r).length;
    const sides=st.items.filter(i=>i.t==="L"&&!i.given&&i.kind==="segment"&&
      Math.abs(D2(get(st,i.p1),get(st,i.p2))-r)<=LT+0.8).length;
-   return[{t:"컴퍼스를 <u>선분 a</u>만큼 벌려, 점 O를 중심으로 <b>한 바퀴</b> 돌린다",ok:!!big},
+   return[{t:"컴퍼스를 <u>주어진 선분</u>만큼 벌려, 점 O를 중심으로 <b>한 바퀴</b> 돌린다",ok:!!big},
      {t:"원과 직선 l이 만나는 점을 찍는다",ok:n>=1},
      {t:"<u>벌림을 그대로 둔 채</u> 그 점을 중심으로 원을 그려, 원과 만나는 점을 찍는다",ok:n>=3},
      {t:"같은 방법으로 원 위의 <b>여섯 점</b>을 모두 찍는다",ok:n>=6},
