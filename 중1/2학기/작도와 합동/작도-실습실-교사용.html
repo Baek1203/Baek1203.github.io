@@ -266,12 +266,12 @@ const TASKS=[
   {id:"ang",n:"훈련 2 · 각을 그대로 옮기기",board:false},
   {id:"par",n:"훈련 3 · 나란한 선 긋기",board:false},
   {id:"pg", n:"훈련장",board:false},
-  {id:"t4", n:"조사 1 · 세 변이 삼각형이 되려면",board:false,lock:true},
-  {id:"t5", n:"조사 2 · 세 변을 알 때",board:true,lock:true},
-  {id:"t6", n:"조사 3 · 두 변과 그 사이 각",board:true,lock:true},
-  {id:"t7", n:"조사 4 · 한 변과 양 끝 각",board:true,lock:true},
-  {id:"t8", n:"조사 5 · 두 변과 한 각",board:true,lock:true},
-  {id:"t9", n:"조사 6 · 세 각만",board:true,lock:true},
+  {id:"t4", n:"조사 1 · 조건 두 개로",board:false,lock:false},
+  {id:"t5", n:"조사 2·3 · 가 · 세 변",board:true,lock:false},
+  {id:"t6", n:"조사 2·3 · 나 · 두 변과 사이 각",board:true,lock:false},
+  {id:"t7", n:"조사 2·3 · 다 · 한 변과 양 끝 각",board:true,lock:false},
+  {id:"t8", n:"조사 4 · 두 변과 한 각",board:true,lock:true},
+  {id:"t9", n:"조사 5 · 세 각만",board:true,lock:true},
   {id:"t10",n:"사건 파일 · 수사 보고서",board:true,lock:true}
 ];
 const LESSON={t4:"2차시",t5:"3차시",t6:"3차시",t7:"3차시",t8:"4차시",t9:"4차시",t10:"6차시"};
@@ -836,10 +836,10 @@ function paintRelay(){
 
 /* ================= 개방 ================= */
 const PRESET=[
-  {n:"3차시 준비",  k:["t5","t6","t7"], d:"조사 2·3·4 — 직소 시작 전에 미리 눌러 두세요"},
-  {n:"4차시 1단계", k:["t5","t6","t7","t8"], d:"조사 5까지 — 반전이 일어나는 화면"},
-  {n:"4차시 2단계", k:["t5","t6","t7","t8","t9"], d:"조사 6까지 — 갈라짐을 확인한 뒤에"},
-  {n:"6차시 준비",  k:["t4","t5","t6","t7","t8","t9","t10"], d:"모두 열기"}
+  {n:"3차시까지",  k:[], d:"훈련·조사 2·3은 늘 열려 있습니다 — 누를 것이 없습니다"},
+  {n:"4차시 1단계", k:["t8"], d:"조사 4까지 — 반전이 일어나는 화면"},
+  {n:"4차시 2단계", k:["t8","t9"], d:"조사 5까지 — 갈라짐을 확인한 뒤에"},
+  {n:"6차시 준비",  k:["t8","t9","t10"], d:"모두 열기"}
 ];
 function paintLock(){
   const on=k=>PRESET.find(p=>p.n===k).k.every(x=>DATA.unlocked[x])
@@ -855,7 +855,7 @@ function paintLock(){
     ${TASKS.filter(t=>t.lock).map(t=>`<label class="lk">
       <input type="checkbox" data-k="${t.id}" ${DATA.unlocked[t.id]?"checked":""}>
       <b>${t.n}</b><span>${LESSON[t.id]||""}</span></label>`).join("")}
-    <div class="hint">과제 1~3과 연습장은 항상 열려 있습니다.<br>
+    <div class="hint">훈련 1~3, 훈련장, <b>조사 1~3(삼각형 작도)</b>은 항상 열려 있습니다.<br>
       연결이 되지 않을 때는 학생 주소 끝에 <b>?open=t5,t6</b> 를 붙이면
       그 기기에서만 잠금이 풀립니다.</div>
   </div>`;
