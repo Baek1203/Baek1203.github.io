@@ -19,7 +19,7 @@
   .app{height:100dvh;display:flex;flex-direction:column}
 
   /* ---------- 머리말 ---------- */
-  .head{display:flex;align-items:center;gap:14px;padding:11px 18px;flex:0 0 auto;
+  .head{display:flex;align-items:center;gap:10px;padding:8px 16px;flex:0 0 auto;
     background:var(--card);border-bottom:1px solid var(--rule)}
   .tabs{display:flex;gap:7px}
   .tab{font:700 13.5px/1 var(--sans);padding:11px 16px;border-radius:999px;cursor:pointer;
@@ -185,17 +185,19 @@
   /* ================= 확장 UI ================= */
   .head{gap:10px}
   .tabs{flex:1;min-width:0;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
-  .tab{white-space:nowrap;font-size:12.5px;padding:10px 13px;flex:0 0 auto}
+  .tab{white-space:nowrap;font-size:12px;padding:8px 12px;flex:0 0 auto}
   .tab.lk{opacity:.55;border-style:dashed}
   .net{flex:0 0 auto;font:700 11px/1 var(--sans);padding:7px 10px;border-radius:999px;
     background:#EDE6D5;color:var(--ink-soft);border:1.5px solid var(--rule)}
   .net.on{background:#E4F1E8;color:#1F5C39;border-color:#B6D9C4}
   .net.off{background:#F8E3E1;color:#8E2A22;border-color:#E3B6B1}
   .who{flex:0 0 auto;background:#F4EFE3;border:1.5px solid var(--rule);border-radius:999px;
-    padding:9px 14px;font:700 12.5px/1 var(--sans);color:var(--ink-soft);cursor:pointer}
+    padding:8px 12px;font:700 12.5px/1 var(--sans);color:var(--ink-soft);cursor:pointer}
   .who:hover{border-color:var(--gold);color:#8A6A0E}
-  .subhead{display:flex;align-items:center;gap:14px;padding:9px 18px;flex:0 0 auto;
-    background:var(--card);border-bottom:1px solid var(--rule)}
+  .subhead{display:flex;align-items:baseline;gap:12px;padding:8px 16px;flex:0 0 auto;
+    background:var(--card);border-bottom:1px solid var(--rule);flex-wrap:wrap}
+  .subhead .prompt{flex:0 1 auto;margin:0}
+  .why{flex:1 1 200px;min-width:0}
   .vrow{display:flex;gap:6px;flex:0 0 auto}
   .vrow[hidden]{display:none}
   .vb{font:700 12px/1 var(--sans);padding:9px 12px;border-radius:8px;cursor:pointer;
@@ -291,17 +293,27 @@
     border-top:1px solid var(--rule)}
 
   /* ===== 감식관 수첩 ===== */
-  .pcol{flex:1;min-width:0}
-  .why{margin:4px 0 0;font:600 12px/1.45 var(--sans);color:#8A6A0E}
-  .readybar{display:flex;align-items:center;gap:12px;padding:8px 18px;flex:0 0 auto;
-    background:#F4EFE3;border-bottom:1px solid var(--rule);font:700 12px/1 var(--sans);color:var(--ink-soft)}
-  .readybar b{color:var(--ink)}
-  .bar{display:inline-block;width:120px;height:8px;border-radius:99px;background:#DCD3BE;
-    vertical-align:-1px;overflow:hidden;margin:0 4px}
+  .why{margin:0;font:600 11.5px/1.4 var(--sans);color:#8A6A0E}
+  .badge{flex:0 0 auto;display:flex;align-items:center;gap:7px;cursor:pointer;
+    font:800 11.5px/1 var(--sans);padding:8px 12px;border-radius:999px;
+    background:var(--ink);border:1.5px solid var(--ink);color:#fff;white-space:nowrap}
+  .badge:hover{background:#332E25}
+  .bar{display:inline-block;width:52px;height:7px;border-radius:99px;background:rgba(255,255,255,.28);
+    overflow:hidden}
   .bar i{display:block;height:100%;background:var(--gold)}
-  .rtx{font-weight:600;opacity:.85}
-  .briefb{margin-left:auto;font:700 12px/1 var(--sans);padding:9px 13px;border-radius:999px;
-    cursor:pointer;border:1.5px solid var(--ink);background:var(--ink);color:#fff}
+  .pgtime{display:flex;align-items:baseline;gap:6px;justify-content:center;margin-bottom:8px}
+  .pgtime b{font:900 34px/1 var(--sans);color:var(--gold)}
+  .pgtime span{font:700 12px/1 var(--sans);color:var(--ink-soft)}
+  .pgbar{height:9px;border-radius:99px;background:#E5DCC6;overflow:hidden;margin-bottom:10px}
+  .pgbar i{display:block;height:100%;background:var(--gold);transition:width .25s linear}
+  .pgsc{text-align:center;font:700 12.5px/1.5 var(--sans);color:var(--ink-soft);margin-bottom:8px}
+  .pgsc b{font-size:17px;color:var(--ink)}
+  .pgrank{margin-top:12px;border-top:1px solid var(--rule);padding-top:10px}
+  .pgrank>b{display:block;font:800 11px/1 var(--sans);color:var(--ink-soft);margin-bottom:7px}
+  .pr{display:flex;align-items:center;gap:7px;font:700 12px/1 var(--sans);padding:6px 4px}
+  .pr i{font-style:normal;width:16px;text-align:center;color:#B4AC9A;font-weight:800}
+  .pr em{margin-left:auto;font-style:normal;font-weight:800}
+  .pr.me{background:#FFF8E6;border-radius:7px}
   .peek{width:100%;padding:11px;margin-bottom:4px;cursor:pointer;border-radius:9px;
     font:700 12.5px/1 var(--sans);background:#fff;border:1.5px dashed var(--rule);color:var(--ink-soft)}
   .peek:hover{border-color:var(--gold);color:#8A6A0E}
@@ -379,15 +391,15 @@
 <div class="app">
   <div class="head">
     <div class="tabs" role="tablist"></div>
+    <button class="badge" id="ready" title="임무 브리핑 열기"></button>
     <span class="net" id="net">연결 확인 중</span>
     <button class="who" id="who">코드네임 정하기</button>
   </div>
   <div class="subhead">
     <div class="vrow" id="vrow" hidden></div>
-    <div class="pcol"><p class="prompt" id="prompt"></p><p class="why" id="why"></p></div>
+    <p class="prompt" id="prompt"></p>
+    <p class="why" id="why"></p>
   </div>
-  <div class="readybar"><span id="ready"></span>
-    <button class="briefb" id="briefBtn">임무 브리핑</button></div>
 
   <div class="wrap" id="wrap">
     <svg id="board" viewBox="0 0 800 520" preserveAspectRatio="xMidYMid meet" aria-label="작도판"></svg>
@@ -2025,16 +2037,6 @@ const PG=[
      {t:"주어진 길이나 각을 <b>옮겨서</b> 썼다",ok:arcsA(st).some(x=>x.r.k==="pts")}];},
  check(){return{ok:false};}}
 ];
-TASKS.pg={
-  fab:"none",quiet:true,
-  variants:PG.map((p,i)=>({label:p.label,i})),
-  prompt:V=>PG[V.i].prompt,
-  build:V=>PG[V.i].build(),
-  steps(st){return PG[st.variant].steps.call(PG[st.variant],st);},
-  check(st){return PG[st.variant].check.call(PG[st.variant],st);},
-  get win(){return PG[S.variant].win||"";},
-  get noConfetti(){return !!PG[S.variant].free;}
-};
 
 </script>
 <script>
@@ -2136,6 +2138,8 @@ const TASKLIST=[
   {id:"t9", label:"조사 6 · 세 각만",             lockName:"조사 6"},
   {id:"t10",label:"사건 파일 · 수사 보고서",       lockName:"사건 파일"}
 ];
+TASKS.pg=TASKS.pg||{fab:"none",quiet:true,prompt:()=>"",build:()=>[],
+  steps:()=>[],check:()=>({ok:false})};
 TASKLIST.forEach(x=>{if(TASKS[x.id])TASKS[x.id].tabName=x.label;});
 ["t4","t5","t6","t7","t8","t9","t10"].forEach(k=>{if(TASKS[k])TASKS[k].hideSteps=true;});
 const COLORS=[["#2A63D8","파랑"],["#C0342A","빨강"],["#2A7148","초록"],["#C98A10","노랑"]];
@@ -2397,7 +2401,7 @@ const WHY={
   ang:"각을 <b>재지 않고 옮기는</b> 법입니다. 진술에 각이 나오면 반드시 씁니다.",
   par:"두 선을 나란히 놓는 법입니다. 옮긴 각이 왜 같은지를 설명해 줍니다.",
   drill:"훈련 1·2에서 배운 것을 <b>혼자 힘으로</b> 다시 해 봅니다. 네 문항을 차례로 푸세요.",
-  pg:"정답이 없는 훈련장입니다. 손에 익을 때까지 마음껏 해 보세요.",
+  pg:"3분 동안 <b>선분 옮기기</b>와 <b>각 옮기기</b>가 번갈아 나옵니다. 몇 개까지 할 수 있을까요?",
   t4:"목격자가 <b>두 가지만</b> 알려 줬습니다. 그것만으로 몽타주를 그릴 수 있을까요?",
   t5:"진술이 <b>세 변</b>을 알려 줄 때 몽타주를 그리는 법입니다.",
   t6:"진술이 <b>두 변과 그 사이 각</b>을 알려 줄 때입니다. ‘사이’인지가 중요합니다.",
@@ -2488,9 +2492,9 @@ function markDone(){
 function paintReady(){
   const d=doneMap(),n=READY.filter(k=>d[k]).length;
   const open=!isLocked("t10");
-  $("ready").innerHTML=`<b>감식관 자격</b> ${n} / ${READY.length}
+  $("ready").innerHTML=`자격 ${n}/${READY.length}
     <span class="bar"><i style="width:${Math.round(n/READY.length*100)}%"></i></span>
-    <span class="rtx">${open?"사건 파일이 배당되었습니다":"모든 조사를 마치면 사건 파일이 배당됩니다"}</span>`;
+    <span>${open?"사건 배당됨":"임무 브리핑"}</span>`;
 }
 
 /* ---- 증거품 대조 ---- */
@@ -2552,7 +2556,7 @@ function canon3(t){
 const cm3=(a,b)=>{for(let i=0;i<3;i++)if(Math.abs(a[i]-b[i])>0.06)return a[i]-b[i];return 0;};
 
 /* ---- 배선 ---- */
-$("briefBtn").onclick=()=>$("briefModal").hidden=false;
+$("ready").onclick=()=>{$("ready").blur();$("briefModal").hidden=false;};
 $("briefBody").innerHTML=BRIEF;
 ["briefModal","cardModal"].forEach(id=>{
   $(id).addEventListener("click",e=>{if(e.target===$(id))$(id).hidden=true;});
@@ -2563,10 +2567,191 @@ $("cardBtn").onclick=openCards;
 window.addEventListener("keydown",e=>{if(e.key==="Escape"){
   ["briefModal","cardModal"].forEach(id=>$(id).hidden=true);}});
 
-const _onTask=window.ONTASK;
-window.ONTASK=function(T,V){
-  _onTask(T,V);
-  
+/* ==================================================================
+   확장 ⑨ — 훈련장 · 3분 작도 훈련
+   길이가 같은 선분 / 크기가 같은 각을 번갈아 내고,
+   3분 안에 몇 개를 해내는지 겨룬다.
+   ================================================================== */
+const esc2=t=>String(t==null?"":t).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const PGD=180000;                       /* 3분 */
+let DR={on:false,end:0,score:0,cur:null,done:false,flash:0};
+let PGBEST=LS.get("pgbest",0), PGRANK={};
+
+function pgRand(){                      /* 문제 하나를 뽑는다 */
+  const R=Math.random;
+  if(R()<0.5){
+    const cm=3+Math.floor(R()*5);                 /* 3~7 */
+    const th=(R()*0.7-0.35);                      /* 살짝 기울인다 */
+    return {k:"seg",cm,th,px:130+Math.floor(R()*90)};
+  }
+  const deg=Math.round(28+R()*100);               /* 28~128 */
+  return {k:"ang",deg,ob:deg>100};
+}
+function pgBuild(){
+  const c=DR.cur;
+  if(!c)return [];
+  if(c.k==="seg"){
+    const A={x:110,y:120},L=c.cm*CM;
+    return [
+      PT("A",A.x,A.y), PT("B",A.x+L*Math.cos(c.th),A.y+L*Math.sin(c.th)),
+      {t:"L",kind:"segment",p1:"A",p2:"B",given:true,key:"AB"},
+      PT("",60,430,{hidden:true}), PT("",748,430,{hidden:true}),
+      {t:"L",kind:"line",p1:"#3",p2:"#4",given:true,name:"l",key:"l",labelPos:{x:754,y:418}},
+      PT("P",c.px,430)];
+  }
+  const ox=c.ob?168:150, oy=c.ob?296:392, r=c.ob?170:214;
+  const px=c.ob?548:470, py=c.ob?438:392, qx=c.ob?742:726;
+  const th=-c.deg*Math.PI/180;
+  return [
+    PT("O",ox,oy), PT("B",ox+r,oy), PT("A",ox+r*Math.cos(th),oy+r*Math.sin(th)),
+    {t:"L",kind:"segment",p1:"O",p2:"B",given:true,key:"OB",over:24},
+    {t:"L",kind:"segment",p1:"O",p2:"A",given:true,key:"OA",over:24},
+    PT("P",px,py), PT("Q",qx,py),
+    {t:"L",kind:"segment",p1:"P",p2:"Q",given:true,key:"PQ",over:28}];
+}
+function pgCheck(st){
+  const c=DR.cur;
+  if(!c)return {none:true,msg:"시작을 누르면 문제가 나옵니다."};
+  if(c.k==="seg"){
+    const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P");
+    if(!A||!Pp)return {none:true};
+    const l=st.items.find(i=>i.name==="l"),L1=get(st,l.p1),L2=get(st,l.p2);
+    const tgt=d2(A,B);
+    const segs=st.items.filter(i=>i.t==="L"&&!i.given&&i.kind==="segment"&&
+      (i.p1===Pp.id||i.p2===Pp.id));
+    for(const ln of segs){
+      const Q=get(st,ln.p1===Pp.id?ln.p2:ln.p1);
+      const len=d2(Pp,Q);
+      const off=Math.abs((L2.x-L1.x)*(L1.y-Q.y)-(L1.x-Q.x)*(L2.y-L1.y))/d2(L1,L2);
+      if(len>6&&Math.abs(len-tgt)<1.0&&off<1.0)return {ok:true};
+    }
+    return {ok:false};
+  }
+  const O=byLabel(st,"O"),A=byLabel(st,"A"),B=byLabel(st,"B");
+  const Pp=byLabel(st,"P"),Q=byLabel(st,"Q");
+  if(!O||!Pp)return {none:true};
+  const a1=normPi(ang(O,A)-ang(O,B));
+  const lns=st.items.filter(i=>i.t==="L"&&!i.given&&(i.p1===Pp.id||i.p2===Pp.id));
+  for(const ln of lns){
+    const R=get(st,ln.p1===Pp.id?ln.p2:ln.p1);
+    const a2=normPi(ang(Pp,R)-ang(Pp,Q));
+    if(d2(Pp,R)>6&&Math.abs(Math.abs(a1)-Math.abs(a2))<0.6*Math.PI/180)return {ok:true};
+  }
+  return {ok:false};
+}
+TASKS.pg={
+  fab:"none",quiet:true,drill:true,noConfetti:true,
+  pool:["C","D","E","F","G","H","J","K","M","N"],
+  prompt:()=>DR.cur
+    ?(DR.cur.k==="seg"
+      ?"선분 <b>AB</b>와 길이가 같은 선분을, 직선 <b>l</b> 위 점 <b>P</b>에서 시작하도록 작도하시오."
+      :"<b>∠AOB</b>와 크기가 같은 각을, 반직선 <b>PQ</b>를 한 변으로 하여 작도하시오.")
+    :"왼쪽 <b>훈련 시작</b>을 누르면 3분이 시작됩니다.",
+  build:()=>pgBuild(),
+  nameFor(st,c){
+    if(!DR.cur||DR.cur.k!=="ang")return null;
+    const O=byLabel(st,"O"),Pp=byLabel(st,"P");
+    const A=byLabel(st,"A"),B=byLabel(st,"B"),Q=byLabel(st,"Q");
+    if(!O||!Pp)return null;
+    const OA=KEY(st,"OA"),OB=KEY(st,"OB"),PQ=KEY(st,"PQ");
+    const it=id=>get(st,id);
+    const arc=[c.a,c.b].map(it).find(x=>x&&x.t==="A");
+    const onRay=(V,T)=>((c.x-V.x)*(T.x-V.x)+(c.y-V.y)*(T.y-V.y))>0;
+    const hits=id=>c.a===id||c.b===id;
+    if(arc&&arc.c===O.id){
+      if(OA&&hits(OA.id)&&onRay(O,A))return "X";
+      if(OB&&hits(OB.id)&&onRay(O,B))return "Y";
+    }
+    if(arc&&arc.c===Pp.id&&PQ&&hits(PQ.id)&&onRay(Pp,Q))return "D";
+    const a1=it(c.a),a2=it(c.b);
+    if(a1&&a2&&a1.t==="A"&&a2.t==="A"){
+      const D=byLabel(st,"D"),cs=[a1.c,a2.c];
+      if(D&&cs.indexOf(Pp.id)>=0&&cs.indexOf(D.id)>=0)return "C";
+    }
+    return null;
+  },
+  steps(st){
+    if(!DR.on)return [{t:"왼쪽 <b>훈련 시작</b>을 누르세요",ok:false}];
+    return [{t:DR.cur&&DR.cur.k==="seg"?"길이가 같은 선분을 작도한다":"크기가 같은 각을 작도한다",
+             ok:!!pgCheck(st).ok}];
+  },
+  check(st){return pgCheck(st);}
+};
+
+/* ── 진행 ── */
+function pgNext(){
+  DR.cur=pgRand();
+  LS.del(`save:${cls()}:${me.no}:pg:0`);
+  loadTask("pg");
+}
+function pgStart(){
+  DR={on:true,end:Date.now()+PGD,score:0,cur:null,done:false,flash:0};
+  pgNext();pgPanel();
+}
+async function pgStop(){
+  DR.on=false;DR.done=true;DR.cur=null;
+  if(DR.score>PGBEST){PGBEST=DR.score;LS.set("pgbest",PGBEST);}
+  if(me.nick){
+    try{await dbPut(`drill/${cls()}/${me.no}`,
+      {nick:me.nick,best:PGBEST,last:DR.score,at:Date.now()});setNet(true);}
+    catch(e){setNet(false);}
+  }
+  await pgPull();loadTask("pg");
+}
+async function pgPull(){
+  if(!me.nick)return;
+  try{PGRANK=(await dbGet(`drill/${cls()}`))||{};setNet(true);}catch(e){setNet(false);}
+}
+function pgScored(){
+  if(!DR.on||DR.flash)return;
+  DR.score++;DR.flash=Date.now();
+  toast(`좋아요! ${DR.score}개째`);
+  setTimeout(()=>{DR.flash=0;if(DR.on)pgNext();},900);
+}
+/* 훈련장 왼쪽 칸 */
+function pgPanel(){
+  if(!S||S.taskId!=="pg"){return;}
+  const box=$("mini");box.hidden=false;
+  const left=Math.max(0,DR.end-Date.now());
+  const rows=Object.keys(PGRANK).map(k=>({no:k,nick:(PGRANK[k]||{}).nick||k,
+    best:(PGRANK[k]||{}).best||0})).sort((a,b)=>b.best-a.best);
+  const mi=rows.findIndex(r=>r.no===me.no);
+  let h="";
+  if(DR.on){
+    h=`<div class="pgtime"><b id="pgsec">${Math.ceil(left/1000)}</b><span>초 남음</span></div>
+       <div class="pgbar"><i id="pgbar" style="width:${(left/PGD*100).toFixed(1)}%"></i></div>
+       <div class="pgsc">지금까지 <b>${DR.score}</b>개</div>
+       <button class="peek" id="pgStop">그만하기</button>`;
+  }else{
+    h=`<div class="pgsc">${DR.done?`이번 기록 <b>${DR.score}</b>개`:"3분 작도 훈련"}</div>
+       <div class="mtx">내 최고 <b>${PGBEST}개</b></div>
+       <button class="notebtn hot" id="pgGo">${DR.done?"한 번 더":"훈련 시작"}</button>`;
+    if(rows.length)h+=`<div class="pgrank"><b>우리 반 기록</b>${rows.slice(0,8).map((r,i)=>
+      `<span class="pr${r.no===me.no?" me":""}"><i>${i+1}</i>${esc2(r.nick)}<em>${r.best}</em></span>`
+      ).join("")}${mi>=8?`<span class="pr me"><i>${mi+1}</i>${esc2(rows[mi].nick)}
+        <em>${rows[mi].best}</em></span>`:""}</div>`;
+  }
+  box.innerHTML=h;
+  const g=$("pgGo");if(g)g.onclick=()=>{g.blur();pgStart();};
+  const st=$("pgStop");if(st)st.onclick=()=>{st.blur();pgStop();};
+}
+/* 1초마다 남은 시간 · 쉬는 동안에는 기록판을 새로 받는다 */
+let pgTick=0;
+setInterval(()=>{
+  if(!DR.on){
+    if(S&&S.taskId==="pg"&&Date.now()-pgTick>8000){
+      pgTick=Date.now();pgPull().then(()=>{if(S&&S.taskId==="pg"&&!DR.on)pgPanel();});
+    }
+    return;
+  }
+  const left=Math.max(0,DR.end-Date.now());
+  const sec=$("pgsec"),bar=$("pgbar");
+  if(sec)sec.textContent=Math.ceil(left/1000);
+  if(bar)bar.style.width=(left/PGD*100).toFixed(1)+"%";
+  if(left<=0)pgStop();
+},250);
+
+
 /* ── 확장 ⑧-2 · 조건 받기와 제출 ── */
 XT=LS.get("xtask",null);
 let XN=0, XANS=null, XMY=null, XMARK=null, XSEEN=LS.get("xseen","");
@@ -2611,6 +2796,7 @@ cancelWork=async function(){
   paintFab();render();
 };
 paintFab=function(){
+  if(S&&S.taskId==="pg"){$("overlay").style.display="none";pgPanel();return;}
   if(!S||S.taskId!=="t4")return _pf();
   const f=$("overlay");f.style.display="";
   f.textContent=XSENT?"제출 취소":"게시판에 내기";
@@ -2693,6 +2879,25 @@ $("xresClose").onclick=()=>$("xresModal").hidden=true;
 $("xresModal").addEventListener("click",e=>{if(e.target===$("xresModal"))$("xresModal").hidden=true;});
 xPull();
 
+const _pui=paintUI;
+paintUI=function(){
+  _pui();
+  if(S&&S.taskId==="pg"&&DR.on&&!DR.flash){
+    try{if(pgCheck(S).ok)pgScored();}catch(e){}
+  }
+};
+
+/* 왼쪽 아래 칸은 과제마다 다르게 쓴다 (모둠 자리 / 실험 알림 / 훈련장 기록) */
+const _pm=paintMini;
+paintMini=function(){
+  if(S&&S.taskId==="pg")return pgPanel();
+  if(S&&S.taskId==="t4")return xPanel();
+  return _pm();
+};
+const _onTask=window.ONTASK;
+window.ONTASK=function(T,V){
+  _onTask(T,V);
+  
 $("why").innerHTML=WHY[S.taskId]||"";
   $("cardBtn").style.display=(S.taskId==="t10")?"":"none";
   paintReady();
