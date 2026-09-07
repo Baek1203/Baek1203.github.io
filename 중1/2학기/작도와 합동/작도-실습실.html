@@ -986,7 +986,14 @@ function render(){
     else if(l.kind==="line"){const A=ext(b,a),B=ext(a,b);a=A;b=B;}
     else if(l.over){const L=d2(a,b)||1;b={x:b.x+(b.x-a.x)/L*l.over,y:b.y+(b.y-a.y)/L*l.over};}
     g+=`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${CO.given}" stroke-width="2.4" stroke-linecap="round"/>`;
-    if(l.name)g+=`<text x="${l.labelPos.x}" y="${l.labelPos.y}" style="font-family:var(--serif);font-style:italic" font-size="21" fill="${CO.given}">${l.name}</text>`;
+    if(l.name)g+=(l.num!==undefined)
+      ?`<text x="${l.labelPos.x}" y="${l.labelPos.y}" text-anchor="middle"
+         font-size="18" fill="${CO.given}" stroke="${CO.paper}" stroke-width="4"
+         paint-order="stroke" stroke-linejoin="round">${l.num
+           ?`<tspan style="font-family:var(--serif);font-style:italic" font-size="19"
+              >${esc(l.num)}</tspan> `:""}<tspan
+           style="font-family:var(--sans);font-weight:800">${esc(l.name)}</tspan></text>`
+      :`<text x="${l.labelPos.x}" y="${l.labelPos.y}" style="font-family:var(--serif);font-style:italic" font-size="21" fill="${CO.given}">${l.name}</text>`;
   }
   for(const l of S.items.filter(i=>i.t==="L"&&!i.given)){
     let a=pt(l.p1),b=pt(l.p2);
@@ -1020,7 +1027,7 @@ function render(){
     const col=p.given?CO.given:CO.mine;
     if(S.pending.includes(p.id))g+=`<circle cx="${f(p.x)}" cy="${f(p.y)}" r="12" fill="none" stroke="var(--gold)" stroke-width="3"/>`;
     g+=`<circle cx="${f(p.x)}" cy="${f(p.y)}" r="5" fill="${col}"/>`;
-    if(p.label)g+=lbl(p.x+10,p.y-9,p.label,col);
+    if(p.label){const o=p.lo||{x:10,y:-9};g+=lbl(p.x+o.x,p.y+o.y,p.label,col);}
   }
   if(over)g+=overlaySVG();
   if(showC)g+=compassSVG();
@@ -1524,12 +1531,17 @@ function baseLine(bx){                          /* 반드시 build 배열의 맨
 function gSeg(l1,l2,name,x,y,cm){
   const x2=x+cm*CM;
   return [PT(l1,x,y),PT(l2,x2,y),
-    {t:"L",kind:"segment",p1:l1,p2:l2,given:true,key:name,name,labelPos:{x:x2+11,y:y+6}}];
+    {t:"L",kind:"segment",p1:l1,p2:l2,given:true,key:name,
+     name:String(cm),num:name,labelPos:{x:(x+x2)/2,y:y-13}}];
 }
 function gAng(lo,lx,ly,key,ox,oy,deg,arm){
-  const t=-deg*Math.PI/180;
-  return [PT(lo,ox,oy),PT(lx,ox+arm,oy),PT(ly,ox+arm*Math.cos(t),oy+arm*Math.sin(t)),
-    {t:"L",kind:"segment",p1:lo,p2:lx,given:true,key:key+"x",over:26},
+  const t=-deg*Math.PI/180, b=t/2;
+  /* 꼭짓점 이름은 각의 바깥쪽에 둔다 */
+  const ox2=-Math.cos(b)*30-8, oy2=-Math.sin(b)*30+8;
+  return [PT(lo,ox,oy,{lo:{x:ox2,y:oy2}}),
+    PT(lx,ox+arm,oy),PT(ly,ox+arm*Math.cos(t),oy+arm*Math.sin(t)),
+    {t:"L",kind:"segment",p1:lo,p2:lx,given:true,key:key+"x",over:26,
+     name:deg+"°",num:"",labelPos:{x:ox+Math.cos(b)*58,y:oy+Math.sin(b)*58+7}},
     {t:"L",kind:"segment",p1:lo,p2:ly,given:true,key:key+"y",over:26}];
 }
 
