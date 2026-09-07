@@ -186,6 +186,13 @@
   .head{gap:10px}
   .tabs{flex:1;min-width:0;overflow-x:auto;scrollbar-width:thin;padding-bottom:2px}
   .tab{white-space:nowrap;font-size:12px;padding:8px 12px;flex:0 0 auto}
+  .tab .ck{font-style:normal;font-weight:900;margin-left:5px;color:#2A7148}
+  .tab.tri.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .vb.my{border-color:var(--gold);background:#FFF8E6}
+  .vb.on.my{background:var(--gold);border-color:var(--gold);color:#3A2A02}
+  .vnote{align-self:center;margin-left:8px;font:600 11.5px/1.4 var(--sans);color:var(--ink-soft)}
+  .tab.sent{border-color:#8BC5A6}
+  .tab.sent[aria-selected="true"] .ck{color:#BFE6CF}
   .tab.lk{opacity:.55;border-style:dashed}
   .net{flex:0 0 auto;font:700 11px/1 var(--sans);padding:7px 10px;border-radius:999px;
     background:#EDE6D5;color:var(--ink-soft);border:1.5px solid var(--rule)}
@@ -233,6 +240,15 @@
   .xwait{background:#F4EFE3;border:1.5px solid var(--rule);color:var(--ink-soft)}
   .xok em,.xwait em{display:block;font-style:normal;font-weight:600;font-size:11px;
     margin-top:5px;opacity:.85}
+  .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .gc{background:#fff;border:2px solid var(--rule);border-radius:12px;padding:9px 10px;
+    position:relative}
+  .gc.me{border-color:var(--gold);background:#FFFDF5}
+  .gc .nm{display:block;font:800 12px/1 var(--sans)}
+  .gc .gg{position:absolute;right:9px;top:9px;font:700 10px/1 var(--sans);color:#B4AC9A}
+  .gc svg{width:100%;height:96px;display:block;margin-top:6px}
+  .gstack{background:#fff;border:2px solid var(--rule);border-radius:14px;padding:10px}
+  .gstack svg{width:100%;height:min(46vh,340px);display:block}
   .xpair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .xhalf{background:#fff;border:2px solid var(--rule);border-radius:12px;padding:12px}
   .xhalf.ans{border-color:var(--red);background:#FDF3F1}
@@ -472,10 +488,10 @@
         <option value="1-3">1학년 3반</option><option value="1-4">1학년 4반</option></select></div>
       <div class="idrow"><label>코드네임</label><input id="idNick" maxlength="12" autocomplete="off">
         <button class="dice" id="idDice" title="무작위로 뽑기">🎲 뽑기</button></div>
-      <div class="idrow"><label>모둠</label><select id="idGroup">
-        <option value="">모둠 없음</option>
-        <option>1</option><option>2</option><option>3</option><option>4</option>
-        <option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+      <div class="idrow"><label>모둠</label>
+        <select id="idGroup" style="flex:1"></select>
+        <select id="idRole" style="flex:1"></select>
+      </div>
       <div class="idrow"><label>색</label><div id="idColors" class="swatch"></div></div>
       <p class="idmsg" id="idMsg"></p>
       <button class="mbtn solid" id="idSave">저장</button>
@@ -485,6 +501,14 @@
 </div>
 
 
+
+<div class="modal" id="gatherModal" hidden><div class="sheet">
+  <header><div><h1 id="gTitle">같은 담당끼리 모아보기</h1>
+    <p id="gSub">먼저 낸 친구들의 몽타주입니다</p></div>
+    <div class="acts">
+      <button class="mbtn" id="gStack">포개어 보기</button>
+      <button class="mbtn solid" id="gClose">닫기</button></div></header>
+  <div class="mbody" id="gBody"></div></div></div>
 
 <div class="modal" id="xresModal" hidden><div class="sheet">
   <header><div><h1>원래 삼각형이 공개되었습니다</h1><p>내가 그린 것과 견주어 보세요</p></div>
@@ -1695,9 +1719,9 @@ function mkAAA(d1,d2,d3,extra){
 }
 
 /* ---- 과제 5 · 6 · 7 ---- */
-TASKS.t5=mkSSS(7,5,4,{lock:true,win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
-TASKS.t6=mkSAS(6,4,50,{lock:true,win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
-TASKS.t7=mkASA(7,40,65,{lock:true,win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
+TASKS.t5=mkSSS(7,5,4,{win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
+TASKS.t6=mkSAS(6,4,50,{win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
+TASKS.t7=mkASA(7,40,65,{win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
 
 /* ---- 과제 8 · 9 (잠금) ---- */
 TASKS.t8=mkSSA(7,5,40,{lock:true,noConfetti:true,
@@ -1941,7 +1965,7 @@ function xDesc(){
   return `목격자가 알려 준 것은 ${names.join("와 ")} <b>두 가지뿐</b>입니다. 이것만으로 삼각형을 작도하시오.`;
 }
 TASKS.t4={
-  kind:"tri",fab:"submit",xboard:true,noConfetti:true,lock:true,
+  kind:"tri",fab:"submit",xboard:true,noConfetti:true,
   pool:["C","D","E","F","G","H","J","K","M","N"],
   win:"삼각형을 완성했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요.",
   prompt:()=>xDesc(),
@@ -2077,6 +2101,7 @@ const dbDel=async p=>{const r=await fetch(`${DB_URL}/${p}.json`,{method:"DELETE"
 
 let ONLINE=null;
 const CACHE=LS.get("cache",{unlocked:{},present:{},mine:null,mode:"intake"});
+let SENT=LS.get("sent",{});           /* 게시판에 낸 과제 */
 let PEND=LS.get("pend",null);          /* 못 보낸 제출 — 연결되면 저절로 다시 보낸다 */
 async function retryPend(){
   if(!PEND||!me.nick||!S||S.taskId!==PEND.task)return;
@@ -2114,6 +2139,7 @@ const Net={
     CACHE.present=p;LS.set("cache",CACHE);
     await dbPut(`boards/${cls()}/${S.taskId}/subs/${me.no}`,rec);
     await dbPut(`boards/${cls()}/${S.taskId}/present/${me.no}`,p[me.no]);
+    SENT[S.taskId]=true;LS.set("sent",SENT);
     dbPut(`traces/${cls()}/${me.no}/${S.taskId}`,
       {nick:me.nick,group:me.group,at:rec.at,lines:S.log.slice(-40)}).catch(()=>{});
   },
@@ -2122,6 +2148,7 @@ const Net={
     CACHE.present=p;LS.set("cache",CACHE);
     await dbDel(`boards/${cls()}/${S.taskId}/subs/${me.no}`);
     await dbDel(`boards/${cls()}/${S.taskId}/present/${me.no}`);
+    delete SENT[S.taskId];LS.set("sent",SENT);
   }
 };
 
@@ -2142,18 +2169,26 @@ function reportProgress(){
 setInterval(()=>{if(me.nick)dbPut(`progress/${cls()}/${me.no}/seen`,Date.now()).catch(()=>{});},30000);
 
 /* ---- 과제 목록 ---- */
+const ROLES3=[
+  {k:"가",t:"t5",n:"세 변"},
+  {k:"나",t:"t6",n:"두 변과 사이 각"},
+  {k:"다",t:"t7",n:"한 변과 양 끝 각"}
+];
+const TRIT=ROLES3.map(r=>r.t);
+const roleOf=t=>(ROLES3.find(r=>r.t===t)||{}).k||"";
+const myTask=()=>(ROLES3.find(r=>r.k===me.role)||{}).t||"t5";
+let MODE=LS.get("mode3","ex");        /* ex 전문가 · team 모둠 */
 const TASKLIST=[
   {id:"seg",label:"훈련 1 · 길이를 그대로 옮기기"},
   {id:"ang",label:"훈련 2 · 각을 그대로 옮기기"},
   {id:"par",label:"훈련 3 · 나란한 선 긋기"},
   {id:"drill",label:"★ 감식 훈련"},
   {id:"pg", label:"훈련장"},
-  {id:"t4", label:"조사 1 · 조건 두 개로",lockName:"조사 1"},
-  {id:"t5", label:"조사 2 · 세 변을 알 때",       lockName:"조사 2"},
-  {id:"t6", label:"조사 3 · 두 변과 그 사이 각",   lockName:"조사 3"},
-  {id:"t7", label:"조사 4 · 한 변과 양 끝 각",     lockName:"조사 4"},
-  {id:"t8", label:"조사 5 · 두 변과 한 각",       lockName:"조사 5"},
-  {id:"t9", label:"조사 6 · 세 각만",             lockName:"조사 6"},
+  {id:"t4", label:"조사 1 · 조건 두 개로"},
+  {id:"ex",  label:"조사 2 · 내 담당 기법", tri:"ex"},
+  {id:"team",label:"조사 3 · 배워서 그리기", tri:"team"},
+  {id:"t8", label:"조사 4 · 두 변과 한 각",       lockName:"조사 4"},
+  {id:"t9", label:"조사 5 · 세 각만",             lockName:"조사 5"},
   {id:"t10",label:"사건 파일 · 수사 보고서",       lockName:"사건 파일"}
 ];
 TASKS.pg=TASKS.pg||{fab:"none",quiet:true,prompt:()=>"",build:()=>[],
@@ -2163,12 +2198,17 @@ TASKLIST.forEach(x=>{if(TASKS[x.id])TASKS[x.id].tabName=x.label;});
 const COLORS=[["#2A63D8","파랑"],["#C0342A","빨강"],["#2A7148","초록"],["#C98A10","노랑"]];
 
 /* ---- 신원 ---- */
-let me=LS.get("me",{cls:"1-1",nick:"",no:"",group:"",color:COLORS[0][0]});
+let me=LS.get("me",{cls:"1-1",nick:"",no:"",group:"",role:"",color:COLORS[0][0]});
 const cls=()=>me.cls||"미지정";
 
 function openId(force){
   const m=$("idModal");
-  $("idCls").value=me.cls||"1-1";$("idNick").value=me.nick||"";$("idGroup").value=me.group||"";
+  $("idGroup").innerHTML=`<option value="">모둠 없음</option>`+
+    [1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n}모둠</option>`).join("");
+  $("idRole").innerHTML=`<option value="">담당 없음</option>`+
+    ROLES3.map(r=>`<option value="${r.k}">${r.k} · ${r.n}</option>`).join("");
+  $("idCls").value=me.cls||"1-1";$("idNick").value=me.nick||"";
+  $("idGroup").value=me.group||"";$("idRole").value=me.role||"";
   paintSwatch();m.hidden=false;m.dataset.force=force?"1":"";
 }
 function paintSwatch(){
@@ -2183,7 +2223,8 @@ const cleanCode=t=>t.replace(/[.#$\[\]\/]/g,"").trim().slice(0,12);
 
 async function saveId(force){
   if(idBusy)return;
-  const c=$("idCls").value,nk=cleanCode($("idNick").value),g=$("idGroup").value;
+  const c=$("idCls").value,nk=cleanCode($("idNick").value),g=$("idGroup").value,
+        rl=$("idRole").value;
   if(!nk)return idNote("코드네임을 입력하거나 뽑기를 눌러 주세요.",1);
   idBusy=true;idNote("확인하는 중…");
   let owner=null;
@@ -2194,7 +2235,7 @@ async function saveId(force){
     $("idSave").textContent="이어서 하기";$("idSave").dataset.force="1";
     return;
   }
-  me={cls:c,nick:nk,no:nk,group:g||"",color:me.color};
+  me={cls:c,nick:nk,no:nk,group:g||"",role:rl||"",color:me.color};
   LS.set("me",me);
   if(owner!=="offline")dbPut(`codes/${c}/${nk}`,{dev:DEV,at:Date.now()}).catch(()=>{});
   idBusy=false;idNote("");
@@ -2206,10 +2247,11 @@ function handOver(){
   if(!confirm("이 기기의 코드네임을 지웁니다. 다음 사람이 자기 코드네임으로 들어갈 수 있습니다."))return;
   LS.del("me");LS.del("notes");LS.del("evres");LS.del("done");LS.del("peek");LS.del("cache");
   me={cls:me.cls||"1-1",nick:"",no:"",group:"",color:COLORS[0][0]};
-  $("idNick").value="";$("idGroup").value="";idNote("");paintWho();openId(true);
+  $("idNick").value="";$("idGroup").value="";$("idRole").value="";idNote("");paintWho();openId(true);
 }
 function paintWho(){$("who").textContent=me.nick
-  ?`${me.cls} · ${me.nick}${me.group?" · "+me.group+"모둠":""}`:"코드네임 정하기";}
+  ?`${me.cls} · ${me.nick}${me.group?" · "+me.group+(me.role?"-"+me.role:"모둠"):""}`
+  :"코드네임 정하기";}
 
 /* ---- 무작위 닉네임 ---- */
 const NA=["초록","파랑","노랑","붉은","하얀","검은","은빛","금빛","작은","날쌘","조용한","용감한",
@@ -2233,27 +2275,62 @@ const isLocked=id=>!!TASKS[id].lock&&!unlockedNow()[id];
 function buildTabs(){
   const box=document.querySelector(".tabs");
   box.innerHTML=TASKLIST.map(x=>{
+    if(x.tri){
+      const on=S&&TRIT.indexOf(S.taskId)>=0&&MODE===x.tri;
+      const n=TRIT.filter(t=>SENT[t]).length;
+      return `<button class="tab tri${on?" on":""}" role="tab" data-tri="${x.tri}"
+        aria-selected="${on}">${x.label}${
+        x.tri==="team"&&n===3?'<i class="ck">✓</i>':""}</button>`;
+    }
     const lk=isLocked(x.id);
     const nm=lk?`${x.lockName} · 미배당`:x.label;
-    return `<button class="tab${lk?" lk":""}${x.id==="pg"?" pgtab":""}" role="tab" data-task="${x.id}"
-      aria-selected="${S&&S.taskId===x.id}">${lk?"🔒 ":""}${nm}</button>`;
+    const sent=!lk&&SENT[x.id];
+    return `<button class="tab${lk?" lk":""}${sent?" sent":""}${x.id==="pg"?" pgtab":""}"
+      role="tab" data-task="${x.id}" aria-selected="${S&&S.taskId===x.id&&!TRIT.includes(x.id)}"
+      >${lk?"🔒 ":""}${nm}${sent?'<i class="ck">✓</i>':""}</button>`;
   }).join("");
-  box.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{
-    if(isLocked(b.dataset.task))return toast("아직 배당되지 않은 과제입니다.");
-    loadTask(b.dataset.task);buildTabs();
+  box.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.task;
+    if(isLocked(id))return toast("아직 배당되지 않은 조사입니다.");
+    loadTask(id);
+  });
+  box.querySelectorAll("[data-tri]").forEach(b=>b.onclick=()=>{
+    MODE=b.dataset.tri;LS.set("mode3",MODE);
+    if(MODE==="ex")loadTask(myTask());
+    else{
+      const left=TRIT.filter(t=>t!==myTask()&&!SENT[t]);
+      loadTask(left[0]||TRIT.find(t=>t!==myTask())||"t5");
+    }
   });
 }
 
 /* ---- 변형(세트·사건) 줄 ---- */
 function paintVariants(T){
   const row=$("vrow");
+  if(S&&TRIT.indexOf(S.taskId)>=0){
+    row.hidden=false;
+    row.innerHTML=ROLES3.map(r=>{
+      const mine=r.t===myTask();
+      const off=(MODE==="ex")?!mine:mine;
+      return `<button class="vb${S.taskId===r.t?" on":""}${mine?" my":""}"
+        data-t="${r.t}"${off?" disabled":""} title="${r.n}">${r.k}${
+        SENT[r.t]?" ✓":""}</button>`;
+    }).join("")+`<span class="vnote">${MODE==="ex"
+      ?(me.role?`내 담당은 <b>${me.role}</b>입니다`:"위에서 담당을 정하세요")
+      :"모둠원에게 배워 나머지 둘을 그립니다"}</span>`;
+    row.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>loadTask(b.dataset.t));
+    return;
+  }
   if(!T.variants){row.hidden=true;row.innerHTML="";return;}
   const lockV=(T===TASKS.t10)?LS.get("caseFix:"+me.no,null):null;
   row.hidden=false;
   row.innerHTML=T.variants.map((v,i)=>
     `<button class="vb${S.variant===i?" on":""}" data-i="${i}"
       ${lockV!=null&&lockV!==i?"disabled":""}>${v.label}</button>`).join("");
-  row.querySelectorAll(".vb").forEach(b=>b.onclick=()=>loadTask(S.taskId,+b.dataset.i));
+  row.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;if(i===S.variant)return;
+    loadTask(S.taskId,i);
+  });
 }
 
 /* ---- 흩뜨리기: 학생마다 다른 자리에서 시작한다 ---- */
@@ -2900,7 +2977,26 @@ function xShow(){
 }
 $("xresClose").onclick=()=>$("xresModal").hidden=true;
 $("xresModal").addEventListener("click",e=>{if(e.target===$("xresModal"))$("xresModal").hidden=true;});
-xPull();pullN();
+xPull();pullN();pullSent();
+
+/* 조사 2·3·4는 배운 뒤 직접 그려 내는 것까지가 한 과제 */
+["t5","t6","t7"].forEach(k=>{
+  if(!TASKS[k])return;
+  const base=TASKS[k].steps.bind(TASKS[k]);
+  TASKS[k].steps=st=>base(st).concat(
+    [{t:"<b>게시판에 내기</b>로 제출한다",ok:!!SENT[k]}]);
+});
+/* 서버에 이미 낸 것이 있으면 표시를 맞춘다 */
+async function pullSent(){
+  if(!me.nick)return;
+  for(const k of ["t5","t6","t7"]){
+    try{
+      const d=await dbGet(`boards/${cls()}/${k}/subs/${me.no}`);
+      if(d)SENT[k]=true; else delete SENT[k];
+    }catch(e){return;}
+  }
+  LS.set("sent",SENT);buildTabs();render();
+}
 
 const _pui=paintUI;
 paintUI=function(){
@@ -2927,12 +3023,16 @@ function paintAsk(){
   if(!ok&&!NOTE1[S.taskId]){box.hidden=true;return;}
   box.hidden=false;
   const v=NOTE1[S.taskId];
-  box.innerHTML=`<p>이 조건으로 그릴 수 있는 삼각형은 몇 개입니까?</p>
+  box.innerHTML=`${TRIT.indexOf(S.taskId)>=0
+    ?`<button class="peek" id="gatherBtn" style="margin:0 0 10px">
+        ${roleOf(S.taskId)} 담당끼리 모아보기</button>`:""}
+    <p>이 조건으로 그릴 수 있는 삼각형은 몇 개입니까?</p>
     <div class="askrow">${["1개","2개","무수히"].map(x=>
       `<button class="${v===x?"on":""}" data-n="${x}">${x}</button>`).join("")}</div>
     ${v?`<small>선생님 화면의 표에 모입니다. 언제든 바꿀 수 있어요.</small>`
        :`<small>같은 담당끼리 견주어 보고 고르세요.</small>`}`;
   box.querySelectorAll("[data-n]").forEach(b=>b.onclick=()=>saveN(S.taskId,b.dataset.n));
+  const gb=$("gatherBtn");if(gb)gb.onclick=()=>{gb.blur();gatherOpen();};
 }
 async function pullN(){
   if(!me.nick)return;
@@ -2941,6 +3041,51 @@ async function pullN(){
     if(d){ASKN.forEach(k=>{if(d[k]&&d[k].n)NOTE1[k]=d[k].n;});LS.set("note1",NOTE1);}
   }catch(e){}
 }
+
+/* ── 같은 담당끼리 모아보기 ── */
+let GSUB=[], GST=false;
+async function gatherOpen(){
+  const t=S.taskId;
+  $("gTitle").textContent=`${roleOf(t)} 담당끼리 모아보기`;
+  $("gBody").innerHTML=`<p class="muted">불러오는 중…</p>`;
+  $("gatherModal").hidden=false;GST=false;
+  try{
+    const d=await dbGet(`boards/${cls()}/${t}/subs`)||{};
+    GSUB=Object.keys(d).map(k=>Object.assign({no:k},d[k])).filter(x=>x.tri&&x.tri.length===3);
+    setNet(true);
+  }catch(e){setNet(false);GSUB=[];}
+  gatherPaint();
+}
+function gatherPaint(){
+  const W=240,H=180;
+  if(!GSUB.length){
+    $("gBody").innerHTML=`<p class="muted">아직 낸 사람이 없습니다.
+      먼저 <b>게시판에 내기</b>를 누른 뒤 다시 열어 보세요.</p>`;
+    $("gSub").textContent="";return;
+  }
+  $("gSub").textContent=`${GSUB.length}명이 냈습니다`;
+  if(GST){
+    const big=460,bh=340;
+    const all=GSUB.map(x=>fit(x.tri,big,bh,40));
+    $("gBody").innerHTML=`<div class="gstack"><svg viewBox="0 0 ${big} ${bh}">
+      ${all.map(t=>poly(t,"#1C1A16","#1C1A1614",2.4)).join("")}</svg></div>
+      <p class="muted" style="text-align:center;margin-top:10px">
+        ${GSUB.length}장을 같은 크기로 맞춰 겹쳤습니다.
+        <b>하나로 보이면 누가 그려도 같다</b>는 뜻입니다.</p>`;
+    return;
+  }
+  $("gBody").innerHTML=`<div class="ggrid">${GSUB.map(x=>{
+    const t=fit(x.tri,W,H,22), me2=x.no===me.no;
+    return `<div class="gc${me2?" me":""}">
+      <span class="nm">${esc(x.nick||x.no)}${me2?" (나)":""}</span>
+      <span class="gg">${x.group?x.group+"모둠":""}</span>
+      <svg viewBox="0 0 ${W} ${H}">${poly(t,me2?"#C98A10":"#1C1A16",
+        me2?"#C98A1014":"#1C1A1608",2.8)}</svg></div>`;}).join("")}</div>`;
+}
+$("gClose").onclick=()=>$("gatherModal").hidden=true;
+$("gStack").onclick=()=>{GST=!GST;$("gStack").textContent=GST?"따로 보기":"포개어 보기";gatherPaint();};
+$("gatherModal").addEventListener("click",e=>{
+  if(e.target===$("gatherModal"))$("gatherModal").hidden=true;});
 
 /* 왼쪽 아래 칸은 과제마다 다르게 쓴다 (모둠 자리 / 실험 알림 / 훈련장 기록) */
 const _pm=paintMini;
