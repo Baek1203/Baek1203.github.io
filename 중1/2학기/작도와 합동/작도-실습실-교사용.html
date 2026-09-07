@@ -93,6 +93,13 @@
 
   .locks{background:#fff;border:1px solid var(--rule);border-radius:8px;padding:16px 18px;max-width:760px}
   .locks h3{margin:0 0 4px;font:800 15px/1 var(--sans)}
+  .pre{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;
+    margin:12px 0 16px}
+  .pre .btn{text-align:left;padding:12px 14px;line-height:1.5}
+  .pre .btn b{display:block;font:800 13px/1 var(--sans);margin-bottom:5px}
+  .pre .btn em{font-style:normal;font:600 11px/1.5 var(--sans);color:var(--ink-soft)}
+  .pre .btn[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#3A2A02}
+  .pre .btn[aria-pressed="true"] em{color:#6A5210}
   .locks p{margin:0 0 14px;font:600 12.5px/1.6 var(--sans);color:var(--ink-soft)}
   .cols2{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:100%}
   .gside,.gpick{overflow:auto;padding-right:4px}
@@ -828,19 +835,42 @@ function paintRelay(){
 }
 
 /* ================= 개방 ================= */
+const PRESET=[
+  {n:"3차시 준비",  k:["t5","t6","t7"], d:"조사 2·3·4 — 직소 시작 전에 미리 눌러 두세요"},
+  {n:"4차시 1단계", k:["t5","t6","t7","t8"], d:"조사 5까지 — 반전이 일어나는 화면"},
+  {n:"4차시 2단계", k:["t5","t6","t7","t8","t9"], d:"조사 6까지 — 갈라짐을 확인한 뒤에"},
+  {n:"6차시 준비",  k:["t4","t5","t6","t7","t8","t9","t10"], d:"모두 열기"}
+];
 function paintLock(){
+  const on=k=>PRESET.find(p=>p.n===k).k.every(x=>DATA.unlocked[x])
+    &&Object.keys(DATA.unlocked).filter(x=>DATA.unlocked[x]).length===
+      PRESET.find(p=>p.n===k).k.length;
   $("paneLock").innerHTML=`<div class="locks">
     <h3>과제 개방 — ${V.cls}</h3>
-    <p>스위치를 켜면 그 반 학생 화면에서 3초 안에 잠금이 풀립니다.</p>
+    <p>스위치를 켜면 그 반 학생 화면에서 3초 안에 잠금이 풀립니다.
+      <b>수업 시작 전에 미리 눌러 두는 편이 안전합니다.</b></p>
+    <div class="pre">${PRESET.map(p=>
+      `<button class="btn" data-p="${p.n}" aria-pressed="${on(p.n)}">
+        <b>${p.n}</b><em>${p.d}</em></button>`).join("")}</div>
     ${TASKS.filter(t=>t.lock).map(t=>`<label class="lk">
       <input type="checkbox" data-k="${t.id}" ${DATA.unlocked[t.id]?"checked":""}>
       <b>${t.n}</b><span>${LESSON[t.id]||""}</span></label>`).join("")}
-    <div class="hint">과제 1~3과 연습장은 항상 열려 있습니다.</div>
+    <div class="hint">과제 1~3과 연습장은 항상 열려 있습니다.<br>
+      연결이 되지 않을 때는 학생 주소 끝에 <b>?open=t5,t6</b> 를 붙이면
+      그 기기에서만 잠금이 풀립니다.</div>
   </div>`;
+  const send=async()=>{
+    try{await dbPut(`classes/${V.cls}/unlocked`,DATA.unlocked);setNet(true);paintLock();}
+    catch(e){setNet(false);alert("연결이 되지 않아 반영되지 않았습니다. 다시 눌러 주세요.");}
+  };
   $("paneLock").querySelectorAll("input").forEach(i=>i.onchange=async()=>{
-    DATA.unlocked[i.dataset.k]=i.checked;
-    try{await dbPut(`classes/${V.cls}/unlocked`,DATA.unlocked);setNet(true);}
-    catch(e){setNet(false);alert("연결이 되지 않아 반영되지 않았습니다.");}
+    DATA.unlocked[i.dataset.k]=i.checked;await send();
+  });
+  $("paneLock").querySelectorAll("[data-p]").forEach(b=>b.onclick=async()=>{
+    b.blur();
+    const p=PRESET.find(x=>x.n===b.dataset.p);
+    DATA.unlocked={};p.k.forEach(k=>DATA.unlocked[k]=true);
+    await send();
   });
 }
 
