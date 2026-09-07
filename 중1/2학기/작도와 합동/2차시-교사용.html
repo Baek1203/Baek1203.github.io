@@ -90,6 +90,15 @@
     border:2px solid var(--line);background:#fff;color:var(--soft)}
   .pick .y[aria-pressed="true"]{background:var(--mint);border-color:var(--mint);color:#fff}
   .pick .n[aria-pressed="true"]{background:var(--peach);border-color:var(--peach);color:#fff}
+  .roster{margin-top:16px;background:#fff;border:2px solid var(--line);border-radius:16px;
+    padding:14px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .roster b{font:900 13px/1 var(--f);margin-right:6px}
+  .roster em{font-style:normal;font:700 12.5px/1 var(--f);color:var(--soft)}
+  .rr{display:inline-flex;align-items:center;gap:7px;background:#FCF7F0;border:1.5px solid var(--line);
+    border-radius:999px;padding:8px 11px;font:800 12.5px/1 var(--f)}
+  .rr i{font-style:normal;cursor:pointer;color:#C0B8A6;font-weight:900}
+  .rr i:hover{color:#C0342A}
+  .roster .warn{margin-left:auto}
   .hint{text-align:center;font:800 13.5px/1.7 var(--f);color:var(--soft);margin:16px 0 0}
   .rank{display:grid;gap:9px;max-width:620px;margin:0 auto}
   .rk{display:flex;align-items:center;gap:13px;background:#fff;border:3px solid var(--line);
@@ -246,10 +255,11 @@ let ON=null;
 const setNet=ok=>{if(ON===ok)return;ON=ok;
   $("net").className="chip "+(ok?"on":"off");$("net").textContent=ok?"연결됨":"연결 안 됨";};
 
-const PH=[["intro","6요소"],["oppo","대변·대각"],["strips","종이띠 결과"],["chart","교차 비교"]];
+const PH=[["intro","6요소"],["oppo","대변·대각"],["quiz","퀴즈"],
+  ["strips","종이띠 결과"],["chart","교차 비교"]];
 const STEPS={intro:5,oppo:4};
 let V={cls:localStorage.getItem("t2.cls")||"1-1"};
-let ST={phase:"intro",step:0,open:{}};      /* 이 화면에서만 쓰는 상태 */
+let ST={phase:"intro",step:0,qi:0,qshow:false,open:{}};      /* 이 화면에서만 쓰는 상태 */
 let STR={},FIN={};
 
 async function pull(force){
@@ -281,6 +291,10 @@ function bar(){
   h+=`<span class="sp"></span>`;
   if(STEPS[ST.phase])h+=`<button class="btn" id="back">◀</button>
     <button class="btn go" id="fwd">다음 ▶ ${(ST.step||0)+1}/${STEPS[ST.phase]}</button>`;
+  if(ST.phase==="quiz")h+=`<button class="btn" id="qprev">◀ 앞 문제</button>
+    <button class="btn go" id="qnext">다음 문제 ▶ ${(ST.qi||0)+1}/${QUIZ.length}</button>
+    <button class="btn" id="qans" aria-pressed="${!!ST.qshow}">${
+      ST.qshow?"정답 감추기":"정답 보기"}</button>`;
 
   if(ST.phase==="chart")h+=`<button class="btn" id="openRow">한 줄 열기</button>
     <button class="btn" id="openAll">전부 열기</button>
@@ -294,6 +308,11 @@ function bar(){
     push({step:Math.min((ST.step||0)+1,STEPS[ST.phase]-1)});};
   if(g("back"))g("back").onclick=()=>{g("back").blur();push({step:Math.max((ST.step||0)-1,0)});};
 
+  if(g("qprev"))g("qprev").onclick=()=>{g("qprev").blur();
+    push({qi:Math.max(0,(ST.qi||0)-1),qshow:false});};
+  if(g("qnext"))g("qnext").onclick=()=>{g("qnext").blur();
+    push({qi:Math.min(QUIZ.length-1,(ST.qi||0)+1),qshow:false});};
+  if(g("qans"))g("qans").onclick=()=>{g("qans").blur();push({qshow:!ST.qshow});};
   if(g("openRow"))g("openRow").onclick=()=>{
     const o=Object.assign({},ST.open);
     for(let ri=0;ri<CH_ROWS.length;ri++){
@@ -334,6 +353,20 @@ function paintNow(){
         `<div class="ln${i===s?" sun":""}${i>s?" dim":""}"${i>s?' style="visibility:hidden"':""}>${x}</div>`
         ).join("")}</div></div>`;return;}
 
+  if(ph==="quiz"){
+    const i=ST.qi|0,Q=QUIZ[i];
+    M.innerHTML=`<div class="qwrap"><p class="qn">${i+1} / ${QUIZ.length}</p>
+      <p class="qq">${Q.q}</p>
+      <div class="qgrid">
+        <div class="fig">${triSVG(Q.t,Object.assign({v:true,s:true,a:true},
+          ST.qshow?qHi(i):{}))}</div>
+        <div class="opts">${Q.o.map((o,k)=>
+          `<div class="opt${ST.qshow&&k===Q.a?" ok":""}"><em>${"①②③④"[k]}</em>${o}</div>`
+          ).join("")}</div></div>
+      ${ST.qshow?`<div class="why">${Q.why}</div>`
+        :`<p class="vc">함께 답을 말해 본 뒤 <b>정답 보기</b>를 누르세요.</p>`}</div>`;
+    return;}
+
   if(ph==="strips"){
     const rows=Object.values(STR);
     M.innerHTML=`<div class="hero" style="padding:14px"><p class="big">종이띠 · 우리 반의 결과</p>
@@ -354,10 +387,25 @@ function paintNow(){
             <button class="n" data-i="${i}" data-v="no" aria-pressed="${FIN[i]==="no"}">실패</button>
           </div></td></tr>`;}).join("")}
       </table>
+      <div class="roster"><b>기록한 사람 ${rows.length}명</b>
+        ${Object.keys(STR).map(k=>`<span class="rr">${esc((STR[k]||{}).nick||k)}
+          <i data-del="${esc(k)}" title="이 기록 지우기">✕</i></span>`).join("")||
+          `<em>아직 없습니다</em>`}
+        <button class="btn warn" id="clrAll">전부 지우고 새로 받기</button></div>
       <p class="hint">정한 결론은 각자 기기의 종이띠 칸에도 <b>우리 반 결론</b>으로 표시됩니다.</p>`;
     M.querySelectorAll(".pick button").forEach(b=>b.onclick=async()=>{
       b.blur();FIN[b.dataset.i]=b.dataset.v;paint(1);
       try{await pj(`t2/${V.cls}/final`,FIN);setNet(true);}catch(e){setNet(false);}});
+    M.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{
+      const k=b.dataset.del;delete STR[k];paint(1);
+      try{await dj(`t2/${V.cls}/strips/${k}`);setNet(true);}catch(e){setNet(false);}});
+    const ca=$("clrAll");
+    if(ca)ca.onclick=async()=>{
+      if(!confirm(`${V.cls} 반의 종이띠 기록을 전부 지웁니다.\n\n`+
+        "지난 시간이나 시험 삼아 들어온 기록이 모두 사라지고,\n"+
+        "지금부터 들어오는 기록만 쌓입니다. 우리 반 결론은 그대로 둡니다."))return;
+      ca.blur();STR={};paint(1);
+      try{await dj(`t2/${V.cls}/strips`);setNet(true);}catch(e){setNet(false);}};
     return;}
 
   if(ph==="chart"){
@@ -375,6 +423,15 @@ function paintNow(){
       if(o[td.dataset.k])delete o[td.dataset.k];else o[td.dataset.k]=true;
       push({open:o});});
     return;}
+}
+function qHi(i){
+  const Q=QUIZ[i],q=Q.q;
+  const mS=q.match(/변\s([A-Z]{2})의\s<b>대각/), mA=q.match(/∠([A-Z])의\s<b>대변/);
+  if(mA){const n=mA[1],ks=Object.keys(Q.t.sides);
+    const opp=ks.find(k=>k.indexOf(n)<0);return {hiA:n,hiS:opp};}
+  if(mS){const nm=mS[1];
+    const v=Q.t.v.map(p=>p[2]).find(x=>nm.indexOf(x)<0);return {hiS:nm,hiA:v};}
+  return {};
 }
 $("cls").value=V.cls;
 $("cls").onchange=e=>{V.cls=e.target.value;localStorage.setItem("t2.cls",V.cls);e.target.blur();pull(1);};
