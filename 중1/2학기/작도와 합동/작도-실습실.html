@@ -3055,6 +3055,24 @@ async function pullN(){
 }
 
 /* ── 같은 담당끼리 모아보기 ── */
+/* 세 꼭짓점 차례를 한 가지로 정한 뒤, 밑변을 가로로 돌리고 위쪽으로 뒤집는다.
+   합동인 삼각형은 어디에 어떻게 그렸든 똑같은 모양이 된다. */
+function gCanon(t){
+  const ORD=[[0,1,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0],[1,0,2]];
+  const s3=Q=>[d2(Q[0],Q[1]),d2(Q[1],Q[2]),d2(Q[2],Q[0])];
+  const cmp=(a,b)=>{for(let i=0;i<3;i++)if(Math.abs(a[i]-b[i])>0.5)return a[i]-b[i];return 0;};
+  let best=null,bs=null;
+  for(const o of ORD){const Q=o.map(i=>t[i]),v=s3(Q);
+    if(!bs||cmp(v,bs)<0){bs=v;best=Q;}}
+  return best;
+}
+function gAlign(t){
+  const P=gCanon(t),th=Math.atan2(P[1].y-P[0].y,P[1].x-P[0].x);
+  const c=Math.cos(-th),s=Math.sin(-th);
+  let Q=P.map(p=>{const dx=p.x-P[0].x,dy=p.y-P[0].y;return{x:dx*c-dy*s,y:dx*s+dy*c};});
+  if(Q[2].y>0)Q=Q.map(p=>({x:p.x,y:-p.y}));
+  return Q;
+}
 let GSUB=[], GST=false;
 async function gatherOpen(){
   const t=S.taskId;
@@ -3077,13 +3095,18 @@ function gatherPaint(){
   }
   $("gSub").textContent=`${GSUB.length}명이 냈습니다`;
   if(GST){
-    const big=460,bh=340;
-    const all=GSUB.map(x=>fit(x.tri,big,bh,40));
+    const big=460,bh=340,pad=34;
+    const A=GSUB.map(x=>gAlign(x.tri));           /* 자리·방향·뒤집힘을 맞춘다 */
+    const pts=[].concat.apply([],A);
+    const x0=Math.min.apply(null,pts.map(p=>p.x)), x1=Math.max.apply(null,pts.map(p=>p.x));
+    const y0=Math.min.apply(null,pts.map(p=>p.y)), y1=Math.max.apply(null,pts.map(p=>p.y));
+    const k=Math.min((big-pad*2)/Math.max(1,x1-x0),(bh-pad*2)/Math.max(1,y1-y0));
+    const put=t=>t.map(p=>({x:(p.x-(x0+x1)/2)*k+big/2,y:(p.y-(y0+y1)/2)*k+bh/2}));
     $("gBody").innerHTML=`<div class="gstack"><svg viewBox="0 0 ${big} ${bh}">
-      ${all.map(t=>poly(t,"#1C1A16","#1C1A1614",2.4)).join("")}</svg></div>
+      ${A.map(t=>poly(put(t),"#1C1A16","#1C1A1612",2.2)).join("")}</svg></div>
       <p class="muted" style="text-align:center;margin-top:10px">
-        ${GSUB.length}장을 같은 크기로 맞춰 겹쳤습니다.
-        <b>하나로 보이면 누가 그려도 같다</b>는 뜻입니다.</p>`;
+        ${GSUB.length}장을 <b>돌리고 뒤집어</b> 맞춰 겹쳤습니다.
+        하나로 보이면 <b>누가 그려도 같다</b>는 뜻입니다.</p>`;
     return;
   }
   $("gBody").innerHTML=`<div class="ggrid">${GSUB.map(x=>{
