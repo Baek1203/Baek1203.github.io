@@ -3066,12 +3066,18 @@ function gCanon(t){
     if(!bs||cmp(v,bs)<0){bs=v;best=Q;}}
   return best;
 }
-function gAlign(t){
+function gXform(t){                    /* 그 학생의 카드를 통째로 옮기는 규칙 */
   const P=gCanon(t),th=Math.atan2(P[1].y-P[0].y,P[1].x-P[0].x);
   const c=Math.cos(-th),s=Math.sin(-th);
-  let Q=P.map(p=>{const dx=p.x-P[0].x,dy=p.y-P[0].y;return{x:dx*c-dy*s,y:dx*s+dy*c};});
-  if(Q[2].y>0)Q=Q.map(p=>({x:p.x,y:-p.y}));
-  return Q;
+  const base=p=>{const dx=p.x-P[0].x,dy=p.y-P[0].y;return{x:dx*c-dy*s,y:dx*s+dy*c};};
+  const fl=base(P[2]).y>0;
+  return {P,map:p=>{const q=base(p);return fl?{x:q.x,y:-q.y}:q;}};
+}
+function gAlign(t){const X=gXform(t);return X.P.map(X.map);}
+function gCard(t){                     /* 삼각형을 감싸는 종이 — 돌아간 채로 보인다 */
+  const X=gXform(t),W=290,H=215;
+  const cx=(t[0].x+t[1].x+t[2].x)/3, cy=(t[0].y+t[1].y+t[2].y)/3;
+  return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>X.map({x:cx+a*W/2,y:cy+b*H/2}));
 }
 let GSUB=[], GST=false;
 async function gatherOpen(){
@@ -3097,16 +3103,22 @@ function gatherPaint(){
   if(GST){
     const big=460,bh=340,pad=34;
     const A=GSUB.map(x=>gAlign(x.tri));           /* 자리·방향·뒤집힘을 맞춘다 */
-    const pts=[].concat.apply([],A);
+    const CD=GSUB.map(x=>gCard(x.tri));           /* 그 학생의 종이도 함께 돌린다 */
+    const pts=[].concat.apply([],A).concat([].concat.apply([],CD));
     const x0=Math.min.apply(null,pts.map(p=>p.x)), x1=Math.max.apply(null,pts.map(p=>p.x));
     const y0=Math.min.apply(null,pts.map(p=>p.y)), y1=Math.max.apply(null,pts.map(p=>p.y));
     const k=Math.min((big-pad*2)/Math.max(1,x1-x0),(bh-pad*2)/Math.max(1,y1-y0));
     const put=t=>t.map(p=>({x:(p.x-(x0+x1)/2)*k+big/2,y:(p.y-(y0+y1)/2)*k+bh/2}));
+    const card=t=>`<polygon points="${put(t).map(p=>
+      `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" fill="#FFFFFF" fill-opacity=".55"
+      stroke="#C9A24A" stroke-width="1.6" stroke-dasharray="7 5"/>`;
     $("gBody").innerHTML=`<div class="gstack"><svg viewBox="0 0 ${big} ${bh}">
+      ${CD.map(card).join("")}
       ${A.map(t=>poly(put(t),"#1C1A16","#1C1A1612",2.2)).join("")}</svg></div>
       <p class="muted" style="text-align:center;margin-top:10px">
-        ${GSUB.length}장을 <b>돌리고 뒤집어</b> 맞춰 겹쳤습니다.
-        하나로 보이면 <b>누가 그려도 같다</b>는 뜻입니다.</p>`;
+        ${GSUB.length}장을 <b>돌리고 뒤집어</b> 겹쳤습니다.
+        노란 테두리가 <b>각자의 종이</b>입니다 — 종이는 제각각 돌아가 있는데
+        <b>삼각형은 하나로 겹쳐집니다.</b></p>`;
     return;
   }
   $("gBody").innerHTML=`<div class="ggrid">${GSUB.map(x=>{
