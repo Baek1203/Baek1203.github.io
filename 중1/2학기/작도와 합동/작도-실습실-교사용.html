@@ -81,7 +81,7 @@
   .cl{display:flex;align-items:center;gap:6px;font:800 12.5px/1 var(--sans)}
   .cl b{width:12px;height:12px;border-radius:99px;display:inline-block}
   .cl em{font-style:normal;font:700 11px/1 var(--sans);color:var(--ink-soft)}
-  @media (prefers-reduced-motion:reduce){.bc{transition:none}}
+  @media (prefers-reduced-motion:reduce){.bc{transition-duration:.35s}}
   .pane{display:none;height:100%}
   .pane.on{display:block}
 
@@ -461,6 +461,7 @@ function alignParams(tri){
   const qy=dx*s+dy*c;
   return {rot:-th*180/Math.PI, flip:qy>0};
 }
+const HOME="translate(0px,0px) rotate(0deg)";
 const tfStr=a=>a?`${a.flip?"scaleY(-1) ":""}rotate(${a.rot.toFixed(1)}deg)`:"";
 
 let BSIG="";
@@ -479,35 +480,46 @@ function paintBoard(force){
   if(V.mode==="merge"){paintMergeAll(list,k);return;}
 
   const card=(s,extra)=>`<div class="bc${face?" back":""}" data-no="${esc(s.no)}"
-      ${extra||""}>${face?`<i class="bk"></i>`:cardSVG(s.tri,s.color||"#1C1A16",k)}
+      style="transform:${HOME}" ${extra||""}>${
+      face?`<i class="bk"></i>`:cardSVG(s.tri,s.color||"#1C1A16",k)}
       <span class="nm"${V.names?"":' hidden'}>${esc(s.nick||s.no)}</span></div>`;
 
-  if(!face){
+  {
     const by={};GROUPS.forEach(g=>by[g]=[]);const etc=[];
     list.forEach(s=>{const g=String(s.group||"");
       if(by[g])by[g].push(s);else etc.push(s);});
     wrap.innerHTML=`<div class="ggrid">${GROUPS.map(g=>`
       <section class="garea${MERGED[g]?" on":""}" data-ga="${g}">
         <h4>${g}모둠<em>${by[g].length}</em>
-          <button class="gm" data-gm="${g}">${MERGED[g]?"돌려놓기":"모아보기"}</button></h4>
+          ${face?"":`<button class="gm" data-gm="${g}">${
+            MERGED[g]?"돌려놓기":"모아보기"}</button>`}</h4>
         <div class="gslots">${by[g].map(s=>card(s)).join("")||
           `<p class="bnone s">아직 없습니다</p>`}</div>
       </section>`).join("")}
       ${etc.length?`<section class="garea"><h4>모둠 없음<em>${etc.length}</em></h4>
         <div class="gslots">${etc.map(s=>card(s)).join("")}</div></section>`:""}
-    </div>`;
-    wrap.querySelectorAll("[data-gm]").forEach(b=>b.onclick=()=>{
+    </div>
+    ${face?`<p class="bcount">${n}명 접수</p>`:""}`;
+    if(!face)wrap.querySelectorAll("[data-gm]").forEach(b=>b.onclick=()=>{
       const g=b.dataset.gm;MERGED[g]=!MERGED[g];b.blur();
       b.textContent=MERGED[g]?"돌려놓기":"모아보기";
       b.closest(".garea").classList.toggle("on",MERGED[g]);
       mergeGroup(g,MERGED[g]);
     });
-    GROUPS.forEach(g=>{if(MERGED[g])setTimeout(()=>mergeGroup(g,true),20);});
+    if(!face)GROUPS.forEach(g=>{if(MERGED[g])setTimeout(()=>mergeGroup(g,true),40);});
     return;
   }
 
-  wrap.innerHTML=`<div class="bgrid">${list.map(s=>card(s)).join("")}</div>
-    ${face?`<p class="bcount">${n}명 접수</p>`:""}`;
+}
+
+/* 계산을 먼저 다 하고, 다음 프레임에 한꺼번에 옮긴다 — 그래야 움직임이 보인다 */
+function run(plan,step){
+  plan.forEach(p=>{p.c.style.transitionDelay=(p.i*step).toFixed(2)+"s";
+    p.c.style.zIndex=String(10+p.i);});
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    plan.forEach(p=>{p.c.style.transform=
+      `translate(${p.dx.toFixed(1)}px,${p.dy.toFixed(1)}px) ${tfStr(p.a)}`;});
+  }));
 }
 
 /* 한 모둠 카드를 가운데로 모으거나 제자리로 */
@@ -517,18 +529,17 @@ function mergeGroup(g,on){
   const slots=area.querySelector(".gslots");
   const cards=[...slots.querySelectorAll(".bc")];
   if(!cards.length)return;
-  if(!on){cards.forEach(c=>{c.style.transform="";c.style.zIndex="";});return;}
+  if(!on){cards.forEach((c,i)=>{c.style.transitionDelay=(i*0.04).toFixed(2)+"s";
+    c.style.transform=HOME;setTimeout(()=>{c.style.zIndex="";},900);});return;}
   const box=slots.getBoundingClientRect();
   const cx=box.left+box.width/2, cy=box.top+box.height/2;
-  cards.forEach((c,i)=>{
+  const plan=cards.map((c,i)=>{
     const r=c.getBoundingClientRect();
     const s=shown().find(x=>String(x.no)===c.dataset.no);
-    const a=s?alignParams(s.tri):null;
-    c.style.transitionDelay=(i*0.07).toFixed(2)+"s";
-    c.style.zIndex=String(10+i);
-    c.style.transform=`translate(${(cx-(r.left+r.width/2)).toFixed(1)}px,${
-      (cy-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
+    return {c,i,a:s?alignParams(s.tri):null,
+      dx:cx-(r.left+r.width/2), dy:cy-(r.top+r.height/2)};
   });
+  run(plan,0.07);
 }
 
 /* 학급 전체를 한자리에 모은다 */
@@ -545,19 +556,19 @@ function paintMergeAll(list,k){
   const go=()=>{
     const W=wrap.getBoundingClientRect();
     const tx=W.left+W.width/2, ty=W.top+W.height*0.42;
+    const plan=[];
     list.forEach((s,i)=>{
       const el=[...wrap.querySelectorAll(".bc")].find(x=>x.dataset.no===String(s.no));
       if(!el)return;
       const r=el.getBoundingClientRect();
-      const a=alignParams(s.tri);
-      el.style.transitionDelay=(i*0.045).toFixed(2)+"s";
-      el.style.zIndex=String(10+i);
-      el.style.transform=`translate(${(tx-(r.left+r.width/2)).toFixed(1)}px,${
-        (ty-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
+      plan.push({c:el,i,a:alignParams(s.tri),
+        dx:tx-(r.left+r.width/2), dy:ty-(r.top+r.height/2)});
     });
+    run(plan,0.045);
   };
-  const back=()=>wrap.querySelectorAll(".bc").forEach(el=>{
-    el.style.transform="";el.style.zIndex="";});
+  const back=()=>[...wrap.querySelectorAll(".bc")].forEach((el,i)=>{
+    el.style.transitionDelay=(i*0.03).toFixed(2)+"s";
+    el.style.transform=HOME;setTimeout(()=>{el.style.zIndex="";},1000);});
   $("mgGo").onclick=()=>{$("mgGo").blur();go();};
   $("mgBack").onclick=()=>{$("mgBack").blur();back();};
 }
@@ -576,6 +587,7 @@ function paintClassify(list,k){
       <button class="btn" id="clBack">돌려놓기</button></div>`;
   const go=()=>{
     const W=wrap.getBoundingClientRect();
+    const plan=[];
     cs.forEach((c,ci)=>{
       const tx=W.left+W.width*(ci+0.5)/cs.length;
       const ty=W.top+W.height*0.42;
@@ -583,17 +595,17 @@ function paintClassify(list,k){
         const el=[...wrap.querySelectorAll(".bc")].find(x=>x.dataset.no===String(s.no));
         if(!el)return;
         const r=el.getBoundingClientRect();
-        const a=alignParams(s.tri);
-        el.style.transitionDelay=((ci*0.05)+(i*0.045)).toFixed(2)+"s";
-        el.style.zIndex=String(10+i);
         el.style.borderColor=CCOL[ci%CCOL.length];
-        el.style.transform=`translate(${(tx-(r.left+r.width/2)).toFixed(1)}px,${
-          (ty-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
+        plan.push({c:el,i:(ci*1.1+i),a:alignParams(s.tri),
+          dx:tx-(r.left+r.width/2), dy:ty-(r.top+r.height/2)});
       });
     });
+    run(plan,0.042);
   };
-  const back=()=>wrap.querySelectorAll(".bc").forEach(el=>{
-    el.style.transform="";el.style.zIndex="";el.style.borderColor="";});
+  const back=()=>[...wrap.querySelectorAll(".bc")].forEach((el,i)=>{
+    el.style.transitionDelay=(i*0.03).toFixed(2)+"s";
+    el.style.transform=HOME;el.style.borderColor="";
+    setTimeout(()=>{el.style.zIndex="";},1000);});
   $("clGo").onclick=()=>{$("clGo").blur();go();};
   $("clBack").onclick=()=>{$("clBack").blur();back();};
 }
