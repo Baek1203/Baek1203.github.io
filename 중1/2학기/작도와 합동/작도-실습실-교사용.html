@@ -441,7 +441,7 @@ const maxSpan=list=>{let m=1;for(const s of list){const t=s.tri||s.pts;if(!t)con
 const CW=150, CH=112;            /* 카드 크기 */
 const GAP=12;
 const GROUPS=["1","2","3","4","5"];
-const isG3=()=>["t8","t9","t11"].indexOf(V.task)>=0;
+
 let MERGED={};                   /* 모아본 모둠 */
 
 /* 카드 하나를 원래 방향 그대로, 무게중심을 가운데 두고 그린다 */
@@ -476,12 +476,13 @@ function paintBoard(force){
   const face=(V.mode==="intake");
 
   if(V.mode==="classify"){paintClassify(list,k);return;}
+  if(V.mode==="merge"){paintMergeAll(list,k);return;}
 
   const card=(s,extra)=>`<div class="bc${face?" back":""}" data-no="${esc(s.no)}"
       ${extra||""}>${face?`<i class="bk"></i>`:cardSVG(s.tri,s.color||"#1C1A16",k)}
       <span class="nm"${V.names?"":' hidden'}>${esc(s.nick||s.no)}</span></div>`;
 
-  if(isG3()&&!face){
+  if(!face){
     const by={};GROUPS.forEach(g=>by[g]=[]);const etc=[];
     list.forEach(s=>{const g=String(s.group||"");
       if(by[g])by[g].push(s);else etc.push(s);});
@@ -528,6 +529,37 @@ function mergeGroup(g,on){
     c.style.transform=`translate(${(cx-(r.left+r.width/2)).toFixed(1)}px,${
       (cy-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
   });
+}
+
+/* 학급 전체를 한자리에 모은다 */
+function paintMergeAll(list,k){
+  const wrap=$("bwrap");
+  wrap.innerHTML=`<div class="bgrid">${list.map(s=>`<div class="bc" data-no="${esc(s.no)}">
+      ${cardSVG(s.tri,s.color||"#1C1A16",k)}
+      <span class="nm"${V.names?"":' hidden'}>${esc(s.nick||s.no)}</span></div>`).join("")}</div>
+    <div class="cbar"><span class="muted" style="font:700 12.5px/1 var(--sans)">
+      학급 전체 ${list.length}장을 한자리에 모읍니다</span>
+      <span class="sp"></span>
+      <button class="btn" id="mgGo">전체 모아보기</button>
+      <button class="btn" id="mgBack">돌려놓기</button></div>`;
+  const go=()=>{
+    const W=wrap.getBoundingClientRect();
+    const tx=W.left+W.width/2, ty=W.top+W.height*0.42;
+    list.forEach((s,i)=>{
+      const el=[...wrap.querySelectorAll(".bc")].find(x=>x.dataset.no===String(s.no));
+      if(!el)return;
+      const r=el.getBoundingClientRect();
+      const a=alignParams(s.tri);
+      el.style.transitionDelay=(i*0.045).toFixed(2)+"s";
+      el.style.zIndex=String(10+i);
+      el.style.transform=`translate(${(tx-(r.left+r.width/2)).toFixed(1)}px,${
+        (ty-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
+    });
+  };
+  const back=()=>wrap.querySelectorAll(".bc").forEach(el=>{
+    el.style.transform="";el.style.zIndex="";});
+  $("mgGo").onclick=()=>{$("mgGo").blur();go();};
+  $("mgBack").onclick=()=>{$("mgBack").blur();back();};
 }
 
 /* 학급 전체를 유형별로 겹친다 */
