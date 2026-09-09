@@ -123,6 +123,17 @@
   .sent:hover{border-color:var(--gold)}
   .sent b{display:block;font:600 13px/1.5 var(--sans)}
   .sent small{color:var(--ink-soft);font-weight:600}
+  .sfg{display:grid;gap:9px;margin-top:10px}
+  .sfc{border:1.5px solid var(--rule);border-radius:9px;padding:9px 11px;background:#fff}
+  .sfc.a{border-left:5px solid #2A7148}
+  .sfc.b{border-left:5px solid #C98A10}
+  .sfc.c{border-left:5px solid #1F3F94}
+  .sfc h5{margin:0 0 6px;font:800 12.5px/1 var(--sans);display:flex;align-items:center;gap:7px}
+  .sfc h5 em{font-style:normal;font:700 11px/1 var(--sans);color:var(--ink-soft)}
+  .sfc ul{margin:0;padding:0;list-style:none;max-height:210px;overflow:auto}
+  .sfc li{padding:6px 0;border-bottom:1px solid #F0EADC;font:700 12.5px/1.6 var(--sans)}
+  .sfc li small{display:block;font:700 10.5px/1 var(--sans);color:#B4AC9A;margin-top:3px}
+  .sfc li.none{color:#B4AC9A;font-weight:700}
   .hypc{background:#FBF6EA;border:1px solid #E6D9B8;border-radius:8px;padding:9px 12px;
     margin-bottom:7px;font:600 12.5px/1.6 var(--sans)}
   .hypc b{margin-right:8px}
@@ -135,6 +146,8 @@
   .bigline b{font:800 26px/1.4 var(--sans);letter-spacing:-.4px}
   table.chart th{text-align:center;font-size:15px;padding:13px 11px}
   table.chart td{padding:11px 10px}
+  table.chart .hin{width:100%;border:0;background:#F4EFE3;font:800 13px/1.4 var(--sans);
+    color:var(--ink);border-radius:5px;padding:3px 5px}
   table.chart input{width:100%;border:0;background:none;font:700 15.5px/1.5 var(--sans);
     text-align:center;padding:4px 2px;margin:0;border-radius:4px;color:var(--ink)}
   table.chart input::placeholder{font-weight:600;color:#B4AC9A}
@@ -211,9 +224,6 @@
     <div class="views">
       <button data-view="prog" aria-pressed="true">진행</button>
       <button data-view="board" aria-pressed="false">모둠 판</button>
-      <button data-view="trace" aria-pressed="false">기록</button>
-      <button data-view="note" aria-pressed="false">보고서</button>
-      <button data-view="gen" aria-pressed="false">일반화</button>
       <button data-view="chart" aria-pressed="false">차트</button>
       <button data-view="relay" aria-pressed="false">조건 전달</button>
       <button data-view="lock" aria-pressed="false">개방</button>
@@ -229,12 +239,6 @@
     <div class="pane on" id="paneProg"></div>
     <div class="pane" id="paneBoard">
       <svg id="bsvg" viewBox="0 0 1120 660" preserveAspectRatio="xMidYMid meet" aria-label="게시판"></svg>
-    </div>
-    <div class="pane" id="paneTrace">
-      <div class="cols"><div class="who-list" id="traceWho"></div><div class="trace" id="traceBody"></div></div>
-    </div>
-    <div class="pane" id="paneNote">
-      <div class="cols"><div class="who-list" id="noteWho"></div><div class="trace" id="noteBody"></div></div>
     </div>
     <div class="pane" id="paneGen"></div>
     <div class="pane" id="paneChart"></div>
@@ -261,23 +265,34 @@ function setNet(ok){if(ONLINE===ok)return;ONLINE=ok;
   $("net").className="net "+(ok?"on":"off");$("net").textContent=ok?"연결됨":"연결 안 됨";}
 
 /* ================= 상태 ================= */
+/* 조사 2·3은 목록에 하나로 두고, 아래 줄에서 갈래를 고른다 */
+const GRP={
+  g2:{n:"조사 2 · 삼각형 작도", of:["t5","t6","t7"],
+      k:["가 · 세 변","나 · 두 변과 사이 각","다 · 한 변과 양 끝 각"]},
+  g3:{n:"조사 3 · 하나로 정해질까", of:["t8","t9","t11"],
+      k:["① 두 변과 한 각","② 세 각만","③ 한 변과 양 끝이 아닌 두 각"]}
+};
+const grpOfTask=id=>Object.keys(GRP).find(g=>GRP[g].of.indexOf(id)>=0)||null;
 const TASKS=[
   {id:"seg",n:"훈련 1 · 길이를 그대로 옮기기",board:false},
   {id:"ang",n:"훈련 2 · 각을 그대로 옮기기",board:false},
   {id:"par",n:"훈련 3 · 나란한 선 긋기",board:false},
   {id:"pg", n:"훈련장",board:false},
   {id:"t4", n:"조사 1 · 조건 두 개로",board:false,lock:false},
-  {id:"t5", n:"조사 2·3 · 가 · 세 변",board:true,lock:false},
-  {id:"t6", n:"조사 2·3 · 나 · 두 변과 사이 각",board:true,lock:false},
-  {id:"t7", n:"조사 2·3 · 다 · 한 변과 양 끝 각",board:true,lock:false},
-  {id:"t8", n:"조사 4 · 두 변과 한 각",board:true,lock:true},
-  {id:"t9", n:"조사 5 · 세 각만",board:true,lock:true},
+  {id:"t5", n:"조사 2 · 가 · 세 변",board:true,lock:false},
+  {id:"t6", n:"조사 2 · 나 · 두 변과 사이 각",board:true,lock:false},
+  {id:"t7", n:"조사 2 · 다 · 한 변과 양 끝 각",board:true,lock:false},
+  {id:"t8", n:"조사 3 · ① 두 변과 한 각",board:true,lock:true},
+  {id:"t9", n:"조사 3 · ② 세 각만",board:true,lock:true},
+  {id:"t11",n:"조사 3 · ③ 한 변과 양 끝이 아닌 두 각",board:true,lock:true},
   {id:"t10",n:"사건 파일 · 수사 보고서",board:true,lock:true}
 ];
 const LESSON={t4:"2차시",t5:"3차시",t6:"3차시",t7:"3차시",t8:"4차시",t9:"4차시",t10:"6차시"};
 const V={cls:localStorage.getItem("t.cls")||"1-1",task:localStorage.getItem("t.task")||"t5",
   view:"prog",group:null,mode:"intake",names:false,tf:{},pick:null,drag:null,who:null};
 let DATA={subs:{},cls:[],prog:{},unlocked:{},mode:"intake",traces:{}};
+let EDIT_UNTIL=0;                        /* 이 시각까지는 내가 고친 값이 우선 */
+const touched=()=>{EDIT_UNTIL=Date.now()+4000;};
 
 /* ================= 도형 ================= */
 const D2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -326,7 +341,11 @@ async function pull(force){
     DATA.unlocked=(c&&c.unlocked)||{};DATA.mode=(c&&c.mode)||"intake";
     DATA.subs=subs||{};DATA.prog=prog||{};
     const cl=await dbGet(`boards/${V.cls}/${V.task}/cls`);DATA.cls=cl||[];
-    await pullGen();
+    try{
+      const [h,c]=await Promise.all([dbGet(`hypo/${V.cls}`),dbGet(`charts/${V.cls}`)]);
+      HYP=h||{};
+      if(Date.now()>EDIT_UNTIL)CHART=c||{};
+    }catch(e){}
     setNet(true);
   }catch(e){setNet(false);}
   if(V.view==="relay")await pullX();
@@ -385,9 +404,7 @@ const ago=ms=>ms<0||!isFinite(ms)?"—":ms<60000?`${Math.round(ms/1000)}초 전`
 
 /* ================= 게시판 ================= */
 const BW=1120,BH=660;
-const shown=()=>V.group==="class"
-  ? DATA.cls.map((c,i)=>({no:"c"+i,tri:c.tri,color:"#1C1A16",label:c.from,n:c.n}))
-  : subList().filter(s=>!V.group||(s.group||"없음")===V.group).sort((a,z)=>a.at-z.at);
+const shown=()=>subList().sort((a,z)=>a.at-z.at);
 const maxSpan=list=>{let m=1;for(const s of list){const t=s.tri||s.pts;if(!t)continue;
   m=Math.max(m,D2(t[0],t[1]),D2(t[1],t[2]),D2(t[2],t[0]));}return m;};
 function paintBoard(){
@@ -485,171 +502,6 @@ window.addEventListener("pointerup",()=>{
   paintBoard();
 });
 
-/* ================= 기록 ================= */
-async function paintTrace(){
-  const who=Object.keys(DATA.prog).map(k=>Object.assign({no:k},DATA.prog[k]))
-    .sort((a,b)=>(+a.group||99)-(+b.group||99));
-  $("traceWho").innerHTML=who.length?who.map(w=>
-    `<button data-no="${w.no}" class="${V.who===w.no?"on":""}">${esc(w.nick||"?")}
-      <small>${w.group?w.group+"모둠 · ":""}${(TASKS.find(t=>t.id===w.task)||{}).n||w.task}</small></button>`).join("")
-    :`<p class="muted" style="padding:10px">아직 활동한 학생이 없습니다.</p>`;
-  $("traceWho").querySelectorAll("button").forEach(b=>b.onclick=async()=>{
-    V.who=b.dataset.no;paintTrace();
-    try{DATA.traces[V.who]=await dbGet(`traces/${V.cls}/${V.who}/${V.task}`);}catch(e){}
-    paintTrace();
-  });
-  const t=V.who?DATA.traces[V.who]:null;
-  $("traceBody").innerHTML=!V.who?`<p class="muted">왼쪽에서 학생을 고르세요.</p>`
-    :!t?`<p class="muted">이 학생은 <b>${esc((TASKS.find(x=>x.id===V.task)||{}).n||V.task)}</b>을(를)
-        아직 제출하지 않았습니다. 기록은 제출할 때 올라갑니다.</p>`
-    :`<h3>${esc(t.nick||"")} · ${esc((TASKS.find(x=>x.id===V.task)||{}).n||V.task)}</h3>
-      <ol>${(t.lines||[]).map(l=>`<li>${esc(l)}</li>`).join("")}</ol>
-      <p class="muted" style="margin-top:14px">이 기록에는 <b>무엇을 했는지</b>만 담깁니다.</p>`;
-}
-
-/* ================= 보고서(기록장) ================= */
-const NL={say:"목격자 진술",c1:"조건 1",c1t:"조건 1 종류",c2:"조건 2",c2t:"조건 2 종류",
-  c3:"조건 3",c3t:"조건 3 종류",pos:"각이 놓인 자리",guess:"작도 전 예상",why:"예상 이유",
-  how:"왜 그렇게 했는가",verdict:"판정",who:"지목한 증거품",ground:"판정 근거",
-  split:"어디서 갈라졌는가",more:"추가 진술 요청",n:"몇 개인가",q1:"서술"};
-const ORD=["say","c1","c1t","c2","c2t","c3","c3t","pos","guess","why","n","q1","how","ev",
-  "verdict","who","ground","split","more"];
-async function paintNote(){
-  const who=Object.keys(DATA.prog).map(k=>Object.assign({no:k},DATA.prog[k]))
-    .sort((a,b)=>(+a.group||99)-(+b.group||99));
-  $("noteWho").innerHTML=who.length?who.map(w=>
-    `<button data-no="${w.no}" class="${V.who===w.no?"on":""}">${esc(w.nick||"?")}`+
-    `<small>${w.group?w.group+"모둠":"모둠 없음"}</small></button>`).join("")
-    :`<p class="muted" style="padding:10px">아직 활동한 학생이 없습니다.</p>`;
-  $("noteWho").querySelectorAll("button").forEach(b=>b.onclick=async()=>{
-    V.who=b.dataset.no;b.blur();paintNote();
-    DATA.notes=DATA.notes||{};
-    try{DATA.notes[V.who]=await dbGet(`notes/${V.cls}/${V.who}/${V.task}`);}catch(e){}
-    paintNote();});
-  const tn=(TASKS.find(x=>x.id===V.task)||{}).n||V.task;
-  if(!V.who){$("noteBody").innerHTML=`<p class="muted">왼쪽에서 학생을 고르세요.</p>`;return;}
-  const n=DATA.notes&&DATA.notes[V.who];
-  if(!n){$("noteBody").innerHTML=`<p class="muted">이 학생은 <b>${esc(tn)}</b>에 아직 쓴 것이 없습니다.</p>`;return;}
-  let h=`<h3>${esc(n.nick||"")} · ${esc(tn)}</h3>`;
-  for(const k of ORD){
-    if(n[k]==null||n[k]==="")continue;
-    if(k==="ev"){h+=`<p><b>증거품 대조</b><br>`+Object.keys(n.ev).map(x=>
-      `<span class="tag ${n.ev[x]?"g":"n"}">${x} ${n.ev[x]?"포개어짐":"어긋남"}</span>`).join(" ")+`</p>`;
-      continue;}
-    h+=`<p><b>${NL[k]||k}</b><br>${esc(String(n[k])).split("\n").join("<br>")}</p>`;
-  }
-  $("noteBody").innerHTML=h+`<p class="muted" style="margin-top:14px;border:0">`+
-    `루브릭 참고 — “왜냐하면”이 없으면 C, 있으면 B, <b>유일성</b>까지 말하면 A.</p>`;
-}
-
-
-/* ================= 일반화 게시판 ================= */
-const LESS=[
-  {n:"1",label:"① 도구 감식 · 1차시",frame:"작도는"},
-  {n:"2",label:"② 형태 감식 · 2차시",frame:"삼각형이 만들어지기 위해서는"},
-  {n:"4",label:"③ 결정 감식 · 4차시",frame:"삼각형이 하나로 정해지는 것은"},
-  {n:"5",label:"④ 대조 감식 · 5차시",frame:"삼각형이 하나로 정해지는 조건은"},
-  {n:"6",label:"⑤ 최종 판정 · 6차시",frame:"주어진 조건으로 삼각형이 하나로 정해지지 않으면"},
-  {n:"u",label:"★ 수사 원칙 · 단원 종합",frame:"삼각형을 하나로 정하는 조건이 같으면",unit:true}
-];
-let GEN={},MINE={},HYP={},CHART={},OPEN={},SELF={};
-V.gpick=null; V.big=false; V.chart="tri";
-
-async function pullGen(){
-  try{
-    const [g,m,h,c,o,sf]=await Promise.all([
-      dbGet(`gens/${V.cls}/class`),dbGet(`gens/${V.cls}/mine`),
-      dbGet(`hypo/${V.cls}`),dbGet(`charts/${V.cls}`),
-      dbGet(`gens/${V.cls}/open`),dbGet(`gens/${V.cls}/self`)]);
-    GEN=g||{};MINE=m||{};HYP=h||{};CHART=c||{};OPEN=o||{};SELF=sf||{};
-  }catch(e){}
-}
-const saveGen=async(n,o)=>{GEN[n]=o;try{await dbPut(`gens/${V.cls}/class/${n}`,o);setNet(true);}catch(e){setNet(false);}};
-
-function paintGen(){
-  if(V.big){                                   /* 전자칠판 낭독 모드 */
-    const list=LESS.filter(L=>GEN[L.n]&&GEN[L.n].posted&&GEN[L.n].text);
-    $("paneGen").innerHTML=`<div class="bigwrap">
-      ${list.length?list.map(L=>`<div class="bigline${L.unit?" unit":""}">
-        <span>${L.unit?"수사 원칙":L.n+"차시"}</span><b>${esc(GEN[L.n].text)}</b></div>`).join("")
-        :`<p class="muted">게시된 문장이 없습니다.</p>`}</div>`;
-    return;
-  }
-  $("paneGen").innerHTML=`<div class="cols2">
-    <div class="gside">${LESS.map(L=>{
-      const g=GEN[L.n]||{};
-      return `<div class="gc${L.unit?" unit":""}${g.posted?" posted":""}">
-        <h4>${L.label}${g.posted?`<em>게시됨</em>`:""}</h4>
-        <div class="gfr"><i>${L.frame}</i>
-          <input data-n="${L.n}" value="${esc(g.text||"")}" placeholder="학급 합의 문장"><span>.</span></div>
-        <div class="grow">
-          <button class="btn s" data-open="${L.n}" aria-pressed="${isOpen(L.n)}">${
-            isOpen(L.n)?"열림":"잠김"}</button>
-          <button class="btn s" data-post="${L.n}">${g.posted?"게시 내리기":"게시하기"}</button>
-          <button class="btn s" data-see="${L.n}">학생 문장 모아 보기 <em>${
-            Object.values(MINE).filter(m=>m[L.n]).length}</em></button>
-        </div></div>`;}).join("")}</div>
-    <div class="gpick">${pickBody()}${lightBody()}</div></div>`;
-  $("paneGen").querySelectorAll(".gfr input").forEach(el=>{
-    el.onchange=()=>saveGen(el.dataset.n,Object.assign({},GEN[el.dataset.n],{text:el.value}));});
-  $("paneGen").querySelectorAll("[data-open]").forEach(b=>b.onclick=async()=>{
-    const n=b.dataset.open;OPEN[n]=!isOpen(n);b.blur();
-    try{await dbPut(`gens/${V.cls}/open`,OPEN);setNet(true);}catch(e){setNet(false);}
-    paintGen();});
-  $("paneGen").querySelectorAll("[data-post]").forEach(b=>b.onclick=()=>{
-    const n=b.dataset.post,g=GEN[n]||{};saveGen(n,Object.assign({},g,{posted:!g.posted}));paintGen();});
-  $("paneGen").querySelectorAll("[data-see]").forEach(b=>b.onclick=()=>{V.gpick=b.dataset.see;b.blur();paintGen();});
-  const so=$("selfOpen");
-  if(so)so.onclick=async()=>{
-    OPEN.self=!OPEN.self;so.blur();
-    try{await dbPut(`gens/${V.cls}/open`,OPEN);setNet(true);}catch(e){setNet(false);}
-    paintGen();};
-  $("paneGen").querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{
-    const n=V.gpick;saveGen(n,Object.assign({},GEN[n],{text:b.dataset.use}));paintGen();});
-}
-const isOpen=n=>n==="1"?(OPEN["1"]!==false):!!OPEN[n];
-function lightBody(){
-  const rows=Object.values(SELF||{});
-  const c={g:0,y:0,r:0};rows.forEach(x=>{if(x&&c[x.level]!=null)c[x.level]++;});
-  const tot=Math.max(1,rows.length);
-  const bar=(k,col)=>`<i style="width:${Math.round(c[k]/tot*100)}%;background:${col}"></i>`;
-  return `<div class="gc" style="margin-top:14px">
-    <h4>1차시 신호등 자기평가</h4>
-    <div class="grow">
-      <button class="btn s" id="selfOpen" aria-pressed="${!!OPEN.self}">${
-        OPEN.self?"제출 열림":"제출 잠김"}</button>
-      <span class="muted" style="font:700 12px/1 var(--sans)">${rows.length}명 제출</span>
-    </div>
-    <div class="lbar">${bar("g","#2A7148")}${bar("y","#C98A10")}${bar("r","#C0342A")}</div>
-    <div class="lkey">
-      <span><i style="background:#2A7148"></i>혼자 할 수 있다 <b>${c.g}</b></span>
-      <span><i style="background:#C98A10"></i>순서를 보면 <b>${c.y}</b></span>
-      <span><i style="background:#C0342A"></i>아직 어렵다 <b>${c.r}</b></span>
-    </div>
-    <p class="muted" style="font:600 11.5px/1.6 var(--sans);margin:9px 0 0">
-      학번과 이름은 서버에 남기지 않습니다. 선생님 구글 시트로만 갑니다.</p>
-  </div>`;
-}
-function pickBody(){
-  if(V.gpick===null)return `<p class="muted">왼쪽에서 <b>학생 문장 모아 보기</b>를 누르면 이곳에 모입니다.
-    마음에 드는 문장을 눌러 학급 문장으로 올릴 수 있습니다.</p>${hypBody()}`;
-  const L=LESS.find(x=>x.n===V.gpick);
-  const rows=Object.keys(MINE).map(k=>({no:k,nick:MINE[k].nick,group:MINE[k].group,t:MINE[k][V.gpick]}))
-    .filter(r=>r.t&&String(r.t).trim());
-  return `<h3>${L.label}</h3>
-    <p class="muted" style="border:0"><i>${L.frame}</i> ( … ).</p>
-    ${rows.length?rows.map(r=>`<button class="sent" data-use="${esc(r.t)}">
-      <b>${esc(r.t)}</b><small>${esc(r.nick||"")}${r.group?" · "+r.group+"모둠":""}</small></button>`).join("")
-      :`<p class="muted">아직 쓴 학생이 없습니다.</p>`}${hypBody()}`;
-}
-function hypBody(){
-  const ks=Object.keys(HYP||{});
-  if(!ks.length)return "";
-  return `<h3 style="margin-top:20px">모둠 가설 (2차시)</h3>`+
-    ks.sort((a,b)=>(+a||99)-(+b||99)).map(g=>
-      `<div class="hypc"><b>${g}모둠</b> ${esc((HYP[g]||{}).text||"")}</div>`).join("");
-}
-
 /* ================= 교차 비교 차트 ================= */
 const TRI_ROWS=[["3·4·6","","","",""],["5·5·5","","","",""],["4·4·5","","","",""],
                 ["3·4·7","","","",""],["3·4·9","","","",""],["2·5·9","","","",""]];
@@ -657,37 +509,51 @@ const DET_ROWS=[["세 변","3","",""],["두 변과 끼인각","3","",""],["한 �
                 ["두 변과 끼인각이 아닌 각","3","",""],["세 각","3","",""],["두 변만","2","",""]];
 const TRI_HEAD=["세 변의 길이","가장 긴 변","대소","나머지 두 변의 합","성공 여부"];
 const DET_HEAD=["주어진 조건","조건 개수","하나로 정해지는가","근거 또는 반례"];
-const NMAP={t5:0,t6:1,t7:2,t8:3,t9:4};
+const NMAP={t5:0,t6:1,t7:2,t8:3,t9:4,t11:5};
 
 function chartData(){
   const c=CHART[V.chart]||{};
   const base=(V.chart==="tri"?TRI_ROWS:DET_ROWS).map(r=>r.slice());
   const rows=(c.rows&&c.rows.length)?c.rows.map(r=>r.slice()):base;
-  return {rows,show:c.show||(V.chart==="tri"?6:6),cong:!!c.cong,congv:c.congv||["","",""]};
+  return {rows,show:c.show||(V.chart==="tri"?6:3),cong:!!c.cong,
+          congv:c.congv||["","","","","",""],congh:c.congh||"합동 조건"};
 }
-const saveChart=async o=>{CHART[V.chart]=o;
+let chartT=null;
+const saveChart=async o=>{CHART[V.chart]=o;touched();
   try{await dbPut(`charts/${V.cls}/${V.chart}`,o);setNet(true);}catch(e){setNet(false);}};
 
 function paintChart(){
+  const ae=document.activeElement;
+  if(ae&&ae.tagName==="INPUT"&&$("paneChart").contains(ae))return;   /* 타자 중이면 그대로 둔다 */
   const d=chartData();
   const head=(V.chart==="tri"?TRI_HEAD:DET_HEAD).slice();
-  if(V.chart==="det"&&d.cong)head.push("합동 조건");
+
   const vis=(V.chart==="det")?d.rows.slice(0,d.show):d.rows;
   $("paneChart").innerHTML=`
     <table class="grid chart${V.big?" big":""}">
-      <tr>${head.map(h=>`<th>${h}</th>`).join("")}</tr>
+      <tr>${head.map(h=>`<th>${h}</th>`).join("")}
+        ${(V.chart==="det"&&d.cong)?`<th><input class="hin" data-r="0" data-c="99"
+          value="${esc(d.congh)}" placeholder="열 이름"></th>`:""}</tr>
       ${vis.map((r,i)=>`<tr>${r.map((v,j)=>
         `<td><input data-r="${i}" data-c="${j}" value="${esc(v)}"></td>`).join("")}
         ${(V.chart==="det"&&d.cong)?`<td><input data-r="${i}" data-c="9" value="${
-          esc(d.congv[i]||"")}" placeholder="${i<3?"SSS / SAS / ASA":"없음"}"></td>`:""}
+          esc(d.congv[i]||"")}" placeholder=""></td>`:""}
       </tr>`).join("")}
     </table>
     <p class="muted" style="border:0;margin-top:12px">
       전자칠판에 띄우고 학급이 함께 채웁니다. 고치면 바로 저장되고, 다음 차시에 그대로 열립니다.</p>`;
-  $("paneChart").querySelectorAll("input").forEach(el=>el.onchange=()=>{
-    const d2=chartData(),i=+el.dataset.r,j=+el.dataset.c;
-    if(j===9){d2.congv[i]=el.value;}else{d2.rows[i][j]=el.value;}
-    saveChart(d2);});
+  $("paneChart").querySelectorAll("input").forEach(el=>{
+    el.oninput=()=>{
+      const d2=chartData(),i=+el.dataset.r,j=+el.dataset.c;
+      if(j===9){d2.congv[i]=el.value;}
+      else if(j===99){d2.congh=el.value;}
+      else{d2.rows[i][j]=el.value;}
+      CHART[V.chart]=d2;touched();             /* 화면에 먼저 반영 · 덮어쓰기 방지 */
+      clearTimeout(chartT);
+      chartT=setTimeout(()=>saveChart(d2),500);  /* 잠깐 멈추면 저장 */
+    };
+    el.onblur=()=>{clearTimeout(chartT);saveChart(CHART[V.chart]||chartData());};
+  });
 }
 function fillFromStudents(){
   const d=chartData();
@@ -836,10 +702,10 @@ function paintRelay(){
 
 /* ================= 개방 ================= */
 const PRESET=[
-  {n:"3차시까지",  k:[], d:"훈련·조사 2·3은 늘 열려 있습니다 — 누를 것이 없습니다"},
-  {n:"4차시 1단계", k:["t8"], d:"조사 4까지 — 반전이 일어나는 화면"},
-  {n:"4차시 2단계", k:["t8","t9"], d:"조사 5까지 — 갈라짐을 확인한 뒤에"},
-  {n:"6차시 준비",  k:["t8","t9","t10"], d:"모두 열기"}
+  {n:"3차시까지",  k:[], d:"훈련·조사 1·2는 늘 열려 있습니다 — 누를 것이 없습니다"},
+  {n:"4차시 1단계", k:["t8"], d:"조사 3의 ①만 — 반전이 일어나는 화면"},
+  {n:"4차시 2단계", k:["t8","t9","t11"], d:"조사 3 전체 — 갈라짐을 확인한 뒤에"},
+  {n:"6차시 준비",  k:["t8","t9","t11","t10"], d:"모두 열기"}
 ];
 function paintLock(){
   const on=k=>PRESET.find(p=>p.n===k).k.every(x=>DATA.unlocked[x])
@@ -878,61 +744,61 @@ function paintLock(){
 function paintSub(){
   const t=TASKS.find(x=>x.id===V.task)||{};
   if(V.view==="board"&&t.board){
-    const gs=groups();
-    $("sub").innerHTML=`<div class="modes">
+    $("sub").innerHTML=grpRow()+`<div class="modes">
       ${[["intake","접수"],["reveal","공개"],["merge","포개기"],["classify","분류"]]
         .map(([k,n])=>`<button data-mode="${k}" aria-pressed="${V.mode===k}">${n}</button>`).join("")}
-      </div>`+
-      gs.map(g=>{const sub=subList().filter(s=>(s.group||"없음")===g);
-        const dots=clusters(sub).map((c,i)=>`<i style="background:${CCOL[i%CCOL.length]}"></i>`).join("");
-        const gn=(g==="없음")?"모둠 없음":g+"모둠";
-        return `<button class="gt${V.group===g?" on":""}" data-g="${g}">${gn} <em>${sub.length}</em>${dots}</button>`;
-      }).join("")+
-      `<button class="gt cls${V.group==="class"?" on":""}" data-g="class">학급 판 <em>${DATA.cls.length}</em></button>
-       <span style="flex:1"></span>
-       <button class="btn" id="align">자동 정렬</button>
-       <button class="btn" id="names" aria-pressed="${V.names}">코드네임 보기</button>
-       <button class="btn" id="promote">학급 판으로 승격</button>
-       <button class="btn danger" id="wipe">게시판 비우기</button>`;
+      </div>
+      <span class="muted" style="font:700 12px/1 var(--sans)">학급 전체 ${shown().length}장</span>
+      <span style="flex:1"></span>
+      <button class="btn" id="align">자동 정렬</button>
+      <button class="btn" id="names" aria-pressed="${V.names}">코드네임 보기</button>
+      <button class="btn danger" id="wipe">게시판 비우기</button>`;
+    bindGrpRow();
     $("sub").querySelectorAll("[data-mode]").forEach(b=>b.onclick=async()=>{
       V.mode=b.dataset.mode;if(V.mode!=="reveal")V.pick=null;
       try{await dbPut(`classes/${V.cls}/mode`,V.mode);}catch(e){}
       paint(1);});
-    $("sub").querySelectorAll(".gt").forEach(b=>b.onclick=()=>{V.group=b.dataset.g;V.tf={};paint(1);});
     $("align").onclick=()=>{V.tf={};V.mode="merge";paint(1);};
     $("names").onclick=()=>{V.names=!V.names;paint(1);};
-    $("promote").onclick=promote;
     $("wipe").onclick=wipe;
   }else if(V.view==="prog"){
-    $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
+    $("sub").innerHTML=grpRow()+`<span class="muted" style="font:600 12px/1 var(--sans)">
       3분 넘게 단계가 늘지 않으면 <b style="color:#8E2A22">막힘</b>으로 표시됩니다.
       학생이 화면을 닫으면 <b>자리 비움</b>이 됩니다.</span>
-      <span style="flex:1"></span><button class="btn" id="refresh">새로 고침</button>`;
-    $("refresh").onclick=()=>pull(1);
-  }else if(V.view==="gen"){
-    $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
-      학생이 쓴 문장을 모아 보고, 학급 문장을 정해 게시합니다. 게시하면 학생 앱에도 보입니다.</span>
       <span style="flex:1"></span>
-      <button class="btn" id="bigBtn" aria-pressed="${V.big}">전자칠판 크게 보기</button>
-      <button class="btn" id="genRefresh">새로 고침</button>`;
-    $("bigBtn").onclick=()=>{V.big=!V.big;paint(1);};
-    $("genRefresh").onclick=async()=>{await pullGen();paint(1);};
+      <button class="btn" id="tidy">안 쓰는 기록 정리</button>
+      <button class="btn" id="refresh">새로 고침</button>`;
+    bindGrpRow();
+    $("refresh").onclick=()=>pull(1);
+    $("tidy").onclick=async()=>{
+      const now=Date.now();
+      const old=Object.keys(DATA.prog).filter(k=>now-(DATA.prog[k].seen||DATA.prog[k].at||0)>6*3600000);
+      if(!old.length)return alert("정리할 기록이 없습니다. (6시간 넘게 조용한 것만 지웁니다)");
+      if(!confirm(`${old.length}명의 오래된 기록을 지웁니다.\n제출한 몽타주는 지워지지 않습니다.`))return;
+      for(const k of old){try{await dbDel(`progress/${V.cls}/${k}`);}catch(e){}}
+      await pull(1);
+      alert(`${old.length}명의 기록을 지웠습니다.`);
+    };
   }else if(V.view==="chart"){
+    const d0=chartData();
     $("sub").innerHTML=`<div class="modes">
         <button data-ch="tri" aria-pressed="${V.chart==="tri"}">삼각형 성립</button>
         <button data-ch="det" aria-pressed="${V.chart==="det"}">결정조건</button>
       </div>
-      ${V.chart==="det"?`<button class="btn" data-show="3">앞 세 줄만</button>
-        <button class="btn" data-show="6">반례 세 줄 열기</button>
-        <button class="btn" id="congBtn">합동 조건 칸</button>`:""}
+      ${V.chart==="det"?`<button class="btn" data-show="3"
+          aria-pressed="${d0.show<=3}">세 줄</button>
+        <button class="btn" data-show="6" aria-pressed="${d0.show>3}">조건 3개 추가</button>
+        <button class="btn" id="congBtn" aria-pressed="${d0.cong}">열 추가</button>`:""}
       <span style="flex:1"></span>
-      <button class="btn" id="fillBtn">학생 응답에서 채우기</button>
       <button class="btn" id="bigBtn2" aria-pressed="${V.big}">크게 보기</button>`;
-    $("sub").querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{V.chart=b.dataset.ch;b.blur();paint(1);});
+    $("sub").querySelectorAll("[data-ch]").forEach(b=>b.onclick=()=>{
+      V.chart=b.dataset.ch;b.blur();
+      if(V.chart==="det"){const dd=chartData();
+        if(dd.show>3&&!dd.rows.slice(3).some(r=>r.some(x=>x))){dd.show=3;saveChart(dd);}}
+      paint(1);});
     $("sub").querySelectorAll("[data-show]").forEach(b=>b.onclick=()=>{
       const d=chartData();d.show=+b.dataset.show;saveChart(d);b.blur();paint(1);});
     const cb=$("congBtn");if(cb)cb.onclick=()=>{const d=chartData();d.cong=!d.cong;saveChart(d);cb.blur();paint(1);};
-    $("fillBtn").onclick=async()=>{await loadAllNotes();fillFromStudents();};
     $("bigBtn2").onclick=()=>{V.big=!V.big;paint(1);};
   }else if(V.view==="note"){
     $("sub").innerHTML=`<span class="muted" style="font:600 12px/1 var(--sans)">
@@ -961,32 +827,33 @@ function paint(force){
   paintNow();
   if(bd&&sc)bd.scrollTop=sc;
 }
+/* 조사 2·3 안의 갈래 고르기 */
+function grpRow(){
+  const g=grpOfTask(V.task);
+  if(!g)return "";
+  return `<div class="modes">${GRP[g].of.map((id,i)=>
+    `<button data-gt="${id}" aria-pressed="${V.task===id}">${GRP[g].k[i]}</button>`).join("")}</div>`;
+}
+function bindGrpRow(){
+  $("sub").querySelectorAll("[data-gt]").forEach(b=>b.onclick=()=>{
+    V.task=b.dataset.gt;localStorage.setItem("t.task",V.task);V.tf={};b.blur();pull(1);});
+}
 function paintNow(){
   document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===V.view));
-  ["prog","board","trace","note","gen","chart","relay","lock"].forEach(k=>
+  ["prog","board","gen","chart","relay","lock"].forEach(k=>
     $("pane"+k[0].toUpperCase()+k.slice(1)).classList.toggle("on",V.view===k));
   const t=TASKS.find(x=>x.id===V.task)||{};
-  $("count").textContent=`${subList().length}명 접수 · ${Object.keys(DATA.prog).length}명 접속`;
+  const gsel=grpOfTask(V.task);
+  if($("task").value!==(gsel||V.task))$("task").value=gsel||V.task;
+  const now0=Date.now();
+  const live=Object.values(DATA.prog).filter(p=>now0-(p.seen||p.at||0)<=90000).length;
+  $("count").textContent=`${subList().length}명 접수 · ${live}명 접속`;
   paintSub();
   if(V.view==="prog")paintProg();
   if(V.view==="board"&&t.board)paintBoard();
-  if(V.view==="trace")paintTrace();
-  if(V.view==="note")paintNote();
-  if(V.view==="gen")paintGen();
   if(V.view==="chart")paintChart();
   if(V.view==="relay")paintRelay();
   if(V.view==="lock")paintLock();
-}
-async function promote(){
-  if(V.group==="class"||!V.group)return alert("모둠 탭을 고른 뒤 눌러 주세요.");
-  const sub=subList().filter(s=>(s.group||"없음")===V.group);
-  if(!sub.length)return;
-  const gn=(V.group==="없음")?"모둠 없음":V.group+"모둠";
-  const keep=DATA.cls.filter(c=>c.from!==gn);
-  clusters(sub).forEach(c=>keep.push({tri:c.items[0].tri,from:gn,n:c.items.length}));
-  DATA.cls=keep;
-  try{await dbPut(`boards/${V.cls}/${V.task}/cls`,keep);setNet(true);}catch(e){setNet(false);}
-  V.group="class";V.mode="reveal";paint();
 }
 async function wipe(){
   if(!confirm(`${V.cls} · ${(TASKS.find(t=>t.id===V.task)||{}).n} 게시판을 모두 비웁니다. 계속할까요?`))return;
@@ -996,14 +863,22 @@ async function wipe(){
 }
 
 /* ================= 배선 ================= */
-$("task").innerHTML=TASKS.map(t=>`<option value="${t.id}">${t.n}</option>`).join("");
-$("cls").value=V.cls;$("task").value=V.task;
-$("cls").onchange=e=>{V.cls=e.target.value;localStorage.setItem("t.cls",V.cls);V.group=null;V.tf={};e.target.blur();pull(1);};
-$("task").onchange=e=>{V.task=e.target.value;localStorage.setItem("t.task",V.task);
-  V.group=null;V.tf={};V.who=null;e.target.blur();pull(1);};
+const TASKOPT=[];
+TASKS.forEach(t=>{
+  const g=grpOfTask(t.id);
+  if(!g){TASKOPT.push({v:t.id,n:t.n});return;}
+  if(GRP[g].of[0]===t.id)TASKOPT.push({v:g,n:GRP[g].n});
+});
+$("task").innerHTML=TASKOPT.map(o=>`<option value="${o.v}">${o.n}</option>`).join("");
+$("cls").value=V.cls;$("task").value=grpOfTask(V.task)||V.task;
+$("cls").onchange=e=>{V.cls=e.target.value;localStorage.setItem("t.cls",V.cls);V.tf={};e.target.blur();pull(1);};
+$("task").onchange=e=>{
+  const v=e.target.value;
+  V.task=GRP[v]?GRP[v].of[0]:v;
+  localStorage.setItem("t.task",V.task);
+  V.tf={};V.who=null;e.target.blur();pull(1);};
 document.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{
   V.view=b.dataset.view;b.blur();
-  if(V.view==="board"&&!V.group)V.group=groups()[0]||null;
   paint(1);});
 pull();setInterval(pull,2500);
 </script>
