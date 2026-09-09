@@ -59,7 +59,7 @@
   .bcount{margin:14px 0 0;text-align:center;font:800 16px/1 var(--sans);color:#6A6355}
   .bc{position:relative;width:150px;height:112px;border:2px solid var(--rule);
     border-radius:11px;background:#fff;flex:0 0 auto;
-    transition:transform .78s cubic-bezier(.22,.85,.3,1),border-color .4s}
+    transition:transform 1.15s cubic-bezier(.24,.86,.28,1),border-color .5s}
   .bc svg{width:100%;height:100%;display:block}
   .bc .bk{position:absolute;inset:10px;border-radius:7px;background:#E9E1CC;
     border:1.5px solid #C9BFA4}
@@ -69,6 +69,8 @@
   .ggrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .garea{border:2px solid var(--rule);border-radius:12px;padding:9px 11px 11px;background:#FCFAF3}
   .garea.on{border-color:var(--gold);background:#FFFCF4}
+  .garea.al{border-color:#9DB6D6;background:#F7FAFD}
+  .garea.al h4 .gm{background:#1F3F94;border-color:#1F3F94;color:#fff}
   .garea h4{margin:0 0 8px;font:800 13px/1 var(--sans);display:flex;align-items:center;gap:7px}
   .garea h4 em{font-style:normal;font:700 11px/1 var(--sans);color:var(--ink-soft)}
   .garea h4 .gm{margin-left:auto;font:800 11.5px/1 var(--sans);padding:7px 11px;
@@ -81,7 +83,7 @@
   .cl{display:flex;align-items:center;gap:6px;font:800 12.5px/1 var(--sans)}
   .cl b{width:12px;height:12px;border-radius:99px;display:inline-block}
   .cl em{font-style:normal;font:700 11px/1 var(--sans);color:var(--ink-soft)}
-  @media (prefers-reduced-motion:reduce){.bc{transition-duration:.35s}}
+  @media (prefers-reduced-motion:reduce){.bc{transition-duration:.5s}}
   .pane{display:none;height:100%}
   .pane.on{display:block}
 
@@ -442,7 +444,8 @@ const CW=150, CH=112;            /* 카드 크기 */
 const GAP=12;
 const GROUPS=["1","2","3","4","5"];
 
-let MERGED={};                   /* 모아본 모둠 */
+let MERGED={};                   /* 모둠별 상태 0·1·2 */
+const GLAB=["모아보기","돌려놓기","원래대로"];
 
 /* 카드 하나를 원래 방향 그대로, 무게중심을 가운데 두고 그린다 */
 function cardSVG(tri,col,k){
@@ -489,10 +492,10 @@ function paintBoard(force){
     list.forEach(s=>{const g=String(s.group||"");
       if(by[g])by[g].push(s);else etc.push(s);});
     wrap.innerHTML=`<div class="ggrid">${GROUPS.map(g=>`
-      <section class="garea${MERGED[g]?" on":""}" data-ga="${g}">
+      <section class="garea${MERGED[g]===1?" on":MERGED[g]===2?" al":""}" data-ga="${g}">
         <h4>${g}모둠<em>${by[g].length}</em>
           ${face?"":`<button class="gm" data-gm="${g}">${
-            MERGED[g]?"돌려놓기":"모아보기"}</button>`}</h4>
+            GLAB[MERGED[g]||0]}</button>`}</h4>
         <div class="gslots">${by[g].map(s=>card(s)).join("")||
           `<p class="bnone s">아직 없습니다</p>`}</div>
       </section>`).join("")}
@@ -501,12 +504,15 @@ function paintBoard(force){
     </div>
     ${face?`<p class="bcount">${n}명 접수</p>`:""}`;
     if(!face)wrap.querySelectorAll("[data-gm]").forEach(b=>b.onclick=()=>{
-      const g=b.dataset.gm;MERGED[g]=!MERGED[g];b.blur();
-      b.textContent=MERGED[g]?"돌려놓기":"모아보기";
-      b.closest(".garea").classList.toggle("on",MERGED[g]);
-      mergeGroup(g,MERGED[g]);
+      const g=b.dataset.gm;
+      const st=((MERGED[g]||0)+1)%3;
+      MERGED[g]=st;b.blur();
+      b.textContent=GLAB[st];
+      const ar=b.closest(".garea");
+      ar.classList.toggle("on",st===1);ar.classList.toggle("al",st===2);
+      mergeGroup(g,st);
     });
-    if(!face)GROUPS.forEach(g=>{if(MERGED[g])setTimeout(()=>mergeGroup(g,true),40);});
+    if(!face)GROUPS.forEach(g=>{if(MERGED[g])setTimeout(()=>mergeGroup(g,MERGED[g]),40);});
     return;
   }
 
@@ -523,23 +529,25 @@ function run(plan,step){
 }
 
 /* 한 모둠 카드를 가운데로 모으거나 제자리로 */
-function mergeGroup(g,on){
+/* 0 제자리 · 1 가운데로 모음 · 2 자리로 돌아오되 방향은 맞춘 채 */
+function mergeGroup(g,st){
   const area=$("bwrap").querySelector(`[data-ga="${g}"]`);
   if(!area)return;
   const slots=area.querySelector(".gslots");
   const cards=[...slots.querySelectorAll(".bc")];
   if(!cards.length)return;
-  if(!on){cards.forEach((c,i)=>{c.style.transitionDelay=(i*0.04).toFixed(2)+"s";
-    c.style.transform=HOME;setTimeout(()=>{c.style.zIndex="";},900);});return;}
   const box=slots.getBoundingClientRect();
   const cx=box.left+box.width/2, cy=box.top+box.height/2;
   const plan=cards.map((c,i)=>{
     const r=c.getBoundingClientRect();
     const s=shown().find(x=>String(x.no)===c.dataset.no);
-    return {c,i,a:s?alignParams(s.tri):null,
-      dx:cx-(r.left+r.width/2), dy:cy-(r.top+r.height/2)};
+    const a=s?alignParams(s.tri):null;
+    if(st===1)return {c,i,a,dx:cx-(r.left+r.width/2),dy:cy-(r.top+r.height/2)};
+    if(st===2)return {c,i,a,dx:0,dy:0};
+    return {c,i,a:null,dx:0,dy:0};
   });
-  run(plan,0.07);
+  run(plan,0.10);
+  if(st===0)setTimeout(()=>cards.forEach(c=>{c.style.zIndex="";}),1500);
 }
 
 /* 학급 전체를 한자리에 모은다 */
@@ -564,11 +572,11 @@ function paintMergeAll(list,k){
       plan.push({c:el,i,a:alignParams(s.tri),
         dx:tx-(r.left+r.width/2), dy:ty-(r.top+r.height/2)});
     });
-    run(plan,0.045);
+    run(plan,0.06);
   };
   const back=()=>[...wrap.querySelectorAll(".bc")].forEach((el,i)=>{
-    el.style.transitionDelay=(i*0.03).toFixed(2)+"s";
-    el.style.transform=HOME;setTimeout(()=>{el.style.zIndex="";},1000);});
+    el.style.transitionDelay=(i*0.04).toFixed(2)+"s";
+    el.style.transform=HOME;setTimeout(()=>{el.style.zIndex="";},1500);});
   $("mgGo").onclick=()=>{$("mgGo").blur();go();};
   $("mgBack").onclick=()=>{$("mgBack").blur();back();};
 }
@@ -600,12 +608,12 @@ function paintClassify(list,k){
           dx:tx-(r.left+r.width/2), dy:ty-(r.top+r.height/2)});
       });
     });
-    run(plan,0.042);
+    run(plan,0.055);
   };
   const back=()=>[...wrap.querySelectorAll(".bc")].forEach((el,i)=>{
-    el.style.transitionDelay=(i*0.03).toFixed(2)+"s";
+    el.style.transitionDelay=(i*0.04).toFixed(2)+"s";
     el.style.transform=HOME;el.style.borderColor="";
-    setTimeout(()=>{el.style.zIndex="";},1000);});
+    setTimeout(()=>{el.style.zIndex="";},1500);});
   $("clGo").onclick=()=>{$("clGo").blur();go();};
   $("clBack").onclick=()=>{$("clBack").blur();back();};
 }
