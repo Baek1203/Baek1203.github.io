@@ -52,10 +52,40 @@
   .pill{font:700 12.5px/1 var(--sans);color:#8A6A0E;background:#F8EFD8;border-radius:999px;padding:8px 12px}
 
   .body{flex:1;min-height:0;padding:12px 16px;overflow:auto}
+  .bwrap{position:relative;width:100%;height:100%;overflow:auto;padding:10px 12px}
+  .bnone{margin:36px 0;text-align:center;font:800 15px/1 var(--sans);color:#8A8271}
+  .bnone.s{margin:14px 0;font-size:12px}
+  .bgrid{display:flex;flex-wrap:wrap;gap:12px}
+  .bcount{margin:14px 0 0;text-align:center;font:800 16px/1 var(--sans);color:#6A6355}
+  .bc{position:relative;width:150px;height:112px;border:2px solid var(--rule);
+    border-radius:11px;background:#fff;flex:0 0 auto;
+    transition:transform .78s cubic-bezier(.22,.85,.3,1),border-color .4s}
+  .bc svg{width:100%;height:100%;display:block}
+  .bc .bk{position:absolute;inset:10px;border-radius:7px;background:#E9E1CC;
+    border:1.5px solid #C9BFA4}
+  .bc.back{background:#F4EFE3}
+  .bc .nm{position:absolute;left:0;right:0;bottom:4px;text-align:center;
+    font:800 10.5px/1 var(--sans);color:#8A8271}
+  .ggrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .garea{border:2px solid var(--rule);border-radius:12px;padding:9px 11px 11px;background:#FCFAF3}
+  .garea.on{border-color:var(--gold);background:#FFFCF4}
+  .garea h4{margin:0 0 8px;font:800 13px/1 var(--sans);display:flex;align-items:center;gap:7px}
+  .garea h4 em{font-style:normal;font:700 11px/1 var(--sans);color:var(--ink-soft)}
+  .garea h4 .gm{margin-left:auto;font:800 11.5px/1 var(--sans);padding:7px 11px;
+    border-radius:8px;border:1.5px solid var(--rule);background:#fff;cursor:pointer;color:var(--ink)}
+  .garea.on h4 .gm{background:var(--gold);border-color:var(--gold);color:#231B06}
+  .gslots{position:relative;display:flex;flex-wrap:wrap;gap:10px;min-height:118px}
+  .cbar{position:sticky;bottom:0;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin-top:14px;padding:10px 4px;background:var(--paper)}
+  .cbar .sp{flex:1}
+  .cl{display:flex;align-items:center;gap:6px;font:800 12.5px/1 var(--sans)}
+  .cl b{width:12px;height:12px;border-radius:99px;display:inline-block}
+  .cl em{font-style:normal;font:700 11px/1 var(--sans);color:var(--ink-soft)}
+  @media (prefers-reduced-motion:reduce){.bc{transition:none}}
   .pane{display:none;height:100%}
   .pane.on{display:block}
 
-  #bsvg{width:100%;height:100%;display:block;background:var(--paper);border:1px solid #D3C9B2;
+  .__bsvg{width:100%;height:100%;display:block;background:var(--paper);border:1px solid #D3C9B2;
     border-radius:6px;box-shadow:0 3px 16px rgba(28,26,22,.11);touch-action:none;
     -webkit-user-select:none;user-select:none}
 
@@ -238,7 +268,7 @@
   <div class="body">
     <div class="pane on" id="paneProg"></div>
     <div class="pane" id="paneBoard">
-      <svg id="bsvg" viewBox="0 0 1120 660" preserveAspectRatio="xMidYMid meet" aria-label="게시판"></svg>
+      <div class="bwrap" id="bwrap" aria-label="게시판"></div>
     </div>
     <div class="pane" id="paneGen"></div>
     <div class="pane" id="paneChart"></div>
@@ -407,100 +437,134 @@ const BW=1120,BH=660;
 const shown=()=>subList().sort((a,z)=>a.at-z.at);
 const maxSpan=list=>{let m=1;for(const s of list){const t=s.tri||s.pts;if(!t)continue;
   m=Math.max(m,D2(t[0],t[1]),D2(t[1],t[2]),D2(t[2],t[0]));}return m;};
-function paintBoard(){
-  const list=shown(),n=list.length,svg=$("bsvg");
-  let g=`<rect width="${BW}" height="${BH}" fill="#FCFAF3"/>`;
-  if(!n){svg.innerHTML=g+`<text x="${BW/2}" y="${BH/2}" text-anchor="middle" font-size="22"
-    fill="#8A8271" font-family="sans-serif">아직 접수된 작도가 없습니다.</text>`;return;}
-  const cols=Math.ceil(Math.sqrt(n*BW/BH)),cw=BW/cols,ch=BH/Math.ceil(n/cols);
-  if(V.mode==="intake"){
-    list.forEach((s,i)=>{const x=(i%cols)*cw+cw/2,y=Math.floor(i/cols)*ch+ch/2,w=Math.min(cw,ch)*.5;
-      g+=`<g transform="translate(${x} ${y}) rotate(${((i*37)%13)-6})">
-        <rect x="${-w/2}" y="${-w*.68}" width="${w}" height="${w*1.36}" rx="9"
-          fill="#E9E1CC" stroke="#C9BFA4" stroke-width="2"/>
-        <circle r="${w*.2}" fill="#D8CEB4"/></g>`;});
-    svg.innerHTML=g+`<text x="${BW/2}" y="${BH-26}" text-anchor="middle" font-size="26"
-      font-weight="700" fill="#6A6355" font-family="sans-serif">${n}명 접수</text>`;return;
-  }
-  let draw=[];
-  if(V.mode==="reveal"){
-    const k=Math.min(1,Math.min(cw,ch)*.72/maxSpan(list));
-    list.forEach((s,i)=>{
-      const cx=(i%cols)*cw+cw/2,cy=Math.floor(i/cols)*ch+ch/2,c0=cen(s.tri);
-      const base=s.tri.map(p=>({x:p.x-c0.x+cx,y:p.y-c0.y+cy}));
-      const tf=V.tf[s.no]||{};
-      draw.push({s,slot:i+1,col:s.color||"#1C1A16",
-        pts:xform(base,{rot:(rnd1(s.no+V.task)-.5)*.9+(tf.rot||0),dx:tf.dx||0,dy:tf.dy||0},k,{x:cx,y:cy})});
-    });
-  }else if(V.mode==="merge"){
-    const k=Math.min(1,BH*.62/maxSpan(list)),an={x:BW*.30,y:BH*.66};
-    list.forEach(s=>draw.push({s,merged:true,col:"#1C1A16",pts:xform(alignT(s.tri,an),null,k,an)}));
-  }else{
-    const cs=clusters(list),k=Math.min(1,(BW/Math.max(1,cs.length))*.62/maxSpan(list));
-    cs.forEach((c,ci)=>{
-      const an={x:BW*(ci+.34)/cs.length,y:BH*.70};
-      c.items.forEach(s=>draw.push({s,col:CCOL[ci%CCOL.length],pts:xform(alignT(s.tri,an),null,k,an)}));
-      g+=`<text x="${BW*(ci+.5)/cs.length}" y="52" text-anchor="middle" font-size="24"
-        font-weight="800" fill="${CCOL[ci%CCOL.length]}" font-family="sans-serif">${ci+1}형 · ${c.items.length}명</text>`;});
-    if(cs.length>4)g+=`<text x="${BW/2}" y="${BH-22}" text-anchor="middle" font-size="20"
-      fill="#6A6355" font-family="sans-serif">서로 다른 삼각형 ${cs.length}가지</text>`;
-  }
-  const op=V.mode==="merge"?.30:.95;
-  for(const d of draw){
-    const pts=d.pts.map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-    const hot=V.pick===d.s.no;
-    g+=`<polygon points="${pts}" fill="${d.merged?"none":d.col+"14"}" stroke="${d.col}"
-      stroke-width="${d.merged?2.2:2.8}" stroke-linejoin="round" opacity="${hot?1:op}"/>`;
-    if(V.mode==="reveal"){
-      g+=`<circle cx="${d.pts[0].x.toFixed(1)}" cy="${d.pts[0].y.toFixed(1)}" r="7" fill="${d.col}"/>`;
-      const c0=cen(d.pts);
-      g+=`<text x="${c0.x.toFixed(1)}" y="${(c0.y+6).toFixed(1)}" text-anchor="middle" font-size="15"
-        font-weight="800" fill="${V.names?"#3A342B":"#8A8271"}" font-family="sans-serif"
-        opacity="${V.names?1:.55}">${V.names?esc(d.s.nick||d.s.no):d.slot}</text>`;
-      if(hot)g+=`<circle cx="${c0.x.toFixed(1)}" cy="${(c0.y-maxSpan([d.s])*.5-30).toFixed(1)}" r="11"
-        fill="#fff" stroke="${d.col}" stroke-width="3"/>`;
-    }
-    if(d.s.label){const c0=cen(d.pts);
-      g+=`<text x="${c0.x.toFixed(1)}" y="${(c0.y+6).toFixed(1)}" text-anchor="middle" font-size="15"
-        font-weight="800" fill="#8A6A0E" font-family="sans-serif">${esc(d.s.label)} · ${d.s.n}명</text>`;}
-  }
-  V.draw=draw;svg.innerHTML=g;
+/* ================= 게시판 · 카드 ================= */
+const CW=150, CH=112;            /* 카드 크기 */
+const GAP=12;
+const GROUPS=["1","2","3","4","5"];
+const isG3=()=>["t8","t9","t11"].indexOf(V.task)>=0;
+let MERGED={};                   /* 모아본 모둠 */
+
+/* 카드 하나를 원래 방향 그대로, 무게중심을 가운데 두고 그린다 */
+function cardSVG(tri,col,k){
+  const c=cen(tri);
+  const p=tri.map(q=>({x:(q.x-c.x)*k+CW/2,y:(q.y-c.y)*k+CH/2}));
+  return `<svg viewBox="0 0 ${CW} ${CH}"><polygon points="${
+    p.map(q=>`${q.x.toFixed(1)},${q.y.toFixed(1)}`).join(" ")}"
+    fill="${col}14" stroke="${col}" stroke-width="2.2" stroke-linejoin="round"/></svg>`;
 }
-/* 끌기 · 회전 · 자석 */
-const bPos=e=>{const r=$("bsvg").getBoundingClientRect();
-  return{x:(e.clientX-r.left)/r.width*BW,y:(e.clientY-r.top)/r.height*BH};};
-function inTri(p,t){const s=(a,b,c)=>(a.x-c.x)*(b.y-c.y)-(b.x-c.x)*(a.y-c.y);
-  const d1=s(p,t[0],t[1]),d2=s(p,t[1],t[2]),d3=s(p,t[2],t[0]);
-  return!(((d1<0)||(d2<0)||(d3<0))&&((d1>0)||(d2>0)||(d3>0)));}
-$("bsvg").addEventListener("pointerdown",e=>{
-  if(V.mode!=="reveal"||!V.draw)return;
-  const p=bPos(e);
-  const rot=V.draw.find(d=>V.pick===d.s.no&&
-    D2(p,{x:cen(d.pts).x,y:cen(d.pts).y-maxSpan([d.s])*.5-30})<22);
-  if(rot){const c=cen(rot.pts);
-    V.drag={no:rot.s.no,mode:"rot",c,a0:Math.atan2(p.y-c.y,p.x-c.x),r0:(V.tf[rot.s.no]||{}).rot||0};return;}
-  const hit=[...V.draw].reverse().find(d=>inTri(p,d.pts));
-  if(!hit){V.pick=null;paintBoard();return;}
-  V.pick=hit.s.no;
-  V.drag={no:hit.s.no,mode:"move",p0:p,d0:{dx:(V.tf[hit.s.no]||{}).dx||0,dy:(V.tf[hit.s.no]||{}).dy||0}};
-  paintBoard();
-});
-window.addEventListener("pointermove",e=>{
-  if(!V.drag)return;
-  const p=bPos(e),t=V.tf[V.drag.no]||(V.tf[V.drag.no]={dx:0,dy:0,rot:0});
-  if(V.drag.mode==="move"){t.dx=V.drag.d0.dx+(p.x-V.drag.p0.x);t.dy=V.drag.d0.dy+(p.y-V.drag.p0.y);}
-  else t.rot=V.drag.r0+(Math.atan2(p.y-V.drag.c.y,p.x-V.drag.c.x)-V.drag.a0);
-  paintBoard();
-});
-window.addEventListener("pointerup",()=>{
-  if(!V.drag)return;const no=V.drag.no;V.drag=null;
-  const m=V.draw.find(d=>d.s.no===no);if(!m)return;
-  let best=null,bd=18;
-  for(const d of V.draw){if(d.s.no===no)continue;
-    for(const a of m.pts)for(const b of d.pts){const v=D2(a,b);if(v<bd){bd=v;best={a,b};}}}
-  if(best){const t=V.tf[no];t.dx+=best.b.x-best.a.x;t.dy+=best.b.y-best.a.y;}
-  paintBoard();
-});
+/* 그 삼각형을 표준 방향으로 돌리는 값 */
+function alignParams(tri){
+  const P=canonOrder(tri);
+  const th=Math.atan2(P[1].y-P[0].y,P[1].x-P[0].x);
+  const c=Math.cos(-th),s=Math.sin(-th);
+  const dx=P[2].x-P[0].x,dy=P[2].y-P[0].y;
+  const qy=dx*s+dy*c;
+  return {rot:-th*180/Math.PI, flip:qy>0};
+}
+const tfStr=a=>a?`${a.flip?"scaleY(-1) ":""}rotate(${a.rot.toFixed(1)}deg)`:"";
+
+let BSIG="";
+function paintBoard(force){
+  const list=shown(),n=list.length,wrap=$("bwrap");
+  /* 카드가 움직이는 중에 다시 그리면 애니메이션이 지워진다.
+     낸 사람이나 모드가 바뀐 때만 새로 그린다. */
+  const sig=[V.task,V.mode,V.names,n,list.map(x=>x.no).join("|")].join("/");
+  if(!force&&sig===BSIG&&wrap.childElementCount)return;
+  BSIG=sig;
+  if(!n){wrap.innerHTML=`<p class="bnone">아직 접수된 작도가 없습니다.</p>`;return;}
+  const k=Math.min(1.1,(Math.min(CW,CH)*0.72)/Math.max(1,maxSpan(list)));
+  const face=(V.mode==="intake");
+
+  if(V.mode==="classify"){paintClassify(list,k);return;}
+
+  const card=(s,extra)=>`<div class="bc${face?" back":""}" data-no="${esc(s.no)}"
+      ${extra||""}>${face?`<i class="bk"></i>`:cardSVG(s.tri,s.color||"#1C1A16",k)}
+      <span class="nm"${V.names?"":' hidden'}>${esc(s.nick||s.no)}</span></div>`;
+
+  if(isG3()&&!face){
+    const by={};GROUPS.forEach(g=>by[g]=[]);const etc=[];
+    list.forEach(s=>{const g=String(s.group||"");
+      if(by[g])by[g].push(s);else etc.push(s);});
+    wrap.innerHTML=`<div class="ggrid">${GROUPS.map(g=>`
+      <section class="garea${MERGED[g]?" on":""}" data-ga="${g}">
+        <h4>${g}모둠<em>${by[g].length}</em>
+          <button class="gm" data-gm="${g}">${MERGED[g]?"돌려놓기":"모아보기"}</button></h4>
+        <div class="gslots">${by[g].map(s=>card(s)).join("")||
+          `<p class="bnone s">아직 없습니다</p>`}</div>
+      </section>`).join("")}
+      ${etc.length?`<section class="garea"><h4>모둠 없음<em>${etc.length}</em></h4>
+        <div class="gslots">${etc.map(s=>card(s)).join("")}</div></section>`:""}
+    </div>`;
+    wrap.querySelectorAll("[data-gm]").forEach(b=>b.onclick=()=>{
+      const g=b.dataset.gm;MERGED[g]=!MERGED[g];b.blur();
+      b.textContent=MERGED[g]?"돌려놓기":"모아보기";
+      b.closest(".garea").classList.toggle("on",MERGED[g]);
+      mergeGroup(g,MERGED[g]);
+    });
+    GROUPS.forEach(g=>{if(MERGED[g])setTimeout(()=>mergeGroup(g,true),20);});
+    return;
+  }
+
+  wrap.innerHTML=`<div class="bgrid">${list.map(s=>card(s)).join("")}</div>
+    ${face?`<p class="bcount">${n}명 접수</p>`:""}`;
+}
+
+/* 한 모둠 카드를 가운데로 모으거나 제자리로 */
+function mergeGroup(g,on){
+  const area=$("bwrap").querySelector(`[data-ga="${g}"]`);
+  if(!area)return;
+  const slots=area.querySelector(".gslots");
+  const cards=[...slots.querySelectorAll(".bc")];
+  if(!cards.length)return;
+  if(!on){cards.forEach(c=>{c.style.transform="";c.style.zIndex="";});return;}
+  const box=slots.getBoundingClientRect();
+  const cx=box.left+box.width/2, cy=box.top+box.height/2;
+  cards.forEach((c,i)=>{
+    const r=c.getBoundingClientRect();
+    const s=shown().find(x=>String(x.no)===c.dataset.no);
+    const a=s?alignParams(s.tri):null;
+    c.style.transitionDelay=(i*0.07).toFixed(2)+"s";
+    c.style.zIndex=String(10+i);
+    c.style.transform=`translate(${(cx-(r.left+r.width/2)).toFixed(1)}px,${
+      (cy-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
+  });
+}
+
+/* 학급 전체를 유형별로 겹친다 */
+function paintClassify(list,k){
+  const wrap=$("bwrap");
+  const cs=clusters(list);
+  wrap.innerHTML=`<div class="bgrid">${list.map(s=>`<div class="bc" data-no="${esc(s.no)}">
+      ${cardSVG(s.tri,s.color||"#1C1A16",k)}
+      <span class="nm"${V.names?"":' hidden'}>${esc(s.nick||s.no)}</span></div>`).join("")}</div>
+    <div class="cbar">${cs.map((c,i)=>`<div class="cl" data-cl="${i}">
+      <b style="background:${CCOL[i%CCOL.length]}"></b>${i+1}형<em>${c.items.length}장</em></div>`).join("")}
+      <span class="sp"></span>
+      <button class="btn" id="clGo">유형별로 겹치기</button>
+      <button class="btn" id="clBack">돌려놓기</button></div>`;
+  const go=()=>{
+    const W=wrap.getBoundingClientRect();
+    cs.forEach((c,ci)=>{
+      const tx=W.left+W.width*(ci+0.5)/cs.length;
+      const ty=W.top+W.height*0.42;
+      c.items.forEach((s,i)=>{
+        const el=[...wrap.querySelectorAll(".bc")].find(x=>x.dataset.no===String(s.no));
+        if(!el)return;
+        const r=el.getBoundingClientRect();
+        const a=alignParams(s.tri);
+        el.style.transitionDelay=((ci*0.05)+(i*0.045)).toFixed(2)+"s";
+        el.style.zIndex=String(10+i);
+        el.style.borderColor=CCOL[ci%CCOL.length];
+        el.style.transform=`translate(${(tx-(r.left+r.width/2)).toFixed(1)}px,${
+          (ty-(r.top+r.height/2)).toFixed(1)}px) ${tfStr(a)}`;
+      });
+    });
+  };
+  const back=()=>wrap.querySelectorAll(".bc").forEach(el=>{
+    el.style.transform="";el.style.zIndex="";el.style.borderColor="";});
+  $("clGo").onclick=()=>{$("clGo").blur();go();};
+  $("clBack").onclick=()=>{$("clBack").blur();back();};
+}
 
 /* ================= 교차 비교 차트 ================= */
 const TRI_ROWS=[["3·4·6","","","",""],["5·5·5","","","",""],["4·4·5","","","",""],
@@ -755,7 +819,7 @@ function paintSub(){
       <button class="btn danger" id="wipe">게시판 비우기</button>`;
     bindGrpRow();
     $("sub").querySelectorAll("[data-mode]").forEach(b=>b.onclick=async()=>{
-      V.mode=b.dataset.mode;if(V.mode!=="reveal")V.pick=null;
+      V.mode=b.dataset.mode;if(V.mode!=="reveal")V.pick=null;MERGED={};BSIG="";
       try{await dbPut(`classes/${V.cls}/mode`,V.mode);}catch(e){}
       paint(1);});
     $("align").onclick=()=>{V.tf={};V.mode="merge";paint(1);};
