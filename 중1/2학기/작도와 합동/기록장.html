@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>감식 기록장</title>
+<style>
+  :root{
+    --paper:#FCFAF3; --paper2:#F6F1E6; --ink:#1C1A16; --soft:#6A6355;
+    --rule:#E2D9C5; --gold:#C98A10; --ok:#2A7148; --bad:#8E2A22;
+    --f:"Noto Sans KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--f)}
+  .app{max-width:860px;margin:0 auto;padding:14px 16px 40px;min-height:100%}
+  header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    border-bottom:2.5px solid var(--ink);padding-bottom:10px;margin-bottom:12px}
+  header h1{margin:0;font:900 19px/1.2 var(--f)}
+  header .sp{flex:1}
+  .ver{font:800 10.5px/1 var(--f);color:#B4AC9A;letter-spacing:.03em}
+  .who{font:800 12.5px/1 var(--f);color:var(--ink);background:#fff;border:1.5px solid var(--rule);
+    border-radius:99px;padding:9px 13px;cursor:pointer}
+  .net{font:800 11px/1 var(--f);border-radius:99px;padding:6px 10px;border:1.5px solid}
+  .net.on{color:var(--ok);border-color:#BFE0CC;background:#F1F8F3}
+  .net.off{color:var(--bad);border-color:#E8C4BF;background:#FBF0EE}
+
+  .tabs{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+  .tabs button{font:800 13px/1 var(--f);padding:11px 15px;border-radius:10px;cursor:pointer;
+    border:1.8px solid var(--rule);background:#fff;color:var(--soft)}
+  .tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .tabs button i{font-style:normal;margin-left:6px;color:var(--ok);font-weight:900}
+  .tabs button[aria-selected="true"] i{color:#BFE6CF}
+
+  .card{background:#fff;border:2px solid var(--rule);border-radius:14px;padding:16px 18px;
+    margin-bottom:12px}
+  .card h2{margin:0 0 4px;font:900 15.5px/1.4 var(--f)}
+  .card p.lead{margin:0 0 12px;font:700 12.5px/1.7 var(--f);color:var(--soft)}
+  .frame{font:800 14px/1.7 var(--f);margin-bottom:8px}
+  .frame i{font-style:normal;color:var(--soft)}
+  textarea{width:100%;border:1.8px solid var(--rule);border-radius:10px;background:#FCFAF3;
+    padding:11px 12px;font:700 14px/1.7 var(--f);color:var(--ink);resize:vertical;min-height:64px}
+  textarea:focus{outline:none;border-color:var(--gold);background:#fff}
+  .num{display:flex;align-items:flex-start;gap:9px;margin-bottom:9px}
+  .num b{flex:0 0 22px;height:22px;border-radius:99px;background:var(--ink);color:#fff;
+    font:900 11.5px/22px var(--f);text-align:center;margin-top:9px}
+  .lock{background:var(--paper2);border:2px dashed var(--rule);border-radius:14px;
+    padding:26px 18px;text-align:center;font:800 13px/1.8 var(--f);color:var(--soft)}
+
+  .foot{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(252,250,243,0),var(--paper) 26%);
+    padding:14px 0 6px;margin-top:4px}
+  .send{width:100%;padding:15px;border-radius:12px;cursor:pointer;
+    font:900 15px/1 var(--f);border:2.2px solid var(--ink);background:#fff;color:var(--ink)}
+  .send.ready{background:var(--gold);border-color:var(--gold);color:#231B06}
+  .send:disabled{opacity:.45;cursor:default}
+  .sent{margin-top:8px;font:800 12px/1.6 var(--f);color:var(--ok);text-align:center}
+  .sent.warn{color:var(--bad)}
+
+  .modal{position:fixed;inset:0;background:rgba(28,26,22,.5);display:flex;
+    align-items:center;justify-content:center;padding:18px;z-index:9}
+  .modal[hidden]{display:none}
+  .sheet{background:var(--paper);border-radius:16px;padding:20px;max-width:420px;width:100%}
+  .sheet h3{margin:0 0 10px;font:900 16px/1 var(--f)}
+  .sheet p{margin:0 0 12px;font:700 12.5px/1.7 var(--f);color:var(--soft)}
+  .row{display:flex;gap:8px;margin-bottom:10px}
+  .row select,.row input{flex:1;font:700 14px/1 var(--f);padding:12px;border-radius:10px;
+    border:1.8px solid var(--rule);background:#fff}
+  .row .btn{font:800 13px/1 var(--f);padding:12px 16px;border-radius:10px;cursor:pointer;
+    border:1.8px solid var(--ink);background:var(--ink);color:#fff}
+  .note{font:700 11.5px/1.6 var(--f);color:var(--bad);min-height:18px}
+  .trow{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .trow .sp{flex:1}
+  .trow select{font:800 13px/1 var(--f);padding:10px 12px;border-radius:10px;
+    border:1.8px solid var(--rule);background:#fff}
+  .tbtn{font:800 12.5px/1 var(--f);padding:11px 14px;border-radius:10px;cursor:pointer;
+    border:1.8px solid var(--rule);background:#fff;color:var(--soft)}
+  .tbtn.on{background:var(--ok);border-color:var(--ok);color:#fff}
+  .tbtn.s{font-size:11px;padding:6px 9px;margin-left:8px}
+  .plb{display:flex;align-items:center}
+  .tbtn.wide{width:100%;margin-top:10px;border-color:var(--ink);color:var(--ink)}
+  .tbtn.danger{border-color:#E8C4BF;color:var(--bad)}
+  .whorow{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .sc{position:relative}
+  .sc .del{position:absolute;right:7px;top:7px;width:22px;height:22px;border-radius:99px;
+    border:1.5px solid var(--rule);background:#fff;color:var(--soft);cursor:pointer;
+    font:900 11px/1 var(--f)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:9px}
+  .sc{border:1.8px solid var(--rule);border-radius:11px;padding:11px 12px;background:#FCFAF3}
+  .sc b{display:block;font:800 13.5px/1.6 var(--f)}
+  .sc small{display:block;font:700 11px/1 var(--f);color:#B4AC9A;margin-top:6px}
+  .sc .pick{margin-top:8px;font:800 11px/1 var(--f);padding:7px 10px;border-radius:8px;
+    cursor:pointer;border:1.5px solid var(--rule);background:#fff;color:var(--soft)}
+  .sfg{display:grid;gap:10px}
+  .sfc{border:1.8px solid var(--rule);border-radius:11px;padding:11px 13px}
+  .sfc.a{border-left:6px solid var(--ok)}
+  .sfc.b{border-left:6px solid var(--gold)}
+  .sfc.c{border-left:6px solid #1F3F94}
+  .sfc h5{margin:0 0 7px;font:800 13px/1 var(--f);display:flex;gap:7px;align-items:center}
+  .sfc h5 em{font-style:normal;font:700 11px/1 var(--f);color:var(--soft)}
+  .sfc ul{margin:0;padding:0;list-style:none;max-height:260px;overflow:auto}
+  .sfc li{padding:7px 0;border-bottom:1px solid #F0EADC;font:700 13px/1.6 var(--f)}
+  .sfc li small{display:block;font:700 10.5px/1 var(--f);color:#B4AC9A;margin-top:3px}
+  .sfc li.none{color:#B4AC9A}
+  .pastrow{border-top:1.5px solid var(--rule);padding-top:11px;margin-top:11px}
+  .pastrow:first-of-type{border-top:0;padding-top:0;margin-top:0}
+  .pastrow.unit{background:#FFF8E6;border-radius:10px;padding:11px 12px;border-top:0}
+  .plb{display:block;font:800 12.5px/1 var(--f);color:var(--soft);margin-bottom:6px}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(14px);
+    background:var(--ink);color:#fff;font:800 13px/1 var(--f);padding:13px 18px;border-radius:99px;
+    opacity:0;pointer-events:none;transition:.25s;z-index:20}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>감식 기록장</h1><span class="ver" id="ver"></span>
+    <span class="sp"></span>
+    <span class="net off" id="net">연결 확인 중</span>
+    <button class="who" id="who">코드네임 정하기</button>
+  </header>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="body"></div>
+
+  <div class="foot">
+    <button class="send" id="send" disabled>제출하기</button>
+    <p class="sent" id="sentMsg"></p>
+    <p style="text-align:center;margin:6px 0 0">
+      <button class="who" id="refr" style="font-size:11.5px;padding:7px 12px">새로 고침</button></p>
+  </div>
+</div>
+
+<div class="modal" id="idModal" hidden><div class="sheet">
+  <h3>누구인가요?</h3>
+  <p>작도 실습실에서 쓰던 <b>같은 코드네임</b>을 넣어 주세요. 그래야 이어집니다.</p>
+  <div class="row"><select id="idCls"></select></div>
+  <div class="row"><input id="idNick" placeholder="코드네임" maxlength="12"></div>
+  <div class="row"><select id="idGroup"></select></div>
+  <p class="note" id="idNote"></p>
+  <div class="row"><button class="btn" id="idSave" style="flex:1">저장</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app";
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const NS="jakdo.log";
+const LS={get(k,d){try{const v=localStorage.getItem(NS+":"+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},
+  set(k,v){try{localStorage.setItem(NS+":"+k,JSON.stringify(v));}catch(e){}}};
+
+async function dbGet(p){const r=await fetch(`${DB}/${p}.json`);if(!r.ok)throw 0;return r.json();}
+async function dbDel(p){const r=await fetch(`${DB}/${p}.json`,{method:"DELETE"});
+  if(!r.ok)throw 0;return r.json();}
+async function dbPut(p,v){const r=await fetch(`${DB}/${p}.json`,
+  {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(v)});
+  if(!r.ok)throw 0;return r.json();}
+function setNet(ok){const e=$("net");e.className="net "+(ok?"on":"off");
+  e.textContent=ok?"연결됨":"연결 안 됨";}
+let toastT=null;
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2600);}
+
+/* ── 차시별 일반화 문장 틀 ── */
+const LESS=[
+  {n:"1",label:"① 도구 감식 · 1차시",frame:"작도는"},
+  {n:"2",label:"② 형태 감식 · 2차시",frame:"삼각형이 만들어지기 위해서는"},
+  {n:"4",label:"③ 결정 감식 · 4차시",frame:"삼각형이 하나로 정해지는 것은"},
+  {n:"5",label:"④ 대조 감식 · 5차시",frame:"삼각형이 하나로 정해지는 조건은"},
+  {n:"6",label:"⑤ 최종 판정 · 6차시",frame:"주어진 조건으로 삼각형이 하나로 정해지지 않으면"},
+  {n:"u",label:"★ 수사 원칙 · 단원 종합",frame:"삼각형을 하나로 정하는 조건이 같으면",unit:true}
+];
+const GENN="4";                       /* 학생이 쓰는 것은 4차시 하나뿐 */
+const LES4=LESS.find(L=>L.n===GENN);
+const SELFQ=[
+  {k:"n1",t:"새로 알게 된 것"},
+  {k:"n2",t:"새로 알게 된 것"},
+  {k:"n3",t:"새로 알게 된 것"},
+  {k:"c1",t:"아직 헷갈리는 것"},
+  {k:"c2",t:"아직 헷갈리는 것"},
+  {k:"q1",t:"묻고 싶은 것"}
+];
+
+const VER="기록장 v7 · 2026-09-09";
+const TKEY="gamsik";
+const qp=new URLSearchParams(location.search);
+if(qp.get("teacher")===TKEY)LS.set("tea",true);
+if(qp.get("teacher")==="off")LS.set("tea",false);
+const TEA=!!LS.get("tea",false);
+let me=LS.get("me",{cls:"1-1",nick:"",no:"",group:""});
+let OPEN={}, MINE={}, SELF={}, CLASSG={}, ALL={}, ALLSELF={}, TAB=LS.get("tab","4");
+let DRAFT=LS.get("draft",{});          /* 아직 안 낸 글 */
+const cls=()=>me.cls||"1-1";
+/* 파이어베이스는 {"4":true} 같은 숫자 열쇠를 배열로 바꿔 버린다.
+   그러면 뒤에 붙인 self 열쇠가 통째로 사라진다. 그래서 열쇠를 글자로 쓴다. */
+function normOpen(o){
+  const r={gen:false,self:false};
+  if(!o)return r;
+  if(Array.isArray(o)){o.forEach((v,i)=>{if(v&&String(i)==="4")r.gen=true;});return r;}
+  r.gen=!!(o.gen||o["4"]);r.self=!!o.self;
+  return r;
+}
+const isOpen=n=>n===GENN||n==="gen"?!!OPEN.gen:!!OPEN[n];
+
+async function pull(){
+  try{
+    if(TEA){
+      const [o,a,sf,cg]=await Promise.all([
+        dbGet(`gens/${cls()}/open`),dbGet(`gens/${cls()}/mine`),
+        dbGet(`gens/${cls()}/self`),dbGet(`gens/${cls()}/class`)]);
+      if(Date.now()>OPEN_LOCK)OPEN=normOpen(o);   /* 방금 바꾼 것을 되돌리지 않는다 */
+      ALL=a||{};ALLSELF=sf||{};CLASSG=cg||{};
+    }else{
+      const [o,m,s,cg]=await Promise.all([
+        dbGet(`gens/${cls()}/open`),
+        me.no?dbGet(`gens/${cls()}/mine/${me.no}`):Promise.resolve(null),
+        me.no?dbGet(`gens/${cls()}/self/${me.no}`):Promise.resolve(null),
+        dbGet(`gens/${cls()}/class`)]);
+      OPEN=normOpen(o);MINE=m||{};SELF=s||{};CLASSG=cg||{};
+    }
+    setNet(true);
+  }catch(e){setNet(false);}
+  paint();
+}
+let OPEN_LOCK=0;
+const setOpen=async(k0,v)=>{
+  const k=(k0===GENN||k0==="gen")?"gen":"self";
+  const before=OPEN[k];
+  OPEN=Object.assign({gen:false,self:false},OPEN);
+  OPEN[k]=v;OPEN_LOCK=Date.now()+6000;paint();
+  try{
+    await dbPut(`gens/${cls()}/open`,{gen:!!OPEN.gen,self:!!OPEN.self});
+    const back=await dbGet(`gens/${cls()}/open`);      /* 정말 들어갔는지 확인 */
+    OPEN=normOpen(back);setNet(true);
+    toast(v?"열었습니다. 학생 화면에 곧 나타납니다.":"잠갔습니다.");
+  }catch(e){
+    OPEN[k]=before;setNet(false);
+    toast("연결이 되지 않아 바뀌지 않았습니다. 다시 눌러 주세요.");
+  }
+  paint();
+};
+
+function posted(){return LESS.filter(L=>(CLASSG[L.n]||{}).posted&&(CLASSG[L.n]||{}).text);}
+function tabs(){
+  const items=[];
+  if(isOpen(GENN))items.push({k:GENN,n:"오늘의 일반화"});
+  if(isOpen("self"))items.push({k:"self",n:"3 · 2 · 1 되돌아보기"});
+  if(posted().length)items.push({k:"board",n:"지금까지 정한 문장"});
+  return items;
+}
+function paintTabs(){
+  const it=tabs();
+  if(!it.length){$("tabs").innerHTML="";return;}
+  if(!it.some(x=>x.k===TAB))TAB=it[it.length-1].k;
+  $("tabs").innerHTML=it.map(x=>{
+    const done=(x.k==="self")?Object.keys(SELF||{}).some(k=>SELF[k]):!!MINE[x.k];
+    return `<button data-t="${x.k}" aria-selected="${TAB===x.k}">${esc(x.n)}${
+      done?'<i>✓</i>':""}</button>`;}).join("");
+  $("tabs").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{
+    TAB=b.dataset.t;LS.set("tab",TAB);b.blur();paint();});
+}
+const dkey=()=>`${cls()}:${me.no}:${TAB}`;
+const draft=()=>DRAFT[dkey()]||null;
+function setDraft(v){DRAFT[dkey()]=v;LS.set("draft",DRAFT);paintSend();}
+
+function paint(){
+  if(TEA)return paintTeacher();
+  paintTabs();
+  const it=tabs();
+  if(!it.length){
+    $("body").innerHTML=`<div class="lock">아직 열린 것이 없습니다.<br>
+      선생님이 열어 주면 여기에 나타납니다.</div>`;
+    $("send").style.display="none";$("sentMsg").textContent="";return;
+  }
+  $("send").style.display="";
+  if(TAB==="board"){paintBoardTab();return;}
+  if(TAB==="self")paintSelf(); else paintGen();
+  paintSend();
+}
+
+function paintGen(){
+  const L=LES4;
+  const cur=draft()!=null?draft():(MINE[TAB]||"");
+  $("body").innerHTML=`<div class="card">
+    <h2>${esc(L.label)}</h2>
+    <p class="lead">오늘 알아낸 것을 <b>한 문장</b>으로 적습니다. 짧아도 좋습니다.</p>
+    <div class="frame"><i>${esc(L.frame)}</i> …</div>
+    <textarea id="ta" rows="3" placeholder="여기에 이어서 씁니다">${esc(cur)}</textarea>
+  </div>`;
+  $("ta").oninput=()=>setDraft($("ta").value);
+}
+function paintBoardTab(){
+  $("send").style.display="none";$("sentMsg").textContent="";
+  $("body").innerHTML=`<div class="card">
+    <h2>지금까지 우리 반이 정한 문장</h2>
+    <p class="lead">수업마다 함께 정한 문장이 여기에 쌓입니다.</p>
+    ${posted().map(L=>`<div class="pastrow${L.unit?" unit":""}">
+      <span class="plb">${esc(L.label)}</span>
+      <div class="frame"><i>${esc(L.frame)}</i>
+        <b>${esc((CLASSG[L.n]||{}).text||"")}</b>.</div>
+    </div>`).join("")}
+  </div>`;
+}
+function paintSelf(){
+  const cur=draft()||Object.assign({},SELF);
+  const g=k=>esc(cur[k]||"");
+  const box=(k,ph)=>`<div class="num"><b>${ph}</b>
+    <textarea data-k="${k}" rows="2" placeholder="한 줄로 적습니다">${g(k)}</textarea></div>`;
+  $("body").innerHTML=`<div class="card">
+    <h2>새로 알게 된 것 셋</h2>
+    <p class="lead">오늘 처음 알게 되었거나, 알고 있던 것이 바뀐 것을 적습니다.</p>
+    ${box("n1",1)}${box("n2",2)}${box("n3",3)}
+  </div>
+  <div class="card">
+    <h2>아직 헷갈리는 것 둘</h2>
+    <p class="lead">잘 모르겠는 것, 다시 보고 싶은 것을 적습니다.</p>
+    ${box("c1",1)}${box("c2",2)}
+  </div>
+  <div class="card">
+    <h2>묻고 싶은 것 하나</h2>
+    <p class="lead">선생님이나 친구에게 묻고 싶은 것을 적습니다.</p>
+    ${box("q1",1)}
+  </div>`;
+  $("body").querySelectorAll("[data-k]").forEach(el=>el.oninput=()=>{
+    const o=Object.assign({},draft()||SELF);
+    o[el.dataset.k]=el.value;setDraft(o);
+  });
+}
+
+function filled(){
+  const d=draft();
+  if(TAB==="self"){
+    const o=d||SELF;
+    return SELFQ.some(q=>String((o||{})[q.k]||"").trim());
+  }
+  return String(d!=null?d:(MINE[TAB]||"")).trim().length>0;
+}
+function changed(){
+  const d=draft();
+  if(d==null)return false;
+  if(TAB==="self")return JSON.stringify(d)!==JSON.stringify(SELF||{});
+  return String(d)!==String(MINE[TAB]||"");
+}
+function paintSend(){
+  const b=$("send"),m=$("sentMsg");
+  const already=(TAB==="self")?Object.keys(SELF||{}).some(k=>SELF[k]):!!MINE[TAB];
+  b.disabled=!filled()||!changed();
+  b.classList.toggle("ready",!b.disabled);
+  b.textContent=already?"고쳐서 다시 제출하기":"제출하기";
+  m.className="sent";
+  m.textContent=b.disabled
+    ? (already?"제출했습니다. 고치면 다시 낼 수 있습니다.":(filled()?"":"쓰고 나서 제출을 누르세요."))
+    : "쓴 내용은 아직 제출되지 않았습니다.";
+  if(!b.disabled)m.className="sent warn";
+}
+
+$("send").onclick=async()=>{
+  if(!me.nick)return openId(true);
+  const d=draft();
+  $("send").disabled=true;
+  try{
+    if(TAB==="self"){
+      const o=Object.assign({},d||SELF,{nick:me.nick,group:me.group,at:Date.now()});
+      await dbPut(`gens/${cls()}/self/${me.no}`,o);SELF=o;
+    }else{
+      const o=Object.assign({},MINE,{nick:me.nick,group:me.group});
+      o[TAB]=String(d||"").trim();
+      await dbPut(`gens/${cls()}/mine/${me.no}`,o);MINE=o;
+    }
+    delete DRAFT[dkey()];LS.set("draft",DRAFT);
+    setNet(true);toast("제출했습니다.");
+  }catch(e){setNet(false);toast("연결이 되지 않아 내지 못했습니다. 잠시 뒤 다시 눌러 주세요.");}
+  paint();
+};
+
+/* ══════════ 교사 화면 ══════════ */
+let TTAB=LS.get("ttab","gen");
+let TD={};        /* 교사가 쓰는 중인 글 */
+function paintTeacher(){
+  const ae=document.activeElement;
+  if(ae&&(ae.tagName==="TEXTAREA"||ae.tagName==="INPUT")&&$("body").contains(ae))return;
+  $("who").textContent=`${cls()} · 선생님`;
+  const n4=Object.values(ALL||{}).filter(x=>String(x[GENN]||"").trim()).length;
+  const ns=Object.keys(ALLSELF||{}).length;
+  $("tabs").innerHTML=[["gen",`오늘의 일반화 <em>${n4}</em>`],
+      ["self",`3 · 2 · 1 <em>${ns}</em>`],["past","지난 차시 문장"]]
+    .map(([k,n])=>`<button data-tt="${k}" aria-selected="${TTAB===k}">${n}</button>`).join("");
+  $("tabs").querySelectorAll("[data-tt]").forEach(b=>b.onclick=()=>{
+    TTAB=b.dataset.tt;LS.set("ttab",TTAB);b.blur();paint();});
+  $("send").style.display="none";$("sentMsg").textContent="";
+  if(TTAB==="gen")teaGen();
+  else if(TTAB==="self")teaSelf();
+  else teaPast();
+}
+function clsRow(){
+  return `<div class="trow">
+    <select id="tcls">${["1-1","1-2","1-3","1-4","1-5","1-6","1-7","1-8"]
+      .map(c=>`<option value="${c}"${cls()===c?" selected":""}>${c}반</option>`).join("")}</select>
+    <button class="tbtn${isOpen(GENN)?" on":""}" data-o="${GENN}">${
+      isOpen(GENN)?"일반화 열림":"일반화 잠김"}</button>
+    <button class="tbtn${isOpen("self")?" on":""}" data-o="self">${
+      isOpen("self")?"성찰 열림":"성찰 잠김"}</button>
+    <span class="sp"></span>
+    <button class="tbtn" id="tref">새로 고침</button></div>`;
+}
+function bindRow(){
+  const sel=$("tcls");
+  if(sel)sel.onchange=()=>{me.cls=sel.value;LS.set("me",me);pull();};
+  document.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
+    b.blur();setOpen(b.dataset.o,!isOpen(b.dataset.o));});
+  const r=$("tref");if(r)r.onclick=()=>pull();
+}
+function teaGen(){
+  const rows=Object.keys(ALL||{}).map(k=>({no:k,nick:ALL[k].nick,group:ALL[k].group,
+      t:String(ALL[k][GENN]||"").trim()})).filter(r=>r.t)
+    .sort((a,b)=>(+a.group||99)-(+b.group||99));
+  $("body").innerHTML=clsRow()+`<div class="card">
+    <h2>${esc(LES4.label)}</h2>
+    <p class="lead"><i>${esc(LES4.frame)}</i> ( … ).</p>
+    <div class="cards">${rows.length?rows.map(r=>`<div class="sc">
+      <button class="del" data-dg="${esc(r.no)}" title="이 문장 지우기">✕</button>
+      <b>${esc(r.t)}</b><small>${esc(r.nick||"")}${r.group?" · "+r.group+"모둠":""}</small>
+      <button class="pick" data-p="${esc(r.t)}">학급 문장으로</button></div>`).join("")
+      :`<p class="lead">아직 낸 학생이 없습니다.</p>`}</div>
+    ${rows.length?`<button class="tbtn wide danger" id="wipeGen">이 반의 문장 모두 지우기</button>`:""}
+  </div>
+  <div class="card">
+    <h2>학급 문장</h2>
+    <p class="lead">위에서 고르거나 직접 고쳐 씁니다. 저장하면 <b>지난 차시 문장</b>에 남습니다.</p>
+    <div class="frame"><i>${esc(LES4.frame)}</i></div>
+    <textarea id="cls4" rows="2" placeholder="학급이 합의한 문장">${
+      esc(TD[GENN]!=null?TD[GENN]:((CLASSG[GENN]||{}).text||""))}</textarea>
+    <button class="tbtn wide" id="save4">학급 문장 저장</button>
+    <p class="lead" id="m4" style="margin:8px 0 0"></p>
+  </div>`;
+  bindRow();
+  document.querySelectorAll("[data-dg]").forEach(b=>b.onclick=async()=>{
+    const no=b.dataset.dg;
+    if(!confirm(`${no} 학생의 문장을 지웁니다.`))return;
+    try{await dbDel(`gens/${cls()}/mine/${no}/${GENN}`);delete (ALL[no]||{})[GENN];
+      setNet(true);paint();}catch(e){setNet(false);toast("지우지 못했습니다.");}
+  });
+  const wg=$("wipeGen");
+  if(wg)wg.onclick=async()=>{
+    if(!confirm("이 반이 낸 일반화 문장을 모두 지웁니다. 되돌릴 수 없습니다."))return;
+    try{await dbDel(`gens/${cls()}/mine`);ALL={};setNet(true);toast("모두 지웠습니다.");paint();}
+    catch(e){setNet(false);toast("지우지 못했습니다.");}
+  };
+  const mark=()=>{TD[GENN]=$("cls4").value;
+    $("m4").textContent="아직 저장되지 않았습니다.";$("m4").style.color="var(--bad)";};
+  $("cls4").oninput=mark;
+  document.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
+    $("cls4").value=b.dataset.p;b.blur();mark();});
+  $("save4").onclick=async()=>{
+    const o=Object.assign({},CLASSG[GENN],{text:$("cls4").value.trim(),at:Date.now()});
+    try{await dbPut(`gens/${cls()}/class/${GENN}`,o);
+      CLASSG[GENN]=o;delete TD[GENN];setNet(true);
+      $("m4").textContent="저장했습니다.";$("m4").style.color="var(--ok)";}
+    catch(e){setNet(false);
+      $("m4").textContent="연결이 되지 않아 저장하지 못했습니다.";$("m4").style.color="var(--bad)";}
+  };
+}
+function teaSelf(){
+  const rows=Object.keys(ALLSELF||{}).map(k=>Object.assign({no:k},ALLSELF[k]));
+  const col=(t,ks,c)=>{
+    const li=[];
+    rows.forEach(r=>ks.forEach(k=>{const v=String(r[k]||"").trim();
+      if(v)li.push(`<li><b>${esc(v)}</b><small>${esc(r.nick||"")}${
+        r.group?" · "+r.group+"모둠":""}</small></li>`);}));
+    return `<div class="sfc ${c}"><h5>${t}<em>${li.length}</em></h5>
+      <ul>${li.join("")||'<li class="none">아직 없습니다.</li>'}</ul></div>`;
+  };
+  $("body").innerHTML=clsRow()+`<div class="card"><h2>3 · 2 · 1 되돌아보기</h2>
+    <div class="sfg">${col("새로 알게 된 것",["n1","n2","n3"],"a")}
+      ${col("아직 헷갈리는 것",["c1","c2"],"b")}
+      ${col("묻고 싶은 것",["q1"],"c")}</div>
+    ${rows.length?`<div class="whorow">${rows.map(r=>
+      `<button class="tbtn s" data-ds="${esc(r.no)}">${esc(r.nick||r.no)} ✕</button>`).join("")}</div>
+      <button class="tbtn wide danger" id="wipeSelf">이 반의 성찰 모두 지우기</button>`:""}
+  </div>`;
+  bindRow();
+  document.querySelectorAll("[data-ds]").forEach(b=>b.onclick=async()=>{
+    const no=b.dataset.ds;
+    if(!confirm(`${no} 학생의 되돌아보기를 지웁니다.`))return;
+    try{await dbDel(`gens/${cls()}/self/${no}`);delete ALLSELF[no];setNet(true);paint();}
+    catch(e){setNet(false);toast("지우지 못했습니다.");}
+  });
+  const ws=$("wipeSelf");
+  if(ws)ws.onclick=async()=>{
+    if(!confirm("이 반의 되돌아보기를 모두 지웁니다. 되돌릴 수 없습니다."))return;
+    try{await dbDel(`gens/${cls()}/self`);ALLSELF={};setNet(true);toast("모두 지웠습니다.");paint();}
+    catch(e){setNet(false);toast("지우지 못했습니다.");}
+  };
+}
+function teaPast(){
+  $("body").innerHTML=clsRow()+`<div class="card">
+    <h2>차시별 학급 문장</h2>
+    <p class="lead">학급이 정한 문장을 적어 두면 계속 쌓입니다. 4차시 문장은 앞 탭에서 저장됩니다.</p>
+    ${LESS.map(L=>{const g=CLASSG[L.n]||{};
+      return `<div class="pastrow${L.unit?" unit":""}">
+      <span class="plb">${esc(L.label)}
+        <button class="tbtn s${g.posted?" on":""}" data-post="${L.n}">${
+          g.posted?"학생에게 보임":"감춤"}</button>
+        <button class="tbtn s" data-dc="${L.n}">지우기</button></span>
+      <div class="frame"><i>${esc(L.frame)}</i></div>
+      <textarea data-c="${L.n}" rows="2" placeholder="학급 문장">${
+        esc(TD[L.n]!=null?TD[L.n]:(g.text||""))}</textarea></div>`;}).join("")}
+    <button class="tbtn wide" id="saveAll">모두 저장</button>
+    <p class="lead" id="mAll" style="margin:8px 0 0"></p>
+  </div>`;
+  bindRow();
+  document.querySelectorAll("[data-c]").forEach(el=>el.oninput=()=>{
+    TD[el.dataset.c]=el.value;
+    $("mAll").textContent="아직 저장되지 않았습니다.";$("mAll").style.color="var(--bad)";});
+  document.querySelectorAll("[data-post]").forEach(b=>b.onclick=async()=>{
+    const n=b.dataset.post,g=CLASSG[n]||{};
+    const o=Object.assign({},g,{posted:!g.posted});
+    b.blur();
+    try{await dbPut(`gens/${cls()}/class/${n}`,o);CLASSG[n]=o;setNet(true);paint();}
+    catch(e){setNet(false);toast("연결이 되지 않았습니다.");}
+  });
+  document.querySelectorAll("[data-dc]").forEach(b=>b.onclick=async()=>{
+    const n=b.dataset.dc;
+    if(!confirm("이 차시 문장을 지웁니다."))return;
+    try{await dbDel(`gens/${cls()}/class/${n}`);delete CLASSG[n];delete TD[n];
+      setNet(true);paint();}catch(e){setNet(false);toast("지우지 못했습니다.");}
+  });
+  $("saveAll").onclick=async()=>{
+    try{
+      for(const el of document.querySelectorAll("[data-c]")){
+        const n=el.dataset.c,v=el.value.trim();
+        const o=Object.assign({},CLASSG[n],{text:v,at:Date.now()});
+        await dbPut(`gens/${cls()}/class/${n}`,o);CLASSG[n]=o;delete TD[n];
+      }
+      setNet(true);
+      $("mAll").textContent="저장했습니다.";$("mAll").style.color="var(--ok)";
+    }catch(e){setNet(false);
+      $("mAll").textContent="연결이 되지 않아 저장하지 못했습니다.";$("mAll").style.color="var(--bad)";}
+  };
+}
+
+/* ── 코드네임 ── */
+function openId(force){
+  $("idCls").innerHTML=["1-1","1-2","1-3","1-4","1-5","1-6","1-7","1-8"]
+    .map(c=>`<option value="${c}">${c}반</option>`).join("");
+  $("idGroup").innerHTML=`<option value="">모둠 없음</option>`+
+    [1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n}모둠</option>`).join("");
+  $("idCls").value=me.cls||"1-1";$("idNick").value=me.nick||"";
+  $("idGroup").value=me.group||"";$("idNote").textContent="";
+  $("idModal").hidden=false;
+}
+$("who").onclick=()=>openId(true);
+$("idSave").onclick=async()=>{
+  const nk=$("idNick").value.trim().replace(/\s+/g,"");
+  if(nk.length<2)return $("idNote").textContent="코드네임을 두 글자 이상 넣어 주세요.";
+  me={cls:$("idCls").value,nick:nk,no:nk,group:$("idGroup").value||""};
+  LS.set("me",me);$("idModal").hidden=true;paintWho();await pull();
+};
+function paintWho(){$("who").textContent=me.nick
+  ?`${me.cls} · ${me.nick}${me.group?" · "+me.group+"모둠":""}`:"코드네임 정하기";}
+
+$("ver").textContent=VER;
+$("refr").onclick=()=>{$("refr").blur();pull();toast("다시 불러왔습니다.");};
+paintWho();
+if(!TEA&&!me.nick)openId(true);
+if(TEA)$("who").onclick=()=>{};
+pull();
+setInterval(pull,TEA?8000:7000);
+</script>
+</body>
+</html>
