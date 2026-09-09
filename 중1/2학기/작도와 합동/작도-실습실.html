@@ -188,6 +188,9 @@
   .tab{white-space:nowrap;font-size:12px;padding:8px 12px;flex:0 0 auto}
   .tab .ck{font-style:normal;font-weight:900;margin-left:5px;color:#2A7148}
   .tab.tri.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .vb .vk{display:inline-block;min-width:17px;padding:1px 5px;margin-right:5px;border-radius:5px;
+    background:var(--ink);color:#fff;font:900 11px/1.5 var(--sans)}
+  .vb.on .vk{background:#fff;color:var(--ink)}
   .vb.my{border-color:var(--gold);background:#FFF8E6}
   .vb.on.my{background:var(--gold);border-color:var(--gold);color:#3A2A02}
   .vnote{align-self:center;margin-left:8px;font:600 11.5px/1.4 var(--sans);color:var(--ink-soft)}
@@ -249,6 +252,13 @@
   .gc svg{width:100%;height:96px;display:block;margin-top:6px}
   .gstack{background:#fff;border:2px solid var(--rule);border-radius:14px;padding:10px}
   .gstack svg{width:100%;height:min(46vh,340px);display:block}
+  .gm{transform-box:fill-box;transform-origin:center;
+    animation:gather .95s cubic-bezier(.22,.9,.3,1) both;animation-delay:var(--d)}
+  @keyframes gather{
+    0%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.86)}
+    55%{opacity:1}
+    100%{opacity:1;transform:translate(0,0) rotate(0) scale(1)}}
+  @media (prefers-reduced-motion:reduce){.gm{animation:none}}
   .xpair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .xhalf{background:#fff;border:2px solid var(--rule);border-radius:12px;padding:12px}
   .xhalf.ans{border-color:var(--red);background:#FDF3F1}
@@ -454,6 +464,7 @@
       <button class="fab" id="overlay">포개어 보기</button>
       <button class="notebtn hot" id="cardBtn" style="display:none">증거품 대조</button>
       <div class="askbox" id="askbox" hidden></div>
+      <button class="peek" id="cReset" style="margin-top:8px">컴퍼스 처음 크기로</button>
       <div class="two">
         <button class="mini" id="undo">되돌리기</button>
         <button class="mini danger" id="clear">처음부터</button>
@@ -490,7 +501,6 @@
         <button class="dice" id="idDice" title="무작위로 뽑기">🎲 뽑기</button></div>
       <div class="idrow"><label>모둠</label>
         <select id="idGroup" style="flex:1"></select>
-        <select id="idRole" style="flex:1"></select>
       </div>
       <div class="idrow"><label>색</label><div id="idColors" class="swatch"></div></div>
       <p class="idmsg" id="idMsg"></p>
@@ -817,7 +827,7 @@ function loadTask(id,vi){
   if(vs){vn=(vi==null?(LASTV[id]||0):vi);vn=Math.max(0,Math.min(vn,vs.length-1));LASTV[id]=vn;}
   const V=vs?vs[vn]:null;
   S={taskId:id,variant:vn,items:[],nextId:1,pool:(T.pool||POOL).slice(),tool:"compass",rulerKind:"segment",
-     compass:{center:null,free:{x:620,y:290},r:90,from:null,theta:-0.5,used:0},
+     compass:{center:null,free:{x:620,y:300},r:72,from:null,theta:-0.5,flip:1,used:0},
      pending:[],log:[],events:[],undo:[],flash:null,t0:Date.now(),submitted:null};
   const raw=(typeof T.build==="function"?T.build(V):T.build),ids=[];
   raw.forEach(o=>{
@@ -827,6 +837,7 @@ function loadTask(id,vi){
     S.items.push(it);
   });
   if(T.jitter&&window.JITTER)window.JITTER();
+  if(window.FITLABELS)window.FITLABELS();
   $("prompt").innerHTML=(typeof T.prompt==="function"?T.prompt(V):T.prompt);
   over=null;won=false;$("verdict").classList.remove("on");$("overlay").classList.remove("ready");
   if(window.ONTASK)window.ONTASK(T,V);
@@ -907,13 +918,58 @@ function onItem(it,p){
   if(it.kind==="ray")return t>=-0.004;
   return true;
 }
+/* 교점 후보는 도형이 바뀔 때만 다시 센다 — 그리기 중에는 초당 수십 번 불린다 */
+let _candCache=null,_candSig="";
+/* 그 칸 밖으로는 그리지 않는다 */
+function zoneClipDefs(){
+  const zs=S.items.filter(z=>z.t==="Z");
+  if(!zs.length)return "";
+  return `<defs>${zs.map((z,i)=>
+    `<clipPath id="zc${i}"><rect x="${z.x-1}" y="${z.y-1}" width="${z.w+2}" height="${z.h+2}"/></clipPath>`
+  ).join("")}</defs>`;
+}
+function clipWrap(z,body){
+  if(!z)return body;
+  const i=S.items.filter(x=>x.t==="Z").indexOf(z);
+  return i<0?body:`<g clip-path="url(#zc${i})">${body}</g>`;
+}
+function candSig(){
+  let t="";
+  for(const i of S.items){
+    if(i.t==="P")t+=i.id+"|"+(i.x|0)+","+(i.y|0)+";";
+    else if(i.t==="L")t+=i.id+"|"+i.p1+","+i.p2+","+(i.kind||"")+";";
+    else if(i.t==="A")t+=i.id+"|"+i.c+","+(i.r*10|0)+","+(i.a0*100|0)+","+(i.sw*100|0)+";";
+  }
+  return t;
+}
 function candidates(){
+  const sig=candSig();
+  if(_candCache&&sig===_candSig)return _candCache;
+  const r=candidatesRaw();
+  _candSig=sig;_candCache=r;
+  return r;
+}
+/* 그 도형이 속한 칸 */
+function zoneOfItem(it){
+  const zs=S.items.filter(z=>z.t==="Z");
+  if(!zs.length)return null;
+  const p=(it.t==="A")?pt(it.c):pt(it.p1);
+  return zs.find(z=>p.x>=z.x-6&&p.x<=z.x+z.w+6&&p.y>=z.y-6&&p.y<=z.y+z.h+6)||null;
+}
+const inRect=(z,p)=>p.x>=z.x-4&&p.x<=z.x+z.w+4&&p.y>=z.y-4&&p.y<=z.y+z.h+4;
+function candidatesRaw(){
   const out=[],cv=S.items.filter(i=>i.t==="L"||i.t==="A");
+  const zc=new Map();cv.forEach(c=>zc.set(c.id,zoneOfItem(c)));
   for(let i=0;i<cv.length;i++)for(let j=i+1;j<cv.length;j++){
+    const za=zc.get(cv[i].id),zb=zc.get(cv[j].id);
+    if(za!==zb)continue;                         /* 다른 칸의 도형끼리는 만나지 않은 것으로 본다 */
     const all=intersect(cv[i],cv[j],false);          /* 뿌리 번호를 매기기 위한 무제한 교점 */
     for(const p of intersect(cv[i],cv[j],true)){
-      if(S.items.some(o=>o.t==="P"&&!o.hidden&&d2(o,p)<7))continue;
-      if(out.some(o=>d2(o,p)<7))continue;
+      /* 이미 찍힌 점과 사실상 같은 자리일 때만 감춘다.
+         가까이 있어도 다른 교점이면 찍을 수 있어야 한다. */
+      if(za&&!inRect(za,p))continue;             /* 제 칸 밖에 생긴 교점은 세지 않는다 */
+      if(S.items.some(o=>o.t==="P"&&!o.hidden&&d2(o,p)<1.6))continue;
+      if(out.some(o=>d2(o,p)<1.6))continue;
       let root=0,bd=Infinity;
       all.forEach((q,k)=>{const d=d2(q,p);if(d<bd){bd=d;root=k;}});
       out.push({x:p.x,y:p.y,a:cv[i].id,b:cv[j].id,root});
@@ -927,6 +983,34 @@ const CO={given:"#191713",mine:"#2A63D8",arc:"#C0342A",hollow:"#8A8271",
           body:"#3A342B",wood:"#C98A10",paper:"#FCFAF3"};
 const ext=(a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
   return{x:b.x+dx/L*1400,y:b.y+dy/L*1400};};
+/* 작도 구역이 있으면 뻗는 선을 그 칸 안에서 끊는다 */
+/* 시작점이 든 작도 칸을 고른다 (칸이 둘인 화면도 있다) */
+function workZone(p){
+  const zs=S.items.filter(i=>i.t==="Z"&&i.tone==="work");
+  if(!zs.length)return null;
+  if(p){const hit=zs.find(z=>p.x>=z.x-2&&p.x<=z.x+z.w+2&&p.y>=z.y-2&&p.y<=z.y+z.h+2);
+    if(hit)return hit;}
+  return zs[0];
+}
+function clipRay(a,b){                      /* a에서 b 방향으로, 칸 경계까지 */
+  const z=workZone(a);if(!z)return ext(a,b);
+  const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy)||1;
+  const ux=dx/L,uy=dy/L;
+  const P=4;                                /* 테두리에서 살짝 안쪽 */
+  let t=Infinity;
+  const lim=(u,p,lo,hi)=>{
+    if(Math.abs(u)<1e-9)return;
+    const t1=((u>0?hi:lo)-p)/u;
+    if(t1>0&&t1<t)t=t1;
+  };
+  lim(ux,a.x,z.x+P,z.x+z.w-P);
+  lim(uy,a.y,z.y+P,z.y+z.h-P);
+  if(!isFinite(t))return ext(a,b);
+  return {x:a.x+ux*t,y:a.y+uy*t};
+}
+function clipSpan(a,b){                     /* 양쪽으로 뻗는 직선 */
+  return [clipRay(b,a),clipRay(a,b)];
+}
 const f=n=>Math.round(n*100)/100;
 function arcPath(cx,cy,r,a0,sw){
   if(sw>=TAU-1e-6)return null;
@@ -938,13 +1022,37 @@ const lbl=(x,y,t,col)=>`<text x="${f(x)}" y="${f(y)}" style="font-family:var(--s
   font-weight="600" fill="${col}" stroke="${CO.paper}" stroke-width="3.6" paint-order="stroke"
   stroke-linejoin="round">${esc(t)}</text>`;
 
+const inBoard=p=>({x:Math.max(24,Math.min(776,p.x)),y:Math.max(24,Math.min(496,p.y))});
+const onBoard=p=>p.x>=8&&p.x<=792&&p.y>=8&&p.y<=512;
+/* 컴퍼스가 판 밖으로 나가면 거울에 비추듯 접어 넣는다.
+   각뿐 아니라 손잡이가 달린 쪽까지 함께 뒤집어야 진짜 대칭이 된다. */
+function foldCompass(){
+  const C=S.compass,c=needle(),r=Math.max(C.r,0);
+  const leg=Math.max(135,r*0.62),al=Math.acos(Math.min(1,(r/2)/leg));
+  const fl=C.flip||1;
+  const parts=(t,f)=>[{x:c.x+r*Math.cos(t),y:c.y+r*Math.sin(t)},
+                      {x:c.x+leg*Math.cos(t-f*al),y:c.y+leg*Math.sin(t-f*al)}];
+  const outN=(t,f)=>parts(t,f).reduce((n,p,i)=>
+    n+((p.x<10||p.x>790||p.y<10||p.y>510)?(i===0?10:1):0),0);
+  if(!outN(C.theta,fl))return;
+  const T=C.theta;
+  const opt=[
+    {t:-T,          f:-fl},          /* 가로축 대칭 */
+    {t:Math.PI-T,   f:-fl}           /* 세로축 대칭 */
+  ];
+  for(const o of opt)if(!outN(o.t,o.f)){C.theta=o.t;C.flip=o.f;return;}
+  let best={t:T,f:fl},bn=outN(T,fl);
+  for(const o of opt){const q=outN(o.t,o.f);if(q<bn){bn=q;best=o;}}
+  C.theta=best.t;C.flip=best.f;
+}
 function needle(){const C=S.compass;return C.center?pt(C.center):C.free;}
 function geom(){
   const C=S.compass,c=needle(),r=Math.max(C.r,0);
   const leg=Math.max(135,r*0.62),al=Math.acos(Math.min(1,(r/2)/leg));
   return{c,r,leg,
     tip:{x:c.x+r*Math.cos(C.theta),y:c.y+r*Math.sin(C.theta)},
-    hg:{x:c.x+leg*Math.cos(C.theta-al),y:c.y+leg*Math.sin(C.theta-al)}};
+    hg:{x:c.x+leg*Math.cos(C.theta-(C.flip||1)*al),
+        y:c.y+leg*Math.sin(C.theta-(C.flip||1)*al)}};
 }
 function distSeg(p,a,b){
   const dx=b.x-a.x,dy=b.y-a.y,L=dx*dx+dy*dy;
@@ -963,7 +1071,7 @@ function compassPart(pos){
 
 function render(){
   const C=S.compass,showC=(S.tool==="compass");
-  let g="";
+  let g=zoneClipDefs();
 
   for(const z of S.items.filter(i=>i.t==="Z")){          /* 구역 배경과 이름표 */
     const T=z.tone==="work"
@@ -977,13 +1085,14 @@ function render(){
 
   for(const a of S.items.filter(i=>i.t==="A")){
     const c=pt(a.c),r=radiusOf(a),d=arcPath(c.x,c.y,r,a.a0,a.sweep);
-    g+=d?`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="2.3" stroke-linecap="round" opacity=".8"/>`
+    const body=d?`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="2.3" stroke-linecap="round" opacity=".8"/>`
         :`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r)}" fill="none" stroke="${CO.arc}" stroke-width="2.3" opacity=".8"/>`;
+    g+=clipWrap(zoneOfItem(a),body);
   }
   for(const l of S.items.filter(i=>i.t==="L"&&i.given)){
     let a=pt(l.p1),b=pt(l.p2);
-    if(l.kind==="ray")b=ext(a,b);
-    else if(l.kind==="line"){const A=ext(b,a),B=ext(a,b);a=A;b=B;}
+    if(l.kind==="ray")b=clipRay(a,b);
+    else if(l.kind==="line"){const q=clipSpan(a,b);a=q[0];b=q[1];}
     else if(l.over){const L=d2(a,b)||1;b={x:b.x+(b.x-a.x)/L*l.over,y:b.y+(b.y-a.y)/L*l.over};}
     g+=`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${CO.given}" stroke-width="2.4" stroke-linecap="round"/>`;
     if(l.name)g+=(l.num!==undefined)
@@ -997,19 +1106,21 @@ function render(){
   }
   for(const l of S.items.filter(i=>i.t==="L"&&!i.given)){
     let a=pt(l.p1),b=pt(l.p2);
-    if(l.kind==="ray")b=ext(a,b);
-    if(l.kind==="line"){const A=ext(b,a),B=ext(a,b);a=A;b=B;}
+    if(l.kind==="ray")b=clipRay(a,b);
+    if(l.kind==="line"){const q=clipSpan(a,b);a=q[0];b=q[1];}
+    const LZ=zoneOfItem(l);let lg="";
     const L=`x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}"`;
     const th=ang(a,b),nx=-Math.sin(th),ny=Math.cos(th);
     /* 방금 그은 선에만 형광펜 띠 — 아래 도형이 비쳐 보이면서 '덧그렸다'가 읽힌다 */
     if(l.id===S.flash)
-      g+=`<line ${L} stroke="${CO.mine}" stroke-width="11" stroke-linecap="butt" opacity=".2"/>`;
-    g+=`<line ${L} stroke="${CO.mine}" stroke-width="3.2" stroke-linecap="round"/>`;
+      lg+=`<line ${L} stroke="${CO.mine}" stroke-width="11" stroke-linecap="butt" opacity=".2"/>`;
+    lg+=`<line ${L} stroke="${CO.mine}" stroke-width="3.2" stroke-linecap="round"/>`;
     if(l.kind==="segment"){                         /* 어디부터 어디까지인지 못 박는 마감 */
       for(const p of[a,b])
-        g+=`<line x1="${f(p.x-nx*9)}" y1="${f(p.y-ny*9)}" x2="${f(p.x+nx*9)}" y2="${f(p.y+ny*9)}"
+        lg+=`<line x1="${f(p.x-nx*9)}" y1="${f(p.y-ny*9)}" x2="${f(p.x+nx*9)}" y2="${f(p.y+ny*9)}"
              stroke="${CO.mine}" stroke-width="2.8" stroke-linecap="round"/>`;
     }
+    g+=clipWrap(LZ,lg);
   }
   if(drag&&drag.mode==="draw"&&drag.hi-drag.lo>0.001){
     const c=needle(),r=C.r;
@@ -1145,7 +1256,7 @@ function checkWin(){
 }
 function celebrate(){
   verdict("ok","작도에 성공했습니다","왼쪽 <b>포개어 보기</b>를 눌러, 작도한 도형이 원래 도형에 그대로 포개어지는지 확인해 보세요.");
-  $("overlay").classList.add("ready");
+  if(TASKS[S.taskId].fab!=="submit")$("overlay").classList.add("ready");
   if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
   const box=$("confetti");if(!box||typeof document.createElement!=="function")return;
   box.innerHTML="";
@@ -1161,6 +1272,7 @@ function celebrate(){
   setTimeout(()=>{if($("confetti"))$("confetti").innerHTML="";},2300);
 }
 const KIND={segment:"선분",ray:"반직선",line:"직선"};
+let _tbHTML="";
 function paintToolbar(){
   const C=S.compass,part=(drag&&drag.part)||hover;
   const cell=(k,v,st,hot)=>`<div class="tcell${hot?" hot":""}"><span class="k">${k}</span>`+
@@ -1179,7 +1291,7 @@ function paintToolbar(){
   }else{
     h=cell("지우개","내가 그린 <b>선이나 원</b> 위를 클릭하거나 문지르면 지워집니다","");
   }
-  $("toolbar").innerHTML=h;
+  if(h!==_tbHTML){_tbHTML=h;$("toolbar").innerHTML=h;}
 }
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");
   clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),2800);}
@@ -1350,7 +1462,8 @@ board.addEventListener("pointerdown",e=>{
   recompute();render();
 });
 
-function applyOpen(pos){
+function applyOpen(pos0){
+  const pos=inBoard(pos0);
   const C=S.compass,c=needle(),h=C.center?hitPoint(pos):null;
   if(h&&h.id!==C.center){
     const id=promote(h);
@@ -1370,10 +1483,11 @@ window.addEventListener("pointermove",e=>{
   }
   if(drag.mode==="erase"){eraseAt(pos);return;}
   if(drag.mode==="move"){
-    const p={x:pos.x+drag.off.x,y:pos.y+drag.off.y};
+    const p=inBoard({x:pos.x+drag.off.x,y:pos.y+drag.off.y});
     const h=hitPoint(p,28);                      /* 점 근처에서는 자석처럼 끌어당김 */
     drag.snap=h?{x:h.x,y:h.y,ref:h}:null;
     C.center=null; C.free=h?{x:h.x,y:h.y}:p;
+    foldCompass();
     render();return;
   }
   if(drag.mode==="open"){
@@ -1381,7 +1495,7 @@ window.addEventListener("pointermove",e=>{
       if(d2(drag.origin,pos)<12)return;                  /* 손떨림 방지 문턱 */
       drag.started=true;
     }
-    applyOpen(pos);render();
+    applyOpen(pos);foldCompass();render();
   }else if(drag.mode==="draw"){
     const c=pt(C.center);
     if(d2(c,pos)<8)return;
@@ -1523,30 +1637,48 @@ const DEG=r=>r*180/Math.PI;
 /* ---- 주어진 도형 만들기 ---- */
 const PT=(label,x,y,o={})=>Object.assign({t:"P",label,x,y,given:true,def:{k:"fix"}},o);
 
-function baseLine(bx){                          /* 반드시 build 배열의 맨 앞에 온다 */
-  return [PT("",56,432,{hidden:true}),PT("",748,432,{hidden:true}),
-    {t:"L",kind:"line",p1:"#0",p2:"#1",given:true,name:"l",key:"l",labelPos:{x:754,y:420}},
-    PT("B",bx,432)];
+/* 위쪽 노란 칸 = 주어진 것, 아래 파란 칸 = 작도.
+   맨 앞에 오므로 뒤따르는 항목의 번호는 4부터다. */
+const CONDZ={x:18,y:6,w:764,h:158};   /* 흩뜨리기가 있어 여유를 둔다 */
+const WORKZ={x:18,y:172,w:764,h:338};
+function baseLine(bx){
+  return [{t:"Z",x:CONDZ.x,y:CONDZ.y,w:CONDZ.w,h:CONDZ.h,label:"주어진 것",tone:"cond"},
+    {t:"Z",x:WORKZ.x,y:WORKZ.y,w:WORKZ.w,h:WORKZ.h,label:"여기에 삼각형을 작도하세요",tone:"work"},
+    PT("",WORKZ.x+22,452,{hidden:true}),PT("",WORKZ.x+WORKZ.w-22,452,{hidden:true}),
+    {t:"L",kind:"segment",p1:"#2",p2:"#3",given:true,name:"l",key:"l",
+     labelPos:{x:WORKZ.x+WORKZ.w-36,y:441}},
+    PT("B",bx,452)];
 }
 function gSeg(l1,l2,name,x,y,cm){
   const x2=x+cm*CM;
-  return [PT(l1,x,y),PT(l2,x2,y),
+  return [PT(l1,x,y,{lo:{x:-15,y:-11}}),PT(l2,x2,y,{lo:{x:14,y:-11}}),
     {t:"L",kind:"segment",p1:l1,p2:l2,given:true,key:name,
      name:String(cm),num:"",labelPos:{x:(x+x2)/2,y:y-13}}];
 }
 function gAng(lo,lx,ly,key,ox,oy,deg,arm){
   const t=-deg*Math.PI/180, b=t/2;
-  /* 꼭짓점 이름은 각의 바깥쪽에 둔다 */
-  const ox2=-Math.cos(b)*30-8, oy2=-Math.sin(b)*30+8;
-  return [PT(lo,ox,oy,{lo:{x:ox2,y:oy2}}),
-    PT(lx,ox+arm,oy),PT(ly,ox+arm*Math.cos(t),oy+arm*Math.sin(t)),
-    {t:"L",kind:"segment",p1:lo,p2:lx,given:true,key:key+"x",over:26,
-     name:deg+"°",num:"",labelPos:{x:ox+Math.cos(b)*58,y:oy+Math.sin(b)*58+7}},
-    {t:"L",kind:"segment",p1:lo,p2:ly,given:true,key:key+"y",over:26}];
+  /* 이름은 모두 도형에서 뽑은 방향으로 민다 — 흩뜨려 돌아가도 같이 돈다 */
+  const away=a=>({x:Math.cos(a),y:Math.sin(a)});          /* 그 방향 단위벡터 */
+  const out=away(b+Math.PI);                              /* 각 바깥 */
+  const nx=away(t/Math.abs(t||1)>0?t+Math.PI/2:t-Math.PI/2); /* Y 팔의 바깥쪽 */
+  const V=20, E=18, S2=12;      /* 팔은 10만 더 뻗는다 — 18이면 선 너머 */
+  const vlo={x:out.x*V, y:out.y*V+6};                     /* 꼭짓점 O — 각 바깥 */
+  const xlo={x:E, y:S2};                                  /* X : 팔 연장선 너머 + 각 바깥(아래) */
+  const ylo={x:Math.cos(t)*E+nx.x*S2, y:Math.sin(t)*E+nx.y*S2};
+  const dr=Math.min(arm*0.38,44);
+  return [PT(lo,ox,oy,{lo:vlo}),
+    PT(lx,ox+arm,oy,{lo:xlo}),
+    PT(ly,ox+arm*Math.cos(t),oy+arm*Math.sin(t),{lo:ylo}),
+    {t:"L",kind:"segment",p1:lo,p2:lx,given:true,key:key+"x",over:10,
+     name:deg+"°",num:"",labelPos:{x:ox+Math.cos(b)*dr,y:oy+Math.sin(b)*dr+7}},
+    {t:"L",kind:"segment",p1:lo,p2:ly,given:true,key:key+"y",over:10}];
 }
 
 /* ---- 삼각형 찾기와 재기 ---- */
 function tris(st){
+  const zt=st.items.find(i=>i.t==="Z"&&i.label&&i.label.indexOf("삼각형")>=0);
+  const MG=14;                                  /* 테두리에 살짝 걸치는 것은 봐준다 */
+  const ok=zt?(p=>p.x>=zt.x-MG&&p.x<=zt.x+zt.w+MG&&p.y>=zt.y-MG&&p.y<=zt.y+zt.h+MG):null;
   const sg=st.items.filter(i=>i.t==="L"&&!i.given&&i.kind==="segment");
   const out=[],seen=new Set();
   for(let i=0;i<sg.length;i++)for(let j=i+1;j<sg.length;j++)for(let k=j+1;k<sg.length;k++){
@@ -1560,6 +1692,7 @@ function tris(st){
     if(P.some(p=>!p))continue;
     const ar=Math.abs((P[1].x-P[0].x)*(P[2].y-P[0].y)-(P[2].x-P[0].x)*(P[1].y-P[0].y))/2;
     if(ar<60)continue;                          /* 납작한 것은 삼각형으로 보지 않는다 */
+    if(ok&&!P.every(ok))continue;               /* 작도 구역 밖의 삼각형은 세지 않는다 */
     out.push(P);
   }
   return out.map(P=>{
@@ -1569,7 +1702,7 @@ function tris(st){
             angles:[at(A,B,C),at(B,C,A),at(C,A,B)]};   /* sides[i]의 대각이 angles[i] */
   });
 }
-const LT=2.4, AT=1.6;                            /* 길이 px / 각 도 허용 오차 */
+const LT=1.2, AT=0.8;                            /* 길이 px / 각 도 허용 오차 */
 const nr=(x,y,t)=>Math.abs(x-y)<=t;
 function msMatch(vals,tg,tol){
   const t=tg.slice();
@@ -1632,7 +1765,7 @@ function mkSSS(a,b,c,extra){
   return Object.assign({
     get prompt(){return `세 변의 길이가 <b>${a}</b>, <b>${b}</b>, <b>${c}</b>인 삼각형을, 직선 <b>l</b> 위의 점 <b>B</b>에서 시작하도록 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,
-    build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,66,a),gSeg("R","S","b",70,116,b),gSeg("T","U","c",70,166,c)),
+    build:()=>[].concat(baseLine(120),gSeg("P","Q","a",62,44,a),gSeg("R","S","b",62,88,b),gSeg("T","U","c",62,132,c)),
     steps(st){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       const a2=C&&(arcR(st,"c",B.id)||arcR(st,"b",B.id));
@@ -1653,8 +1786,8 @@ function mkSAS(a,c,deg,extra){
   return Object.assign({
     get prompt(){return `두 변의 길이가 <b>${a}</b>, <b>${c}</b>이고 그 <b>사이 각</b>이 <b>${deg}°</b>인 삼각형을, 직선 <b>l</b> 위의 점 <b>B</b>에서 시작하도록 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,
-    build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,66,a),gSeg("R","S","c",70,116,c),
-                        gAng("O","X","Y","g",470,214,deg,146)),
+    build:()=>[].concat(baseLine(120),gSeg("P","Q","a",62,46,a),gSeg("R","S","c",62,104,c),
+                        gAng("O","X","Y","g",430,124,deg,92)),
     steps(st){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       return[
@@ -1671,9 +1804,9 @@ function mkASA(a,d1,d2,extra){
   return Object.assign({
     get prompt(){return `한 변의 길이가 <b>${a}</b>이고 그 <b>양 끝 각</b>이 <b>${d1}°</b>, <b>${d2}°</b>인 삼각형을 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,
-    build:()=>[].concat(baseLine(190),gSeg("P","Q","a",70,58,a),
-                        gAng("O","X","Y","g1",330,168,d1,116),
-                        gAng("O′","X′","Y′","g2",560,168,d2,116)),
+    build:()=>[].concat(baseLine(140),gSeg("P","Q","a",62,50,a),
+                        gAng("O","X","Y","g1",332,124,d1,92),
+                        gAng("O′","X′","Y′","g2",580,124,d2,92)),
     steps(st){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       return[
@@ -1690,8 +1823,8 @@ function mkSSA(a,b,deg,extra){
   return Object.assign({
     get prompt(){return `두 변의 길이가 <b>${a}</b>, <b>${b}</b>이고, <b>길이 ${a}인 변의 한쪽 끝 각</b>이 <b>${deg}°</b>인 삼각형을 작도하시오.`;},
     kind:"tri",fab:"submit",jitter:true,mirror:true,
-    build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,62,a),gSeg("R","S","b",70,112,b),
-                        gAng("O","X","Y","g",452,206,deg,138)),
+    build:()=>[].concat(baseLine(120),gSeg("P","Q","a",62,46,a),gSeg("R","S","b",62,104,b),
+                        gAng("O","X","Y","g",416,128,deg,118)),
     steps(st){
       const B=byLabel(st,"B"),C=baseSecond(st,"a");
       const a3=C&&arcR(st,"b",C.id);
@@ -1710,10 +1843,10 @@ function mkAAA(d1,d2,d3,extra){
   return Object.assign({
     get prompt(){return `세 각의 크기가 각각 <b>${d1}°</b>, <b>${d2}°</b>, <b>${d3}°</b>인 삼각형을 작도하시오. 첫 변의 길이는 스스로 정한다.`;},
     kind:"tri",fab:"submit",jitter:true,
-    build:()=>[].concat(baseLine(170),
-      gAng("O","X","Y","g1",96,150,d1,104),
-      gAng("O′","X′","Y′","g2",356,150,d2,104),
-      gAng("O″","X″","Y″","g3",612,150,d3,104)),
+    build:()=>[].concat(baseLine(140),
+      gAng("O","X","Y","g1",92,120,d1,84),
+      gAng("O′","X′","Y′","g2",336,120,d2,84),
+      gAng("O″","X″","Y″","g3",580,120,d3,84)),
     steps(st){
       const B=byLabel(st,"B"),l=KEY(st,"l");
       const a1=arcsA(st).find(x=>x.c===B.id);
@@ -1738,6 +1871,66 @@ TASKS.t7=mkASA(7,40,65,{win:"삼각형을 완성했습니다. 왼쪽 <b>게시�
 /* ---- 과제 8 · 9 (잠금) ---- */
 TASKS.t8=mkSSA(7,5,40,{lock:true,noConfetti:true,
   win:"삼각형을 하나 그렸습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
+/* 한 변 6과 그 변의 양 끝이 아닌 두 각 40°·75°.
+   세 각의 합으로 남는 각을 만들어야 비로소 「한 변과 양 끝 각」과 같아진다. */
+const P6=6, PA=40, PB=75, PC=180-PA-PB;
+function zoneBox(x,y,w,h,label,tone){return {t:"Z",x,y,w,h,label,tone};}
+/* 구역 안에서 끝나는 직선 — 밖으로 뻗지 않는다 */
+function lineAt(y,x0,x1,label,px,name,base){
+  return [PT("",x0,y,{hidden:true}), PT("",x1,y,{hidden:true}),
+    {t:"L",kind:"segment",p1:"#"+base,p2:"#"+(base+1),given:true,name,key:name,
+     labelPos:{x:x1-14,y:y-11}},
+    PT(label,px,y)];
+}
+/* 그 구역 안에 들어 있는 삼각형만 센다 */
+function inZone(st,pts,label){
+  const z=st.items.find(i=>i.t==="Z"&&i.label&&i.label.indexOf(label)>=0);
+  if(!z)return true;
+  return pts.every(p=>p.x>=z.x&&p.x<=z.x+z.w&&p.y>=z.y&&p.y<=z.y+z.h);
+}
+function ck6(st){
+  const ts=tris(st);
+  if(!ts.length)return {none:true};
+  for(const t of ts)for(let i=0;i<3;i++){
+    if(!nr(t.sides[i],P6*CM,LT))continue;
+    const p=[t.angles[(i+2)%3],t.angles[(i+1)%3]].sort((a,b)=>a-b);
+    if(nr(p[0],Math.min(PA,PC),AT+0.6)&&nr(p[1],Math.max(PA,PC),AT+0.6))
+      return {ok:true,tri:t.pts.map(q=>({x:q.x,y:q.y})),m:t};
+  }
+  return {ok:false,msg:`한 변이 ${P6}이고 그 양 끝 각이 ${PA}°와 ${PC}°인 삼각형이 아닙니다.`};
+}
+TASKS.t11={
+  kind:"tri",fab:"submit",lock:true,noConfetti:true,jitter:true,
+  pool:["C","D","E","F","G","H","J","K","M","R","S","T","V","W"],
+  prompt:`한 변이 <b>${P6}</b>이고, 그 변의 <b>양 끝이 아닌</b> 두 각이 <b>${PA}°</b>와 <b>${PB}°</b>인 삼각형을 작도하시오.`,
+  build(){
+    let out=[zoneBox(18,6,764,158,"주어진 것","cond")];
+    out=out.concat(gSeg("P","Q","a",48,120,P6));
+    out=out.concat(gAng("O","X","Y","g1",344,128,PA,92));
+    out=out.concat(gAng("O′","X′","Y′","g2",600,128,PB,92));
+    out.push(zoneBox(18,172,436,338,"여기에 삼각형을 작도하세요","work"));
+    out=out.concat(lineAt(448,36,436,"B",96,"l",out.length));
+    out.push(zoneBox(462,172,320,338,"여기서 세 번째 각을 만드세요","work"));
+    out=out.concat(lineAt(478,478,766,"N",620,"m",out.length));
+    return out;
+  },
+  steps(st){
+    const N=byLabel(st,"N"), m=st.items.find(i=>i.name==="m");
+    let a1=false,a2=false;
+    if(N&&m){const R=get(st,m.p2);
+      a1=hasAngleAt(st,N,R,PA); a2=hasAngleAt(st,N,R,PA+PB);}
+    const c=ck6(st);
+    const drawn=st.items.filter(i=>i.t==="L"&&!i.given).length;
+    return [
+      {t:`<b>오른쪽 칸</b>의 점 <b>N</b>에 <b>${PA}°</b>를 옮긴다`,ok:a1},
+      {t:`그 옆에 이어서 <b>${PB}°</b>를 옮긴다 — 남는 각이 <b>세 번째 각</b>이다`,ok:a2},
+      {t:`<b>왼쪽 칸</b>의 점 <b>B</b>에 <b>${P6}</b>만큼 옮긴다`,ok:drawn>0},
+      {t:`그 변의 <b>양 끝</b>에 ${PA}°와 <b>세 번째 각</b>을 올려 완성한다`,ok:!!c.ok}
+    ];
+  },
+  check(st){return ck6(st);}
+};
+
 TASKS.t9=mkAAA(40,60,80,{lock:true,noConfetti:true,
   win:"삼각형을 하나 그렸습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요."});
 
@@ -1933,21 +2126,21 @@ function xBuild(){
   if(!it.length)return [];                       /* 조건이 오기 전에는 빈 화면 */
   const segs=it.filter(x=>x.t==="seg"), angs=it.filter(x=>x.t==="ang");
   /* ① 전달된 조건 구역 */
-  let out=[{t:"Z",x:22,y:14,w:756,h:238,label:"선생님이 보낸 조건",tone:"cond"}];
+  let out=[{t:"Z",x:18,y:8,w:764,h:150,label:"선생님이 보낸 조건",tone:"cond"}];
   let si=0,ai=0;
   const SL=[["P","Q","a"],["R","S","b"]], AL=[["O","X","Y","g1"],["O′","X′","Y′","g2"]];
-  const segY=[86,146];
-  for(const s of segs){const L=SL[si];out=out.concat(gSeg(L[0],L[1],L[2],74,segY[si],s.cm));si++;}
-  const ax=segs.length?[492,492]:[176,516];
+  const segY=[58,104];
+  for(const s of segs){const L=SL[si];out=out.concat(gSeg(L[0],L[1],L[2],62,segY[si],s.cm));si++;}
+  const ax=segs.length?[470,470]:[190,540];
   for(const a of angs){const L=AL[ai];
-    out=out.concat(gAng(L[0],L[1],L[2],L[3],ax[ai],228,a.deg,128));ai++;}
+    out=out.concat(gAng(L[0],L[1],L[2],L[3],ax[ai],136,a.deg,94));ai++;}
   /* ② 작도 구역 — 직선 l과 점 A만 */
   out=out.concat([
-    {t:"Z",x:22,y:272,w:756,h:234,label:"여기에 삼각형을 작도하세요",tone:"work"},
-    PT("",56,420,{hidden:true}), PT("",744,420,{hidden:true}),
-    {t:"L",kind:"line",p1:"#"+(out.length+1),p2:"#"+(out.length+2),given:true,
-     name:"l",key:"l",labelPos:{x:750,y:408}},
-    PT("A",188,420)
+    {t:"Z",x:18,y:168,w:764,h:342,label:"여기에 삼각형을 작도하세요",tone:"work"},
+    PT("",40,452,{hidden:true}), PT("",760,452,{hidden:true}),
+    {t:"L",kind:"segment",p1:"#"+(out.length+1),p2:"#"+(out.length+2),given:true,
+     name:"l",key:"l",labelPos:{x:744,y:441}},
+    PT("A",130,452)
   ]);
   return out;
 }
@@ -2012,7 +2205,7 @@ const PG=[
 /* ① 선분 잇기 */
 {label:"① 선분 잇기",win:"두 선분을 이어 붙였습니다.",
  prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>5 + 3</b>인 선분을 작도하시오.`,
- build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,74,5),gSeg("T","U","b",70,128,3)),
+ build:()=>[].concat(baseLine(120),gSeg("P","Q","a",62,50,5),gSeg("T","U","b",62,96,3)),
  steps(st){const B=byLabel(st,"B"),C=baseSecond(st,"a");
    return[{t:"컴퍼스를 <u>위 선분</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
      {t:"벌림을 <u>아래 선분</u>만큼으로 바꿔, 그 점을 중심으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
@@ -2021,7 +2214,7 @@ const PG=[
 /* ② 선분 빼기 */
 {label:"② 선분 빼기",win:"두 선분의 차를 만들었습니다.",
  prompt:`직선 <b>l</b> 위의 점 <b>B</b>에서 시작하여, 길이가 <b>7 − 3</b>인 선분을 작도하시오.`,
- build:()=>[].concat(baseLine(150),gSeg("P","Q","a",70,74,7),gSeg("T","U","b",70,128,3)),
+ build:()=>[].concat(baseLine(120),gSeg("P","Q","a",62,50,7),gSeg("T","U","b",62,96,3)),
  steps(st){const B=byLabel(st,"B"),C=baseSecond(st,"a");
    return[{t:"컴퍼스를 <u>위 선분</u>만큼 벌려 점 B를 중심으로 원을 그리고, 직선 l과 만나는 점을 찍는다",ok:!!C},
      {t:"벌림을 <u>아래 선분</u>만큼으로 바꿔, 그 점을 중심으로 <b>되돌아오는 쪽</b>으로 원을 그린다",ok:!!(C&&arcR(st,"b",C.id))},
@@ -2181,15 +2374,16 @@ function reportProgress(){
 setInterval(()=>{if(me.nick)dbPut(`progress/${cls()}/${me.no}/seen`,Date.now()).catch(()=>{});},30000);
 
 /* ---- 과제 목록 ---- */
-const ROLES3=[
-  {k:"가",t:"t5",n:"세 변"},
-  {k:"나",t:"t6",n:"두 변과 사이 각"},
-  {k:"다",t:"t7",n:"한 변과 양 끝 각"}
-];
-const TRIT=ROLES3.map(r=>r.t);
-const roleOf=t=>(ROLES3.find(r=>r.t===t)||{}).k||"";
-const myTask=()=>(ROLES3.find(r=>r.k===me.role)||{}).t||"t5";
-let MODE=LS.get("mode3","ex");        /* ex 전문가 · team 모둠 */
+/* 조사 2·3은 여러 화면을 한 탭으로 묶는다 */
+const GRP={
+  G2:[{t:"t5",k:"가",n:"세 변"},{t:"t6",k:"나",n:"두 변과 사이 각"},
+      {t:"t7",k:"다",n:"한 변과 양 끝 각"}],
+  G3:[{t:"t8",k:"①",n:"두 변과 한 각"},{t:"t9",k:"②",n:"세 각만"},
+      {t:"t11",k:"③",n:"한 변과 양 끝이 아닌 두 각"}]
+};
+const TRIT=GRP.G2.map(x=>x.t).concat(GRP.G3.map(x=>x.t));
+const grpOf=t=>Object.keys(GRP).find(g=>GRP[g].some(x=>x.t===t));
+const nameOf=t=>{for(const g in GRP){const f=GRP[g].find(x=>x.t===t);if(f)return f.n;}return "";};
 const TASKLIST=[
   {id:"seg",label:"훈련 1 · 길이를 그대로 옮기기"},
   {id:"ang",label:"훈련 2 · 각을 그대로 옮기기"},
@@ -2197,10 +2391,8 @@ const TASKLIST=[
   {id:"drill",label:"★ 감식 훈련"},
   {id:"pg", label:"훈련장"},
   {id:"t4", label:"조사 1 · 조건 두 개로"},
-  {id:"ex",  label:"조사 2 · 내 담당 기법", tri:"ex"},
-  {id:"team",label:"조사 3 · 배워서 그리기", tri:"team"},
-  {id:"t8", label:"조사 4 · 두 변과 한 각",       lockName:"조사 4"},
-  {id:"t9", label:"조사 5 · 세 각만",             lockName:"조사 5"},
+  {id:"g2", label:"조사 2 · 삼각형 작도", grp:"G2"},
+  {id:"g3", label:"조사 3 · 하나로 정해질까", grp:"G3", lockName:"조사 3"},
   {id:"t10",label:"사건 파일 · 수사 보고서",       lockName:"사건 파일"}
 ];
 TASKS.pg=TASKS.pg||{fab:"none",quiet:true,prompt:()=>"",build:()=>[],
@@ -2217,10 +2409,8 @@ function openId(force){
   const m=$("idModal");
   $("idGroup").innerHTML=`<option value="">모둠 없음</option>`+
     [1,2,3,4,5,6,7,8].map(n=>`<option value="${n}">${n}모둠</option>`).join("");
-  $("idRole").innerHTML=`<option value="">담당 없음</option>`+
-    ROLES3.map(r=>`<option value="${r.k}">${r.k} · ${r.n}</option>`).join("");
   $("idCls").value=me.cls||"1-1";$("idNick").value=me.nick||"";
-  $("idGroup").value=me.group||"";$("idRole").value=me.role||"";
+  $("idGroup").value=me.group||"";
   paintSwatch();m.hidden=false;m.dataset.force=force?"1":"";
 }
 function paintSwatch(){
@@ -2235,8 +2425,7 @@ const cleanCode=t=>t.replace(/[.#$\[\]\/]/g,"").trim().slice(0,12);
 
 async function saveId(force){
   if(idBusy)return;
-  const c=$("idCls").value,nk=cleanCode($("idNick").value),g=$("idGroup").value,
-        rl=$("idRole").value;
+  const c=$("idCls").value,nk=cleanCode($("idNick").value),g=$("idGroup").value;
   if(!nk)return idNote("코드네임을 입력하거나 뽑기를 눌러 주세요.",1);
   idBusy=true;idNote("확인하는 중…");
   let owner=null;
@@ -2247,7 +2436,7 @@ async function saveId(force){
     $("idSave").textContent="이어서 하기";$("idSave").dataset.force="1";
     return;
   }
-  me={cls:c,nick:nk,no:nk,group:g||"",role:rl||"",color:me.color};
+  me={cls:c,nick:nk,no:nk,group:g||"",color:me.color};
   LS.set("me",me);
   if(owner!=="offline")dbPut(`codes/${c}/${nk}`,{dev:DEV,at:Date.now()}).catch(()=>{});
   idBusy=false;idNote("");
@@ -2259,11 +2448,10 @@ function handOver(){
   if(!confirm("이 기기의 코드네임을 지웁니다. 다음 사람이 자기 코드네임으로 들어갈 수 있습니다."))return;
   LS.del("me");LS.del("notes");LS.del("evres");LS.del("done");LS.del("peek");LS.del("cache");
   me={cls:me.cls||"1-1",nick:"",no:"",group:"",color:COLORS[0][0]};
-  $("idNick").value="";$("idGroup").value="";$("idRole").value="";idNote("");paintWho();openId(true);
+  $("idNick").value="";$("idGroup").value="";idNote("");paintWho();openId(true);
 }
 function paintWho(){$("who").textContent=me.nick
-  ?`${me.cls} · ${me.nick}${me.group?" · "+me.group+(me.role?"-"+me.role:"모둠"):""}`
-  :"코드네임 정하기";}
+  ?`${me.cls} · ${me.nick}${me.group?" · "+me.group+"모둠":""}`:"코드네임 정하기";}
 
 /* ---- 무작위 닉네임 ---- */
 const NA=["초록","파랑","노랑","붉은","하얀","검은","은빛","금빛","작은","날쌘","조용한","용감한",
@@ -2287,50 +2475,47 @@ const isLocked=id=>!!TASKS[id].lock&&!unlockedNow()[id];
 function buildTabs(){
   const box=document.querySelector(".tabs");
   box.innerHTML=TASKLIST.map(x=>{
-    if(x.tri){
-      const on=S&&TRIT.indexOf(S.taskId)>=0&&MODE===x.tri;
-      const n=TRIT.filter(t=>SENT[t]).length;
-      return `<button class="tab tri${on?" on":""}" role="tab" data-tri="${x.tri}"
-        aria-selected="${on}">${x.label}${
-        x.tri==="team"&&n===3?'<i class="ck">✓</i>':""}</button>`;
+    if(x.grp){
+      const lk=GRP[x.grp].every(v=>isLocked(v.t));
+      const on=S&&grpOf(S.taskId)===x.grp;
+      const n=GRP[x.grp].filter(v=>SENT[v.t]).length;
+      return `<button class="tab tri${on?" on":""}${lk?" lk":""}" role="tab"
+        data-grp="${x.grp}" aria-selected="${on}"
+        >${lk?"🔒 "+x.lockName+" · 미배당":x.label}${
+        !lk&&n?`<i class="ck">${n===GRP[x.grp].length?"✓":n}</i>`:""}</button>`;
     }
     const lk=isLocked(x.id);
     const nm=lk?`${x.lockName} · 미배당`:x.label;
     const sent=!lk&&SENT[x.id];
     return `<button class="tab${lk?" lk":""}${sent?" sent":""}${x.id==="pg"?" pgtab":""}"
-      role="tab" data-task="${x.id}" aria-selected="${S&&S.taskId===x.id&&!TRIT.includes(x.id)}"
+      role="tab" data-task="${x.id}" aria-selected="${S&&S.taskId===x.id}"
       >${lk?"🔒 ":""}${nm}${sent?'<i class="ck">✓</i>':""}</button>`;
   }).join("");
   box.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{
-    const id=b.dataset.task;
+    const id=b.dataset.task;window.BOOTED=true;
     if(isLocked(id))return toast("아직 배당되지 않은 조사입니다.");
     loadTask(id);
   });
-  box.querySelectorAll("[data-tri]").forEach(b=>b.onclick=()=>{
-    MODE=b.dataset.tri;LS.set("mode3",MODE);
-    if(MODE==="ex")loadTask(myTask());
-    else{
-      const left=TRIT.filter(t=>t!==myTask()&&!SENT[t]);
-      loadTask(left[0]||TRIT.find(t=>t!==myTask())||"t5");
-    }
+  box.querySelectorAll("[data-grp]").forEach(b=>b.onclick=()=>{
+    window.BOOTED=true;
+    const g=b.dataset.grp, first=GRP[g].find(v=>!isLocked(v.t));
+    if(!first)return toast("아직 배당되지 않은 조사입니다.");
+    loadTask(first.t);
   });
 }
 
 /* ---- 변형(세트·사건) 줄 ---- */
 function paintVariants(T){
   const row=$("vrow");
-  if(S&&TRIT.indexOf(S.taskId)>=0){
+  const g=S&&grpOf(S.taskId);
+  if(g){
     row.hidden=false;
-    row.innerHTML=ROLES3.map(r=>{
-      const mine=r.t===myTask();
-      const off=(MODE==="ex")?!mine:mine;
-      return `<button class="vb${S.taskId===r.t?" on":""}${mine?" my":""}"
-        data-t="${r.t}"${off?" disabled":""} title="${r.n}">${r.k}${
-        SENT[r.t]?" ✓":""}</button>`;
-    }).join("")+`<span class="vnote">${MODE==="ex"
-      ?(me.role?`내 담당은 <b>${me.role}</b>입니다`:"위에서 담당을 정하세요")
-      :"모둠원에게 배워 나머지 둘을 그립니다"}</span>`;
-    row.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>loadTask(b.dataset.t));
+    row.innerHTML=GRP[g].map(v=>{
+      const lk=isLocked(v.t);
+      return `<button class="vb${S.taskId===v.t?" on":""}" data-t="${v.t}"${lk?" disabled":""}
+        title="${v.n}"><b class="vk">${v.k}</b> ${v.n}${SENT[v.t]?" ✓":""}</button>`;
+    }).join("");
+    row.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{window.BOOTED=true;loadTask(b.dataset.t);});
     return;
   }
   if(!T.variants){row.hidden=true;row.innerHTML="";return;}
@@ -2356,29 +2541,69 @@ window.JITTER=function(){
   const tx=(r()-0.5)*36, ty=(r()-0.5)*20, cx=400, cy=250;
   const F=p=>{let x=p.x-cx,y=p.y-cy;if(mir)x=-x;
     return{x:x*Math.cos(th)-y*Math.sin(th)+cx+tx, y:x*Math.sin(th)+y*Math.cos(th)+cy+ty};};
+  /* 글자를 밀어 둔 방향도 같이 돌려야 제자리에 남는다 */
+  const R=v=>{let x=v.x,y=v.y;if(mir)x=-x;
+    return{x:x*Math.cos(th)-y*Math.sin(th), y:x*Math.sin(th)+y*Math.cos(th)};};
   const snap=S.items.map(i=>i.t==="P"?{x:i.x,y:i.y}:null);
   const lp=S.items.map(i=>i.labelPos?{x:i.labelPos.x,y:i.labelPos.y}:null);
+  const lo=S.items.map(i=>i.lo?{x:i.lo.x,y:i.lo.y}:null);
   let bad=false;
   S.items.forEach((it,k)=>{
     if(it.t==="P"){const q=F(it);it.x=q.x;it.y=q.y;if(q.x<14||q.x>786||q.y<14||q.y>506)bad=true;}
     if(it.labelPos)it.labelPos=F(it.labelPos);
+    if(it.lo)it.lo=R(it.lo);
   });
   if(bad)S.items.forEach((it,k)=>{                 /* 판을 벗어나면 흩뜨리기를 포기한다 */
     if(snap[k]){it.x=snap[k].x;it.y=snap[k].y;}
     if(lp[k])it.labelPos=lp[k];
+    if(lo[k])it.lo=lo[k];
   });
 };
 
+/* 이름표가 제 구역을 벗어나면 안쪽으로 당긴다 */
+window.FITLABELS=function(){
+  const zs=S.items.filter(i=>i.t==="Z");
+  if(!zs.length)return;
+  const M=13;
+  const zoneOf=p=>zs.find(z=>p.x>=z.x-4&&p.x<=z.x+z.w+4&&p.y>=z.y-4&&p.y<=z.y+z.h+4);
+  for(const it of S.items){
+    if(it.t==="P"&&it.label&&!it.hidden&&it.lo){
+      const z=zoneOf(it);if(!z)continue;
+      const keep=(v,lo2,hi2,base)=>{           /* 방향(부호)은 지키고 길이만 줄인다 */
+        const want=Math.max(lo2,Math.min(hi2,v));
+        return want;
+      };
+      const L={x:it.x+it.lo.x,y:it.y+it.lo.y};
+      const nx=keep(L.x,z.x+M,z.x+z.w-M);
+      const ny=keep(L.y,z.y+M,z.y+z.h-M);
+      let ox=nx-it.x, oy2=ny-it.y;
+      const F=0.45;                              /* 밀어낸 방향은 최소 45%는 남긴다 */
+      if(it.lo.x&&ox*it.lo.x<=0)ox=it.lo.x*F;
+      else if(Math.abs(ox)<Math.abs(it.lo.x)*F)ox=Math.sign(it.lo.x)*Math.abs(it.lo.x)*F;
+      if(it.lo.y&&oy2*it.lo.y<=0)oy2=it.lo.y*F;
+      else if(Math.abs(oy2)<Math.abs(it.lo.y)*F)oy2=Math.sign(it.lo.y)*Math.abs(it.lo.y)*F;
+      it.lo={x:ox,y:oy2};
+    }
+    if(it.t==="L"&&it.name&&it.labelPos){
+      const z=zoneOf(it.labelPos);if(!z)continue;
+      it.labelPos={x:Math.max(z.x+M,Math.min(z.x+z.w-M,it.labelPos.x)),
+                   y:Math.max(z.y+M,Math.min(z.y+z.h-M,it.labelPos.y))};
+    }
+  }
+};
+
 /* ---- 자동 저장 ---- */
+const BUILD="2026-09-09d";                 /* 판이 바뀌면 옛 저장본은 버린다 */
 const skey=()=>`save:${cls()}:${me.no}:${S.taskId}:${S.variant}`;
-window.AUTOSAVE=function(){if(me.no)LS.set(skey(),{j:snapS(),at:Date.now()});};
+window.AUTOSAVE=function(){if(me.no)LS.set(skey(),{b:BUILD,j:snapS(),at:Date.now()});};
 
 /* ---- 과제가 바뀔 때 ---- */
 window.ONTASK=function(T,V){
   const sv=me.no?LS.get(skey(),null):null;
-  if(sv&&sv.j){try{restore(sv.j);}catch(e){}}
+  if(sv&&sv.j&&sv.b===BUILD){try{restore(sv.j);}catch(e){}}
+  else if(sv)LS.del(skey());                 /* 옛 판의 그림은 지운다 */
   paintVariants(T);paintFab();paintMini();
-  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.task===S.taskId));
+  buildTabs();          /* 묶음 탭(조사 2·3)까지 한 번에 맞춘다 */
 };
 
 /* ---- 아래 버튼(포개어 보기 / 게시판에 내기) ---- */
@@ -2390,7 +2615,8 @@ function paintFab(){
   if(T.fab==="submit"){
     const done=submitted();
     f.textContent=done?"제출 취소":"게시판에 내기";
-    f.classList.toggle("ready",!done&&T.check(S).ok);
+    let ok=false;try{ok=!!T.check(S).ok;}catch(e){ok=false;console.warn("check 실패",e);}
+    f.classList.toggle("ready",!done&&ok);
     f.onclick=done?cancelWork:sendWork;
   }else{f.textContent="포개어 보기";f.onclick=runOverlay;}
   paintMini();
@@ -2400,7 +2626,8 @@ async function sendWork(){
   const c=TASKS[S.taskId].check(S);
   if(!c.ok)return toast("아직 진술(조건)에 맞는 삼각형이 완성되지 않았습니다.");
   try{await Net.submit(c.tri,S.variant);setNet(true);PEND=null;LS.del("pend");
-    toast("게시판에 냈습니다. 선생님 화면에 올라갑니다.");}
+    toast("게시판에 냈습니다. 선생님 화면에 올라갑니다.");
+    buildTabs();paintVariants(TASKS[S.taskId]);}
   catch(e){
     setNet(false);
     PEND={task:S.taskId,tri:c.tri,v:S.variant};LS.set("pend",PEND);
@@ -2410,7 +2637,8 @@ async function sendWork(){
 }
 async function cancelWork(){
   if(CACHE.mode&&CACHE.mode!=="intake")return toast("이미 공개된 뒤에는 취소할 수 없습니다.");
-  try{await Net.cancel();toast("제출을 취소했습니다.");}
+  try{await Net.cancel();toast("제출을 취소했습니다.");
+    buildTabs();paintVariants(TASKS[S.taskId]);}
   catch(e){setNet(false);toast("연결이 되지 않아 취소하지 못했습니다.");}
   paintFab();
 }
@@ -2469,11 +2697,23 @@ function paintLog(){
 }
 const _paintUI=paintUI;
 paintUI=function(){_paintUI();try{reportProgress();paintLog();
-  if(TASKS[S.taskId].fab==="submit"&&S.taskId!=="t4")
-    $("overlay").classList.toggle("ready",!submitted()&&TASKS[S.taskId].check(S).ok);}catch(e){}};
+  if(TASKS[S.taskId].fab==="submit"&&S.taskId!=="t4"){
+    let ok2=false;
+    try{ok2=!!TASKS[S.taskId].check(S).ok;}catch(e){ok2=false;}
+    $("overlay").classList.toggle("ready",!submitted()&&ok2);
+  }
+  }catch(e){$("overlay").classList.remove("ready");}};
 
 /* ---- 처음부터 = 저장분도 지움 ---- */
 $("clear").onclick=()=>{if(me.no)LS.del(skey());loadTask(S.taskId,S.variant);};
+$("cReset").onclick=()=>{
+  $("cReset").blur();
+  const C=S.compass;
+  C.r=72;C.theta=-0.5;C.flip=1;C.from=null;
+  if(!C.center)C.free=inBoard(C.free);
+  foldCompass();S.tool="compass";render();
+  toast("컴퍼스를 처음 크기로 되돌렸습니다.");
+};
 
 /* ---- 신원 대화상자 배선 ---- */
 $("idSave").onclick=e=>saveId($("idSave").dataset.force==="1");
@@ -2992,7 +3232,15 @@ $("xresModal").addEventListener("click",e=>{if(e.target===$("xresModal"))$("xres
 xPull();pullN();pullSent();
 
 /* 조사 2·3·4는 배운 뒤 직접 그려 내는 것까지가 한 과제 */
-["t5","t6","t7"].forEach(k=>{
+/* 열려 있는 조사 중 가장 나중 것으로 시작한다 */
+function firstTask(){
+  for(const g of ["G3","G2"]){
+    const f=GRP[g].find(v=>!isLocked(v.t));
+    if(f)return f.t;
+  }
+  return "seg";
+}
+["t5","t6","t7","t8","t9","t11"].forEach(k=>{
   if(!TASKS[k])return;
   const base=TASKS[k].steps.bind(TASKS[k]);
   TASKS[k].steps=st=>base(st).concat(
@@ -3001,7 +3249,7 @@ xPull();pullN();pullSent();
 /* 서버에 이미 낸 것이 있으면 표시를 맞춘다 */
 async function pullSent(){
   if(!me.nick)return;
-  for(const k of ["t5","t6","t7"]){
+  for(const k of TRIT){
     try{
       const d=await dbGet(`boards/${cls()}/${k}/subs/${me.no}`);
       if(d)SENT[k]=true; else delete SENT[k];
@@ -3037,7 +3285,7 @@ function paintAsk(){
   const v=NOTE1[S.taskId];
   box.innerHTML=`${TRIT.indexOf(S.taskId)>=0
     ?`<button class="peek" id="gatherBtn" style="margin:0 0 10px">
-        ${roleOf(S.taskId)} 담당끼리 모아보기</button>`:""}
+        같은 조건끼리 모아보기</button>`:""}
     <p>이 조건으로 그릴 수 있는 삼각형은 몇 개입니까?</p>
     <div class="askrow">${["1개","2개","무수히"].map(x=>
       `<button class="${v===x?"on":""}" data-n="${x}">${x}</button>`).join("")}</div>
@@ -3082,7 +3330,7 @@ function gCard(t){                     /* 삼각형을 감싸는 종이 — 돌�
 let GSUB=[], GST=false;
 async function gatherOpen(){
   const t=S.taskId;
-  $("gTitle").textContent=`${roleOf(t)} 담당끼리 모아보기`;
+  $("gTitle").textContent=`${nameOf(t)} — 모아보기`;
   $("gBody").innerHTML=`<p class="muted">불러오는 중…</p>`;
   $("gatherModal").hidden=false;GST=false;
   try{
@@ -3102,23 +3350,35 @@ function gatherPaint(){
   $("gSub").textContent=`${GSUB.length}명이 냈습니다`;
   if(GST){
     const big=460,bh=340,pad=34;
-    const A=GSUB.map(x=>gAlign(x.tri));           /* 자리·방향·뒤집힘을 맞춘다 */
-    const CD=GSUB.map(x=>gCard(x.tri));           /* 그 학생의 종이도 함께 돌린다 */
+    const A=GSUB.map(x=>gAlign(x.tri));
+    const CD=GSUB.map(x=>gCard(x.tri));
     const pts=[].concat.apply([],A).concat([].concat.apply([],CD));
     const x0=Math.min.apply(null,pts.map(p=>p.x)), x1=Math.max.apply(null,pts.map(p=>p.x));
     const y0=Math.min.apply(null,pts.map(p=>p.y)), y1=Math.max.apply(null,pts.map(p=>p.y));
     const k=Math.min((big-pad*2)/Math.max(1,x1-x0),(bh-pad*2)/Math.max(1,y1-y0));
     const put=t=>t.map(p=>({x:(p.x-(x0+x1)/2)*k+big/2,y:(p.y-(y0+y1)/2)*k+bh/2}));
-    const card=t=>`<polygon points="${put(t).map(p=>
-      `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}" fill="#FFFFFF" fill-opacity=".55"
-      stroke="#C9A24A" stroke-width="1.6" stroke-dasharray="7 5"/>`;
-    $("gBody").innerHTML=`<div class="gstack"><svg viewBox="0 0 ${big} ${bh}">
-      ${CD.map(card).join("")}
-      ${A.map(t=>poly(put(t),"#1C1A16","#1C1A1612",2.2)).join("")}</svg></div>
+    /* 흩어져 있던 자리에서 가운데로 모여드는 것을 보여 준다 */
+    const R=(i)=>{const a=(i/Math.max(1,GSUB.length))*TAU+0.7;
+      return {dx:Math.cos(a)*big*0.62, dy:Math.sin(a)*bh*0.62, rot:(i%2?1:-1)*(18+i*9)};};
+    const gs=GSUB.map((_,i)=>{
+      const r=R(i);
+      return `<g class="gm" style="--dx:${r.dx.toFixed(0)}px;--dy:${r.dy.toFixed(0)}px;
+        --rot:${r.rot}deg;--d:${(i*0.11).toFixed(2)}s">
+        <polygon points="${put(CD[i]).map(p=>`${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}"
+          fill="#FFFFFF" fill-opacity=".55" stroke="#C9A24A" stroke-width="1.6"
+          stroke-dasharray="7 5"/>
+        ${poly(put(A[i]),"#1C1A16","#1C1A1612",2.2)}</g>`;
+    }).join("");
+    $("gBody").innerHTML=`<div class="gstack"><svg viewBox="0 0 ${big} ${bh}">${gs}</svg></div>
       <p class="muted" style="text-align:center;margin-top:10px">
         ${GSUB.length}장을 <b>돌리고 뒤집어</b> 겹쳤습니다.
         노란 테두리가 <b>각자의 종이</b>입니다 — 종이는 제각각 돌아가 있는데
-        <b>삼각형은 하나로 겹쳐집니다.</b></p>`;
+        <b>삼각형은 하나로 겹쳐집니다.</b>
+        <button class="peek" id="gAgain" style="margin-top:9px">다시 겹쳐 보기</button></p>`;
+    const ag=$("gAgain");
+    if(ag)ag.onclick=()=>{ag.blur();
+      $("gBody").querySelectorAll(".gm").forEach(el=>{
+        el.style.animation="none";void el.offsetWidth;el.style.animation="";});};
     return;
   }
   $("gBody").innerHTML=`<div class="ggrid">${GSUB.map(x=>{
@@ -3157,6 +3417,20 @@ buildTabs=function(){_bt();paintReady();};
 $("why").innerHTML=WHY[S.taskId]||"";
 paintReady();
 
+/* 열려 있는 조사 중 가장 나중 화면으로 연다.
+   개방 상태는 조금 뒤에 도착하므로, 아직 아무것도 그리지 않았을 때 한 번만 옮긴다. */
+window.BOOTED=!!new URLSearchParams(location.search).get("task");
+const BOOT0=Date.now();
+function bootJump(){
+  if(window.BOOTED)return;
+  if(Date.now()-BOOT0>9000){window.BOOTED=true;return;}
+  if(S.items.some(i=>!i.given))
+    {window.BOOTED=true;return;}                    /* 이미 그리기 시작했으면 건드리지 않는다 */
+  const t=firstTask();
+  if(t!==S.taskId)loadTask(t);     /* 개방 상태가 더 도착하면 한 번 더 옮겨 간다 */
+}
+bootJump();
+const bootT=setInterval(()=>{bootJump();if(window.BOOTED)clearInterval(bootT);},700);
 </script>
 <script>
 
