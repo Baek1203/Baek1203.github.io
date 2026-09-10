@@ -277,7 +277,7 @@
   .dice{flex:0 0 auto;margin-left:8px;font:700 12.5px/1 var(--sans);padding:12px 13px;
     border-radius:9px;cursor:pointer;border:1.5px solid var(--rule);background:#F6F1E6;color:var(--ink)}
   .dice:hover{border-color:var(--gold);color:#8A6A0E}
-  .swatch{display:flex;gap:8px}
+  .swatch{display:flex;gap:8px;flex-wrap:wrap}
   .swatch .sw{width:34px;height:34px;border-radius:9px;background:var(--c);cursor:pointer;
     border:3px solid transparent}
   .swatch .sw.on{border-color:var(--ink)}
@@ -2399,7 +2399,8 @@ TASKS.pg=TASKS.pg||{fab:"none",quiet:true,prompt:()=>"",build:()=>[],
   steps:()=>[],check:()=>({ok:false})};
 TASKLIST.forEach(x=>{if(TASKS[x.id])TASKS[x.id].tabName=x.label;});
 ["t4","t5","t6","t7","t8","t9","t10"].forEach(k=>{if(TASKS[k])TASKS[k].hideSteps=true;});
-const COLORS=[["#2A63D8","파랑"],["#C0342A","빨강"],["#2A7148","초록"],["#C98A10","노랑"]];
+const COLORS=[["#2A63D8","파랑"],["#C0342A","빨강"],["#2A7148","초록"],["#C98A10","노랑"],
+  ["#7A3FBF","보라"],["#0E7C8A","청록"],["#7A4B2A","갈색"],["#B03A6E","분홍"]];
 
 /* ---- 신원 ---- */
 let me=LS.get("me",{cls:"1-1",nick:"",no:"",group:"",role:"",color:COLORS[0][0]});
@@ -3305,7 +3306,33 @@ async function pullN(){
 /* ── 같은 담당끼리 모아보기 ── */
 /* 세 꼭짓점 차례를 한 가지로 정한 뒤, 밑변을 가로로 돌리고 위쪽으로 뒤집는다.
    합동인 삼각형은 어디에 어떻게 그렸든 똑같은 모양이 된다. */
+/* 과제마다 무엇을 맞춰 겹칠지 — 모두에게 공통인 부분에 붙인다 */
+const GANCH={t8:{deg:40,side:7}, t9:{deg:40,next:60}, t10:{deg:40,side:8}};
+const gAngAt=(A,B,C)=>{
+  const a=Math.atan2(B.y-A.y,B.x-A.x), b=Math.atan2(C.y-A.y,C.x-A.x);
+  return Math.abs(((b-a)*180/Math.PI+540)%360-180);
+};
+function gAnchor(t){
+  const sp=GANCH[S.taskId];
+  if(!sp)return null;
+  const TT=2.2;
+  for(let i=0;i<3;i++){
+    const A=t[i],B=t[(i+1)%3],C=t[(i+2)%3];
+    if(Math.abs(gAngAt(A,B,C)-sp.deg)>TT)continue;
+    for(const [P,Q] of [[B,C],[C,B]]){
+      if(sp.side!=null){
+        if(Math.abs(d2(A,P)-sp.side*CM)<3)return [A,P,Q];
+      }else if(sp.next!=null){
+        if(Math.abs(gAngAt(P,A,Q)-sp.next)>TT)continue;
+        return [A,P,Q];
+      }
+    }
+  }
+  return null;
+}
 function gCanon(t){
+  const an=gAnchor(t);
+  if(an)return an;
   const ORD=[[0,1,2],[1,2,0],[2,0,1],[0,2,1],[2,1,0],[1,0,2]];
   const s3=Q=>[d2(Q[0],Q[1]),d2(Q[1],Q[2]),d2(Q[2],Q[0])];
   const cmp=(a,b)=>{for(let i=0;i<3;i++)if(Math.abs(a[i]-b[i])>0.5)return a[i]-b[i];return 0;};
