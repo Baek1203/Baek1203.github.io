@@ -183,7 +183,7 @@ const SELFQ=[
   {k:"q1",t:"묻고 싶은 것"}
 ];
 
-const VER="기록장 v7 · 2026-09-09";
+const VER="기록장 v9 · 2026-09-09";
 const TKEY="gamsik";
 const qp=new URLSearchParams(location.search);
 if(qp.get("teacher")===TKEY)LS.set("tea",true);
@@ -223,6 +223,7 @@ async function pull(){
     setNet(true);
   }catch(e){setNet(false);}
   paint();
+  try{schedule();}catch(e){}
 }
 let OPEN_LOCK=0;
 const setOpen=async(k0,v)=>{
@@ -259,19 +260,32 @@ function paintTabs(){
     return `<button data-t="${x.k}" aria-selected="${TAB===x.k}">${esc(x.n)}${
       done?'<i>✓</i>':""}</button>`;}).join("");
   $("tabs").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{
-    TAB=b.dataset.t;LS.set("tab",TAB);b.blur();paint();});
+    TAB=b.dataset.t;LS.set("tab",TAB);b.blur();paint(1);});
 }
 const dkey=()=>`${cls()}:${me.no}:${TAB}`;
 const draft=()=>DRAFT[dkey()]||null;
 function setDraft(v){DRAFT[dkey()]=v;LS.set("draft",DRAFT);paintSend();}
 
-function paint(){
+let PSIG="";
+function paint(force){
   if(TEA)return paintTeacher();
+  /* 타자 중에는 절대 다시 그리지 않는다 — 제출은 손으로 하니 서둘러 고칠 이유가 없다 */
+  const ae=document.activeElement;
+  if(!force&&ae&&(ae.tagName==="TEXTAREA"||ae.tagName==="INPUT")&&$("body").contains(ae)){
+    paintSend();return;
+  }
+  /* 바뀐 것이 없으면 화면을 건드리지 않는다 */
+  const sig=[TAB,!!isOpen(GENN),!!isOpen("self"),
+    JSON.stringify(MINE||{}),JSON.stringify(SELF||{}),
+    posted().map(L=>L.n+":"+((CLASSG[L.n]||{}).text||"")).join("|")].join("/");
+  if(!force&&sig===PSIG&&$("body").childElementCount){paintSend();return;}
+  PSIG=sig;
   paintTabs();
   const it=tabs();
   if(!it.length){
     $("body").innerHTML=`<div class="lock">아직 열린 것이 없습니다.<br>
-      선생님이 열어 주면 여기에 나타납니다.</div>`;
+      선생님이 열면 <b>저절로 나타납니다.</b><br>
+      <span style="font-size:11.5px;color:#B4AC9A">바로 확인하려면 아래 새로 고침을 누르세요</span></div>`;
     $("send").style.display="none";$("sentMsg").textContent="";return;
   }
   $("send").style.display="";
@@ -370,7 +384,7 @@ $("send").onclick=async()=>{
       await dbPut(`gens/${cls()}/mine/${me.no}`,o);MINE=o;
     }
     delete DRAFT[dkey()];LS.set("draft",DRAFT);
-    setNet(true);toast("제출했습니다.");
+    setNet(true);toast("제출했습니다.");PSIG="";
   }catch(e){setNet(false);toast("연결이 되지 않아 내지 못했습니다. 잠시 뒤 다시 눌러 주세요.");}
   paint();
 };
@@ -556,18 +570,28 @@ $("idSave").onclick=async()=>{
   const nk=$("idNick").value.trim().replace(/\s+/g,"");
   if(nk.length<2)return $("idNote").textContent="코드네임을 두 글자 이상 넣어 주세요.";
   me={cls:$("idCls").value,nick:nk,no:nk,group:$("idGroup").value||""};
-  LS.set("me",me);$("idModal").hidden=true;paintWho();await pull();
+  LS.set("me",me);$("idModal").hidden=true;paintWho();PSIG="";await pull();
 };
 function paintWho(){$("who").textContent=me.nick
   ?`${me.cls} · ${me.nick}${me.group?" · "+me.group+"모둠":""}`:"코드네임 정하기";}
 
 $("ver").textContent=VER;
-$("refr").onclick=()=>{$("refr").blur();pull();toast("다시 불러왔습니다.");};
+$("refr").onclick=()=>{$("refr").blur();PSIG="";pull();toast("다시 불러왔습니다.");};
 paintWho();
 if(!TEA&&!me.nick)openId(true);
 if(TEA)$("who").onclick=()=>{};
 pull();
-setInterval(pull,TEA?8000:7000);
+/* 학생 쪽은 주기 동기화를 쓰지 않는다.
+   아직 열린 것이 없을 때(기다리는 중)만 확인하고, 열리면 멈춘다.
+   그 뒤로는 제출할 때와 새로 고침을 누를 때만 서버와 이야기한다. */
+let POLL=null;
+function schedule(){
+  if(TEA){if(!POLL)POLL=setInterval(pull,8000);return;}
+  const waiting=!tabs().length;
+  if(waiting&&!POLL)POLL=setInterval(pull,10000);
+  if(!waiting&&POLL){clearInterval(POLL);POLL=null;}
+}
+schedule();
 </script>
 </body>
 </html>
