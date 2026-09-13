@@ -2138,8 +2138,14 @@ TASKS.drill={
     if(skGot(g))return;
     const just=skWin(g);
     if(window.paintSkill)paintSkill();
-    if(just)setTimeout(()=>toast(`${SKNAME[g]} 스킬을 얻었습니다!`),300);
-    setTimeout(()=>{ if(S.taskId==="drill"&&!skGot(g))loadTask("drill",st.variant); },1100);
+    if(just){
+      setTimeout(()=>toast(`${SKNAME[g]} 스킬을 얻었습니다!`),300);
+      return;                                  /* 다 채웠으면 마지막 화면을 그대로 둔다 */
+    }
+    SKNEXT=setTimeout(()=>{                    /* 잠시 보여 준 뒤 다음 문제 */
+      SKNEXT=null;
+      if(S.taskId==="drill")loadTask("drill",st.variant);
+    },1400);
   },
 
   nameFor(st,c){
@@ -2742,6 +2748,7 @@ window.ONTASK=function(T,V){
   if(sv&&sv.j&&sv.b===BUILD){try{restore(sv.j);}catch(e){}}
   else if(sv)LS.del(skey());                 /* 옛 판의 그림은 지운다 */
   PL=null;
+  if(SKNEXT){clearTimeout(SKNEXT);SKNEXT=null;}
   paintVariants(T);paintFab();paintMini();
   if(window.paintSkill)paintSkill();
   buildTabs();          /* 묶음 탭(조사 2·3)까지 한 번에 맞춘다 */
@@ -2806,6 +2813,7 @@ function paintMini(){
 /* ---- 축하 문구를 과제에 맞게 ---- */
 celebrate=function(){
   const T=TASKS[S.taskId];
+  try{if(T.onWin)T.onWin(S);}catch(e){}
   verdict("ok",T.kind==="tri"?"삼각형을 작도했습니다":"작도에 성공했습니다",
     T.win||"왼쪽 <b>포개어 보기</b>를 눌러, 작도한 도형이 원래 도형에 그대로 포개어지는지 확인해 보세요.");
   paintFab();
@@ -3446,9 +3454,10 @@ async function pullN(){
 /* ══════════ 스킬 ══════════
    선분 옮기기와 각 옮기기를 각각 10문제 풀면 스킬을 얻는다.
    얻고 나면 조사 3부터 도구 막대에 '옮기기' 단추가 생긴다. */
-const SKNEED=10;
+const SKNEED=5;
 const SKG=["seg","ang"];
 const SKNAME={seg:"선분 옮기기",ang:"각 옮기기"};
+let SKNEXT=null;
 let SK=LS.get("skill2",{seg:{n:0,i:0},ang:{n:0,i:0}});
 SKG.forEach(g=>{if(!SK[g]||typeof SK[g].n!=="number")SK[g]={n:0,i:0};});
 const skDone=g=>SK[g].n;
@@ -3568,7 +3577,8 @@ window.paintSkill=function(){
     <div class="skrow${got?" got":""}">
       <b>${SKNAME[g]}</b><span class="sknum">${n} / ${SKNEED}</span>
       <div class="skdots">${dots}</div>
-      ${got?`<span class="skgot">스킬을 얻었습니다</span>`
+      ${got?`<span class="skgot">스킬을 얻었습니다</span>
+             <button class="peek" id="skMore" style="margin-top:8px">더 연습하기</button>`
            :`<p class="skhint">이어서 <b>${SKNEED}번</b> 성공하면 스킬을 얻습니다.
               맞히면 다음 문제가 나옵니다.</p>`}
     </div>
@@ -3580,6 +3590,10 @@ window.paintSkill=function(){
     ${n>0&&!got?`<button class="peek" id="skZero">처음부터 다시 세기</button>`:""}`;
   const z=$("skZero");
   if(z)z.onclick=()=>{z.blur();skReset(g);paintSkill();loadTask("drill",S.variant);};
+  const mo=$("skMore");
+  if(mo)mo.onclick=()=>{mo.blur();
+    const L=skList(g);SK[g].i=(SK[g].i+1)%L.length;LS.set("skill2",SK);
+    loadTask("drill",S.variant);};
 };
 
 /* ── 같은 담당끼리 모아보기 ── */
