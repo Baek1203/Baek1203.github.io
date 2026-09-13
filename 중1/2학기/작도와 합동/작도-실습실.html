@@ -212,9 +212,22 @@
   .vrow[hidden]{display:none}
   .vb{font:700 12px/1 var(--sans);padding:9px 12px;border-radius:8px;cursor:pointer;
     border:1.5px solid var(--rule);background:#F4EFE3;color:var(--ink-soft)}
+  .vb.done{border-color:#BFE0CC;background:#F1F8F3;color:#2A7148}
   .vb.on{background:var(--ink);color:#fff;border-color:var(--ink)}
   .vb:disabled{opacity:.35;cursor:default}
 
+  .skillbox{border:1.6px solid var(--rule);border-radius:11px;padding:11px 12px;margin-top:10px;
+    background:#fff}
+  .skrow{margin-bottom:10px}
+  .skrow:last-of-type{margin-bottom:4px}
+  .skrow b{font:800 12.5px/1 var(--sans)}
+  .skrow .sknum{float:right;font:700 11.5px/1 var(--sans);color:var(--ink-soft)}
+  .skbar{height:8px;border-radius:99px;background:#E9E1CC;margin-top:6px;overflow:hidden}
+  .skbar i{display:block;height:100%;background:var(--gold);transition:width .4s}
+  .skrow.got .skbar i{background:var(--ok,#2A7148)}
+  .skgot{display:inline-block;margin-top:6px;font:800 10.5px/1 var(--sans);color:#2A7148;
+    background:#EFF7F1;border-radius:99px;padding:4px 8px}
+  .skhint{margin:8px 0 0;font:700 11px/1.6 var(--sans);color:var(--ink-soft)}
   .minimap{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:9px 10px}
   .minimap[hidden]{display:none}
   .mtiles{display:flex;gap:5px;margin-bottom:6px}
@@ -453,6 +466,14 @@
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><circle cx="15" cy="5" r="2.4"/><path d="M13.6 7.2 6 26M16.4 7.2 24 26"/></svg>컴퍼스</button>
         <button class="tool" data-tool="point" style="--c:#C98A10" aria-pressed="false">
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><circle cx="15" cy="15" r="3.4" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="8.5"/></svg>점</button>
+        <button class="tool skill" data-tool="cseg" style="--c:#2A7148" aria-pressed="false" hidden>
+          <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round"><path d="M5 22h20"/><path d="M5 19v6M25 19v6"/>
+            <path d="M9 11l6-6 6 6"/><path d="M15 5v10"/></svg>선분 옮기기</button>
+        <button class="tool skill" data-tool="cang" style="--c:#7A3FBF" aria-pressed="false" hidden>
+          <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round"><path d="M5 24h20"/><path d="M5 24 21 8"/>
+            <path d="M12 24a10 10 0 0 0 3-7"/></svg>각 옮기기</button>
         <button class="tool" data-tool="erase" style="--c:#6A6355" aria-pressed="false">
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21 16 10l6 6-5 5H8z"/><path d="M4 26h22"/></svg>지우개</button>
       </div>
@@ -469,6 +490,7 @@
         <button class="mini" id="undo">되돌리기</button>
         <button class="mini danger" id="clear">처음부터</button>
       </div>
+      <div class="skillbox" id="skillbox" hidden></div>
       <div class="minimap" id="mini" hidden></div>
       <div class="logbox" id="logbox" hidden></div>
     </div>
@@ -1122,6 +1144,24 @@ function render(){
     }
     g+=clipWrap(LZ,lg);
   }
+  if(PL){                                        /* 반투명으로 따라오는 도형 */
+    const q=plGeom();
+    if(q&&q.a){
+      const col=PL.kind==="seg"?"#2A7148":"#7A3FBF";
+      const L=(a,b)=>`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}"
+        stroke="${col}" stroke-width="3.4" stroke-linecap="round" opacity=".5"/>`;
+      g+=L(q.a,q.b);
+      if(q.c){
+        g+=L(q.a,q.c);
+        const sw=((ang(q.a,q.c)-ang(q.a,q.b))+Math.PI*4)%(Math.PI*2);
+        const d=arcPath(q.a.x,q.a.y,26,ang(q.a,q.b),sw>Math.PI?sw-Math.PI*2:sw);
+        if(d)g+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="2" opacity=".5"/>`;
+      }
+      g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="5.5" fill="${col}" opacity=".55"/>`;
+      if(PL.at)g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="11" fill="none"
+        stroke="${col}" stroke-width="2" opacity=".45"/>`;
+    }
+  }
   if(drag&&drag.mode==="draw"&&drag.hi-drag.lo>0.001){
     const c=needle(),r=C.r;
     g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r)}" fill="none" stroke="${CO.arc}" stroke-width="1" stroke-dasharray="3 6" opacity=".35"/>`;
@@ -1234,6 +1274,9 @@ function overlaySVG(){
 function paintUI(){
   const C=S.compass;
   document.querySelectorAll("[data-tool]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tool===S.tool));
+  if(window.skUsable)document.querySelectorAll(".tool.skill").forEach(b=>{
+    b.hidden=!window.skUsable(b.dataset.tool==="cseg"?"seg":"ang");
+  });
   document.querySelectorAll("[data-kind]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.kind===S.rulerKind));
   $("undo").disabled=!S.undo.length;
   paintToolbar();
@@ -1255,6 +1298,7 @@ function checkWin(){
     if(!over)$("verdict").classList.remove("on");}
 }
 function celebrate(){
+  try{const T=TASKS[S.taskId];if(T.onWin)T.onWin(S);}catch(e){}
   verdict("ok","작도에 성공했습니다","왼쪽 <b>포개어 보기</b>를 눌러, 작도한 도형이 원래 도형에 그대로 포개어지는지 확인해 보세요.");
   if(TASKS[S.taskId].fab!=="submit")$("overlay").classList.add("ready");
   if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
@@ -1288,6 +1332,13 @@ function paintToolbar(){
     h=cell("눈금 없는 자","자 버튼에 마우스를 올리면 종류를 바꿀 수 있어요",`지금은 ${KIND[S.rulerKind]}`);
   }else if(S.tool==="point"){
     h=cell("점","두 도형이 만나는 자리에 생기는 <b>속 빈 점</b>을 클릭하세요","");
+  }else if(S.tool==="cseg"||S.tool==="cang"){
+    const nm=S.tool==="cseg"?"선분 옮기기":"각 옮기기";
+    const st=!PL?"① 주어진 것을 누르기"
+      :(!PL.at?"② 붙일 점을 누르기":"③ 방향을 정하고 한 번 더 누르기");
+    h=cell(nm,PL&&PL.at?"움직이면 <b>방향이 돌아갑니다</b>"
+      :(PL?"붙일 <b>점</b> 위를 누르세요":"옮길 <b>주어진 것</b>을 누르세요"),st,true)
+     +cell("그만두기","<b>오른쪽 단추</b>를 누르거나 도구를 다시 고르면 놓습니다","");
   }else{
     h=cell("지우개","내가 그린 <b>선이나 원</b> 위를 클릭하거나 문지르면 지워집니다","");
   }
@@ -1407,6 +1458,38 @@ board.addEventListener("pointerdown",e=>{
   if(over){over=null;$("verdict").classList.remove("on");render();}
   else if(!won)$("verdict").classList.remove("on");
 
+  if(S.tool==="cseg"||S.tool==="cang"){
+    const kind=S.tool==="cseg"?"seg":"ang";
+    if(right){plCancel();return;}
+    if(PL&&PL.at){plCommit();return;}          /* 방향까지 정했으면 확정 */
+    if(PL&&!PL.at){                            /* 들고 있으면 점에 붙인다 */
+      const P=snapPoint(pos);
+      if(!P)return toast("이미 찍혀 있는 점 위에 놓아야 합니다.");
+      PL.at=P;
+      const bd=baseDirAt(P);
+      PL.dir=(bd!=null)?bd:PL.srcDir;
+      PL.snap=(bd!=null);
+      render();
+      toast(kind==="seg"?"방향을 정하고 한 번 더 누르세요."
+                        :"각이 붙었습니다. 방향을 정하고 한 번 더 누르세요.");
+      return;
+    }
+    const l=givenUnder(pos);                   /* 주어진 것을 집는다 */
+    if(!l)return toast(kind==="seg"?"옮길 <b>주어진 선분</b>을 누르세요."
+                                   :"옮길 <b>주어진 각</b>의 변을 누르세요.");
+    if(kind==="seg"){
+      const a=pt(l.p1),b=pt(l.p2);
+      PL={kind:"seg",len:d2(a,b),srcDir:ang(a,b),cur:pos,at:null,dir:ang(a,b),flip:false};
+      toast("선분을 집었습니다. 붙일 점을 누르세요.");
+    }else{
+      const A=angleOf(l);
+      if(!A)return toast("각의 두 변 가운데 하나를 누르세요.");
+      PL={kind:"ang",deg:A.deg,len:Math.max(90,d2(A.V,A.P)),srcDir:0,cur:pos,
+          at:null,dir:0,flip:false};
+      toast(`${Math.round(A.deg)}° 를 집었습니다. 붙일 점을 누르세요.`);
+    }
+    render();return;
+  }
   if(S.tool==="erase"){
     pushUndo();
     drag={mode:"erase",hit:false};
@@ -1474,6 +1557,22 @@ function applyOpen(pos0){
 window.addEventListener("pointermove",e=>{
   if(busy)return;
   const pos=toSVG(e),C=S.compass;
+  if(PL){                                        /* 들고 있거나 방향을 고르는 중 */
+    if(!PL.at)PL.cur=pos;
+    else{
+      let t=ang(PL.at,pos);
+      if(PL.snap){                               /* 붙인 점에 이미 변이 있으면 그 변에 딱 맞춘다 */
+        const bd=baseDirAt(PL.at);
+        if(bd!=null){
+          const d=((t-bd)*180/Math.PI+540)%360-180;
+          PL.flip=(d<0);
+          t=bd;
+        }
+      }
+      PL.dir=t;
+    }
+    render();return;
+  }
   if(!drag){                                     /* 손을 올린 부분이 무슨 일을 하는지 알려줌 */
     const h=compassPart(pos);
     if(h!==hover){hover=h;
@@ -1607,6 +1706,7 @@ document.addEventListener("pointerdown",e=>{              /* 터치: 바깥을 �
 document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{
   if(b.dataset.tool==="ruler"){S.rulerKind="segment";rwrap.classList.toggle("open");}
   else popOpen(false);
+  PL=null;
   S.tool=b.dataset.tool;S.pending=[];S.flash=null;drag=null;hover=null;board.style.cursor="crosshair";b.blur();render();});
 document.querySelectorAll("[data-kind]").forEach(b=>b.onclick=()=>{
   S.tool="ruler";S.rulerKind=b.dataset.kind;S.pending=[];S.flash=null;popOpen(false);b.blur();render();});
@@ -1958,34 +2058,45 @@ TASKS.t10={
    ① 선분 옮기기 2문항  ② 각 옮기기 2문항(예각·둔각)
    훈련 1·2에서 배운 절차를 스스로 다시 해 보는 자리다.
    ================================================================== */
+/* ── 스킬 배우기 · 선분 10 · 각 10 ── */
+function skSeg(n,ax,ay,bx,by,lx0,ly0,lx1,ly1,px,py){
+  return {label:"선분 "+n,kind:"seg",group:"seg",
+    prompt:"선분 <b>AB</b>와 길이가 같은 선분을, 직선 <b>l</b> 위에 점 <b>P</b>에서 시작하도록 작도하시오.",
+    build:()=>[
+      PT("A",ax,ay), PT("B",bx,by),
+      {t:"L",kind:"segment",p1:"A",p2:"B",given:true,key:"AB"},
+      PT("",lx0,ly0,{hidden:true}), PT("",lx1,ly1,{hidden:true}),
+      {t:"L",kind:"segment",p1:"#3",p2:"#4",given:true,name:"l",key:"l",
+       labelPos:{x:lx1-16,y:ly1-12}},
+      PT("P",px,py)]};
+}
+function skAng(n,deg,ox,oy,r,px,py,qx){
+  return {label:"각 "+n,kind:"ang",group:"ang",deg:deg,ox:ox,oy:oy,r:r,px:px,py:py,qx:qx,
+    prompt:"<b>∠AOB</b>와 크기가 같은 각을, 반직선 <b>PQ</b>를 한 변으로 하여 작도하시오."};
+}
 const DRILL=[
-/* ① 선분 — 수평 직선 위로 */
-{label:"문항 ①",kind:"seg",
- prompt:"선분 <b>AB</b>와 길이가 같은 선분을, 직선 <b>l</b> 위에 점 <b>P</b>에서 시작하도록 작도하시오.",
- build:()=>[
-   PT("A",128,120), PT("B",312,120),
-   {t:"L",kind:"segment",p1:"A",p2:"B",given:true,key:"AB"},
-   PT("",84,404,{hidden:true}), PT("",724,404,{hidden:true}),
-   {t:"L",kind:"line",p1:"#3",p2:"#4",given:true,name:"l",key:"l",labelPos:{x:740,y:390}},
-   PT("P",196,404)]},
-/* ② 선분 — 기울어진 반직선 위로 */
-{label:"문항 ②",kind:"seg",
- prompt:"선분 <b>AB</b>와 길이가 같은 선분을, 직선 <b>l</b> 위에 점 <b>P</b>에서 시작하도록 작도하시오.",
- build:()=>[
-   PT("A",120,100), PT("B",258,232),
-   {t:"L",kind:"segment",p1:"A",p2:"B",given:true,key:"AB"},
-   PT("",372,470,{hidden:true}), PT("",752,148,{hidden:true}),
-   {t:"L",kind:"line",p1:"#3",p2:"#4",given:true,name:"l",key:"l",labelPos:{x:760,y:140}},
-   PT("P",436,416)]},
-/* ③ 각 — 예각 */
-{label:"문항 ③ · 예각",kind:"ang",deg:42,
- ox:150,oy:392,r:218,px:470,py:392,qx:726,
- prompt:"<b>∠AOB</b>와 크기가 같은 각을, 반직선 <b>PQ</b>를 한 변으로 하여 작도하시오."},
-/* ④ 각 — 둔각 (옮긴 각이 왼쪽 위로 뻗으므로 두 도형을 넉넉히 떼어 놓는다) */
-{label:"문항 ④ · 둔각",kind:"ang",deg:124,
- ox:168,oy:296,r:170,px:548,py:438,qx:742,
- prompt:"<b>∠AOB</b>와 크기가 같은 각을, 반직선 <b>PQ</b>를 한 변으로 하여 작도하시오."}
+  skSeg("①",110,118,278,110, 46,440,752,440, 81,440),
+  skSeg("②",120,100,261,70, 64,464,748,220, 98,452),
+  skSeg("③",96,248,208,205, 240,176,750,432, 490,301),
+  skSeg("④",330,104,522,104, 56,472,752,336, 91,465),
+  skSeg("⑤",124,112,292,112, 52,404,746,472, 87,407),
+  skSeg("⑥",296,236,391,128, 64,336,748,454, 98,342),
+  skSeg("⑦",142,98,262,98, 72,472,742,306, 106,464),
+  skSeg("⑧",116,222,191,45, 50,290,746,470, 92,301),
+  skSeg("⑨",152,132,296,132, 68,454,750,378, 102,450),
+  skSeg("⑩",316,212,330,45, 60,444,744,248, 94,434),
+  skAng("①",38,150,392,214, 470,392,726),
+  skAng("②",64,150,404,202, 474,404,730),
+  skAng("③",88,158,420,192, 486,420,734),
+  skAng("④",112,180,318,172, 544,440,744),
+  skAng("⑤",134,196,286,162, 552,446,746),
+  skAng("⑥",26,140,400,220, 466,400,730),
+  skAng("⑦",52,146,398,208, 472,398,728),
+  skAng("⑧",76,152,410,196, 480,410,732),
+  skAng("⑨",100,168,340,180, 520,430,740),
+  skAng("⑩",122,188,300,168, 548,442,745)
 ];
+
 function angBuild(d){
   const th=-d.deg*Math.PI/180;
   return [
@@ -2004,6 +2115,14 @@ TASKS.drill={
   build:V=>DRILL[V.i].kind==="seg"?DRILL[V.i].build():angBuild(DRILL[V.i]),
   pool:["C","D","E","F","G","H","J","K"],
   win:"맞았습니다. 다음 문항으로 넘어가세요.",
+  onWin(st){                                   /* 통과한 문항을 적립한다 */
+    const g=DRILL[st.variant].group;
+    if(skMark(st.variant)){
+      toast(`${g==="seg"?"선분":"각"} 옮기기 스킬을 얻었습니다!`);
+      confetti&&confetti();
+    }
+    paintSkill();paintVariants(TASKS.drill);
+  },
 
   nameFor(st,c){
     if(DRILL[st.variant].kind!=="ang")return null;
@@ -2388,7 +2507,7 @@ const TASKLIST=[
   {id:"seg",label:"훈련 1 · 길이를 그대로 옮기기"},
   {id:"ang",label:"훈련 2 · 각을 그대로 옮기기"},
   {id:"par",label:"훈련 3 · 나란한 선 긋기"},
-  {id:"drill",label:"★ 감식 훈련"},
+  {id:"drill",label:"★ 스킬 배우기"},
   {id:"pg", label:"훈련장"},
   {id:"t4", label:"조사 1 · 조건 두 개로"},
   {id:"g2", label:"조사 2 · 삼각형 작도", grp:"G2"},
@@ -2522,9 +2641,10 @@ function paintVariants(T){
   if(!T.variants){row.hidden=true;row.innerHTML="";return;}
   const lockV=(T===TASKS.t10)?LS.get("caseFix:"+me.no,null):null;
   row.hidden=false;
-  row.innerHTML=T.variants.map((v,i)=>
-    `<button class="vb${S.variant===i?" on":""}" data-i="${i}"
-      ${lockV!=null&&lockV!==i?"disabled":""}>${v.label}</button>`).join("");
+  row.innerHTML=T.variants.map((v,i)=>{
+    const ok=(S.taskId==="drill")&&DRILL[i]&&((SK[DRILL[i].group]||[]).indexOf(i)>=0);
+    return `<button class="vb${S.variant===i?" on":""}${ok?" done":""}" data-i="${i}"
+      ${lockV!=null&&lockV!==i?"disabled":""}>${v.label}${ok?" ✓":""}</button>`;}).join("");
   row.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{
     const i=+b.dataset.i;if(i===S.variant)return;
     loadTask(S.taskId,i);
@@ -2603,7 +2723,9 @@ window.ONTASK=function(T,V){
   const sv=me.no?LS.get(skey(),null):null;
   if(sv&&sv.j&&sv.b===BUILD){try{restore(sv.j);}catch(e){}}
   else if(sv)LS.del(skey());                 /* 옛 판의 그림은 지운다 */
+  PL=null;
   paintVariants(T);paintFab();paintMini();
+  if(window.paintSkill)paintSkill();
   buildTabs();          /* 묶음 탭(조사 2·3)까지 한 번에 맞춘다 */
 };
 
@@ -3302,6 +3424,127 @@ async function pullN(){
     if(d){ASKN.forEach(k=>{if(d[k]&&d[k].n)NOTE1[k]=d[k].n;});LS.set("note1",NOTE1);}
   }catch(e){}
 }
+
+/* ══════════ 스킬 ══════════
+   선분 옮기기와 각 옮기기를 각각 10문제 풀면 스킬을 얻는다.
+   얻고 나면 조사 3부터 도구 막대에 '옮기기' 단추가 생긴다. */
+const SKNEED=10;
+let SK=LS.get("skill",{seg:[],ang:[]});
+const skDone=g=>((SK&&SK[g])||[]).length;
+const skGot=g=>skDone(g)>=SKNEED;
+function skMark(idx){
+  const d=DRILL[idx];if(!d)return false;
+  const g=d.group,a=(SK[g]||[]);
+  if(a.indexOf(idx)>=0)return false;
+  a.push(idx);SK[g]=a;LS.set("skill",SK);
+  return skDone(g)===SKNEED;                    /* 방금 다 채웠는가 */
+}
+const SKTASK=["t8","t9","t11","t10"];           /* 조사 3부터 쓸 수 있다 */
+window.skUsable=g=>skGot(g)&&SKTASK.indexOf(S.taskId)>=0;
+
+/* ══════════ 스킬 도구 ══════════
+   ① 도구를 고른다 → ② 주어진 선분·각을 누른다(집기) → 반투명으로 따라온다
+   ③ 붙일 점을 누른다 → 그 점에 고정되고 ④ 움직이면 방향이 돈다 → ⑤ 한 번 더 누르면 확정 */
+let PL=null;                       /* {kind, len|deg, at, dir, flip, phase} */
+function plCancel(){PL=null;render();}
+/* 주어진 도형 중 마우스 아래 것 */
+function givenUnder(pos){
+  let best=null,bd=16;
+  for(const l of S.items.filter(i=>i.t==="L"&&i.given&&i.kind==="segment")){
+    const a=pt(l.p1),b=pt(l.p2);if(!a||!b)continue;
+    const d=distSeg(pos,a,b);
+    if(d<bd){bd=d;best=l;}
+  }
+  return best;
+}
+/* 그 선분이 어떤 각의 변인가 — 같은 꼭짓점을 쓰는 두 given 선분 */
+function angleOf(l){
+  const o=[l.p1,l.p2];
+  for(const m of S.items.filter(i=>i.t==="L"&&i.given&&i.kind==="segment"&&i.id!==l.id)){
+    for(const a of o)for(const b of [m.p1,m.p2]){
+      if(a!==b)continue;
+      const V=pt(a);
+      const P=pt(l.p1===a?l.p2:l.p1), Q=pt(m.p1===a?m.p2:m.p1);
+      if(!V||!P||!Q)continue;
+      const d=Math.abs(((ang(V,Q)-ang(V,P))*180/Math.PI+540)%360-180);
+      if(d>2&&d<178)return {V,P,Q,deg:d};
+    }
+  }
+  return null;
+}
+/* 붙일 점 — 이미 찍힌 점만 */
+function snapPoint(pos){
+  let best=null,bd=22;
+  for(const p of S.items.filter(i=>i.t==="P"&&!i.hidden)){
+    const d=d2(pos,p);if(d<bd){bd=d;best=p;}
+  }
+  return best;
+}
+/* 그 점에서 이미 뻗어 있는 방향 하나 (각을 붙일 기준) */
+function baseDirAt(P){
+  const ls=S.items.filter(i=>i.t==="L"&&(i.p1===P.id||i.p2===P.id));
+  for(const l of ls){
+    const Q=get(S,l.p1===P.id?l.p2:l.p1);
+    if(Q&&d2(P,Q)>4)return ang(P,Q);
+  }
+  return null;
+}
+function plGeom(){
+  if(!PL)return null;
+  if(PL.kind==="seg"){
+    const a=PL.at||PL.cur;
+    const t=PL.at?PL.dir:PL.srcDir;
+    return {a,b:{x:a.x+PL.len*Math.cos(t),y:a.y+PL.len*Math.sin(t)}};
+  }
+  const a=PL.at||PL.cur;
+  const t=PL.at?PL.dir:PL.srcDir;
+  const u=t+(PL.flip?-1:1)*PL.deg*Math.PI/180;
+  const R=PL.len;
+  return {a,b:{x:a.x+R*Math.cos(t),y:a.y+R*Math.sin(t)},
+            c:{x:a.x+R*Math.cos(u),y:a.y+R*Math.sin(u)}};
+}
+function plCommit(){
+  if(!PL||!PL.at)return;
+  const g=plGeom();
+  pushUndo();
+  const host=byLabelId(PL.at);
+  const mk=(p)=>{const id="s"+(S.nextId++);
+    S.items.push({t:"P",id,label:nextLabel(),x:p.x,y:p.y,given:false,def:{k:"skill"}});
+    return id;};
+  if(PL.kind==="seg"){
+    const b=mk(g.b);
+    S.items.push({t:"L",id:"L"+(S.nextId++),kind:"segment",p1:host,p2:b,given:false});
+  }else{
+    const c=mk(g.c);
+    S.items.push({t:"L",id:"L"+(S.nextId++),kind:"segment",p1:host,p2:c,given:false});
+  }
+  PL=null;recompute();render();paintUI();
+}
+function byLabelId(P){return P.id;}
+function nextLabel(){
+  const used=new Set(S.items.filter(i=>i.t==="P"&&i.label).map(i=>i.label));
+  for(const k of (S.pool||POOL))if(!used.has(k))return k;
+  return null;
+}
+
+/* 왼쪽 칸에 스킬 진행을 보여 준다 */
+window.paintSkill=function(){
+  const box=$("skillbox");
+  if(!box)return;
+  if(S.taskId!=="drill"){box.hidden=true;return;}
+  box.hidden=false;
+  const bar=(g,n)=>{
+    const d=skDone(g),got=skGot(g);
+    return `<div class="skrow${got?" got":""}">
+      <b>${n}</b><span class="sknum">${Math.min(d,SKNEED)} / ${SKNEED}</span>
+      <div class="skbar"><i style="width:${Math.min(100,d/SKNEED*100)}%"></i></div>
+      ${got?`<span class="skgot">스킬 얻음</span>`:""}</div>`;
+  };
+  box.innerHTML=bar("seg","선분 옮기기")+bar("ang","각 옮기기")
+    +`<p class="skhint">${(skGot("seg")&&skGot("ang"))
+      ? "두 스킬을 다 얻었습니다. <b>조사 3</b>부터 도구 막대에 <b>옮기기</b> 단추가 생깁니다."
+      : "각각 10문제를 풀면 스킬을 얻습니다."}</p>`;
+};
 
 /* ── 같은 담당끼리 모아보기 ── */
 /* 세 꼭짓점 차례를 한 가지로 정한 뒤, 밑변을 가로로 돌리고 위쪽으로 뒤집는다.
