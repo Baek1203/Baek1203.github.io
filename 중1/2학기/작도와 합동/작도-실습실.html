@@ -1166,6 +1166,8 @@ function render(){
       g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="5.5" fill="${col}" opacity=".55"/>`;
       if(PL.at)g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="11" fill="none"
         stroke="${col}" stroke-width="2" opacity=".45"/>`;
+      if(PL.at&&PL.mag)g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="16" fill="none"
+        stroke="#C98A10" stroke-width="2.4" stroke-dasharray="4 4" opacity=".8"/>`;
     }
   }
   if(drag&&drag.mode==="draw"&&drag.hi-drag.lo>0.001){
@@ -1353,7 +1355,7 @@ function paintToolbar(){
     const nm=S.tool==="cseg"?"선분 옮기기":"각 옮기기";
     const st=!PL?"① 주어진 것을 누르기"
       :(!PL.at?"② 붙일 점을 누르기":"③ 방향을 정하고 한 번 더 누르기");
-    h=cell(nm,PL&&PL.at?"움직이면 <b>방향이 돌아갑니다</b>"
+    h=cell(nm,PL&&PL.at?(PL.mag?"기존 선에 <b>딱 붙었습니다</b>":"움직이면 <b>방향이 돌아갑니다</b>")
       :(PL?"붙일 <b>점</b> 위를 누르세요":"옮길 <b>주어진 것</b>을 누르세요"),st,true)
      +cell("그만두기","<b>오른쪽 단추</b>를 누르거나 도구를 다시 고르면 놓습니다","");
   }else{
@@ -1485,7 +1487,7 @@ board.addEventListener("pointerdown",e=>{
       PL.at=P;
       const bd=baseDirAt(P);
       PL.dir=(bd!=null)?bd:PL.srcDir;
-      PL.snap=(bd!=null);
+      PL.mag=(bd!=null);
       render();
       toast(kind==="seg"?"방향을 정하고 한 번 더 누르세요."
                         :"각이 붙었습니다. 방향을 정하고 한 번 더 누르세요.");
@@ -1577,16 +1579,14 @@ window.addEventListener("pointermove",e=>{
   if(PL){                                        /* 들고 있거나 방향을 고르는 중 */
     if(!PL.at)PL.cur=pos;
     else{
-      let t=ang(PL.at,pos);
-      if(PL.snap){                               /* 붙인 점에 이미 변이 있으면 그 변에 딱 맞춘다 */
-        const bd=baseDirAt(PL.at);
-        if(bd!=null){
-          const d=((t-bd)*180/Math.PI+540)%360-180;
-          PL.flip=(d<0);
-          t=bd;
-        }
+      const raw=ang(PL.at,pos);
+      const m=magnet(PL.at,raw);                 /* 기존 선 가까이 가면 달라붙는다 */
+      PL.mag=(m!=null);
+      PL.dir=(m!=null)?m:raw;
+      if(PL.kind==="ang"){                       /* 각이 열릴 쪽은 손이 있는 쪽으로 */
+        const d=normPi(raw-PL.dir);
+        if(Math.abs(d)>0.5*Math.PI/180)PL.flip=(d<0);
       }
-      PL.dir=t;
     }
     render();return;
   }
@@ -2126,7 +2126,7 @@ function angBuild(d){
   ];
 }
 TASKS.drill={
-  fab:"overlay", hideSteps:true, noSteps:true,
+  fab:"overlay", hideSteps:true, noSteps:true, nosave:true,
   variants:[{label:"선분 옮기기",g:"seg"},{label:"각 옮기기",g:"ang"}],
   prompt:V=>DRILL[skNow(V.g)].prompt,
   build:V=>{const d=DRILL[skNow(V.g)];
@@ -2582,6 +2582,7 @@ async function saveId(force){
   }
   me={cls:c,nick:nk,no:nk,group:g||"",color:me.color};
   LS.set("me",me);
+  if(window.skLoad){skLoad();if(window.paintSkill)paintSkill();}
   if(owner!=="offline")dbPut(`codes/${c}/${nk}`,{dev:DEV,at:Date.now()}).catch(()=>{});
   idBusy=false;idNote("");
   $("idSave").textContent="저장";delete $("idSave").dataset.force;
@@ -2740,11 +2741,13 @@ window.FITLABELS=function(){
 /* ---- 자동 저장 ---- */
 const BUILD="2026-09-09d";                 /* 판이 바뀌면 옛 저장본은 버린다 */
 const skey=()=>`save:${cls()}:${me.no}:${S.taskId}:${S.variant}`;
-window.AUTOSAVE=function(){if(me.no)LS.set(skey(),{b:BUILD,j:snapS(),at:Date.now()});};
+window.AUTOSAVE=function(){
+  if(TASKS[S.taskId]&&TASKS[S.taskId].nosave)return;   /* 연습 화면은 남기지 않는다 */
+  if(me.no)LS.set(skey(),{b:BUILD,j:snapS(),at:Date.now()});};
 
 /* ---- 과제가 바뀔 때 ---- */
 window.ONTASK=function(T,V){
-  const sv=me.no?LS.get(skey(),null):null;
+  const sv=(me.no&&!(TASKS[S.taskId]&&TASKS[S.taskId].nosave))?LS.get(skey(),null):null;
   if(sv&&sv.j&&sv.b===BUILD){try{restore(sv.j);}catch(e){}}
   else if(sv)LS.del(skey());                 /* 옛 판의 그림은 지운다 */
   PL=null;
@@ -3458,8 +3461,14 @@ const SKNEED=5;
 const SKG=["seg","ang"];
 const SKNAME={seg:"선분 옮기기",ang:"각 옮기기"};
 let SKNEXT=null;
-let SK=LS.get("skill2",{seg:{n:0,i:0},ang:{n:0,i:0}});
-SKG.forEach(g=>{if(!SK[g]||typeof SK[g].n!=="number")SK[g]={n:0,i:0};});
+const skKey=()=>`skill:${me.cls||"?"}:${me.no||"?"}`;
+let SK={};
+window.skLoad=function(){
+  SK=LS.get(skKey(),{seg:{n:0,i:0},ang:{n:0,i:0}});
+  SKG.forEach(g=>{if(!SK[g]||typeof SK[g].n!=="number")SK[g]={n:0,i:0};});
+};
+const skSave=()=>LS.set(skKey(),SK);
+skLoad();
 const skDone=g=>SK[g].n;
 const skGot=g=>SK[g].n>=SKNEED;
 const skList=g=>DRILL.map((d,i)=>({d,i})).filter(x=>x.d.group===g);
@@ -3468,10 +3477,10 @@ function skWin(g){                              /* 한 문제 성공 */
   const L=skList(g);
   SK[g].n=Math.min(SKNEED,SK[g].n+1);
   SK[g].i=(SK[g].i+1)%L.length;
-  LS.set("skill2",SK);
+  skSave();
   return SK[g].n===SKNEED;
 }
-function skReset(g){SK[g]={n:0,i:SK[g].i};LS.set("skill2",SK);}
+function skReset(g){SK[g]={n:0,i:SK[g].i};skSave();}
 const SKTASK=["t8","t9","t11","t10"];           /* 조사 3부터 쓸 수 있다 */
 window.skUsable=g=>skGot(g)&&SKTASK.indexOf(S.taskId)>=0;
 /* 어느 화면에서 보일지 · 쓸 수 있을지 */
@@ -3515,6 +3524,28 @@ function snapPoint(pos){
   }
   return best;
 }
+/* 그 점을 지나는 선들의 방향 — 자석으로 끌어당길 후보 */
+function dirsAt(P){
+  const out=[];
+  for(const l of S.items.filter(i=>i.t==="L")){
+    const a=get(S,l.p1),b=get(S,l.p2);
+    if(!a||!b||d2(a,b)<2)continue;
+    if(distSeg(P,a,b)>3.5)continue;             /* 그 점이 이 선 위에 있어야 한다 */
+    const t=ang(a,b);
+    out.push(t,t+Math.PI);
+  }
+  return out;
+}
+const MAGTOL=8*Math.PI/180;                      /* 8도 안쪽이면 달라붙는다 */
+function magnet(P,t){
+  let best=null,bd=MAGTOL;
+  for(const c of dirsAt(P)){
+    const d=Math.abs(normPi(c-t));
+    if(d<bd){bd=d;best=c;}
+  }
+  return best;
+}
+
 /* 그 점에서 이미 뻗어 있는 방향 하나 (각을 붙일 기준) */
 function baseDirAt(P){
   const ls=S.items.filter(i=>i.t==="L"&&(i.p1===P.id||i.p2===P.id));
@@ -3550,8 +3581,9 @@ function plCommit(){
     const b=mk(g.b);
     S.items.push({t:"L",id:"L"+(S.nextId++),kind:"segment",p1:host,p2:b,given:false});
   }else{
-    const c=mk(g.c);
-    S.items.push({t:"L",id:"L"+(S.nextId++),kind:"segment",p1:host,p2:c,given:false});
+    const b=mk(g.b),c=mk(g.c);                   /* 각의 두 변을 반직선으로 */
+    S.items.push({t:"L",id:"L"+(S.nextId++),kind:"ray",p1:host,p2:b,given:false});
+    S.items.push({t:"L",id:"L"+(S.nextId++),kind:"ray",p1:host,p2:c,given:false});
   }
   PL=null;recompute();render();paintUI();
 }
@@ -3592,7 +3624,7 @@ window.paintSkill=function(){
   if(z)z.onclick=()=>{z.blur();skReset(g);paintSkill();loadTask("drill",S.variant);};
   const mo=$("skMore");
   if(mo)mo.onclick=()=>{mo.blur();
-    const L=skList(g);SK[g].i=(SK[g].i+1)%L.length;LS.set("skill2",SK);
+    const L=skList(g);SK[g].i=(SK[g].i+1)%L.length;skSave();
     loadTask("drill",S.variant);};
 };
 
