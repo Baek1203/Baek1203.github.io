@@ -71,11 +71,13 @@
     -webkit-user-select:none;user-select:none}
   .tools{display:grid;grid-template-columns:1fr 1fr;gap:7px}
   .toolwrap{position:relative;display:flex}
-  .tool{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  .tool{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
     padding:12px 4px;cursor:pointer;text-align:center;border-radius:9px;
     background:#F6F1E6;border:1.5px solid var(--rule);color:var(--ink);font:700 12.5px/1.2 var(--sans)}
   .tool svg{color:var(--c)}
   .tool:hover{border-color:var(--c)}
+  .tool.lock{opacity:.42;cursor:not-allowed}
+  .tool.lock::after{content:"🔒";position:absolute;right:7px;top:6px;font-size:11px}
   .tool[aria-pressed="true"]{background:var(--c);border-color:var(--c);color:#fff;
     box-shadow:0 4px 12px color-mix(in srgb,var(--c) 40%,transparent)}
   .tool[aria-pressed="true"] svg{color:#fff}
@@ -222,9 +224,13 @@
   .skrow:last-of-type{margin-bottom:4px}
   .skrow b{font:800 12.5px/1 var(--sans)}
   .skrow .sknum{float:right;font:700 11.5px/1 var(--sans);color:var(--ink-soft)}
-  .skbar{height:8px;border-radius:99px;background:#E9E1CC;margin-top:6px;overflow:hidden}
-  .skbar i{display:block;height:100%;background:var(--gold);transition:width .4s}
-  .skrow.got .skbar i{background:var(--ok,#2A7148)}
+  .skdots{display:flex;gap:4px;margin-top:8px}
+  .skdots i{flex:1;height:9px;border-radius:99px;background:#E9E1CC;transition:.3s}
+  .skdots i.on{background:var(--gold)}
+  .skrow.got .skdots i.on{background:#2A7148}
+  .skother{margin:10px 0 0;padding-top:9px;border-top:1px solid var(--rule);
+    font:700 11.5px/1 var(--sans);color:var(--ink-soft)}
+  .skhint.b{color:#2A7148}
   .skgot{display:inline-block;margin-top:6px;font:800 10.5px/1 var(--sans);color:#2A7148;
     background:#EFF7F1;border-radius:99px;padding:4px 8px}
   .skhint{margin:8px 0 0;font:700 11px/1.6 var(--sans);color:var(--ink-soft)}
@@ -466,6 +472,8 @@
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><circle cx="15" cy="5" r="2.4"/><path d="M13.6 7.2 6 26M16.4 7.2 24 26"/></svg>컴퍼스</button>
         <button class="tool" data-tool="point" style="--c:#C98A10" aria-pressed="false">
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><circle cx="15" cy="15" r="3.4" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="8.5"/></svg>점</button>
+        <button class="tool" data-tool="erase" style="--c:#6A6355" aria-pressed="false">
+          <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21 16 10l6 6-5 5H8z"/><path d="M4 26h22"/></svg>지우개</button>
         <button class="tool skill" data-tool="cseg" style="--c:#2A7148" aria-pressed="false" hidden>
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round"><path d="M5 22h20"/><path d="M5 19v6M25 19v6"/>
@@ -474,8 +482,6 @@
           <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor"
             stroke-width="2" stroke-linecap="round"><path d="M5 24h20"/><path d="M5 24 21 8"/>
             <path d="M12 24a10 10 0 0 0 3-7"/></svg>각 옮기기</button>
-        <button class="tool" data-tool="erase" style="--c:#6A6355" aria-pressed="false">
-          <svg width="22" height="22" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21 16 10l6 6-5 5H8z"/><path d="M4 26h22"/></svg>지우개</button>
       </div>
 
       <h2 id="stepHead">해야 할 순서<em id="progress">0 / 0</em></h2>
@@ -1274,16 +1280,27 @@ function overlaySVG(){
 function paintUI(){
   const C=S.compass;
   document.querySelectorAll("[data-tool]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.tool===S.tool));
-  if(window.skUsable)document.querySelectorAll(".tool.skill").forEach(b=>{
-    b.hidden=!window.skUsable(b.dataset.tool==="cseg"?"seg":"ang");
+  if(window.skShow)document.querySelectorAll(".tool.skill").forEach(b=>{
+    const g=b.dataset.tool==="cseg"?"seg":"ang";
+    const st=window.skShow(g);
+    b.hidden=!st.show;
+    b.disabled=!st.on;
+    b.classList.toggle("lock",!st.on);
+    b.title=st.on?"":`스킬 배우기에서 ${g==="seg"?"선분":"각"} 10번 이어서 성공하면 열립니다`;
   });
   document.querySelectorAll("[data-kind]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.kind===S.rulerKind));
   $("undo").disabled=!S.undo.length;
   paintToolbar();
   const st=TASKS[S.taskId].steps(S),done=st.filter(x=>x.ok).length;
-  const hide=!!TASKS[S.taskId].hideSteps&&!PEEK[S.taskId];
-  $("steps").hidden=hide;$("peek").hidden=!hide;
-  $("stepHead").hidden=hide;
+  const T0=TASKS[S.taskId];
+  if(T0.noSteps){                              /* 순서 안내를 쓰지 않는 화면 */
+    $("steps").hidden=true;$("peek").hidden=true;
+    const sh=$("stepHead");if(sh)sh.hidden=true;
+  }else{
+    const sh=$("stepHead");if(sh)sh.hidden=false;
+    const hide=!!T0.hideSteps&&!PEEK[S.taskId];
+    $("steps").hidden=hide;$("peek").hidden=!hide;
+  }
   $("steps").innerHTML=st.map((x,i)=>
     `<li class="${x.ok?"done":""}"><span class="n">${x.ok?"✓":i+1}</span><span class="tx">${x.t}</span></li>`).join("");
   $("progress").textContent=`${done} / ${st.length}`;
@@ -2109,23 +2126,24 @@ function angBuild(d){
   ];
 }
 TASKS.drill={
-  fab:"overlay",
-  variants:DRILL.map((d,i)=>({label:d.label,i})),
-  prompt:V=>DRILL[V.i].prompt,
-  build:V=>DRILL[V.i].kind==="seg"?DRILL[V.i].build():angBuild(DRILL[V.i]),
+  fab:"overlay", hideSteps:true, noSteps:true,
+  variants:[{label:"선분 옮기기",g:"seg"},{label:"각 옮기기",g:"ang"}],
+  prompt:V=>DRILL[skNow(V.g)].prompt,
+  build:V=>{const d=DRILL[skNow(V.g)];
+    return d.kind==="seg"?d.build():angBuild(d);},
   pool:["C","D","E","F","G","H","J","K"],
   win:"맞았습니다. 다음 문항으로 넘어가세요.",
-  onWin(st){                                   /* 통과한 문항을 적립한다 */
-    const g=DRILL[st.variant].group;
-    if(skMark(st.variant)){
-      toast(`${g==="seg"?"선분":"각"} 옮기기 스킬을 얻었습니다!`);
-      confetti&&confetti();
-    }
-    paintSkill();paintVariants(TASKS.drill);
+  onWin(st){                                   /* 이어서 성공한 횟수를 센다 */
+    const g=SKG[st.variant]||"seg";
+    if(skGot(g))return;
+    const just=skWin(g);
+    if(window.paintSkill)paintSkill();
+    if(just)setTimeout(()=>toast(`${SKNAME[g]} 스킬을 얻었습니다!`),300);
+    setTimeout(()=>{ if(S.taskId==="drill"&&!skGot(g))loadTask("drill",st.variant); },1100);
   },
 
   nameFor(st,c){
-    if(DRILL[st.variant].kind!=="ang")return null;
+    if(DRILL[skNow(SKG[st.variant]||"seg")].kind!=="ang")return null;
     const O=byLabel(st,"O"),Pp=byLabel(st,"P");
     const A=byLabel(st,"A"),B=byLabel(st,"B"),Q=byLabel(st,"Q");
     if(!O||!Pp)return null;
@@ -2148,7 +2166,7 @@ TASKS.drill={
   },
 
   steps(st){
-    const d=DRILL[st.variant];
+    const d=DRILL[skNow(SKG[st.variant]||"seg")];
     if(d.kind==="seg"){
       const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P"),l=KEY(st,"l");
       const AB=[A.id,B.id];
@@ -2176,7 +2194,7 @@ TASKS.drill={
   },
 
   check(st){
-    const d=DRILL[st.variant];
+    const d=DRILL[skNow(SKG[st.variant]||"seg")];
     if(d.kind==="seg"){
       const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P");
       const l=st.items.find(i=>i.name==="l");
@@ -2212,7 +2230,7 @@ TASKS.drill={
   },
 
   overlay(st){
-    const d=DRILL[st.variant],c=this.check(st);
+    const d=DRILL[skNow(SKG[st.variant]||"seg")],c=this.check(st);
     if(c.none)return c;
     if(d.kind==="seg"){
       const [Pp,Q]=c.answer,[A,B]=c.target;
@@ -2642,7 +2660,7 @@ function paintVariants(T){
   const lockV=(T===TASKS.t10)?LS.get("caseFix:"+me.no,null):null;
   row.hidden=false;
   row.innerHTML=T.variants.map((v,i)=>{
-    const ok=(S.taskId==="drill")&&DRILL[i]&&((SK[DRILL[i].group]||[]).indexOf(i)>=0);
+    const ok=(S.taskId==="drill")&&skGot(SKG[i]);
     return `<button class="vb${S.variant===i?" on":""}${ok?" done":""}" data-i="${i}"
       ${lockV!=null&&lockV!==i?"disabled":""}>${v.label}${ok?" ✓":""}</button>`;}).join("");
   row.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{
@@ -3429,18 +3447,26 @@ async function pullN(){
    선분 옮기기와 각 옮기기를 각각 10문제 풀면 스킬을 얻는다.
    얻고 나면 조사 3부터 도구 막대에 '옮기기' 단추가 생긴다. */
 const SKNEED=10;
-let SK=LS.get("skill",{seg:[],ang:[]});
-const skDone=g=>((SK&&SK[g])||[]).length;
-const skGot=g=>skDone(g)>=SKNEED;
-function skMark(idx){
-  const d=DRILL[idx];if(!d)return false;
-  const g=d.group,a=(SK[g]||[]);
-  if(a.indexOf(idx)>=0)return false;
-  a.push(idx);SK[g]=a;LS.set("skill",SK);
-  return skDone(g)===SKNEED;                    /* 방금 다 채웠는가 */
+const SKG=["seg","ang"];
+const SKNAME={seg:"선분 옮기기",ang:"각 옮기기"};
+let SK=LS.get("skill2",{seg:{n:0,i:0},ang:{n:0,i:0}});
+SKG.forEach(g=>{if(!SK[g]||typeof SK[g].n!=="number")SK[g]={n:0,i:0};});
+const skDone=g=>SK[g].n;
+const skGot=g=>SK[g].n>=SKNEED;
+const skList=g=>DRILL.map((d,i)=>({d,i})).filter(x=>x.d.group===g);
+const skNow=g=>{const L=skList(g);return L[SK[g].i%L.length].i;};
+function skWin(g){                              /* 한 문제 성공 */
+  const L=skList(g);
+  SK[g].n=Math.min(SKNEED,SK[g].n+1);
+  SK[g].i=(SK[g].i+1)%L.length;
+  LS.set("skill2",SK);
+  return SK[g].n===SKNEED;
 }
+function skReset(g){SK[g]={n:0,i:SK[g].i};LS.set("skill2",SK);}
 const SKTASK=["t8","t9","t11","t10"];           /* 조사 3부터 쓸 수 있다 */
 window.skUsable=g=>skGot(g)&&SKTASK.indexOf(S.taskId)>=0;
+/* 어느 화면에서 보일지 · 쓸 수 있을지 */
+window.skShow=g=>({show:SKTASK.indexOf(S.taskId)>=0, on:skGot(g)});
 
 /* ══════════ 스킬 도구 ══════════
    ① 도구를 고른다 → ② 주어진 선분·각을 누른다(집기) → 반투명으로 따라온다
@@ -3533,17 +3559,27 @@ window.paintSkill=function(){
   if(!box)return;
   if(S.taskId!=="drill"){box.hidden=true;return;}
   box.hidden=false;
-  const bar=(g,n)=>{
-    const d=skDone(g),got=skGot(g);
-    return `<div class="skrow${got?" got":""}">
-      <b>${n}</b><span class="sknum">${Math.min(d,SKNEED)} / ${SKNEED}</span>
-      <div class="skbar"><i style="width:${Math.min(100,d/SKNEED*100)}%"></i></div>
-      ${got?`<span class="skgot">스킬 얻음</span>`:""}</div>`;
-  };
-  box.innerHTML=bar("seg","선분 옮기기")+bar("ang","각 옮기기")
-    +`<p class="skhint">${(skGot("seg")&&skGot("ang"))
-      ? "두 스킬을 다 얻었습니다. <b>조사 3</b>부터 도구 막대에 <b>옮기기</b> 단추가 생깁니다."
-      : "각각 10문제를 풀면 스킬을 얻습니다."}</p>`;
+  const g=SKG[S.variant]||"seg";
+  const n=skDone(g),got=skGot(g);
+  const dots=Array.from({length:SKNEED},(_,k)=>
+    `<i class="${k<n?"on":""}"></i>`).join("");
+  const other=SKG.find(x=>x!==g);
+  box.innerHTML=`
+    <div class="skrow${got?" got":""}">
+      <b>${SKNAME[g]}</b><span class="sknum">${n} / ${SKNEED}</span>
+      <div class="skdots">${dots}</div>
+      ${got?`<span class="skgot">스킬을 얻었습니다</span>`
+           :`<p class="skhint">이어서 <b>${SKNEED}번</b> 성공하면 스킬을 얻습니다.
+              맞히면 다음 문제가 나옵니다.</p>`}
+    </div>
+    <p class="skother">${SKNAME[other]} ${skDone(other)} / ${SKNEED}${
+      skGot(other)?" · 얻음":""}</p>
+    ${(skGot("seg")&&skGot("ang"))
+      ? `<p class="skhint b">두 스킬을 다 얻었습니다. <b>조사 3</b>부터
+          도구 막대의 <b>옮기기</b> 단추를 쓸 수 있습니다.</p>` : ""}
+    ${n>0&&!got?`<button class="peek" id="skZero">처음부터 다시 세기</button>`:""}`;
+  const z=$("skZero");
+  if(z)z.onclick=()=>{z.blur();skReset(g);paintSkill();loadTask("drill",S.variant);};
 };
 
 /* ── 같은 담당끼리 모아보기 ── */
