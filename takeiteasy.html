@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<!--
+  테이크 잇 이지 (Take It Easy) 수업용 웹 앱
+  프로젝트: take-it-easy-e70f1 (asia-southeast1)
+  ==================================================================
+
+  설정값은 이미 채워져 있습니다. 아래 1번과 2번만 콘솔에서 마치면 됩니다.
+  ------------------------------------------------------------------
+
+  ------------------------------------------------------------------
+  1. 교사 비밀번호 만들기
+  ------------------------------------------------------------------
+  Authentication > Sign-in method > 이메일/비밀번호 사용 설정
+  Authentication > Users > 사용자 추가
+      이메일   teacher@takeiteasy.local   (실제 메일 주소가 아니어도 됩니다)
+      비밀번호  선생님이 정할 값 (6자 이상)
+  이 비밀번호가 방을 열 때 입력하는 값입니다.
+  비밀번호는 이 파일 어디에도 저장되지 않습니다.
+
+  ------------------------------------------------------------------
+  2. Realtime Database 규칙  (반드시 설정하세요)
+  ------------------------------------------------------------------
+  Realtime Database > 규칙 에 붙여 넣고 '게시'를 누릅니다.
+  처음 주어지는 테스트 모드 규칙은 30일 뒤 자동으로 막히므로,
+  그대로 두면 어느 날 수업 중에 갑자기 동작하지 않습니다.
+
+     {
+       "rules": {
+         "rooms": {
+           "$code": {
+             ".read": true,
+             ".write": "auth != null",
+             "players": { "$pid": { ".write": true } },
+             "ranking": { "$pid": { ".write": true } }
+           }
+         }
+       }
+     }
+
+     - 방 만들기, 타일 뽑기, 새 게임은 로그인한 교사만 가능합니다.
+     - 학생은 자기 진행 상황과 최종 점수만 쓸 수 있습니다.
+     - 방 내용 읽기는 누구나 가능합니다. 학생이 타일을 받아야 하니까요.
+
+  ------------------------------------------------------------------
+  3. 배포
+  ------------------------------------------------------------------
+  이 파일 하나만 올리면 됩니다.
+  firebase deploy --only hosting / GitHub Pages / 학교 웹서버 모두 됩니다.
+
+  ------------------------------------------------------------------
+  연습 모드
+  ------------------------------------------------------------------
+  FIREBASE_CONFIG 의 databaseURL 을 지우면 연습 모드가 됩니다.
+  한 대에서 혼자 타일을 뽑아가며 전체 흐름을 확인할 수 있습니다.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>테이크 잇 이지</title>
+<style>
+  :root{
+    --bg:#14181f; --panel:#1e242e; --panel2:#252c38; --line:#2f3746;
+    --ink:#e8ebf0; --mute:#828d9f; --white:#ffffff;
+    --ok:#3fbf6f; --warn:#f2b134; --bad:#e2574c;
+    --c1:#8a8f98; --c5:#2f6fd0; --c9:#c62828;
+    --c2:#1b7f3b; --c6:#e07b00; --c7:#7b2fbe;
+    --c3:#8d5a00; --c4:#d81b7a; --c8:#00767f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",Roboto,"Helvetica Neue",sans-serif;
+    font-size:15px; line-height:1.5; overflow:hidden;
+  }
+  button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  input{font:inherit}
+  .hidden{display:none !important}
+
+  /* ---------- 공통 ---------- */
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden}
+  .btn{
+    background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+    padding:11px 18px; border-radius:9px; font-weight:600; transition:background .12s;
+  }
+  .btn:hover{background:#2f3846}
+  .btn:focus-visible{outline:2px solid #6ea8ff;outline-offset:2px}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn.primary{background:var(--white);color:#14181f;border-color:var(--white)}
+  .btn.primary:hover{background:#dfe4ec}
+  .btn.big{padding:16px 30px;font-size:18px;border-radius:11px}
+  .field{display:block;width:100%;background:#11151c;border:1px solid var(--line);
+    color:var(--ink);padding:12px 14px;border-radius:9px;margin-top:7px}
+  .field:focus{outline:none;border-color:#5b7fb8}
+  label.lab{display:block;margin-top:16px;font-size:13px;color:var(--mute)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px}
+  .err{color:var(--bad);font-size:13.5px;margin-top:12px;min-height:20px}
+
+  /* ---------- 시작 화면 ---------- */
+  #home{align-items:center;justify-content:center;overflow:auto}
+  .homewrap{width:100%;max-width:430px;padding:28px}
+  .brand{font-size:34px;font-weight:800;letter-spacing:-.5px;margin:0}
+  .brandsub{color:var(--mute);margin:6px 0 26px;font-size:14px}
+  .rolerow{display:flex;gap:10px;margin-bottom:4px}
+  .rolerow .btn{flex:1;justify-content:center;text-align:center}
+  .rolerow .btn[aria-pressed="true"]{background:var(--white);color:#14181f;border-color:var(--white)}
+  .modetag{margin-top:20px;font-size:12.5px;color:var(--mute)}
+
+  /* ---------- 교사 ---------- */
+  #teacher{padding:18px 22px;gap:16px}
+  .thead{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .code{font-size:15px;color:var(--mute)}
+  .code b{color:var(--ink);font-size:26px;letter-spacing:5px;font-weight:800;margin-left:8px;
+    font-variant-numeric:tabular-nums}
+  .tbody{flex:1;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;min-height:0}
+  .stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:0;padding:20px}
+  .roundnum{font-size:15px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .roundnum b{color:var(--ink);font-size:40px;font-weight:800;margin:0 3px}
+  .bigtile{width:min(54vh,460px);aspect-ratio:1/.866}
+  .callout{font-size:clamp(28px,5vh,46px);font-weight:800;letter-spacing:6px;font-variant-numeric:tabular-nums}
+  .side{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .sidebox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:0;display:flex;flex-direction:column}
+  .sidebox h3{margin:0 0 10px;font-size:13px;color:var(--mute);font-weight:600}
+  .plist{overflow:auto;display:flex;flex-direction:column;gap:5px}
+  .prow{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--panel2);border-radius:8px;font-size:13.5px}
+  .prow .sid{color:var(--mute);font-variant-numeric:tabular-nums;min-width:42px}
+  .prow .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prow .pg{color:var(--mute);font-variant-numeric:tabular-nums}
+  .prow.done .pg{color:var(--ok);font-weight:700}
+
+  /* ---------- 학생 ---------- */
+  #play{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;padding:18px 20px}
+  .boardpane{display:flex;flex-direction:column;gap:12px;min-height:0}
+  .bhead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:13.5px;color:var(--mute)}
+  .bhead .who{color:var(--ink);font-weight:700;font-size:15px}
+  .boardwrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  #board{width:100%;height:100%;max-height:100%;touch-action:manipulation}
+  .cell{cursor:pointer}
+  .cell .hit{fill:transparent}
+  .cell.open:hover .slot{fill:#39445a}
+  .cell.target .slot{fill:#4a5a7a}
+  .rightpane{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .nowbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;
+    display:flex;flex-direction:column;align-items:center;gap:10px}
+  .nowtile{width:190px;aspect-ratio:1/.866;position:relative;touch-action:none}
+  .nowtile.draggable{cursor:grab}
+  .nowtile.dragging{opacity:.25}
+  .timerline{width:100%;height:7px;background:#11151c;border-radius:4px;overflow:hidden}
+  .timerfill{height:100%;width:100%;background:var(--ok);transition:width .1s linear,background .3s}
+  .timertext{font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+  .nowhint{font-size:12.5px;color:var(--mute);text-align:center;min-height:18px}
+  .tracker{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;
+    flex:1;min-height:0;display:flex;flex-direction:column}
+  .tracker h3{margin:0 0 9px;font-size:12.5px;color:var(--mute);font-weight:600;display:flex;justify-content:space-between}
+  .tgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;overflow:auto;align-content:start}
+  .tgrid .mini{width:100%;aspect-ratio:1/.866}
+  .tgrid .mini.used{opacity:.17}
+  .actions{display:flex;gap:8px}
+  .actions .btn{flex:1;padding:10px;text-align:center;font-size:13.5px}
+  #ghost{position:fixed;width:190px;aspect-ratio:1/.866;pointer-events:none;z-index:99;
+    transform:translate(-50%,-50%);filter:drop-shadow(0 8px 18px rgba(0,0,0,.55))}
+
+  /* ---------- 결과 ---------- */
+  #result{align-items:center;justify-content:center;overflow:auto;padding:24px}
+  .rwrap{width:100%;max-width:940px}
+  .rtop{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .rscore{font-size:60px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .rgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
+  @media(max-width:820px){.rgrid{grid-template-columns:1fr}}
+  .lines{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow:auto}
+  .lrow{display:flex;justify-content:space-between;background:var(--panel2);padding:7px 11px;border-radius:7px;font-size:13.5px}
+  .rank{display:flex;flex-direction:column;gap:5px;max-height:340px;overflow:auto}
+  .rkrow{display:flex;align-items:center;gap:10px;background:var(--panel2);padding:8px 11px;border-radius:8px;font-size:14px}
+  .rkrow .no{min-width:26px;color:var(--mute);font-weight:700;font-variant-numeric:tabular-nums}
+  .rkrow.me{background:#33405a}
+  .rkrow .sc{margin-left:auto;font-weight:800;font-variant-numeric:tabular-nums}
+
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    background:#0d1117;border:1px solid var(--line);padding:11px 20px;border-radius:10px;
+    font-size:14px;z-index:200;opacity:0;transition:opacity .25s;pointer-events:none}
+  .toast.show{opacity:1}
+
+  @media(max-width:900px){
+    #play{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto}
+    .rightpane{flex-direction:row;align-items:stretch}
+    .nowbox{flex:0 0 190px}
+    .tracker{flex:1}
+    .tbody{grid-template-columns:1fr}
+    .side{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<!-- =================== 시작 =================== -->
+<section class="screen" id="home">
+  <div class="homewrap">
+    <h1 class="brand">테이크 잇 이지</h1>
+    <p class="brandsub">같은 타일을 받아 각자 판을 채우고, 끝에서 끝까지 이어진 줄로 점수를 냅니다.</p>
+
+    <div class="card">
+      <div class="rolerow">
+        <button class="btn" id="roleStudent" aria-pressed="true">학생</button>
+        <button class="btn" id="roleTeacher" aria-pressed="false">교사</button>
+      </div>
+
+      <div id="studentForm">
+        <label class="lab" for="inSid">학번</label>
+        <input class="field" id="inSid" inputmode="numeric" placeholder="10203" autocomplete="off">
+        <label class="lab" for="inName">이름</label>
+        <input class="field" id="inName" placeholder="김수학" autocomplete="off">
+        <label class="lab" for="inCode">방 번호</label>
+        <input class="field" id="inCode" inputmode="numeric" maxlength="4" placeholder="교사 화면에 뜬 네 자리" autocomplete="off">
+        <div class="err" id="joinErr"></div>
+        <button class="btn primary big" id="btnJoin" style="width:100%">들어가기</button>
+      </div>
+
+      <div id="teacherForm" class="hidden">
+        <label class="lab" for="inCodeT">방 번호</label>
+        <input class="field" id="inCodeT" inputmode="numeric" maxlength="4" placeholder="네 자리 숫자" autocomplete="off">
+        <div id="pwWrap">
+          <label class="lab" for="inPw">교사 비밀번호</label>
+          <input class="field" id="inPw" type="password" autocomplete="current-password" placeholder="미리 정해 둔 비밀번호">
+        </div>
+        <div class="err" id="hostErr"></div>
+        <button class="btn primary big" id="btnHost" style="width:100%">방 열기</button>
+      </div>
+
+      <p class="modetag" id="modeTag"></p>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 교사 =================== -->
+<section class="screen hidden" id="teacher">
+  <div class="thead">
+    <div class="code">방 번호 <b id="tCode">0000</b></div>
+    <div class="roundnum"><b id="tRound">0</b>/ 19</div>
+    <div style="flex:1"></div>
+    <button class="btn" id="btnReset">새 게임</button>
+    <button class="btn primary big" id="btnDraw">타일 뽑기</button>
+  </div>
+  <div class="tbody">
+    <div class="stage">
+      <div class="callout" id="tCall">시작 준비</div>
+      <div class="bigtile" id="tBig"></div>
+      <div class="roundnum" id="tSub">타일 뽑기를 누르면 학생 화면에 나타납니다</div>
+    </div>
+    <div class="side">
+      <div class="sidebox" style="flex:1">
+        <h3>접속한 학생 <span id="tCount">0명</span></h3>
+        <div class="plist" id="tPlayers"></div>
+      </div>
+      <div class="sidebox" style="flex:0 0 auto">
+        <h3>남은 타일 <span id="tLeft">27장</span></h3>
+        <div class="tgrid" id="tTracker" style="grid-template-columns:repeat(7,minmax(0,1fr))"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 학생 플레이 =================== -->
+<section class="screen hidden" id="play">
+  <div class="boardpane">
+    <div class="bhead">
+      <span class="who" id="pWho">—</span>
+      <span id="pRound">0 / 19</span>
+      <span id="pFilled">놓은 타일 0칸</span>
+    </div>
+    <div class="boardwrap"><svg id="board" viewBox="0 0 400 433" role="img" aria-label="게임판"></svg></div>
+  </div>
+  <div class="rightpane">
+    <div class="nowbox">
+      <div class="nowtile" id="pNow"></div>
+      <div class="timerline"><div class="timerfill" id="pFill"></div></div>
+      <div class="timertext" id="pTime">대기 중</div>
+      <div class="nowhint" id="pHint">교사가 타일을 뽑기를 기다리는 중입니다.</div>
+      <div class="actions">
+        <button class="btn" id="btnUndo" disabled>취소</button>
+      </div>
+    </div>
+    <div class="tracker">
+      <h3><span>전체 타일</span><span id="pLeft">27장 남음</span></h3>
+      <div class="tgrid" id="pTracker"></div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== 결과 =================== -->
+<section class="screen hidden" id="result">
+  <div class="rwrap">
+    <div class="rtop">
+      <div>
+        <div style="color:var(--mute);font-size:14px" id="rWho">—</div>
+        <div class="rscore" id="rScore">0</div>
+      </div>
+      <div style="color:var(--mute);font-size:14px" id="rNote"></div>
+      <div style="flex:1"></div>
+      <button class="btn" id="btnBackHome">처음으로</button>
+    </div>
+    <div class="rgrid">
+      <div class="card" style="display:flex;align-items:center;justify-content:center;padding:16px">
+        <svg id="rBoard" viewBox="0 0 400 433" style="width:100%;max-height:56vh"></svg>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+        <div class="card">
+          <h3 style="margin:0 0 12px;font-size:13px;color:var(--mute)">완성한 줄</h3>
+          <div class="lines" id="rLines"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin:0 0 12px;font-size:13px;color:var(--mute)">우리 반 순위</h3>
+          <div class="rank" id="rRank"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="ghost" class="hidden"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   Firebase 설정 — 본인 값으로 채우세요. 비워 두면 연습 모드.
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyC4AZvE9PBT_iApqzWGphB_IMgFD3Y1I0o",
+  authDomain:        "take-it-easy-e70f1.firebaseapp.com",
+  databaseURL:       "https://take-it-easy-e70f1-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:         "take-it-easy-e70f1",
+  storageBucket:     "take-it-easy-e70f1.firebasestorage.app",
+  messagingSenderId: "31254087836",
+  appId:             "1:31254087836:web:219575f1c81fdc8c508559"
+};
+
+// Authentication 에 만든 교사 계정의 이메일. 비밀번호는 저장하지 않습니다.
+const TEACHER_EMAIL = "teacher@takeiteasy.local";
+
+// Authentication 을 쓰지 않을 때만 채우세요. 소스에 노출되니 시험용으로만.
+const TEACHER_PASSWORD = "";
+
+const SECONDS_PER_TURN = 20;
+const TOTAL_ROUNDS = 19;
+
+/* ---------- 게임 상수 ---------- */
+const VERT = [1,5,9], DIA1 = [2,6,7], DIA2 = [3,4,8];
+const COLOR = {1:'#8a8f98',5:'#2f6fd0',9:'#c62828',2:'#1b7f3b',6:'#e07b00',7:'#7b2fbe',3:'#8d5a00',4:'#d81b7a',8:'#00767f'};
+const TILES = [];
+for (const a of VERT) for (const b of DIA1) for (const c of DIA2) TILES.push([a,b,c]);
+
+const CELLS = [];
+for (let q=-2;q<=2;q++) for (let r=-2;r<=2;r++) if (Math.abs(q+r)<=2) CELLS.push({q,r});
+const ck = (q,r)=>q+','+r;
+
+const LINES = [];
+for (let q=-2;q<=2;q++) LINES.push({dir:0, name:'세로', cells:CELLS.filter(c=>c.q===q)});
+for (let r=-2;r<=2;r++) LINES.push({dir:1, name:'왼쪽아래에서 오른쪽위', cells:CELLS.filter(c=>c.r===r)});
+for (let s=-2;s<=2;s++) LINES.push({dir:2, name:'왼쪽위에서 오른쪽아래', cells:CELLS.filter(c=>-c.q-c.r===s)});
+
+/* ---------- 타일 그리기 ---------- */
+const S3 = Math.sqrt(3);
+function hexPath(cx,cy,R){
+  let d='';
+  for (let i=0;i<6;i++){
+    const a = Math.PI/180*(60*i);
+    const x = cx+R*Math.cos(a), y = cy - R*Math.sin(a);
+    d += (i?'L':'M')+x.toFixed(2)+' '+y.toFixed(2)+' ';
+  }
+  return d+'Z';
+}
+function stripeEnds(cx,cy,R,dir){
+  if (dir===0) return [[cx,cy-R*S3/2],[cx,cy+R*S3/2]];
+  if (dir===1) return [[cx-0.75*R,cy+R*S3/4],[cx+0.75*R,cy-R*S3/4]];
+  return [[cx-0.75*R,cy-R*S3/4],[cx+0.75*R,cy+R*S3/4]];
+}
+function beadPos(cx,cy,R,dir,f){
+  f = f===undefined?0.50:f;
+  if (dir===0) return [cx, cy-f*R*S3/2];
+  if (dir===1) return [cx-f*0.75*R, cy+f*R*S3/4];
+  return [cx+f*0.75*R, cy+f*R*S3/4];
+}
+/** 타일 한 장을 SVG 문자열로. tile=null 이면 빈 칸 */
+function tileSVG(tile, cx, cy, R, opt){
+  opt = opt||{};
+  let s = '';
+  s += `<path d="${hexPath(cx,cy,R)}" fill="${opt.slotFill||'#ffffff'}" stroke="${opt.stroke||'#2a2f3a'}" stroke-width="${(R*0.03).toFixed(2)}" ${opt.slotClass?`class="${opt.slotClass}"`:''}/>`;
+  if (!tile) return s;
+  for (let dir=0;dir<3;dir++){
+    const n = tile[dir];
+    const [p0,p1] = stripeEnds(cx,cy,R,dir);
+    s += `<line x1="${p0[0].toFixed(2)}" y1="${p0[1].toFixed(2)}" x2="${p1[0].toFixed(2)}" y2="${p1[1].toFixed(2)}" stroke="${COLOR[n]}" stroke-width="${(R*0.15).toFixed(2)}" stroke-linecap="butt"/>`;
+  }
+  for (let dir=0;dir<3;dir++){
+    const n = tile[dir];
+    const [bx,by] = beadPos(cx,cy,R,dir);
+    s += `<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="${(R*0.215).toFixed(2)}" fill="#fff" stroke="${COLOR[n]}" stroke-width="${(R*0.045).toFixed(2)}"/>`;
+    s += `<text x="${bx.toFixed(2)}" y="${by.toFixed(2)}" fill="${COLOR[n]}" font-size="${(R*0.34).toFixed(2)}" font-weight="800" text-anchor="middle" dominant-baseline="central" font-family="inherit">${n}</text>`;
+  }
+  return s;
+}
+function tileBox(tile,opt){
+  const R=50, pad=4, w=2*R+pad*2, h=R*S3+pad*2;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">${tileSVG(tile,w/2,h/2,R,opt)}</svg>`;
+}
+const tileBoxSmall = tileBox;
+
+/* ---------- 점수 ---------- */
+function scoreBoard(board){
+  let total=0; const got=[];
+  for (const L of LINES){
+    const vals = L.cells.map(c=>{ const t=board[ck(c.q,c.r)]; return (t===undefined||t===null)?null:TILES[t][L.dir]; });
+    if (vals.some(v=>v===null)) continue;
+    if (vals.every(v=>v===vals[0])){
+      const pts = vals[0]*L.cells.length;
+      total += pts;
+      got.push({name:L.name, n:vals[0], len:L.cells.length, pts, cells:L.cells});
+    }
+  }
+  got.sort((a,b)=>b.pts-a.pts);
+  return {total, got};
+}
+
+/* ---------- 유틸 ---------- */
+const $ = id=>document.getElementById(id);
+function show(id){ ['home','teacher','play','result'].forEach(s=>$(s).classList.toggle('hidden', s!==id)); }
+let toastT;
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function shuffled(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ============================================================
+   백엔드 — Firebase 또는 로컬(연습 모드)
+   ============================================================ */
+const HAS_FB = !!(FIREBASE_CONFIG && FIREBASE_CONFIG.databaseURL);
+let db=null, fb=null, auth=null, authMod=null;
+
+async function initBackend(){
+  if (!HAS_FB) return false;
+  if (db) return true;
+  const appMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+  const dbMod  = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+  const app = appMod.initializeApp(FIREBASE_CONFIG);
+  db = dbMod.getDatabase(app);
+  fb = dbMod;
+  if (TEACHER_EMAIL && FIREBASE_CONFIG.apiKey){
+    authMod = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+    auth = authMod.getAuth(app);
+  }
+  return true;
+}
+
+/** 방을 열 수 있는지 확인. 통과하면 null, 아니면 보여 줄 메시지 */
+async function verifyTeacher(pw){
+  if (HAS_FB && TEACHER_EMAIL && !FIREBASE_CONFIG.apiKey){
+    return '파일 위쪽 FIREBASE_CONFIG 의 apiKey 가 비어 있습니다. Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱 에서 복사해 채워 주세요.';
+  }
+  if (HAS_FB && TEACHER_EMAIL){
+    try {
+      await authMod.signInWithEmailAndPassword(auth, TEACHER_EMAIL, pw);
+      return null;
+    } catch(e){
+      const c = (e && e.code) || '';
+      if (c.indexOf('operation-not-allowed')>=0) return 'Firebase 콘솔에서 이메일/비밀번호 로그인을 사용 설정해 주세요.';
+      if (c.indexOf('user-not-found')>=0) return TEACHER_EMAIL+' 계정이 아직 없습니다. Authentication > Users 에서 만들어 주세요.';
+      if (c.indexOf('network')>=0) return '네트워크에 연결되지 않았습니다.';
+      return '비밀번호가 맞지 않습니다.';
+    }
+  }
+  if (TEACHER_PASSWORD) return pw===TEACHER_PASSWORD ? null : '비밀번호가 맞지 않습니다.';
+  return null;
+}
+const NEEDS_PW = (HAS_FB && !!TEACHER_EMAIL) || !!TEACHER_PASSWORD;
+const KEY_MISSING = HAS_FB && !!TEACHER_EMAIL && !FIREBASE_CONFIG.apiKey;
+
+/* 연습 모드용 로컬 이벤트 버스 */
+const local = { data:{}, subs:{} };
+function localPath(p){ return p.split('/').filter(Boolean); }
+function localGet(p){ let n=local.data; for(const k of localPath(p)){ if(n==null) return null; n=n[k]; } return n===undefined?null:n; }
+function localSet(p,v){
+  const ks=localPath(p); let n=local.data;
+  for(let i=0;i<ks.length-1;i++){ if(typeof n[ks[i]]!=='object'||n[ks[i]]===null) n[ks[i]]={}; n=n[ks[i]]; }
+  n[ks[ks.length-1]] = v;
+  Object.keys(local.subs).forEach(k=>{ if(p.startsWith(k)||k.startsWith(p)) local.subs[k].forEach(f=>f(localGet(k))); });
+}
+function localOn(p,cb){ (local.subs[p] = local.subs[p]||[]).push(cb); cb(localGet(p)); }
+
+async function bSet(path,val){ if(db){ await fb.set(fb.ref(db,path), val); } else { localSet(path,val); } }
+async function bUpdate(path,val){ if(db){ await fb.update(fb.ref(db,path), val); } else { const cur=localGet(path)||{}; localSet(path,Object.assign({},cur,val)); } }
+async function bGet(path){ if(db){ const s=await fb.get(fb.ref(db,path)); return s.exists()?s.val():null; } return localGet(path); }
+function bOn(path,cb){ if(db){ return fb.onValue(fb.ref(db,path), s=>cb(s.exists()?s.val():null)); } localOn(path,cb); return ()=>{}; }
+
+/* ============================================================
+   시작 화면
+   ============================================================ */
+let role='student';
+function setRole(r){
+  role=r;
+  $('roleStudent').setAttribute('aria-pressed', r==='student');
+  $('roleTeacher').setAttribute('aria-pressed', r==='teacher');
+  $('studentForm').classList.toggle('hidden', r!=='student');
+  $('teacherForm').classList.toggle('hidden', r!=='teacher');
+}
+$('roleStudent').onclick = ()=>setRole('student');
+$('roleTeacher').onclick = ()=>setRole('teacher');
+
+$('pwWrap').classList.toggle('hidden', !NEEDS_PW);
+$('modeTag').textContent = KEY_MISSING
+  ? '설정이 아직 끝나지 않았습니다. 파일 위쪽 FIREBASE_CONFIG 의 apiKey 를 채워 주세요.'
+  : (HAS_FB
+      ? (NEEDS_PW ? '학생 기기와 실시간으로 연결됩니다. 방 열기는 교사 비밀번호가 필요합니다.'
+                  : '학생 기기와 실시간으로 연결됩니다.')
+      : '연습 모드입니다. 이 기기 안에서만 동작하며, 학생 화면에서 직접 타일을 뽑아 전체 흐름을 확인할 수 있습니다.');
+if (KEY_MISSING) $('modeTag').style.color = 'var(--warn)';
+
+// 노트북에서 엔터로 넘어가도록
+['inSid','inName','inCode'].forEach(id=>$(id).addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnJoin').click(); }));
+['inCodeT','inPw'].forEach(id=>$(id).addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnHost').click(); }));
+
+/* ============================================================
+   교사 화면
+   ============================================================ */
+let roomCode=null, bag=[], tRoundState=null;
+
+$('btnHost').onclick = async ()=>{
+  const code = ($('inCodeT').value||'').trim() || String(Math.floor(1000+Math.random()*9000));
+  if (!/^\d{4}$/.test(code)){ $('hostErr').textContent='네 자리 숫자로 입력하세요.'; return; }
+  $('hostErr').textContent='';
+  if (KEY_MISSING){
+    $('hostErr').textContent = '파일 위쪽 FIREBASE_CONFIG 의 apiKey 가 비어 있습니다. Firebase 콘솔 > 프로젝트 설정 > 일반 > 내 앱 에서 복사해 채워 주세요.';
+    return;
+  }
+  $('btnHost').disabled = true;
+  try { await initBackend(); } catch(e){ $('hostErr').textContent='Firebase 에 연결하지 못했습니다. 설정값을 확인해 주세요.'; $('btnHost').disabled=false; return; }
+  const bad = await verifyTeacher(($('inPw').value||''));
+  $('btnHost').disabled = false;
+  if (bad){ $('hostErr').textContent = bad; return; }
+  roomCode = code;
+  await bSet('rooms/'+code, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now() });
+  bag = shuffled(TILES.map((_,i)=>i));
+  $('tCode').textContent = code;
+  renderTeacherTracker([]);
+  show('teacher');
+  watchTeacher();
+};
+
+function watchTeacher(){
+  bOn('rooms/'+roomCode+'/players', v=>{
+    const list = Object.values(v||{});
+    $('tCount').textContent = list.length+'명';
+    list.sort((a,b)=>String(a.sid).localeCompare(String(b.sid)));
+    $('tPlayers').innerHTML = list.map(p=>
+      `<div class="prow ${p.done?'done':''}"><span class="sid">${esc(p.sid)}</span><span class="nm">${esc(p.name)}</span><span class="pg">${p.done?(p.score+'점'):((p.placed||0)+'/19')}</span></div>`
+    ).join('') || '<div style="color:var(--mute);font-size:13px">아직 없습니다</div>';
+  });
+  bOn('rooms/'+roomCode+'/drawn', v=>{
+    const drawn = v||[];
+    renderTeacherTracker(drawn);
+    $('tLeft').textContent = (27-drawn.length)+'장';
+    $('tRound').textContent = drawn.length;
+    const last = drawn.length?drawn[drawn.length-1]:null;
+    if (last!==null && last!==undefined){
+      const t=TILES[last];
+      $('tCall').textContent = t.join(' - ');
+      $('tBig').innerHTML = tileBox(t);
+      $('tSub').textContent = drawn.length>=TOTAL_ROUNDS ? '모든 타일을 다 뽑았습니다' : '학생들이 20초 안에 놓습니다';
+    }
+    $('btnDraw').disabled = drawn.length>=TOTAL_ROUNDS;
+    if (drawn.length>=TOTAL_ROUNDS) $('btnDraw').textContent='끝';
+  });
+}
+function renderTeacherTracker(drawn){
+  const used = new Set(drawn);
+  $('tTracker').innerHTML = TILES.map((t,i)=>
+    `<div class="mini ${used.has(i)?'used':''}">${tileBoxSmall(t)}</div>`).join('');
+}
+$('btnDraw').onclick = async ()=>{
+  const drawn = (await bGet('rooms/'+roomCode+'/drawn')) || [];
+  if (drawn.length>=TOTAL_ROUNDS) return;
+  const used = new Set(drawn);
+  const left = TILES.map((_,i)=>i).filter(i=>!used.has(i));
+  const pick = left[Math.floor(Math.random()*left.length)];
+  const next = drawn.concat([pick]);
+  await bUpdate('rooms/'+roomCode, { drawn: next, round: next.length, tile: {id:pick, round:next.length, at:Date.now()} });
+};
+$('btnReset').onclick = async ()=>{
+  if (!confirm('지금까지 기록이 지워집니다. 새 게임을 시작할까요?')) return;
+  await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now() });
+  $('tCall').textContent='시작 준비'; $('tBig').innerHTML=''; $('btnDraw').disabled=false; $('btnDraw').textContent='타일 뽑기';
+};
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ============================================================
+   학생 화면
+   ============================================================ */
+let me = null;            // {pid, sid, name}
+let board = {};           // cellKey -> tileId
+let drawnList = [];
+let curTile = null;       // {id, round}
+let placedThisRound = false;
+let lastPlacedKey = null;
+let timerId = null, deadline = 0;
+
+$('btnJoin').onclick = async ()=>{
+  const sid=($('inSid').value||'').trim(), name=($('inName').value||'').trim(), code=($('inCode').value||'').trim();
+  if (!sid || !name){ $('joinErr').textContent='학번과 이름을 모두 입력하세요.'; return; }
+  if (HAS_FB && !/^\d{4}$/.test(code)){ $('joinErr').textContent='교사 화면에 뜬 네 자리 방 번호를 입력하세요.'; return; }
+  $('joinErr').textContent='';
+  try { await initBackend(); } catch(e){
+    if (HAS_FB){ $('joinErr').textContent='서버에 연결하지 못했습니다. 선생님께 알려 주세요.'; return; }
+  }
+  roomCode = HAS_FB ? code : (roomCode || '0000');
+
+  if (HAS_FB){
+    const room = await bGet('rooms/'+roomCode);
+    if (!room){ $('joinErr').textContent='그런 방이 없습니다. 번호를 확인해 주세요.'; return; }
+  } else {
+    if (!(await bGet('rooms/'+roomCode))){
+      await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null });
+    }
+  }
+
+  me = { pid: sid+'_'+Math.random().toString(36).slice(2,7), sid, name };
+  board = {}; lastPlacedKey=null;
+  await bSet('rooms/'+roomCode+'/players/'+me.pid, { sid, name, placed:0, score:0, done:false });
+
+  $('pWho').textContent = sid+' '+name;
+  renderBoard(); renderStudentTracker([]);
+  show('play');
+  watchStudent();
+  if (!HAS_FB) enablePracticeDraw();
+};
+
+function watchStudent(){
+  bOn('rooms/'+roomCode+'/drawn', v=>{
+    drawnList = v||[];
+    renderStudentTracker(drawnList);
+    $('pLeft').textContent = (27-drawnList.length)+'장 남음';
+    $('pRound').textContent = drawnList.length+' / '+TOTAL_ROUNDS;
+  });
+  bOn('rooms/'+roomCode+'/tile', v=>{
+    if (!v) return;
+    if (curTile && curTile.round===v.round) return;
+    onNewTile(v);
+  });
+}
+
+function onNewTile(v){
+  // 늦게 들어온 학생: 이미 지나간 타일은 무작위로 채워 진도를 맞춘다
+  const missing = v.round - 1 - Object.keys(board).length;
+  if (missing > 0){
+    for (let i=0;i<missing;i++){
+      const id = drawnList[i];
+      if (id===undefined) break;
+      const k = randomEmptyCell();
+      if (k) board[k]=id;
+    }
+    if (missing>0) toast('늦게 들어와서 지나간 타일 '+missing+'장은 임의로 놓았습니다.');
+  }
+  curTile = { id:v.id, round:v.round };
+  placedThisRound = false;
+  lastPlacedKey = null;
+  $('btnUndo').disabled = true;
+  $('pNow').innerHTML = tileBox(TILES[v.id]);
+  $('pNow').classList.add('draggable');
+  $('pHint').textContent = '빈 칸을 누르거나 타일을 끌어다 놓으세요.';
+  renderBoard();
+  startTimer();
+}
+
+function startTimer(){
+  stopTimer();
+  deadline = Date.now() + SECONDS_PER_TURN*1000;
+  tick();
+  timerId = setInterval(tick, 100);
+}
+function stopTimer(){ if(timerId){clearInterval(timerId); timerId=null;} }
+function tick(){
+  const left = Math.max(0, deadline-Date.now());
+  const pct = left/(SECONDS_PER_TURN*1000);
+  const fill=$('pFill');
+  fill.style.width = (pct*100).toFixed(1)+'%';
+  fill.style.background = pct>0.5?'var(--ok)':(pct>0.22?'var(--warn)':'var(--bad)');
+  $('pTime').textContent = (left/1000).toFixed(1)+'초';
+  if (left<=0){
+    stopTimer();
+    if (!placedThisRound){
+      const k = randomEmptyCell();
+      if (k){ doPlace(k, true); toast('시간이 다 되어 자동으로 놓았습니다.'); }
+    }
+  }
+}
+function randomEmptyCell(){
+  const empty = CELLS.filter(c=>board[ck(c.q,c.r)]===undefined);
+  if (!empty.length) return null;
+  const c = empty[Math.floor(Math.random()*empty.length)];
+  return ck(c.q,c.r);
+}
+
+/* ---------- 판 ---------- */
+function boardSVGString(hl){
+  const R=50; let s='';
+  for (const c of CELLS){
+    const key = ck(c.q,c.r);
+    const x = 200 + 1.5*R*c.q, y = 216.5 - R*S3*(c.r + c.q/2);
+    const t = board[key], empty = (t===undefined);
+    s += tileSVG(empty?null:TILES[t], x, y, R, {slotFill: empty?'#232a35':'#ffffff', stroke:'#2a2f3a'});
+    if (hl && hl.has(key)) s += `<path d="${hexPath(x,y,R)}" fill="none" stroke="#ffd166" stroke-width="4"/>`;
+  }
+  return s;
+}
+function renderBoard(highlight){
+  const R=50, svg=$('board');
+  const hl = highlight? new Set(highlight) : null;
+  let s='';
+  for (const c of CELLS){
+    const key = ck(c.q,c.r);
+    const x = 200 + 1.5*R*c.q;
+    const y = 216.5 - R*S3*(c.r + c.q/2);
+    const t = board[key];
+    const empty = (t===undefined);
+    const opt = {
+      slotFill: empty ? (hl?'#232a35':'#313b4d') : '#ffffff',
+      stroke: hl && hl.has(key) ? '#ffd166' : '#2a2f3a',
+      slotClass: 'slot'
+    };
+    s += `<g class="cell ${empty&&curTile&&!placedThisRound?'open':''}" data-key="${key}">`;
+    s += tileSVG(empty?null:TILES[t], x, y, R, opt);
+    if (hl && hl.has(key)) s += `<path d="${hexPath(x,y,R)}" fill="none" stroke="#ffd166" stroke-width="3"/>`;
+    s += `<path class="hit" d="${hexPath(x,y,R)}"/>`;
+    s += `</g>`;
+  }
+  svg.innerHTML = s;
+  svg.querySelectorAll('.cell').forEach(g=>{
+    g.addEventListener('click', ()=>{
+      const key=g.dataset.key;
+      if (!curTile || placedThisRound || board[key]!==undefined) return;
+      doPlace(key,false);
+    });
+  });
+  $('pFilled').textContent = '놓은 타일 '+Object.keys(board).length+'칸';
+}
+
+async function doPlace(key, auto){
+  if (board[key]!==undefined || !curTile) return;
+  board[key] = curTile.id;
+  placedThisRound = true;
+  lastPlacedKey = auto?null:key;
+  stopTimer();
+  $('pFill').style.width='0%';
+  $('pTime').textContent = '놓았습니다';
+  $('pHint').textContent = '다음 타일을 기다리는 중입니다.';
+  $('pNow').classList.remove('draggable');
+  $('btnUndo').disabled = !lastPlacedKey;
+  renderBoard();
+  await bUpdate('rooms/'+roomCode+'/players/'+me.pid, { placed: Object.keys(board).length });
+  if (Object.keys(board).length >= TOTAL_ROUNDS) finish();
+}
+
+$('btnUndo').onclick = ()=>{
+  if (!lastPlacedKey) return;
+  delete board[lastPlacedKey];
+  lastPlacedKey=null; placedThisRound=false;
+  $('btnUndo').disabled=true;
+  $('pNow').classList.add('draggable');
+  $('pHint').textContent = '다시 놓으세요. 남은 시간은 이어집니다.';
+  renderBoard();
+  if (deadline>Date.now()){ timerId=setInterval(tick,100); }
+};
+
+/* ---------- 드래그 ---------- */
+(function setupDrag(){
+  const now=$('pNow'), ghost=$('ghost');
+  let dragging=false;
+  now.addEventListener('pointerdown', e=>{
+    if (!curTile || placedThisRound) return;
+    dragging=true; now.setPointerCapture(e.pointerId);
+    ghost.innerHTML = tileBox(TILES[curTile.id]);
+    ghost.classList.remove('hidden');
+    now.classList.add('dragging');
+    moveGhost(e);
+  });
+  now.addEventListener('pointermove', e=>{ if(dragging){ moveGhost(e); highlightUnder(e); } });
+  now.addEventListener('pointerup', e=>{
+    if (!dragging) return;
+    dragging=false; ghost.classList.add('hidden'); now.classList.remove('dragging');
+    clearTarget();
+    const g = cellUnder(e);
+    if (g){ const key=g.dataset.key; if (board[key]===undefined) doPlace(key,false); }
+  });
+  now.addEventListener('pointercancel', ()=>{ dragging=false; ghost.classList.add('hidden'); now.classList.remove('dragging'); clearTarget(); });
+  function moveGhost(e){ ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; }
+  function cellUnder(e){
+    ghost.classList.add('hidden');
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    ghost.classList.remove('hidden');
+    return el? el.closest('.cell') : null;
+  }
+  function highlightUnder(e){
+    clearTarget();
+    const g = cellUnder(e);
+    if (g && board[g.dataset.key]===undefined) g.classList.add('target');
+  }
+  function clearTarget(){ document.querySelectorAll('.cell.target').forEach(g=>g.classList.remove('target')); }
+})();
+
+/* ---------- 오른쪽 타일 목록 ---------- */
+function renderStudentTracker(drawn){
+  const used = new Set(drawn);
+  $('pTracker').innerHTML = TILES.map((t,i)=>
+    `<div class="mini ${used.has(i)?'used':''}">${tileBoxSmall(t)}</div>`).join('');
+}
+
+/* ---------- 결과 ---------- */
+async function finish(){
+  stopTimer();
+  const {total, got} = scoreBoard(board);
+  await bUpdate('rooms/'+roomCode+'/players/'+me.pid, { placed:19, score:total, done:true });
+  await bSet('rooms/'+roomCode+'/ranking/'+me.pid, { sid:me.sid, name:me.name, score:total, at:Date.now() });
+
+  $('rWho').textContent = me.sid+' '+me.name;
+  $('rScore').textContent = total+'점';
+  $('rNote').textContent = total>=250?'아주 드문 점수입니다':(total>=200?'잘한 편입니다':(total>=150?'괜찮은 점수입니다':'한 판 더 해 봅시다'));
+  $('rLines').innerHTML = got.length ? got.map(g=>
+    `<div class="lrow"><span>${g.name} · ${g.n}이 ${g.len}칸</span><b>${g.pts}점</b></div>`).join('')
+    : '<div style="color:var(--mute);font-size:13.5px">완성한 줄이 없습니다.</div>';
+
+  const hl=new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
+  $('rBoard').innerHTML = boardSVGString(hl);
+  bOn('rooms/'+roomCode+'/ranking', v=>{
+    const list = Object.entries(v||{}).map(([pid,x])=>Object.assign({pid},x));
+    list.sort((a,b)=>b.score-a.score);
+    $('rRank').innerHTML = list.map((x,i)=>
+      `<div class="rkrow ${x.pid===me.pid?'me':''}"><span class="no">${i+1}</span><span>${esc(x.sid)}</span><span>${esc(x.name)}</span><span class="sc">${x.score}점</span></div>`).join('')
+      || '<div style="color:var(--mute);font-size:13.5px">아직 없습니다</div>';
+  });
+  show('result');
+}
+$('btnBackHome').onclick = ()=>{ location.reload(); };
+
+/* ---------- 연습 모드: 학생 화면에서 직접 뽑기 ---------- */
+function enablePracticeDraw(){
+  const b=document.createElement('button');
+  b.className='btn primary'; b.textContent='타일 뽑기 (연습 모드)';
+  b.style.width='100%';
+  b.onclick = async ()=>{
+    const drawn = (await bGet('rooms/'+roomCode+'/drawn'))||[];
+    if (drawn.length>=TOTAL_ROUNDS) return;
+    if (curTile && !placedThisRound){ toast('먼저 타일을 놓으세요.'); return; }
+    const used=new Set(drawn);
+    const left=TILES.map((_,i)=>i).filter(i=>!used.has(i));
+    const pick=left[Math.floor(Math.random()*left.length)];
+    const next=drawn.concat([pick]);
+    await bUpdate('rooms/'+roomCode, { drawn:next, round:next.length, tile:{id:pick, round:next.length, at:Date.now()} });
+  };
+  $('pNow').parentElement.querySelector('.actions').appendChild(b);
+}
+
+/* 첫 화면 포커스 */
+$('inSid').focus();
+</script>
+</body>
+</html>
