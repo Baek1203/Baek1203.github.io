@@ -1154,8 +1154,12 @@ function render(){
     const q=plGeom();
     if(q&&q.a){
       const col=PL.kind==="seg"?"#2A7148":"#7A3FBF";
-      const L=(a,b)=>`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}"
-        stroke="${col}" stroke-width="3.4" stroke-linecap="round" opacity=".5"/>`;
+      const hot=!!(PL.at&&PL.mag)||!!(!PL.at&&PL.over);
+      const op=hot?.95:.45, wd=hot?4.6:3.2;
+      const L=(a,b,o,w)=>`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}"
+        stroke="${col}" stroke-width="${w||wd}" stroke-linecap="round" opacity="${o||op}"/>`;
+      if(hot)g+=`<line x1="${f(q.a.x)}" y1="${f(q.a.y)}" x2="${f(q.b.x)}" y2="${f(q.b.y)}"
+        stroke="#C98A10" stroke-width="13" stroke-linecap="round" opacity=".3"/>`;
       g+=L(q.a,q.b);
       if(q.c){
         g+=L(q.a,q.c);
@@ -1163,11 +1167,12 @@ function render(){
         const d=arcPath(q.a.x,q.a.y,26,ang(q.a,q.b),sw>Math.PI?sw-Math.PI*2:sw);
         if(d)g+=`<path d="${d}" fill="none" stroke="${col}" stroke-width="2" opacity=".5"/>`;
       }
-      g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="5.5" fill="${col}" opacity=".55"/>`;
+      g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="${hot?7:5.5}" fill="${col}"
+        opacity="${hot?.95:.5}"/>`;
       if(PL.at)g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="11" fill="none"
         stroke="${col}" stroke-width="2" opacity=".45"/>`;
-      if(PL.at&&PL.mag)g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="16" fill="none"
-        stroke="#C98A10" stroke-width="2.4" stroke-dasharray="4 4" opacity=".8"/>`;
+      if(hot)g+=`<circle cx="${f(q.a.x)}" cy="${f(q.a.y)}" r="17" fill="none"
+        stroke="#C98A10" stroke-width="3" opacity=".85"/>`;
     }
   }
   if(drag&&drag.mode==="draw"&&drag.hi-drag.lo>0.001){
@@ -1356,7 +1361,8 @@ function paintToolbar(){
     const st=!PL?"① 주어진 것을 누르기"
       :(!PL.at?"② 붙일 점을 누르기":"③ 방향을 정하고 한 번 더 누르기");
     h=cell(nm,PL&&PL.at?(PL.mag?"기존 선에 <b>딱 붙었습니다</b>":"움직이면 <b>방향이 돌아갑니다</b>")
-      :(PL?"붙일 <b>점</b> 위를 누르세요":"옮길 <b>주어진 것</b>을 누르세요"),st,true)
+      :(PL?(PL.over?"이 점에 <b>붙습니다</b> — 누르세요":"붙일 <b>점</b> 위를 누르세요")
+          :"옮길 <b>주어진 것</b>을 누르세요"),st,true)
      +cell("그만두기","<b>오른쪽 단추</b>를 누르거나 도구를 다시 고르면 놓습니다","");
   }else{
     h=cell("지우개","내가 그린 <b>선이나 원</b> 위를 클릭하거나 문지르면 지워집니다","");
@@ -1577,7 +1583,11 @@ window.addEventListener("pointermove",e=>{
   if(busy)return;
   const pos=toSVG(e),C=S.compass;
   if(PL){                                        /* 들고 있거나 방향을 고르는 중 */
-    if(!PL.at)PL.cur=pos;
+    if(!PL.at){
+      const P=snapPoint(pos);
+      PL.over=!!P;
+      PL.cur=P?{x:P.x,y:P.y}:pos;
+    }
     else{
       const raw=ang(PL.at,pos);
       const m=magnet(PL.at,raw);                 /* 기존 선 가까이 가면 달라붙는다 */
@@ -3574,14 +3584,15 @@ function plCommit(){
   const g=plGeom();
   pushUndo();
   const host=byLabelId(PL.at);
-  const mk=(p)=>{const id="s"+(S.nextId++);
-    S.items.push({t:"P",id,label:nextLabel(),x:p.x,y:p.y,given:false,def:{k:"skill"}});
+  const mk=(p,hide)=>{const id="s"+(S.nextId++);
+    S.items.push({t:"P",id,label:hide?null:nextLabel(),x:p.x,y:p.y,
+      given:false,hidden:!!hide,def:{k:"skill"}});
     return id;};
   if(PL.kind==="seg"){
     const b=mk(g.b);
     S.items.push({t:"L",id:"L"+(S.nextId++),kind:"segment",p1:host,p2:b,given:false});
   }else{
-    const b=mk(g.b),c=mk(g.c);                   /* 각의 두 변을 반직선으로 */
+    const b=mk(g.b,true),c=mk(g.c,true);         /* 끝점은 감춘다 — 각만 옮긴다 */
     S.items.push({t:"L",id:"L"+(S.nextId++),kind:"ray",p1:host,p2:b,given:false});
     S.items.push({t:"L",id:"L"+(S.nextId++),kind:"ray",p1:host,p2:c,given:false});
   }
