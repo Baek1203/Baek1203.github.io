@@ -397,6 +397,24 @@
   .evcard:hover{border-color:var(--gold)}
   .evcard svg{width:100%;display:block}
   .evcard .k{position:absolute;left:9px;top:7px;font:800 14px/1 var(--sans);color:var(--ink-soft)}
+
+  /* ── 삼각형 그리기 ── */
+  .trimode{display:inline-flex;gap:5px;margin-right:11px;padding-right:11px;
+    border-right:2px solid var(--rule)}
+  .txrow{display:flex;gap:5px;margin:8px 0 4px}
+  .txrow .vb{flex:1;text-align:center;padding:8px 2px;font-size:11.5px}
+  .txgiven{font:700 12px/1.5 var(--sans);color:var(--ink);background:#FFF8E6;
+    border:1px solid #E8D7A8;border-radius:8px;padding:8px 10px;margin-bottom:9px}
+  .txgiven i{font-style:normal;color:#8A6A0E;font-weight:800}
+  .txr{display:flex;gap:4px;margin-bottom:9px}
+  .txr i{flex:1;height:7px;border-radius:99px;background:#E7E0CD;font-size:0}
+  .txr i.on{background:var(--green)}
+  .txr i.now{background:var(--gold)}
+  .txtimes{margin-top:9px;border-top:1px solid var(--rule);padding-top:8px}
+  .txtimes>b{display:block;font:800 11px/1 var(--sans);color:var(--ink-soft);margin-bottom:6px}
+  .txt1{display:flex;justify-content:space-between;font:700 12px/1 var(--sans);padding:4px 2px;
+    border-bottom:1px dotted var(--rule)}
+  .txt1 span{color:var(--ink-soft)}
   .cmp svg{width:100%;background:var(--paper);border:1px solid var(--rule);border-radius:9px}
   .verd{margin-top:12px;padding:12px 15px;border-radius:10px;border:1.5px solid var(--rule)}
   .verd b{font:800 14px/1.3 var(--sans)}
@@ -549,8 +567,15 @@ const esc=s=>String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
 const CLOSED=new Set(["L","M","N","R","S","X","Z"]);   /* 엘·엠·엔·알·에스·엑스·제트 */
-function closed(l){const s=String(l);if(s.endsWith("′")||s.endsWith("'"))return false;
+function closed(l){const s=String(l||"");if(!s)return false;if(s.endsWith("′")||s.endsWith("'"))return false;
   return CLOSED.has(s[s.length-1].toUpperCase());}
+function segName(p,q){
+  const g=S.items.find(i=>i.t==="L"&&i.given&&i.name&&
+    ((i.p1===p.id&&i.p2===q.id)||(i.p1===q.id&&i.p2===p.id)));
+  if(g)return "선분 "+g.name;
+  return (p.label&&q.label)?("선분 "+p.label+q.label):"두 점 사이";
+}
+const NMP=p=>(p&&p.label)?("점 "+p.label):"이름 없는 점";
 const eul=l=>l+(closed(l)?"을":"를");
 const wa =l=>l+(closed(l)?"과":"와");
 const ro =l=>l+(closed(l)?"으로":"로");
@@ -763,7 +788,7 @@ const TASKS={
 };
 
 /* ============================ 상태 ============================ */
-let S,drag=null,over=null,hover=null,busy=false,toastT=null;
+let S,drag=null,over=null,hover=null,hoverPt=null,hoverP=null,busy=false,toastT=null;
 const board=document.getElementById("board");
 const $=id=>document.getElementById(id);
 const get=(st,id)=>st.items.find(i=>i.id===id);
@@ -868,13 +893,14 @@ function onItem(it,p){
   if(it.kind==="ray")return t>=-0.004;
   return true;
 }
+const MERGE=2.2;            /* 이보다 가까운 교점만 같은 점으로 본다 */
 function candidates(){
   const out=[],cv=S.items.filter(i=>i.t==="L"||i.t==="A");
   for(let i=0;i<cv.length;i++)for(let j=i+1;j<cv.length;j++){
     const all=intersect(cv[i],cv[j],false);          /* 뿌리 번호를 매기기 위한 무제한 교점 */
     for(const p of intersect(cv[i],cv[j],true)){
-      if(S.items.some(o=>o.t==="P"&&!o.hidden&&d2(o,p)<7))continue;
-      if(out.some(o=>d2(o,p)<7))continue;
+      if(S.items.some(o=>o.t==="P"&&!o.hidden&&d2(o,p)<MERGE))continue;
+      if(out.some(o=>d2(o,p)<MERGE))continue;
       let root=0,bd=Infinity;
       all.forEach((q,k)=>{const d=d2(q,p);if(d<bd){bd=d;root=k;}});
       out.push({x:p.x,y:p.y,a:cv[i].id,b:cv[j].id,root});
@@ -895,7 +921,7 @@ function arcPath(cx,cy,r,a0,sw){
   const p1={x:cx+r*Math.cos(a0+sw),y:cy+r*Math.sin(a0+sw)};
   return `M${f(p0.x)} ${f(p0.y)} A${f(r)} ${f(r)} 0 ${sw>Math.PI?1:0} 1 ${f(p1.x)} ${f(p1.y)}`;
 }
-const lbl=(x,y,t,col)=>`<text x="${f(x)}" y="${f(y)}" style="font-family:var(--serif)" font-size="19"
+const lbl=(x,y,t,col)=>`<text x="${f(x)}" y="${f(y)}" style="font-family:var(--serif)" font-size="17"
   font-weight="600" fill="${col}" stroke="${CO.paper}" stroke-width="3.6" paint-order="stroke"
   stroke-linejoin="round">${esc(t)}</text>`;
 
@@ -938,15 +964,15 @@ function render(){
 
   for(const a of S.items.filter(i=>i.t==="A")){
     const c=pt(a.c),r=radiusOf(a),d=arcPath(c.x,c.y,r,a.a0,a.sweep);
-    g+=d?`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="2.3" stroke-linecap="round" opacity=".8"/>`
-        :`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r)}" fill="none" stroke="${CO.arc}" stroke-width="2.3" opacity=".8"/>`;
+    g+=d?`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="1.8" stroke-linecap="round" opacity=".85"/>`
+        :`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r)}" fill="none" stroke="${CO.arc}" stroke-width="1.8" opacity=".85"/>`;
   }
   for(const l of S.items.filter(i=>i.t==="L"&&i.given)){
     let a=pt(l.p1),b=pt(l.p2);
     if(l.kind==="ray")b=ext(a,b);
     else if(l.kind==="line"){const A=ext(b,a),B=ext(a,b);a=A;b=B;}
     else if(l.over){const L=d2(a,b)||1;b={x:b.x+(b.x-a.x)/L*l.over,y:b.y+(b.y-a.y)/L*l.over};}
-    g+=`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${CO.given}" stroke-width="2.4" stroke-linecap="round"/>`;
+    g+=`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${CO.given}" stroke-width="2" stroke-linecap="round"/>`;
     if(l.name)g+=(l.num!==undefined)
       ?`<text x="${l.labelPos.x}" y="${l.labelPos.y}" text-anchor="middle"
          font-size="18" fill="${CO.given}" stroke="${CO.paper}" stroke-width="4"
@@ -964,30 +990,49 @@ function render(){
     const th=ang(a,b),nx=-Math.sin(th),ny=Math.cos(th);
     /* 방금 그은 선에만 형광펜 띠 — 아래 도형이 비쳐 보이면서 '덧그렸다'가 읽힌다 */
     if(l.id===S.flash)
-      g+=`<line ${L} stroke="${CO.mine}" stroke-width="11" stroke-linecap="butt" opacity=".2"/>`;
-    g+=`<line ${L} stroke="${CO.mine}" stroke-width="3.2" stroke-linecap="round"/>`;
+      g+=`<line ${L} stroke="${CO.mine}" stroke-width="8.5" stroke-linecap="butt" opacity=".16"/>`;
+    g+=`<line ${L} stroke="${CO.mine}" stroke-width="2.5" stroke-linecap="round"/>`;
     if(l.kind==="segment"){                         /* 어디부터 어디까지인지 못 박는 마감 */
       for(const p of[a,b])
         g+=`<line x1="${f(p.x-nx*9)}" y1="${f(p.y-ny*9)}" x2="${f(p.x+nx*9)}" y2="${f(p.y+ny*9)}"
-             stroke="${CO.mine}" stroke-width="2.8" stroke-linecap="round"/>`;
+             stroke="${CO.mine}" stroke-width="2.2" stroke-linecap="round"/>`;
     }
   }
   if(drag&&drag.mode==="draw"&&drag.hi-drag.lo>0.001){
     const c=needle(),r=C.r;
     g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r)}" fill="none" stroke="${CO.arc}" stroke-width="1" stroke-dasharray="3 6" opacity=".35"/>`;
     const d=arcPath(c.x,c.y,r,drag.a0+drag.lo,Math.min(drag.hi-drag.lo,TAU-1e-6));
-    if(d)g+=`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="2.8" stroke-linecap="round"/>`;
+    if(d)g+=`<path d="${d}" fill="none" stroke="${CO.arc}" stroke-width="2.2" stroke-linecap="round"/>`;
   }
-  const wantPt=(S.tool==="point");
-  for(const c of candidates()){
-    if(wantPt)g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="12" fill="#E9A61A" opacity=".2"/>`;
-    g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${wantPt?7:6}" fill="${CO.paper}"
-      stroke="${wantPt?"#E9A61A":CO.hollow}" stroke-width="${wantPt?2.4:1.6}" stroke-dasharray="2.6 2.4"/>`;
+  const wantPt=(S.tool==="point"), cds=candidates();
+  const near=[];                                   /* 이웃까지의 거리 */
+  for(const c of cds){
+    let m=1e9;
+    for(const o of cds)if(o!==c)m=Math.min(m,d2(o,c));
+    for(const o of S.items)if(o.t==="P"&&!o.hidden)m=Math.min(m,d2(o,c));
+    near.push(m);
+  }
+  cds.forEach((c,i)=>{
+    const r=Math.max(2,Math.min(wantPt?6.5:5.5,near[i]*0.36));   /* 붙어 있으면 작게 */
+    const tight=near[i]<20, aim=(hoverPt&&hoverPt.x===c.x&&hoverPt.y===c.y);
+    if(wantPt&&!tight&&!aim)
+      g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="11" fill="#E9A61A" opacity=".18"/>`;
+    if(aim){                                        /* 지금 찍히는 자리 */
+      g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r+7)}" fill="#E9A61A" opacity=".3"/>`;
+      g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r+7)}" fill="none" stroke="#E9A61A" stroke-width="2.2"/>`;
+    }
+    g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${f(r)}" fill="${CO.paper}"
+      stroke="${aim?"#B8790A":(wantPt?"#E9A61A":CO.hollow)}" stroke-width="${r<3.4?1.1:1.4}"
+      ${r<3.4?"":'stroke-dasharray="2.4 2.2"'}/>`;
+  });
+  if(hoverP){                                      /* 자·컴퍼스가 잡을 점 */
+    g+=`<circle cx="${f(hoverP.x)}" cy="${f(hoverP.y)}" r="11" fill="#E9A61A" opacity=".3"/>`;
+    g+=`<circle cx="${f(hoverP.x)}" cy="${f(hoverP.y)}" r="11" fill="none" stroke="#E9A61A" stroke-width="2.2"/>`;
   }
   for(const p of S.items.filter(i=>i.t==="P"&&!i.hidden)){
     const col=p.given?CO.given:CO.mine;
     if(S.pending.includes(p.id))g+=`<circle cx="${f(p.x)}" cy="${f(p.y)}" r="12" fill="none" stroke="var(--gold)" stroke-width="3"/>`;
-    g+=`<circle cx="${f(p.x)}" cy="${f(p.y)}" r="5" fill="${col}"/>`;
+    g+=`<circle cx="${f(p.x)}" cy="${f(p.y)}" r="4" fill="${col}"/>`;
     if(p.label){const o=p.lo||{x:10,y:-9};g+=lbl(p.x+o.x,p.y+o.y,p.label,col);}
   }
   if(over)g+=overlaySVG();
@@ -1008,9 +1053,9 @@ function compassSVG(){
   const H="#E9A61A";
   let g=`<g>`;
   const glow=(a,b)=>`<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${H}"
-      stroke-width="16" stroke-linecap="round" opacity=".38"/>`+
+      stroke-width="14" stroke-linecap="round" opacity=".34"/>`+
     `<line x1="${f(a.x)}" y1="${f(a.y)}" x2="${f(b.x)}" y2="${f(b.y)}" stroke="${H}"
-      stroke-width="9" stroke-linecap="round" opacity=".85"/>`;
+      stroke-width="7.5" stroke-linecap="round" opacity=".8"/>`;
   if(part==="needle")g+=glow(hg,c);
   if(part==="pencil")g+=glow(hg,tip);
   if(part==="hinge"){
@@ -1020,11 +1065,11 @@ function compassSVG(){
   }
 
   /* 중심쪽 다리 — 침 */
-  g+=`<line x1="${f(hg.x)}" y1="${f(hg.y)}" x2="${f(c.x)}" y2="${f(c.y)}" stroke="${CO.body}" stroke-width="5" stroke-linecap="round"/>`;
+  g+=`<line x1="${f(hg.x)}" y1="${f(hg.y)}" x2="${f(c.x)}" y2="${f(c.y)}" stroke="${CO.body}" stroke-width="4.2" stroke-linecap="round"/>`;
   g+=`<circle cx="${f(c.x)}" cy="${f(c.y)}" r="${part==="needle"?5.5:4}" fill="${CO.body}"/>`;
   /* 바깥쪽 다리 — 연필 */
-  g+=`<line x1="${f(hg.x)}" y1="${f(hg.y)}" x2="${f(tip.x)}" y2="${f(tip.y)}" stroke="${CO.body}" stroke-width="5" stroke-linecap="round"/>`;
-  g+=`<line x1="${f(w1.x)}" y1="${f(w1.y)}" x2="${f(w2.x)}" y2="${f(w2.y)}" stroke="${CO.wood}" stroke-width="9"/>`;
+  g+=`<line x1="${f(hg.x)}" y1="${f(hg.y)}" x2="${f(tip.x)}" y2="${f(tip.y)}" stroke="${CO.body}" stroke-width="4.2" stroke-linecap="round"/>`;
+  g+=`<line x1="${f(w1.x)}" y1="${f(w1.y)}" x2="${f(w2.x)}" y2="${f(w2.y)}" stroke="${CO.wood}" stroke-width="7.5"/>`;
   g+=`<circle cx="${f(tip.x)}" cy="${f(tip.y)}" r="${part==="pencil"?5:3.4}" fill="${CO.body}"/>`;
   /* 가운데 손잡이 */
   g+=`<line x1="${f(hg.x)}" y1="${f(hg.y)}" x2="${f(knob.x)}" y2="${f(knob.y)}" stroke="${CO.body}" stroke-width="7" stroke-linecap="round"/>`;
@@ -1274,7 +1319,7 @@ board.addEventListener("pointerdown",e=>{
       S.flash="i"+S.nextId;
       S.items.push({t:"L",id:"i"+(S.nextId++),kind:S.rulerKind,p1:a,p2:b,given:false});
       ev({op:"line",p1:a,p2:b,kind:S.rulerKind},
-         `눈금 없는 자로 점 ${wa(pt(a).label)} 점 ${eul(pt(b).label)} 이어 ${KIND[S.rulerKind]}을 그렸다.`);
+         `눈금 없는 자로 ${wa(NMP(pt(a)))} ${eul(NMP(pt(b)))} 이어 ${KIND[S.rulerKind]}을 그렸다.`);
       S.pending=[];
     }
     recompute();render();return;
@@ -1323,7 +1368,13 @@ window.addEventListener("pointermove",e=>{
   if(busy)return;
   const pos=toSVG(e),C=S.compass;
   if(!drag){                                     /* 손을 올린 부분이 무슨 일을 하는지 알려줌 */
+    const wp=(S.tool==="point")?candidateNear(pos):null;
+    const wq=(S.tool==="ruler"||(S.tool==="compass"&&!compassPart(pos)))?hitPoint(pos):null;
+    const ch=(wp&&(!hoverPt||wp.x!==hoverPt.x||wp.y!==hoverPt.y))||(!wp&&hoverPt)||
+             ((wq&&(!hoverP||wq.id!==hoverP.id))||(!wq&&hoverP));
+    hoverPt=wp; hoverP=wq;
     const h=compassPart(pos);
+    if(ch&&h===hover){render();return;}
     if(h!==hover){hover=h;
       board.style.cursor=h==="needle"?"move":h?"grab":(S.tool==="erase"?"cell":"crosshair");
       render();}
@@ -1369,7 +1420,7 @@ window.addEventListener("pointerup",()=>{
     if(d.snap){
       const keep=C.r>=1;
       C.center=promote(d.snap.ref);
-      if(keep)toast(`침을 점 ${pt(C.center).label} 위에 올렸습니다. 벌림은 그대로입니다.`);
+      if(keep)toast(`침을 ${NMP(pt(C.center))} 위에 올렸습니다. 벌림은 그대로입니다.`);
     }else toast(candidateNear(needle())?NEEDPT:"침이 점 위에 있어야 원을 그릴 수 있습니다.");
     recompute();render();return;
   }
@@ -1379,7 +1430,7 @@ window.addEventListener("pointerup",()=>{
     else{
       C.used=0;
       ev(C.from?{op:"open",from:[C.from[0],C.from[1]]}:{op:"open",r:f(C.r),free:true},
-         C.from?`컴퍼스를 선분 ${pt(C.from[0]).label}${pt(C.from[1]).label}만큼 벌렸다.`:"컴퍼스를 적당히 벌렸다.");
+         C.from?`컴퍼스를 ${segName(pt(C.from[0]),pt(C.from[1]))}만큼 벌렸다.`:"컴퍼스를 적당히 벌렸다.");
     }
   }else if(d.mode==="draw"){
     const span=Math.min(d.hi-d.lo,TAU);
@@ -1390,7 +1441,7 @@ window.addEventListener("pointerup",()=>{
         a0:norm2pi(d.a0+d.lo),sweep:span});
       const A0=S.items[S.items.length-1];
       ev({op:"arc",c:C.center,r:A0.r,a0:f(A0.a0),sweep:f(A0.sweep)},
-         `${C.used>0?"컴퍼스 벌림을 그대로 둔 채, ":""}점 ${eul(pt(C.center).label)} 중심으로 원을 그렸다.`);
+         `${C.used>0?"컴퍼스 벌림을 그대로 둔 채, ":""}${eul(NMP(pt(C.center)))} 중심으로 원을 그렸다.`);
       C.used++;recompute();
       const arc=S.items[S.items.length-1];
       if(!candidates().some(k=>k.a===arc.id||k.b===arc.id))
@@ -1454,7 +1505,7 @@ document.addEventListener("pointerdown",e=>{              /* 터치: 바깥을 �
 document.querySelectorAll("[data-tool]").forEach(b=>b.onclick=()=>{
   if(b.dataset.tool==="ruler"){S.rulerKind="segment";rwrap.classList.toggle("open");}
   else popOpen(false);
-  S.tool=b.dataset.tool;S.pending=[];S.flash=null;drag=null;hover=null;board.style.cursor="crosshair";b.blur();render();});
+  S.tool=b.dataset.tool;S.pending=[];S.flash=null;drag=null;hover=null;hoverPt=null;hoverP=null;board.style.cursor="crosshair";b.blur();render();});
 document.querySelectorAll("[data-kind]").forEach(b=>b.onclick=()=>{
   S.tool="ruler";S.rulerKind=b.dataset.kind;S.pending=[];S.flash=null;popOpen(false);b.blur();render();});
 /* 탭 배선은 확장 모듈에서 담당한다 (잠금·변형 처리 때문) */
@@ -1983,5 +2034,278 @@ buildTabs();
 loadTask("seg");
 
 </script>
+<script>
+/* ══════════════════ 삼각형 그리기 ══════════════════
+   연습 — 세 조건을 하나씩. 실습 — 무작위 라운드를 제한시간 안에. */
+
+/* ---- 인덱스를 세어 주는 빌더 (#n 참조를 안전하게) ---- */
+function TB(){const a=[];return{
+  p(x,y,o){a.push(Object.assign({t:"P",label:"",x,y,given:true,def:{k:"fix"}},o||{}));return "#"+(a.length-1);},
+  l(o){a.push(o);return "#"+(a.length-1);},
+  out(){return a;}};}
+
+function gvSeg(b,key,letter,x,y,cm){
+  const p1=b.p(x,y), p2=b.p(x+cm*CM,y);
+  b.l({t:"L",kind:"segment",p1,p2,given:true,key,num:"",name:letter,
+       labelPos:{x:x+cm*CM/2,y:y-13}});
+}
+function gvAng(b,key,letter,ox,oy,deg,arm){
+  const t=-deg*Math.PI/180, bi=t/2;
+  const v=b.p(ox,oy), ax=b.p(ox+arm,oy), ay=b.p(ox+arm*Math.cos(t),oy+arm*Math.sin(t));
+  b.l({t:"L",kind:"segment",p1:v,p2:ax,given:true,key:key+"x",over:24,num:"",name:letter,
+       labelPos:{x:ox+Math.cos(bi)*60,y:oy+Math.sin(bi)*60+6}});
+  b.l({t:"L",kind:"segment",p1:v,p2:ay,given:true,key:key+"y",over:24});
+}
+function gvBase(b,bx){
+  const h1=b.p(56,445,{hidden:true}), h2=b.p(748,445,{hidden:true});
+  b.l({t:"L",kind:"line",p1:h1,p2:h2,given:true,name:"l",key:"l",labelPos:{x:754,y:433}});
+  b.p(bx,445,{label:"B"});
+}
+function triBuild(c){
+  const b=TB();
+  if(c.k==="sss"){
+    gvSeg(b,"a","a",470,96,c.a); gvSeg(b,"b","b",470,158,c.b); gvSeg(b,"c","c",470,220,c.c);
+    gvBase(b,180);
+  }else if(c.k==="sas"){
+    gvSeg(b,"a","a",470,96,c.a); gvSeg(b,"c","c",470,158,c.c);
+    gvAng(b,"X","∠X",492,330,c.deg,112);
+    gvBase(b,180);
+  }else{
+    gvSeg(b,"a","a",470,70,c.a);
+    gvAng(b,"X","∠X",492,236,c.d1,100); gvAng(b,"Y","∠Y",492,372,c.d2,100);
+    gvBase(b,150);
+  }
+  return b.out();
+}
+const TRI_PROMPT={
+  sss:"세 선분 <b>a, b, c</b>를 세 변으로 하는 삼각형을 작도하시오.",
+  sas:"두 변이 <b>a, c</b>이고 그 끼인각이 <b>∠X</b>인 삼각형을 작도하시오.",
+  asa:"한 변이 <b>a</b>이고 그 양 끝 각이 <b>∠X, ∠Y</b>인 삼각형을 작도하시오."
+};
+function triCheck(st,c){
+  if(c.k==="sss")return ckSSS(st,c.a,c.b,c.c);
+  if(c.k==="sas")return ckSAS(st,c.a,c.c,c.deg);
+  return ckASA(st,c.a,c.d1,c.d2);
+}
+function triName(st,c,cd){
+  const B=byLabel(st,"B"),l=KEY(st,"l");if(!B)return null;
+  const it=id=>get(st,id),hits=id=>c.a===id||c.b===id;
+  const u=it(c.a),v=it(c.b);
+  const arc=[u,v].find(x=>x&&x.t==="A");
+  if(arc&&l&&hits(l.id)&&arc.c===B.id&&c.x>B.x+10)return "C";
+  const C=byLabel(st,"C");
+  if(!C||c.y>=B.y-16)return null;
+  if(cd.k==="sss"){                               /* 두 원의 교점 (중심 B·C) */
+    if(u&&v&&u.t==="A"&&v.t==="A"){
+      const cs=[u.c,v.c];
+      if(cs.indexOf(B.id)>=0&&cs.indexOf(C.id)>=0)return "A";
+    }
+    return null;
+  }
+  if(cd.k==="sas"){                               /* 변 c 만큼 벌린 원 ∩ 옮긴 각의 변 */
+    const ac=[u,v].find(x=>x&&x.t==="A"&&x.c===B.id&&same2(rPts(x),segPts(st,"c")));
+    const ln=[u,v].find(x=>x&&x.t==="L"&&!x.given);
+    if(ac&&ln)return "A";
+    return null;
+  }
+  if(u&&v&&u.t==="L"&&v.t==="L"&&!u.given&&!v.given)return "A";   /* 두 변의 교점 */
+  return null;
+}
+function triSteps(st,c){
+  const B=byLabel(st,"B");
+  const C=baseSecond(st,"a");
+  const s1={t:"컴퍼스를 선분 <u>a</u>만큼 벌려 점 B에서 원을 그리고, 직선 l과 만나는 점 <b>C</b>를 찍는다",ok:!!C};
+  const done={t:"세 점을 <u>선분</u>으로 이어 삼각형을 완성한다",ok:!!triCheck(st,c).ok};
+  if(c.k==="sss"){
+    const ac=arcR(st,"c",B&&B.id), ab=C&&arcR(st,"b",C.id);
+    return[s1,
+      {t:"컴퍼스를 선분 <u>c</u>만큼 벌려 점 B를 중심으로 원을 그린다",ok:!!ac},
+      {t:"컴퍼스를 선분 <u>b</u>만큼 벌려 점 C를 중심으로 원을 그린다",ok:!!ab},
+      {t:"두 원이 만나는 점 <b>A</b>를 찍는다",ok:!!(ac&&ab&&xpt(st,ac.id,ab.id))},
+      done];
+  }
+  if(c.k==="sas"){
+    return[s1,
+      {t:"<u>∠X</u>와 크기가 같은 각을 점 B에 옮겨, 그 변을 <u>반직선</u>으로 긋는다",ok:!!(C&&hasAngleAt(st,B,C,c.deg))},
+      {t:"컴퍼스를 선분 <u>c</u>만큼 벌려 점 B에서 원을 그리고, 그 변과 만나는 점 <b>A</b>를 찍는다",
+       ok:!!arcR(st,"c",B&&B.id)},
+      done];
+  }
+  return[s1,
+    {t:"점 B에 <u>∠X</u>를 옮겨, 그 변을 <u>반직선</u>으로 긋는다",ok:!!(C&&hasAngleAt(st,B,C,c.d1))},
+    {t:"점 C에 <u>∠Y</u>를 옮겨, 그 변을 <u>반직선</u>으로 긋는다",ok:!!(C&&hasAngleAt(st,C,B,c.d2))},
+    {t:"두 변이 만나는 점 <b>A</b>를 찍고, 세 점을 선분으로 잇는다",ok:!!triCheck(st,c).ok}];
+}
+
+/* ══════════ 연습 ══════════ */
+const TRI=[
+  {label:"세 변",           c:{k:"sss",a:6,b:5,c:4}},
+  {label:"두 변과 끼인각",   c:{k:"sas",a:6,c:5,deg:55}},
+  {label:"한 변과 양 끝 각", c:{k:"asa",a:7,d1:40,d2:65}}
+];
+TASKS.tri={
+  fab:"none", pool:["D","E","F","G","H","J","K","M","N","V"],
+  variants:TRI.map((t,i)=>({label:(i+1)+" · "+t.label,i})),
+  prompt:V=>TRI_PROMPT[TRI[V.i].c.k],
+  build:V=>triBuild(TRI[V.i].c),
+  win:"맞았습니다. 다음 조건도 해 보세요.",
+  nameFor:(st,c)=>triName(st,c,TRI[st.variant].c),
+  steps(st){return triSteps(st,TRI[st.variant].c);},
+  check(st){return triCheck(st,TRI[st.variant].c);}
+};
+
+/* ══════════ 실습 ══════════ */
+const TXL={
+  easy:{n:3,ms: 9*60000,label:"기본 · 3라운드 9분"},
+  std :{n:4,ms:10*60000,label:"표준 · 4라운드 10분"},
+  hard:{n:6,ms:12*60000,label:"도전 · 6라운드 12분"}
+};
+let TX={on:false,lv:LS.get("trilv","std"),end:0,i:0,cur:null,flash:0,times:[],t0:0,res:null};
+let TX_LOG=LS.get("trilog",[]);
+
+function txRand(){
+  const R=Math.random,k=Math.floor(R()*3);
+  if(k===0){
+    for(;;){
+      const a=5+Math.floor(R()*3), b=3+Math.floor(R()*4), c=3+Math.floor(R()*4);
+      if(b+c>a+1&&a+c>b+1&&a+b>c+1)return {k:"sss",a,b,c};
+    }
+  }
+  if(k===1)return {k:"sas",a:5+Math.floor(R()*3),c:3+Math.floor(R()*3),deg:Math.round(35+R()*70)};
+  let d1=Math.round(32+R()*36),d2=Math.round(32+R()*36);
+  if(d1+d2>122){const t=122/(d1+d2);d1=Math.round(d1*t);d2=Math.round(d2*t);}
+  return {k:"asa",a:5+Math.floor(R()*4),d1,d2};
+}
+TASKS.trix={
+  fab:"none",quiet:true,noConfetti:true,pool:["D","E","F","G","H","J","K","M","N","V"],
+  prompt:()=>TX.cur?TRI_PROMPT[TX.cur.k]:"왼쪽에서 수준을 고르고 <b>시작</b>을 누르세요.",
+  build:()=>TX.cur?triBuild(TX.cur):[],
+  nameFor:(st,c)=>TX.cur?triName(st,c,TX.cur):null,
+  steps(st){
+    if(!TX.on)return[{t:"왼쪽 <b>시작</b>을 누르세요",ok:false}];
+    const nm={sss:"세 변",sas:"두 변과 끼인각",asa:"한 변과 양 끝 각"}[TX.cur.k];
+    return[{t:`<b>${nm}</b> 조건에 맞는 삼각형을 작도한다`,ok:!!triCheck(st,TX.cur).ok}];
+  },
+  check(st){return TX.cur?triCheck(st,TX.cur):{none:true};}
+};
+function txNext(){
+  TX.cur=txRand();TX.i++;TX.t0=Date.now();LS.del("save:trix:0");loadTask("trix");
+}
+function txStart(){
+  const L=TXL[TX.lv];
+  TX={on:true,lv:TX.lv,end:Date.now()+L.ms,i:0,cur:null,flash:0,times:[],t0:0,res:null};
+  txNext();txPanel();
+}
+function txEnd(win){
+  const L=TXL[TX.lv];
+  TX.on=false;TX.cur=null;
+  TX.res={win,done:TX.times.length,n:L.n,lv:TX.lv,
+          used:Math.round((L.ms-Math.max(0,TX.end-Date.now()))/1000),times:TX.times.slice()};
+  if(win){TX_LOG=[{lv:TX.lv,n:L.n,sec:TX.res.used,at:Date.now()}].concat(TX_LOG).slice(0,6);
+          LS.set("trilog",TX_LOG);}
+  loadTask("trix");
+}
+function txScored(){
+  if(!TX.on||TX.flash)return;
+  TX.times.push(Math.round((Date.now()-TX.t0)/1000));
+  TX.flash=Date.now();
+  const L=TXL[TX.lv];
+  toast(TX.times.length>=L.n?"모든 라운드를 끝냈습니다!":`${TX.times.length} / ${L.n} 라운드 완료`);
+  setTimeout(()=>{TX.flash=0;if(TX.times.length>=L.n)txEnd(true);else if(TX.on)txNext();},1000);
+}
+const mmss=s=>Math.floor(s/60)+"분 "+String(s%60).padStart(2,"0")+"초";
+function txPanel(){
+  if(!S||S.taskId!=="trix")return;
+  const box=$("mini");box.hidden=false;
+  const L=TXL[TX.lv];let h="";
+  if(TX.on){
+    const left=Math.max(0,TX.end-Date.now());
+    h=`<div class="chtime"><b id="txsec">${Math.ceil(left/1000)}</b><span>초 남음</span></div>
+       <div class="chbar"><i id="txbar" style="width:${(left/L.ms*100).toFixed(1)}%"></i></div>
+       <div class="txr">${Array.from({length:L.n},(_,i)=>
+         `<i class="${i<TX.times.length?"on":i===TX.times.length?"now":""}">·</i>`).join("")}</div>
+       <div class="chsc"><b>${TX.times.length}</b> / ${L.n} 라운드</div>
+       <button class="peek" id="txStop">그만하기</button>`;
+  }else{
+    const r=TX.res;
+    if(r)h+=`<div class="verd2 ${r.win?"y":"n"}"><b>${r.win?"성공했습니다":"시간이 끝났습니다"}</b>
+      <small>${r.win?`${TXL[r.lv].n}라운드를 ${mmss(r.used)} 만에 끝냈습니다.`
+                    :`${r.n}라운드 중 ${r.done}라운드를 마쳤습니다.`}</small></div>`;
+    h+=`<div class="txrow">${Object.keys(TXL).map(k=>
+      `<button class="vb${TX.lv===k?" on":""}" data-lv="${k}">${TXL[k].label.split(" · ")[0]}</button>`).join("")}</div>
+      <div class="mtx">${L.label}</div>
+      <button class="notebtn hot" id="txGo" style="margin-top:8px">${TX.res?"한 번 더":"시작"}</button>`;
+    if(r&&r.times.length)h+=`<div class="txtimes"><b>라운드별 걸린 시간</b>${
+      r.times.map((t,i)=>`<span class="txt1"><span>${i+1}라운드</span><b>${mmss(t)}</b></span>`).join("")}</div>`;
+    if(TX_LOG.length)h+=`<div class="txtimes"><b>지난 성공 기록</b>${TX_LOG.map(x=>{
+      const d=new Date(x.at);
+      return `<span class="txt1"><span>${d.getMonth()+1}/${d.getDate()} ${TXL[x.lv]?TXL[x.lv].label.split(" · ")[0]:""}</span><b>${mmss(x.sec)}</b></span>`;
+    }).join("")}</div>`;
+  }
+  box.innerHTML=h;
+  const g=$("txGo");if(g)g.onclick=()=>{g.blur();txStart();};
+  const st=$("txStop");if(st)st.onclick=()=>{st.blur();txEnd(false);};
+  box.querySelectorAll("[data-lv]").forEach(b=>b.onclick=()=>{
+    TX.lv=b.dataset.lv;LS.set("trilv",TX.lv);b.blur();txPanel();});
+}
+setInterval(()=>{
+  if(!TX.on)return;
+  const L=TXL[TX.lv],left=Math.max(0,TX.end-Date.now());
+  const s=$("txsec"),b=$("txbar");
+  if(s)s.textContent=Math.ceil(left/1000);
+  if(b)b.style.width=(left/L.ms*100).toFixed(1)+"%";
+  if(left<=0)txEnd(false);
+},250);
+
+/* ══════════ 탭 · 모드 줄 ══════════ */
+TABS.push({id:"tri",label:"삼각형 그리기",alias:["trix"]});
+buildTabs=function(){
+  const box=document.querySelector(".tabs");
+  box.innerHTML=TABS.map(x=>{
+    const on=S&&(S.taskId===x.id||(x.alias||[]).indexOf(S.taskId)>=0);
+    return `<button class="tab" role="tab" data-task="${x.id}" aria-selected="${!!on}">${x.label}</button>`;
+  }).join("");
+  box.querySelectorAll("[data-task]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.task;
+    loadTask(id==="tri"?(TRI_LAST==="trix"?"trix":"tri"):id);
+  });
+};
+let TRI_LAST="tri";
+function paintTriRow(){
+  const row=$("vrow");row.hidden=false;
+  const prac=(S.taskId==="tri");
+  let h=`<span class="trimode">
+    <button class="vb${prac?" on":""}" data-m="tri">연습</button>
+    <button class="vb${prac?"":" on"}" data-m="trix">실습</button></span>`;
+  if(prac)h+=TRI.map((t,i)=>
+    `<button class="vb${S.variant===i?" on":""}" data-i="${i}">${i+1} · ${t.label}</button>`).join("");
+  else h+=`<span class="lkhint">무작위 라운드 · 제한시간 안에 모두 완료하면 성공</span>`;
+  row.innerHTML=h;
+  row.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
+    const m=b.dataset.m;if(m===S.taskId)return;TRI_LAST=m;b.blur();loadTask(m);});
+  row.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i;if(i===S.variant)return;b.blur();loadTask("tri",i);});
+}
+const _ontask=window.ONTASK;
+window.ONTASK=function(T,V){
+  _ontask(T,V);
+  if(S.taskId==="tri"||S.taskId==="trix"){
+    TRI_LAST=S.taskId;
+    paintTriRow();
+    $("mini").hidden=(S.taskId!=="trix");
+    if(S.taskId==="trix")txPanel();
+  }
+};
+const _pui2=paintUI;
+paintUI=function(){
+  _pui2();
+  if(S&&S.taskId==="trix"&&TX.on&&!TX.flash){
+    try{if(triCheck(S,TX.cur).ok)txScored();}catch(e){}
+  }
+  if(S&&S.taskId==="trix")txPanel();
+};
+buildTabs();
+</script>
+
 </body>
 </html>
