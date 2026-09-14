@@ -1,5 +1,58 @@
 <!DOCTYPE html>
+<!--
+  테이크 잇 이지 (Take It Easy) 수업용 웹 앱
+  프로젝트: take-it-easy-e70f1 (asia-southeast1)
+  ==================================================================
 
+  설정값은 이미 채워져 있습니다. 아래 1번과 2번만 콘솔에서 마치면 됩니다.
+  ------------------------------------------------------------------
+
+  ------------------------------------------------------------------
+  1. 교사 비밀번호 만들기
+  ------------------------------------------------------------------
+  Authentication > Sign-in method > 이메일/비밀번호 사용 설정
+  Authentication > Users > 사용자 추가
+      이메일   teacher@takeiteasy.local   (실제 메일 주소가 아니어도 됩니다)
+      비밀번호  선생님이 정할 값 (6자 이상)
+  이 비밀번호가 방을 열 때 입력하는 값입니다.
+  비밀번호는 이 파일 어디에도 저장되지 않습니다.
+
+  ------------------------------------------------------------------
+  2. Realtime Database 규칙  (반드시 설정하세요)
+  ------------------------------------------------------------------
+  Realtime Database > 규칙 에 붙여 넣고 '게시'를 누릅니다.
+  처음 주어지는 테스트 모드 규칙은 30일 뒤 자동으로 막히므로,
+  그대로 두면 어느 날 수업 중에 갑자기 동작하지 않습니다.
+
+     {
+       "rules": {
+         "rooms": {
+           "$code": {
+             ".read": true,
+             ".write": "auth != null",
+             "players": { "$pid": { ".write": true } },
+             "ranking": { "$pid": { ".write": true } }
+           }
+         }
+       }
+     }
+
+     - 방 만들기, 타일 뽑기, 새 게임은 로그인한 교사만 가능합니다.
+     - 학생은 자기 진행 상황과 최종 점수만 쓸 수 있습니다.
+     - 방 내용 읽기는 누구나 가능합니다. 학생이 타일을 받아야 하니까요.
+
+  ------------------------------------------------------------------
+  3. 배포
+  ------------------------------------------------------------------
+  이 파일 하나만 올리면 됩니다.
+  firebase deploy --only hosting / GitHub Pages / 학교 웹서버 모두 됩니다.
+
+  ------------------------------------------------------------------
+  연습 모드
+  ------------------------------------------------------------------
+  FIREBASE_CONFIG 의 databaseURL 을 지우면 연습 모드가 됩니다.
+  한 대에서 혼자 타일을 뽑아가며 전체 흐름을 확인할 수 있습니다.
+-->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -615,8 +668,13 @@ let drawnList = [];
 let curTile = null;       // {id, round}
 let placedThisRound = false;
 let lastPlacedKey = null;
-let timerId = null, deadline = 0;
+let timerId = null, deadline = 0, finished = false;
 const DRAG = { active:false, snapKey:null, cancel:function(){} };
+
+/** 학번과 이름으로 늘 같은 키를 만든다 (새로고침해도 같은 사람) */
+function pidOf(sid,name){
+  return (sid+'-'+name).trim().replace(/\s+/g,' ').replace(/[.#$\[\]\/]/g,'_').slice(0,120);
+}
 
 $('btnJoin').onclick = async ()=>{
   const sid=($('inSid').value||'').trim(), name=($('inName').value||'').trim(), code=($('inCode').value||'').trim();
@@ -637,20 +695,42 @@ $('btnJoin').onclick = async ()=>{
     }
   }
 
-  me = { pid: sid+'_'+Math.random().toString(36).slice(2,7), sid, name };
-  board = {}; lastPlacedKey=null;
-  await bSet('rooms/'+roomCode+'/players/'+me.pid, { sid, name, placed:0, score:0, done:false });
+  me = { pid: pidOf(sid,name), sid, name };
+  board = {}; lastPlacedKey=null; curTile=null; placedThisRound=false; finished=false;
+
+  // 같은 학번·이름으로 다시 들어오면 놓았던 타일을 되살린다
+  const prev = await bGet('rooms/'+roomCode+'/players/'+me.pid);
+  if (prev && prev.board){
+    try { board = JSON.parse(prev.board) || {}; } catch(_) { board = {}; }
+  }
+  const restored = Object.keys(board).length;
+  await bUpdate('rooms/'+roomCode+'/players/'+me.pid,
+    { sid, name, placed: restored, score:(prev&&prev.score)||0, done: !!(prev&&prev.done) });
+
+  try { localStorage.setItem('tie.me', JSON.stringify({sid,name,code:roomCode})); } catch(_){}
 
   $('pWho').textContent = sid+' '+name;
   renderBoard(); renderStudentTracker([]);
   show('play');
+
+  if (restored >= TOTAL_ROUNDS){ finish(); return; }
+  if (restored > 0) toast('이전에 놓은 타일 '+restored+'칸을 불러왔습니다.');
   watchStudent();
   if (!HAS_FB) enablePracticeDraw();
 };
 
 function watchStudent(){
   bOn('rooms/'+roomCode+'/drawn', v=>{
-    drawnList = v||[];
+    const fresh = v||[];
+    if (fresh.length===0 && Object.keys(board).length>0 && !finished){
+      board={}; curTile=null; placedThisRound=false; lastPlacedKey=null; stopTimer();
+      $('pNow').innerHTML=''; $('pFill').style.width='0%'; $('pTime').textContent='대기 중';
+      $('pHint').textContent='새 게임이 시작되었습니다. 첫 타일을 기다리세요.';
+      $('btnUndo').disabled=true; renderBoard();
+      bUpdate('rooms/'+roomCode+'/players/'+me.pid,{placed:0,score:0,done:false,board:'{}'});
+      toast('선생님이 새 게임을 시작했습니다.');
+    }
+    drawnList = fresh;
     renderStudentTracker(drawnList);
     $('pLeft').textContent = (27-drawnList.length)+'장 남음';
     $('pRound').textContent = drawnList.length+' / '+TOTAL_ROUNDS;
@@ -663,6 +743,18 @@ function watchStudent(){
 }
 
 function onNewTile(v){
+  // 새로고침 후 돌아온 경우: 이번 타일을 이미 놓았다면 다시 놓지 않는다
+  if (Object.keys(board).length >= v.round){
+    curTile = { id:v.id, round:v.round };
+    placedThisRound = true; lastPlacedKey = null;
+    $('btnUndo').disabled = true;
+    $('pNow').innerHTML = tileBox(TILES[v.id]);
+    $('pNow').classList.remove('draggable');
+    stopTimer(); $('pFill').style.width='0%'; $('pTime').textContent='놓았습니다';
+    $('pHint').textContent = '이번 타일은 이미 놓았습니다. 다음 타일을 기다리세요.';
+    renderBoard();
+    return;
+  }
   // 늦게 들어온 학생: 이미 지나간 타일은 무작위로 채워 진도를 맞춘다
   const missing = v.round - 1 - Object.keys(board).length;
   if (missing > 0){
@@ -672,7 +764,11 @@ function onNewTile(v){
       const k = randomEmptyCell();
       if (k) board[k]=id;
     }
-    if (missing>0) toast('늦게 들어와서 지나간 타일 '+missing+'장은 임의로 놓았습니다.');
+    if (missing>0){
+      toast('늦게 들어와서 지나간 타일 '+missing+'장은 임의로 놓았습니다.');
+      bUpdate('rooms/'+roomCode+'/players/'+me.pid,
+        { placed:Object.keys(board).length, board:JSON.stringify(board) });
+    }
   }
   curTile = { id:v.id, round:v.round };
   placedThisRound = false;
@@ -778,13 +874,16 @@ async function doPlace(key, auto){
   $('pNow').classList.remove('draggable');
   $('btnUndo').disabled = !lastPlacedKey;
   renderBoard();
-  await bUpdate('rooms/'+roomCode+'/players/'+me.pid, { placed: Object.keys(board).length });
+  await bUpdate('rooms/'+roomCode+'/players/'+me.pid,
+    { placed: Object.keys(board).length, board: JSON.stringify(board) });
   if (Object.keys(board).length >= TOTAL_ROUNDS) finish();
 }
 
 $('btnUndo').onclick = ()=>{
   if (!lastPlacedKey) return;
   delete board[lastPlacedKey];
+  bUpdate('rooms/'+roomCode+'/players/'+me.pid,
+    { placed: Object.keys(board).length, board: JSON.stringify(board) });
   lastPlacedKey=null; placedThisRound=false;
   $('btnUndo').disabled=true;
   $('pNow').classList.add('draggable');
@@ -883,9 +982,12 @@ function renderStudentTracker(drawn){
 
 /* ---------- 결과 ---------- */
 async function finish(){
+  if (finished) return;
+  finished = true;
   stopTimer();
   const {total, got} = scoreBoard(board);
-  await bUpdate('rooms/'+roomCode+'/players/'+me.pid, { placed:19, score:total, done:true });
+  await bUpdate('rooms/'+roomCode+'/players/'+me.pid,
+    { placed:19, score:total, done:true, board:JSON.stringify(board) });
   await bSet('rooms/'+roomCode+'/ranking/'+me.pid, { sid:me.sid, name:me.name, score:total, at:Date.now() });
 
   $('rWho').textContent = me.sid+' '+me.name;
@@ -930,8 +1032,15 @@ function enablePracticeDraw(){
   $('pNow').parentElement.querySelector('.actions').appendChild(b);
 }
 
-/* 첫 화면 포커스 */
-$('inSid').focus();
+/* 지난번 입력값 채우기 — 새로고침 뒤 바로 들어올 수 있게 */
+try {
+  const last = JSON.parse(localStorage.getItem('tie.me')||'null');
+  if (last){
+    $('inSid').value = last.sid||''; $('inName').value = last.name||'';
+    if (HAS_FB) $('inCode').value = last.code||'';
+  }
+} catch(_){}
+$(($('inSid').value && $('inName').value) ? 'btnJoin' : 'inSid').focus();
 </script>
 </body>
 </html>
