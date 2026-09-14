@@ -71,11 +71,13 @@
   html,body{margin:0;height:100%}
   body{
     background:var(--bg); color:var(--ink);
+    user-select:none; -webkit-user-select:none; -ms-user-select:none;
     font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",Roboto,"Helvetica Neue",sans-serif;
     font-size:15px; line-height:1.5; overflow:hidden;
   }
   button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
-  input{font:inherit}
+  input{font:inherit; user-select:text; -webkit-user-select:text}
+  svg,svg text{user-select:none; -webkit-user-select:none}
   .hidden{display:none !important}
 
   /* ---------- 공통 ---------- */
@@ -140,12 +142,14 @@
   .cell{cursor:pointer}
   .cell .hit{fill:transparent}
   .cell.open:hover .slot{fill:#39445a}
-  .cell.target .slot{fill:#4a5a7a}
+  .cell.target .slot{fill:#54668c}
   .rightpane{display:flex;flex-direction:column;gap:14px;min-height:0}
   .nowbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;
     display:flex;flex-direction:column;align-items:center;gap:10px}
   .nowtile{width:190px;aspect-ratio:1/.866;position:relative;touch-action:none}
   .nowtile.draggable{cursor:grab}
+  .nowtile.dragging{cursor:grabbing}
+  body.dragging{cursor:grabbing}
   .nowtile.dragging{opacity:.25}
   .timerline{width:100%;height:7px;background:#11151c;border-radius:4px;overflow:hidden}
   .timerfill{height:100%;width:100%;background:var(--ok);transition:width .1s linear,background .3s}
@@ -160,7 +164,8 @@
   .actions{display:flex;gap:8px}
   .actions .btn{flex:1;padding:10px;text-align:center;font-size:13.5px}
   #ghost{position:fixed;width:190px;aspect-ratio:1/.866;pointer-events:none;z-index:99;
-    transform:translate(-50%,-50%);filter:drop-shadow(0 8px 18px rgba(0,0,0,.55))}
+    transform:translate(-50%,-50%);filter:drop-shadow(0 10px 20px rgba(0,0,0,.6));
+    transition:left .06s ease-out, top .06s ease-out}
 
   /* ---------- 결과 ---------- */
   #result{align-items:center;justify-content:center;overflow:auto;padding:24px}
@@ -775,37 +780,81 @@ $('btnUndo').onclick = ()=>{
 /* ---------- 드래그 ---------- */
 (function setupDrag(){
   const now=$('pNow'), ghost=$('ghost');
-  let dragging=false;
+  let dragging=false, cells=[], cellW=120, snapKey=null, pid=null;
+
+  /** 드래그 시작 시점의 칸 위치를 한 번만 계산해 둔다 */
+  function cacheCells(){
+    cells=[];
+    document.querySelectorAll('#board .cell').forEach(g=>{
+      const r=g.getBoundingClientRect();
+      cells.push({key:g.dataset.key, el:g, cx:r.left+r.width/2, cy:r.top+r.height/2, w:r.width});
+    });
+    cellW = cells.length ? cells[0].w : 120;
+  }
+  /** 가장 가까운 칸. 이미 찬 칸이거나 너무 멀면 null */
+  function snapTarget(x,y){
+    let best=null, bd=Infinity;
+    for (const c of cells){
+      const d=Math.hypot(c.cx-x, c.cy-y);
+      if (d<bd){ bd=d; best=c; }
+    }
+    if (!best || bd > cellW*0.72) return null;
+    if (board[best.key]!==undefined) return null;
+    return best;
+  }
+  function clearTarget(){
+    document.querySelectorAll('.cell.target').forEach(g=>g.classList.remove('target'));
+  }
+  function endDrag(){
+    dragging=false; snapKey=null;
+    ghost.classList.add('hidden');
+    ghost.innerHTML='';
+    now.classList.remove('dragging');
+    document.body.classList.remove('dragging');
+    clearTarget();
+    if (pid!==null){ try{ now.releasePointerCapture(pid); }catch(_){} pid=null; }
+  }
+
   now.addEventListener('pointerdown', e=>{
     if (!curTile || placedThisRound) return;
-    dragging=true; now.setPointerCapture(e.pointerId);
+    e.preventDefault();
+    dragging=true; pid=e.pointerId;
+    try{ now.setPointerCapture(pid); }catch(_){}
+    cacheCells();
+    ghost.style.width = Math.round(cellW*1.08)+'px';  // tileBox 여백 보정
     ghost.innerHTML = tileBox(TILES[curTile.id]);
     ghost.classList.remove('hidden');
     now.classList.add('dragging');
-    moveGhost(e);
+    document.body.classList.add('dragging');
+    place(e.clientX, e.clientY);
   });
-  now.addEventListener('pointermove', e=>{ if(dragging){ moveGhost(e); highlightUnder(e); } });
+
+  now.addEventListener('pointermove', e=>{ if(dragging) place(e.clientX, e.clientY); });
+
   now.addEventListener('pointerup', e=>{
     if (!dragging) return;
-    dragging=false; ghost.classList.add('hidden'); now.classList.remove('dragging');
-    clearTarget();
-    const g = cellUnder(e);
-    if (g){ const key=g.dataset.key; if (board[key]===undefined) doPlace(key,false); }
+    const key = snapKey;
+    endDrag();
+    if (key && board[key]===undefined) doPlace(key,false);
   });
-  now.addEventListener('pointercancel', ()=>{ dragging=false; ghost.classList.add('hidden'); now.classList.remove('dragging'); clearTarget(); });
-  function moveGhost(e){ ghost.style.left=e.clientX+'px'; ghost.style.top=e.clientY+'px'; }
-  function cellUnder(e){
-    ghost.classList.add('hidden');
-    const el = document.elementFromPoint(e.clientX, e.clientY);
-    ghost.classList.remove('hidden');
-    return el? el.closest('.cell') : null;
-  }
-  function highlightUnder(e){
+  now.addEventListener('pointercancel', ()=>{ if(dragging) endDrag(); });
+  window.addEventListener('blur', ()=>{ if(dragging) endDrag(); });
+
+  /** 칸 근처에서는 칸 중심으로 붙고, 아니면 커서를 따라간다 */
+  function place(x,y){
+    const t = snapTarget(x,y);
     clearTarget();
-    const g = cellUnder(e);
-    if (g && board[g.dataset.key]===undefined) g.classList.add('target');
+    if (t){
+      snapKey = t.key;
+      t.el.classList.add('target');
+      ghost.style.left = t.cx+'px';
+      ghost.style.top  = t.cy+'px';
+    } else {
+      snapKey = null;
+      ghost.style.left = x+'px';
+      ghost.style.top  = y+'px';
+    }
   }
-  function clearTarget(){ document.querySelectorAll('.cell.target').forEach(g=>g.classList.remove('target')); }
 })();
 
 /* ---------- 오른쪽 타일 목록 ---------- */
