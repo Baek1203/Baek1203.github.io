@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<!--
+  테이크 잇 이지 — 최고점 도전 (연구실)
+  ==================================================================
+  파일 하나만 있으면 됩니다. 인터넷도 필요 없습니다.
+  그냥 열어서 쓰거나, 수업용 앱과 같은 곳에 올려두고 주소로 접속하세요.
+
+  두 가지 모드
+    자유 배치   27장을 전부 펼쳐 놓고 원하는 19장을 원하는 자리에 놓습니다.
+                이론상 최고점은 307점입니다.
+    순서 배치   정해진 19장을 정해진 순서대로 놓습니다.
+                수업용 앱에서 '타일 순서 복사'를 누르면 나오는 19자 코드를
+                여기에 붙여 넣으면 그 판을 그대로 다시 해볼 수 있습니다.
+-->
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>테이크 잇 이지 — 최고점 도전</title>
+<style>
+  :root{
+    --bg:#14181f; --panel:#1e242e; --panel2:#252c38; --line:#2f3746;
+    --ink:#e8ebf0; --mute:#828d9f; --gold:#ffd166; --ok:#3fbf6f; --bad:#e2574c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",Roboto,sans-serif;
+    font-size:15px;user-select:none;-webkit-user-select:none}
+  svg,svg text{user-select:none}
+  button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  input{font:inherit;user-select:text}
+  .hidden{display:none !important}
+
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    padding:9px 15px;border-radius:9px;font-weight:600}
+  .btn:hover{background:#2f3846}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn.primary{background:#fff;color:#14181f;border-color:#fff}
+  .btn.primary:hover{background:#dfe4ec}
+  .btn.small{padding:7px 11px;font-size:13px}
+
+  /* 머리글 */
+  header{display:flex;align-items:center;gap:14px;padding:12px 20px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line)}
+  .title{font-size:19px;font-weight:800;letter-spacing:-.3px}
+  .tabs{display:flex;gap:6px;background:#11151c;border:1px solid var(--line);border-radius:10px;padding:3px}
+  .tabs button{padding:7px 14px;border-radius:7px;font-size:14px;font-weight:700;color:var(--mute)}
+  .tabs button[aria-pressed="true"]{background:#33405a;color:var(--ink)}
+  .codewrap{display:flex;gap:6px;align-items:center}
+  .codewrap input{background:#11151c;border:1px solid var(--line);color:var(--ink);
+    padding:8px 11px;border-radius:8px;width:210px;letter-spacing:2px;font-family:ui-monospace,monospace}
+  .codewrap input:focus{outline:none;border-color:#5b7fb8}
+
+  /* 본문 */
+  main{position:absolute;top:57px;left:0;right:0;bottom:0;display:grid;
+    grid-template-columns:minmax(0,1fr) 300px 296px;gap:14px;padding:14px 18px}
+  .boardpane{grid-column:1;min-height:0}
+  .traybox{grid-column:2;min-height:0}
+  .side{grid-column:3;min-height:0}
+  .boardpane{display:flex;flex-direction:column;gap:10px;min-height:0}
+  .bhead{display:flex;align-items:baseline;gap:16px;color:var(--mute);font-size:14px}
+  .bhead .sc{color:var(--gold);font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+  .bhead .of{font-size:14px}
+  .boardwrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  #board{width:100%;height:100%;max-height:100%}
+  #board{touch-action:none}
+  .cell{cursor:pointer}
+  .cell .hit{fill:transparent}
+  .cell.open:hover .slot{fill:#54668c}
+  .cell.target .slot{fill:#54668c}
+  #ghost{position:fixed;display:none;pointer-events:none;z-index:99;
+    transform:translate(-50%,-50%);filter:drop-shadow(0 10px 20px rgba(0,0,0,.6));
+    transition:left .06s ease-out, top .06s ease-out}
+  #ghost svg{display:block;width:100%;height:auto}
+
+  .side{display:flex;flex-direction:column;gap:12px;min-height:0}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px;
+    display:flex;flex-direction:column;min-height:0}
+  .box h3{margin:0 0 9px;font-size:12.5px;color:var(--mute);font-weight:600;
+    display:flex;justify-content:space-between;align-items:baseline}
+  .tray{flex:1;min-height:0;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;align-content:flex-start;overflow:auto}
+  .tile{position:relative;width:var(--tw,96px);height:calc(var(--tw,96px) * 0.866);
+    border-radius:6px;cursor:grab;flex:0 0 auto;overflow:hidden;touch-action:none}
+  .tile.dragging{opacity:.22}
+  .tile.used{cursor:default}
+  .tile svg{display:block;width:100%;height:100%}
+  .sizectl{display:flex;align-items:center;gap:6px}
+  .sizectl button{width:26px;height:24px;border:1px solid var(--line);border-radius:6px;
+    background:#11151c;color:var(--mute);font-weight:800;line-height:1}
+  .sizectl button:hover{background:#1b2029;color:var(--ink)}
+  .tile.used{opacity:.16;cursor:default}
+  .tile.sel{outline:3px solid var(--gold);outline-offset:1px;border-radius:4px}
+  .tile.cur{outline:3px solid #5aa9ff;outline-offset:1px;border-radius:4px}
+  .tile .ord{position:absolute;top:-3px;left:3px;font-size:11px;color:var(--mute);font-weight:800}
+  .lines{overflow:auto;display:flex;flex-direction:column;gap:4px}
+  .lrow{display:flex;justify-content:space-between;background:var(--panel2);
+    padding:6px 10px;border-radius:7px;font-size:13px}
+  .lrow b{font-variant-numeric:tabular-nums}
+  .row{display:flex;gap:7px}
+  .row .btn{flex:1;text-align:center}
+  .note{font-size:12.5px;color:var(--mute);line-height:1.55}
+  .best{display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0}
+  .best b{color:var(--gold);font-variant-numeric:tabular-nums}
+  .prog{height:6px;background:#11151c;border-radius:4px;overflow:hidden;margin-top:8px}
+  .prog i{display:block;height:100%;width:0;background:var(--ok);transition:width .15s}
+  label.ck{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mute);cursor:pointer}
+  .toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#0d1117;
+    border:1px solid var(--line);padding:10px 18px;border-radius:9px;font-size:14px;
+    opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  @media(max-width:1180px){
+    main{grid-template-columns:minmax(0,1fr) 250px;grid-template-rows:minmax(0,1fr) auto}
+    .traybox{grid-column:2;grid-row:1}
+    .side{grid-column:1 / -1;grid-row:2;flex-direction:row}
+    .side .box{flex:1}
+  }
+  @media(max-width:820px){
+    main{grid-template-columns:1fr;grid-template-rows:auto auto auto;overflow:auto}
+    .boardpane,.traybox,.side{grid-column:1}
+    .side{flex-direction:column}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="title">최고점 도전</span>
+  <div class="tabs">
+    <button id="tabFree" aria-pressed="true">자유 배치</button>
+    <button id="tabSeq" aria-pressed="false">순서 배치</button>
+  </div>
+  <div class="codewrap" id="codeWrap">
+    <input id="inCode" placeholder="19자 순서 코드" maxlength="19" autocomplete="off" spellcheck="false">
+    <button class="btn small" id="btnLoad">불러오기</button>
+    <button class="btn small" id="btnPaste">붙여넣기</button>
+  </div>
+  <div style="flex:1"></div>
+  <button class="btn small" id="btnUndo">되돌리기</button>
+  <button class="btn small" id="btnClear">비우기</button>
+</header>
+
+<main>
+  <div class="boardpane">
+    <div class="bhead">
+      <span class="sc" id="score">0</span><span class="of">점</span>
+      <span id="filled">놓은 칸 0 / 19</span>
+      <span id="hint">타일을 고른 뒤 빈 칸을 누르세요</span>
+    </div>
+    <div class="boardwrap"><svg id="board" viewBox="0 0 400 433"></svg></div>
+  </div>
+
+  <div class="box traybox">
+    <h3>
+      <span><span id="trayTitle">타일 27장</span></span>
+      <span class="sizectl">크기
+        <button id="szDown" title="작게">−</button>
+        <button id="szUp" title="크게">+</button>
+      </span>
+    </h3>
+    <div class="tray" id="tray"></div>
+    <div id="trayFoot" style="margin-top:8px">
+      <div class="note" id="trayNote"></div>
+      <label class="ck hidden" id="ignoreWrap" style="margin-top:6px">
+        <input type="checkbox" id="ckIgnore"> 순서 무시하고 자유롭게 놓기
+      </label>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="box" style="flex:1;min-height:0">
+      <h3><span>완성한 줄</span><span id="lineCount">0개</span></h3>
+      <div class="lines" id="lines"></div>
+    </div>
+
+    <div class="box" style="flex:0 0 auto">
+      <div class="best"><span>내 최고 기록</span><b id="myBest">—</b></div>
+      <div class="best"><span id="ceilLab">이 조건에서 찾은 최고점</span><b id="ceil">—</b></div>
+      <div class="prog"><i id="prog"></i></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn small" id="btnSearch">최고점 찾기</button>
+        <button class="btn small" id="btnApply" disabled>그 배치 보기</button>
+      </div>
+      <div class="note" id="searchNote" style="margin-top:8px">
+        찾기를 누르면 몇 초 동안 여러 배치를 시도해 봅니다. 완전한 정답은 아니지만 거의 최선에 가깝습니다.
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="ghost"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== 게임 상수 ===================== */
+const VERT=[1,5,9], DIA1=[2,6,7], DIA2=[3,4,8];
+const COLOR={1:'#8a8f98',5:'#2f6fd0',9:'#c62828',2:'#1b7f3b',6:'#e07b00',7:'#7b2fbe',3:'#8d5a00',4:'#d81b7a',8:'#00767f'};
+const TILES=[]; for(const a of VERT) for(const b of DIA1) for(const c of DIA2) TILES.push([a,b,c]);
+const CELLS=[]; for(let q=-2;q<=2;q++) for(let r=-2;r<=2;r++) if(Math.abs(q+r)<=2) CELLS.push({q,r});
+const ck=(q,r)=>q+','+r;
+const KEYS=CELLS.map(c=>ck(c.q,c.r));
+const DIRNAME=['세로','↗ 대각선','↘ 대각선'];
+const LINES=[];
+for(let q=-2;q<=2;q++) LINES.push({dir:0,cells:CELLS.filter(c=>c.q===q)});
+for(let r=-2;r<=2;r++) LINES.push({dir:1,cells:CELLS.filter(c=>c.r===r)});
+for(let s=-2;s<=2;s++) LINES.push({dir:2,cells:CELLS.filter(c=>-c.q-c.r===s)});
+const SEQ_ALPHA='0123456789abcdefghijklmnopq';
+const TOTAL_CELLS=19;
+
+/* ===================== 그리기 ===================== */
+const S3=Math.sqrt(3);
+function hexPath(cx,cy,R){
+  let d='';
+  for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i);
+    d+=(i?'L':'M')+(cx+R*Math.cos(a)).toFixed(2)+' '+(cy-R*Math.sin(a)).toFixed(2)+' '; }
+  return d+'Z';
+}
+function ends(cx,cy,R,k){
+  if(k===0) return [[cx,cy-R*S3/2],[cx,cy+R*S3/2]];
+  if(k===1) return [[cx-.75*R,cy+R*S3/4],[cx+.75*R,cy-R*S3/4]];
+  return [[cx-.75*R,cy-R*S3/4],[cx+.75*R,cy+R*S3/4]];
+}
+function bead(cx,cy,R,k,f=.50){
+  if(k===0) return [cx,cy-f*R*S3/2];
+  if(k===1) return [cx-f*.75*R,cy+f*R*S3/4];
+  return [cx+f*.75*R,cy+f*R*S3/4];
+}
+function tileSVG(t,cx,cy,R,opt){
+  opt=opt||{};
+  let s=`<path d="${hexPath(cx,cy,R)}" fill="${opt.fill||'#fff'}" stroke="${opt.stroke||'#2a2f3a'}" stroke-width="${(R*0.03).toFixed(2)}" ${opt.cls?`class="${opt.cls}"`:''}/>`;
+  if(!t) return s;
+  for(let k=0;k<3;k++){ const n=t[k], [p0,p1]=ends(cx,cy,R,k);
+    s+=`<line x1="${p0[0].toFixed(2)}" y1="${p0[1].toFixed(2)}" x2="${p1[0].toFixed(2)}" y2="${p1[1].toFixed(2)}" stroke="${COLOR[n]}" stroke-width="${(R*0.15).toFixed(2)}"/>`; }
+  for(let k=0;k<3;k++){ const n=t[k], [bx,by]=bead(cx,cy,R,k);
+    s+=`<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="${(R*0.215).toFixed(2)}" fill="#fff" stroke="${COLOR[n]}" stroke-width="${(R*0.045).toFixed(2)}"/>`
+     + `<text x="${bx.toFixed(2)}" y="${by.toFixed(2)}" fill="${COLOR[n]}" font-size="${(R*0.34).toFixed(2)}" font-weight="800" text-anchor="middle" dominant-baseline="central">${n}</text>`; }
+  return s;
+}
+function tileBox(t){
+  const R=50,p=4,w=2*R+p*2,h=R*S3+p*2;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%">${tileSVG(t,w/2,h/2,R)}</svg>`;
+}
+
+/* ===================== 채점 ===================== */
+function scoreBoard(b){
+  let total=0; const got=[];
+  for(const L of LINES){
+    const vals=L.cells.map(c=>{const t=b[ck(c.q,c.r)]; return (t===undefined||t===null)?null:TILES[t][L.dir];});
+    if(vals.some(v=>v===null)) continue;
+    if(vals.every(v=>v===vals[0])){
+      const pts=vals[0]*L.cells.length;
+      total+=pts; got.push({name:DIRNAME[L.dir],n:vals[0],len:L.cells.length,pts,cells:L.cells});
+    }
+  }
+  got.sort((a,b)=>b.pts-a.pts);
+  return {total,got};
+}
+
+/* ===================== 상태 ===================== */
+const $=id=>document.getElementById(id);
+let mode='free';          // free | seq
+let pool=TILES.map((_,i)=>i);
+let board={};             // 칸 -> 타일번호
+let order=[];             // 놓은 순서 (칸 키)
+let selected=null;
+let ignoreOrder=false;
+let curCode='';
+let foundBoard=null;
+let hideKey=null;     // 드래그로 집어 든 칸 (그리는 동안만 비운다)
+
+let toastT;
+function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2000); }
+
+const freeOrder = ()=> mode==='free' || ignoreOrder;
+const usedIds   = ()=> new Set(Object.values(board));
+function nextSeqIdx(){ return order.length; }
+
+/* ===================== 판 ===================== */
+/** 드래그 중이면 집어 든 타일을 뺀 판을 돌려준다 */
+function viewBoard(){
+  if(hideKey===null || board[hideKey]===undefined) return board;
+  const v=Object.assign({},board); delete v[hideKey]; return v;
+}
+function renderBoard(){
+  const R=50, view=viewBoard(), {got}=scoreBoard(view);
+  const hl=new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
+  let s='';
+  for(const c of CELLS){
+    const key=ck(c.q,c.r);
+    const x=200+1.5*R*c.q, y=216.5-R*S3*(c.r+c.q/2);
+    const t=view[key], empty=(t===undefined);
+    const canDrop = empty && placeableId()!==null;
+    s+=`<g class="cell ${canDrop?'open':''}" data-key="${key}">`;
+    s+=tileSVG(empty?null:TILES[t], x,y,R,{fill:empty?'#313b4d':'#fff',cls:'slot'});
+    if(hl.has(key)) s+=`<path d="${hexPath(x,y,R)}" fill="none" stroke="#ffd166" stroke-width="4"/>`;
+    s+=`<path class="hit" d="${hexPath(x,y,R)}"/></g>`;
+  }
+  $('board').innerHTML=s;
+  $('board').querySelectorAll('.cell').forEach(g=>{
+    g.addEventListener('click',()=>onCell(g.dataset.key));
+  });
+  const n=Object.keys(view).length;
+  const {total}=scoreBoard(view);
+  $('score').textContent=total;
+  $('filled').textContent='놓은 칸 '+n+' / 19';
+  renderLines();
+  if(n===TOTAL_CELLS) saveBest(total);
+}
+function renderLines(){
+  const {got}=scoreBoard(viewBoard());
+  $('lineCount').textContent=got.length+'개';
+  $('lines').innerHTML = got.length
+    ? got.map(g=>`<div class="lrow"><span>${g.name} · ${g.n}이 ${g.len}칸</span><b>${g.pts}점</b></div>`).join('')
+    : '<div class="note">아직 완성된 줄이 없습니다.</div>';
+}
+/** 지금 놓을 수 있는 타일 번호 */
+function placeableId(){
+  if(freeOrder()) return selected;
+  const i=nextSeqIdx();
+  return i<pool.length ? pool[i] : null;
+}
+function onCell(key){
+  if(Date.now()-lastDragEnd < 250) return;
+  const id=placeableId();
+  if(board[key]!==undefined){                 // 놓인 타일 회수
+    if(!freeOrder()){ toast('순서 모드에서는 되돌리기로만 뺄 수 있습니다.'); return; }
+    const t=board[key]; delete board[key];
+    order=order.filter(k=>k!==key);
+    selected=t; renderAll(); return;
+  }
+  if(id===null){ toast(freeOrder()?'먼저 타일을 고르세요.':'놓을 타일이 없습니다.'); return; }
+  board[key]=id; order.push(key);
+  if(freeOrder()) selected=null;
+  renderAll();
+}
+
+/* ===================== 타일 서랍 ===================== */
+function renderTray(){
+  const used=usedIds();
+  const list = mode==='free' ? TILES.map((_,i)=>i) : pool;
+  const nextId = freeOrder()? null : placeableId();
+  const nextIdx = freeOrder()? -1 : nextSeqIdx();
+  $('trayTitle').textContent = mode==='free' ? '타일 27장' : '타일 19장 (순서대로)';
+  $('trayNote').textContent = mode==='free'
+    ? (TILES.length-used.size)+'장 남음'
+    : (pool.length? (nextIdx<pool.length? (nextIdx+1)+'번째 차례' : '다 놓았습니다') : '코드를 불러오세요');
+  $('tray').innerHTML = list.map((id,idx)=>{
+    const isUsed = mode==='free' ? used.has(id) : idx<nextIdx;
+    const cls = ['tile'];
+    if(isUsed) cls.push('used');
+    if(mode==='free' && selected===id) cls.push('sel');
+    if(mode==='seq' && !freeOrder() && idx===nextIdx) cls.push('cur');
+    if(mode==='seq' && freeOrder() && selected===id && !used.has(id)) cls.push('sel');
+    return `<div class="${cls.join(' ')}" data-id="${id}" data-idx="${idx}">`
+         + (mode==='seq'?`<span class="ord">${idx+1}</span>`:'')
+         + tileBox(TILES[id]) + '</div>';
+  }).join('') || '<div class="note">순서 코드를 붙여 넣고 불러오기를 누르세요.</div>';
+  $('tray').querySelectorAll('.tile').forEach(el=>{
+    el.onclick=()=>{
+      if(Date.now()-lastDragEnd < 250) return;
+      if(el.classList.contains('used')) return;
+      if(!freeOrder()) { toast('정해진 순서대로 놓아야 합니다.'); return; }
+      const id=+el.dataset.id;
+      if(mode==='seq' && usedIds().has(id)) return;
+      selected = (selected===id)? null : id;
+      renderAll();
+    };
+  });
+}
+function renderHint(){
+  if(freeOrder()){
+    $('hint').textContent = selected===null
+      ? '오른쪽에서 타일을 고른 뒤 빈 칸을 누르세요'
+      : '빈 칸을 누르면 놓입니다. 놓인 타일을 누르면 다시 집어옵니다';
+  } else {
+    const i=nextSeqIdx();
+    $('hint').textContent = i<pool.length
+      ? (i+1)+'번째 타일을 놓을 자리를 고르세요'
+      : '19장을 다 놓았습니다';
+  }
+}
+function renderAll(){ renderBoard(); renderTray(); renderHint(); applyTileW(); }
+
+/* ===================== 모드 ===================== */
+function setMode(m){
+  mode=m; board={}; order=[]; selected=null; foundBoard=null;
+  $('btnApply').disabled=true; $('ceil').textContent='—'; $('prog').style.width='0';
+  $('tabFree').setAttribute('aria-pressed', m==='free');
+  $('tabSeq').setAttribute('aria-pressed', m==='seq');
+  $('codeWrap').classList.toggle('hidden', m!=='seq');
+  $('ignoreWrap').classList.toggle('hidden', m!=='seq');
+  $('ceilLab').textContent = m==='free' ? '27장으로 찾은 최고점' : '이 19장으로 찾은 최고점';
+  if(m==='free') pool=TILES.map((_,i)=>i);
+  else pool = curCode? decode(curCode) : [];
+  showBest(); renderAll();
+}
+$('tabFree').onclick=()=>setMode('free');
+$('tabSeq').onclick =()=>setMode('seq');
+$('ckIgnore').onchange=()=>{ ignoreOrder=$('ckIgnore').checked; selected=null; renderAll(); };
+
+function decode(code){
+  return code.trim().toLowerCase().split('').map(ch=>SEQ_ALPHA.indexOf(ch)).filter(i=>i>=0);
+}
+function loadCode(code){
+  const ids=decode(code);
+  if(ids.length!==19){ toast('19자 코드가 아닙니다 (지금 '+ids.length+'자)'); return false; }
+  if(new Set(ids).size!==19){ toast('같은 타일이 두 번 들어 있습니다'); return false; }
+  curCode=code.trim().toLowerCase();
+  pool=ids; board={}; order=[]; selected=null; foundBoard=null;
+  $('btnApply').disabled=true; $('ceil').textContent='—';
+  showBest(); renderAll(); toast('19장을 불러왔습니다');
+  return true;
+}
+$('btnLoad').onclick=()=>loadCode($('inCode').value);
+$('inCode').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnLoad').click(); });
+$('btnPaste').onclick=async ()=>{
+  try{ const t=await navigator.clipboard.readText(); $('inCode').value=t.trim(); loadCode(t); }
+  catch(_){ toast('붙여넣기가 막혀 있습니다. 직접 입력해 주세요.'); }
+};
+$('btnUndo').onclick=()=>{
+  if(!order.length) return;
+  const k=order.pop(); const t=board[k]; delete board[k];
+  if(freeOrder()) selected=t;
+  renderAll();
+};
+$('btnClear').onclick=()=>{ board={}; order=[]; selected=null; renderAll(); };
+
+/* ===================== 내 최고 기록 ===================== */
+function bestKey(){ return mode==='free' ? 'tie.lab.free' : 'tie.lab.seq.'+(curCode||'none'); }
+function showBest(){
+  let v=0; try{ v=+(localStorage.getItem(bestKey())||0); }catch(_){}
+  $('myBest').textContent = v? v+'점' : '—';
+}
+function saveBest(total){
+  try{
+    const k=bestKey(), prev=+(localStorage.getItem(k)||0);
+    if(total>prev){ localStorage.setItem(k,String(total)); showBest();
+      if(prev) toast('최고 기록을 넘었습니다! '+total+'점'); }
+  }catch(_){}
+}
+
+/* ===================== 최고점 찾기 ===================== */
+let searching=false;
+function randBoard(ids){
+  const ks=KEYS.slice().sort(()=>Math.random()-0.5);
+  const b={}; ks.forEach((k,i)=>{ b[k]=ids[i]; }); return b;
+}
+/** 자리 맞바꾸기 + (자유 모드) 안 쓴 타일로 교체 */
+function climb(fixedIds){
+  const all=TILES.map((_,i)=>i);
+  const ids = fixedIds ? fixedIds.slice() : all.slice().sort(()=>Math.random()-0.5).slice(0,19);
+  const b=randBoard(ids);
+  let cur=scoreBoard(b).total, noImp=0;
+  while(noImp<1600){
+    if(!fixedIds && Math.random()<0.35){
+      const k=KEYS[Math.floor(Math.random()*19)];
+      const used=new Set(Object.values(b));
+      const free=all.filter(x=>!used.has(x));
+      if(free.length){
+        const old=b[k]; b[k]=free[Math.floor(Math.random()*free.length)];
+        const s=scoreBoard(b).total;
+        if(s>=cur){ if(s>cur)noImp=0; else noImp++; cur=s; } else { b[k]=old; noImp++; }
+        continue;
+      }
+    }
+    const i=Math.floor(Math.random()*19), j=Math.floor(Math.random()*19);
+    if(i===j){ noImp++; continue; }
+    const ki=KEYS[i], kj=KEYS[j];
+    const t=b[ki]; b[ki]=b[kj]; b[kj]=t;
+    const s=scoreBoard(b).total;
+    if(s>=cur){ if(s>cur)noImp=0; else noImp++; cur=s; }
+    else { const t2=b[ki]; b[ki]=b[kj]; b[kj]=t2; noImp++; }
+  }
+  return {score:cur, board:b};
+}
+$('btnSearch').onclick=()=>{
+  if(searching) return;
+  const fixed = (mode==='seq') ? (pool.length===19 ? pool : null) : null;
+  if(mode==='seq' && !fixed){ toast('먼저 19자 코드를 불러오세요.'); return; }
+  searching=true; $('btnSearch').disabled=true; $('btnApply').disabled=true;
+  const budget=5000, t0=Date.now(); let best=0; foundBoard=null;
+  (function chunk(){
+    const c0=Date.now();
+    while(Date.now()-c0<70 && Date.now()-t0<budget){
+      const r=climb(fixed);
+      if(r.score>best){ best=r.score; foundBoard=r.board; }
+    }
+    const pct=Math.min(100,(Date.now()-t0)/budget*100);
+    $('prog').style.width=pct+'%';
+    $('ceil').textContent=best?('약 '+best+'점'):'…';
+    if(Date.now()-t0<budget) setTimeout(chunk,0);
+    else {
+      searching=false; $('btnSearch').disabled=false;
+      $('btnApply').disabled=!foundBoard;
+      $('prog').style.width='100%';
+      toast('찾은 최고점 약 '+best+'점');
+    }
+  })();
+};
+$('btnApply').onclick=()=>{
+  if(!foundBoard) return;
+  if(!confirm('찾은 배치를 판에 그대로 올립니다. 지금 놓은 것은 사라집니다.')) return;
+  board=Object.assign({},foundBoard);
+  order=KEYS.filter(k=>board[k]!==undefined);
+  selected=null;
+  if(mode==='seq'){ ignoreOrder=true; $('ckIgnore').checked=true; }
+  renderAll();
+};
+
+/* ===================== 드래그로 옮기기 ===================== */
+const ghost=$('ghost');
+let drag=null, dcells=[], dcellW=120, lastDragEnd=0;
+
+function cacheCells(){
+  dcells=[...document.querySelectorAll('#board .cell')].map(g=>{
+    const r=g.getBoundingClientRect();
+    return {key:g.dataset.key, el:g, cx:r.left+r.width/2, cy:r.top+r.height/2, w:r.width};
+  });
+  dcellW = dcells.length ? dcells[0].w : 120;
+}
+/** 가장 가까운 칸. 이미 찬 칸(집어온 자리는 예외)이거나 멀면 null */
+function snapTarget(x,y){
+  let best=null, bd=Infinity;
+  for(const c of dcells){ const d=Math.hypot(c.cx-x,c.cy-y); if(d<bd){bd=d;best=c;} }
+  if(!best || bd > dcellW*0.72) return null;
+  return board[best.key]!==undefined && best.key!==(drag&&drag.srcKey) ? null : best;
+}
+function clearMarks(){
+  document.querySelectorAll('.cell.target').forEach(g=>g.classList.remove('target'));
+  document.querySelectorAll('.tile.dragging').forEach(g=>g.classList.remove('dragging'));
+}
+function moveDrag(x,y){
+  if(!drag) return;
+  if(Math.hypot(x-drag.x0, y-drag.y0) > 5) drag.moved = true;
+  const t=snapTarget(x,y);
+  document.querySelectorAll('.cell.target').forEach(g=>g.classList.remove('target'));
+  if(t){ drag.snapKey=t.key; t.el.classList.add('target');
+         ghost.style.left=t.cx+'px'; ghost.style.top=t.cy+'px'; }
+  else { drag.snapKey=null; ghost.style.left=x+'px'; ghost.style.top=y+'px'; }
+}
+function endDrag(){
+  const d=drag; drag=null;
+  ghost.style.display='none'; ghost.innerHTML='';
+  hideKey=null; clearMarks();
+  if(!d) return;
+  lastDragEnd=Date.now();                   // 뒤따라오는 click 은 무시한다
+  if(d.moved && d.snapKey){
+    if(d.from==='board'){
+      if(d.snapKey!==d.srcKey){
+        delete board[d.srcKey];
+        order=order.filter(k=>k!==d.srcKey);
+        board[d.snapKey]=d.id; order.push(d.snapKey);
+      }
+    } else {
+      board[d.snapKey]=d.id; order.push(d.snapKey);
+      if(freeOrder()) selected=null;
+    }
+  } else if(!d.moved){
+    // 끌지 않고 눌렀다 뗀 경우는 클릭과 같게 다룬다
+    if(d.from==='board'){
+      delete board[d.srcKey]; order=order.filter(k=>k!==d.srcKey); selected=d.id;
+    } else {
+      selected = (selected===d.id) ? null : d.id;
+    }
+  }
+  renderAll();
+}
+document.addEventListener('pointerdown', e=>{
+  if(e.button!==undefined && e.button!==0) return;
+  const tileEl = e.target.closest ? e.target.closest('.tile') : null;
+  const cellEl = e.target.closest ? e.target.closest('#board .cell') : null;
+  let from=null, id=null, srcKey=null, el=null;
+
+  if(tileEl && !tileEl.classList.contains('used')){
+    const idx=+tileEl.dataset.idx, tid=+tileEl.dataset.id;
+    if(freeOrder()){ if(usedIds().has(tid)) return; id=tid; }
+    else { if(idx!==nextSeqIdx()) return; id=tid; }
+    from='tray'; el=tileEl;
+  } else if(cellEl && board[cellEl.dataset.key]!==undefined && freeOrder()){
+    srcKey=cellEl.dataset.key; id=board[srcKey]; from='board';
+  } else return;
+
+  e.preventDefault();
+  drag={from,id,srcKey,snapKey:null,x0:e.clientX,y0:e.clientY,moved:false};
+  if(from==='board'){ hideKey=srcKey; renderBoard(); }   // 원래 자리를 즉시 비운다
+  cacheCells();
+  ghost.style.width=Math.round(dcellW*1.08)+'px';
+  ghost.innerHTML=tileBox(TILES[id]);
+  ghost.style.display='block';
+  if(el) el.classList.add('dragging');
+  moveDrag(e.clientX,e.clientY);
+});
+document.addEventListener('pointermove', e=>{ if(drag) moveDrag(e.clientX,e.clientY); });
+document.addEventListener('pointerup',   ()=>{ if(drag) endDrag(); });
+document.addEventListener('pointercancel',()=>{ if(drag){ drag.moved=false; endDrag(); } });
+addEventListener('blur', ()=>{ if(drag){ drag.moved=false; endDrag(); } });
+
+/* ===================== 타일 크기 ===================== */
+/* 화면 폭에 맞춰 두 줄에 꼭 들어가는 크기를 계산하고, 버튼으로 배율만 조절한다 */
+let tileScale = 1;
+try{ const v=+(localStorage.getItem('tie.lab.ts')||0); if(v>=0.6&&v<=1.8) tileScale=v; }catch(_){}
+function computeTileW(){
+  const tray = $('tray');
+  const w = (tray.clientWidth || 280) - 2;
+  const h = (tray.clientHeight || 640) - 2;
+  const cols = 3, gap = 7;
+  const rows = Math.ceil((mode==='free' ? 27 : 19) / cols);
+  const byW = Math.floor((w - (cols-1)*gap) / cols);                  // 세 개가 나란히
+  const byH = Math.floor(((h - (rows-1)*gap - rows - 8) / rows) / 0.866);  // 세로로도 다 들어가게
+  // 화면이 낮으면 살짝 넘겨 스크롤하더라도 읽을 만한 크기는 지킨다
+  const base = Math.max(72, Math.min(byW, byH));
+  return Math.max(48, Math.min(220, Math.round(base*tileScale)));
+}
+function applyTileW(){
+  document.documentElement.style.setProperty('--tw', computeTileW()+'px');
+  try{ localStorage.setItem('tie.lab.ts', String(tileScale)); }catch(_){}
+}
+$('szUp').onclick   = ()=>{ tileScale=Math.min(1.8, +(tileScale+0.12).toFixed(2)); applyTileW(); };
+$('szDown').onclick = ()=>{ tileScale=Math.max(0.6, +(tileScale-0.12).toFixed(2)); applyTileW(); };
+let rzT; addEventListener('resize', ()=>{ clearTimeout(rzT); rzT=setTimeout(applyTileW,120); });
+
+/* ===================== 시작 ===================== */
+try{
+  const h=location.hash.replace('#','').trim();
+  if(h.length===19){ $('inCode').value=h; setMode('seq'); loadCode(h); }
+  else setMode('free');
+}catch(_){ setMode('free'); }
+</script>
+</body>
+</html>
