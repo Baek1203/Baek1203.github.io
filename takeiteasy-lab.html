@@ -11,6 +11,8 @@
     순서 배치   정해진 19장을 정해진 순서대로 놓습니다.
                 수업용 앱에서 '타일 순서 복사'를 누르면 나오는 19자 코드를
                 여기에 붙여 넣으면 그 판을 그대로 다시 해볼 수 있습니다.
+
+  정답을 알려주는 기능은 넣지 않았습니다. 직접 찾아보는 것이 목적입니다.
 -->
 <html lang="ko">
 <head>
@@ -102,8 +104,6 @@
   .note{font-size:12.5px;color:var(--mute);line-height:1.55}
   .best{display:flex;justify-content:space-between;font-size:13.5px;padding:2px 0}
   .best b{color:var(--gold);font-variant-numeric:tabular-nums}
-  .prog{height:6px;background:#11151c;border-radius:4px;overflow:hidden;margin-top:8px}
-  .prog i{display:block;height:100%;width:0;background:var(--ok);transition:width .15s}
   label.ck{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--mute);cursor:pointer}
   .toast{position:fixed;left:50%;top:70px;transform:translateX(-50%);background:#0d1117;
     border:1px solid var(--line);padding:10px 18px;border-radius:9px;font-size:14px;
@@ -175,15 +175,8 @@
 
     <div class="box" style="flex:0 0 auto">
       <div class="best"><span>내 최고 기록</span><b id="myBest">—</b></div>
-      <div class="best"><span id="ceilLab">이 조건에서 찾은 최고점</span><b id="ceil">—</b></div>
-      <div class="prog"><i id="prog"></i></div>
-      <div class="row" style="margin-top:10px">
-        <button class="btn small" id="btnSearch">최고점 찾기</button>
-        <button class="btn small" id="btnApply" disabled>그 배치 보기</button>
-      </div>
-      <div class="note" id="searchNote" style="margin-top:8px">
-        찾기를 누르면 몇 초 동안 여러 배치를 시도해 봅니다. 완전한 정답은 아니지만 거의 최선에 가깝습니다.
-      </div>
+      <div class="best" id="maxRow"><span>이론상 최고점</span><b>307점</b></div>
+      <div class="note" id="hintNote" style="margin-top:9px"></div>
     </div>
   </div>
 
@@ -266,7 +259,6 @@ let order=[];             // 놓은 순서 (칸 키)
 let selected=null;
 let ignoreOrder=false;
 let curCode='';
-let foundBoard=null;
 let hideKey=null;     // 드래그로 집어 든 칸 (그리는 동안만 비운다)
 
 let toastT;
@@ -385,13 +377,15 @@ function renderAll(){ renderBoard(); renderTray(); renderHint(); applyTileW(); }
 
 /* ===================== 모드 ===================== */
 function setMode(m){
-  mode=m; board={}; order=[]; selected=null; foundBoard=null;
-  $('btnApply').disabled=true; $('ceil').textContent='—'; $('prog').style.width='0';
+  mode=m; board={}; order=[]; selected=null;
   $('tabFree').setAttribute('aria-pressed', m==='free');
   $('tabSeq').setAttribute('aria-pressed', m==='seq');
   $('codeWrap').classList.toggle('hidden', m!=='seq');
   $('ignoreWrap').classList.toggle('hidden', m!=='seq');
-  $('ceilLab').textContent = m==='free' ? '27장으로 찾은 최고점' : '이 19장으로 찾은 최고점';
+  $('maxRow').classList.toggle('hidden', m!=='free');
+  $('hintNote').textContent = m==='free'
+    ? '27장 중 19장을 골라 15개 줄을 모두 완성하면 307점입니다. 한번 도전해 보세요.'
+    : '정해진 19장으로는 307점이 나오지 않습니다. 이 타일로 몇 점까지 갈 수 있을지 직접 찾아보세요.';
   if(m==='free') pool=TILES.map((_,i)=>i);
   else pool = curCode? decode(curCode) : [];
   showBest(); renderAll();
@@ -408,8 +402,7 @@ function loadCode(code){
   if(ids.length!==19){ toast('19자 코드가 아닙니다 (지금 '+ids.length+'자)'); return false; }
   if(new Set(ids).size!==19){ toast('같은 타일이 두 번 들어 있습니다'); return false; }
   curCode=code.trim().toLowerCase();
-  pool=ids; board={}; order=[]; selected=null; foundBoard=null;
-  $('btnApply').disabled=true; $('ceil').textContent='—';
+  pool=ids; board={}; order=[]; selected=null;
   showBest(); renderAll(); toast('19장을 불러왔습니다');
   return true;
 }
@@ -440,74 +433,6 @@ function saveBest(total){
       if(prev) toast('최고 기록을 넘었습니다! '+total+'점'); }
   }catch(_){}
 }
-
-/* ===================== 최고점 찾기 ===================== */
-let searching=false;
-function randBoard(ids){
-  const ks=KEYS.slice().sort(()=>Math.random()-0.5);
-  const b={}; ks.forEach((k,i)=>{ b[k]=ids[i]; }); return b;
-}
-/** 자리 맞바꾸기 + (자유 모드) 안 쓴 타일로 교체 */
-function climb(fixedIds){
-  const all=TILES.map((_,i)=>i);
-  const ids = fixedIds ? fixedIds.slice() : all.slice().sort(()=>Math.random()-0.5).slice(0,19);
-  const b=randBoard(ids);
-  let cur=scoreBoard(b).total, noImp=0;
-  while(noImp<1600){
-    if(!fixedIds && Math.random()<0.35){
-      const k=KEYS[Math.floor(Math.random()*19)];
-      const used=new Set(Object.values(b));
-      const free=all.filter(x=>!used.has(x));
-      if(free.length){
-        const old=b[k]; b[k]=free[Math.floor(Math.random()*free.length)];
-        const s=scoreBoard(b).total;
-        if(s>=cur){ if(s>cur)noImp=0; else noImp++; cur=s; } else { b[k]=old; noImp++; }
-        continue;
-      }
-    }
-    const i=Math.floor(Math.random()*19), j=Math.floor(Math.random()*19);
-    if(i===j){ noImp++; continue; }
-    const ki=KEYS[i], kj=KEYS[j];
-    const t=b[ki]; b[ki]=b[kj]; b[kj]=t;
-    const s=scoreBoard(b).total;
-    if(s>=cur){ if(s>cur)noImp=0; else noImp++; cur=s; }
-    else { const t2=b[ki]; b[ki]=b[kj]; b[kj]=t2; noImp++; }
-  }
-  return {score:cur, board:b};
-}
-$('btnSearch').onclick=()=>{
-  if(searching) return;
-  const fixed = (mode==='seq') ? (pool.length===19 ? pool : null) : null;
-  if(mode==='seq' && !fixed){ toast('먼저 19자 코드를 불러오세요.'); return; }
-  searching=true; $('btnSearch').disabled=true; $('btnApply').disabled=true;
-  const budget=5000, t0=Date.now(); let best=0; foundBoard=null;
-  (function chunk(){
-    const c0=Date.now();
-    while(Date.now()-c0<70 && Date.now()-t0<budget){
-      const r=climb(fixed);
-      if(r.score>best){ best=r.score; foundBoard=r.board; }
-    }
-    const pct=Math.min(100,(Date.now()-t0)/budget*100);
-    $('prog').style.width=pct+'%';
-    $('ceil').textContent=best?('약 '+best+'점'):'…';
-    if(Date.now()-t0<budget) setTimeout(chunk,0);
-    else {
-      searching=false; $('btnSearch').disabled=false;
-      $('btnApply').disabled=!foundBoard;
-      $('prog').style.width='100%';
-      toast('찾은 최고점 약 '+best+'점');
-    }
-  })();
-};
-$('btnApply').onclick=()=>{
-  if(!foundBoard) return;
-  if(!confirm('찾은 배치를 판에 그대로 올립니다. 지금 놓은 것은 사라집니다.')) return;
-  board=Object.assign({},foundBoard);
-  order=KEYS.filter(k=>board[k]!==undefined);
-  selected=null;
-  if(mode==='seq'){ ignoreOrder=true; $('ckIgnore').checked=true; }
-  renderAll();
-};
 
 /* ===================== 드래그로 옮기기 ===================== */
 const ghost=$('ghost');
@@ -598,7 +523,7 @@ document.addEventListener('pointercancel',()=>{ if(drag){ drag.moved=false; endD
 addEventListener('blur', ()=>{ if(drag){ drag.moved=false; endDrag(); } });
 
 /* ===================== 타일 크기 ===================== */
-/* 화면 폭에 맞춰 두 줄에 꼭 들어가는 크기를 계산하고, 버튼으로 배율만 조절한다 */
+/* 화면에 맞춰 3열로 다 들어가는 크기를 계산하고, 버튼으로 배율만 조절한다 */
 let tileScale = 1;
 try{ const v=+(localStorage.getItem('tie.lab.ts')||0); if(v>=0.6&&v<=1.8) tileScale=v; }catch(_){}
 function computeTileW(){
@@ -607,8 +532,8 @@ function computeTileW(){
   const h = (tray.clientHeight || 640) - 2;
   const cols = 3, gap = 7;
   const rows = Math.ceil((mode==='free' ? 27 : 19) / cols);
-  const byW = Math.floor((w - (cols-1)*gap) / cols);                  // 세 개가 나란히
-  const byH = Math.floor(((h - (rows-1)*gap - rows - 8) / rows) / 0.866);  // 세로로도 다 들어가게
+  const byW = Math.floor((w - (cols-1)*gap) / cols);
+  const byH = Math.floor(((h - (rows-1)*gap - rows - 8) / rows) / 0.866);
   // 화면이 낮으면 살짝 넘겨 스크롤하더라도 읽을 만한 크기는 지킨다
   const base = Math.max(72, Math.min(byW, byH));
   return Math.max(48, Math.min(220, Math.round(base*tileScale)));
