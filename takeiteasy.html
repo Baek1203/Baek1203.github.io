@@ -1,58 +1,5 @@
 <!DOCTYPE html>
-<!--
-  테이크 잇 이지 (Take It Easy) 수업용 웹 앱
-  프로젝트: take-it-easy-e70f1 (asia-southeast1)
-  ==================================================================
 
-  설정값은 이미 채워져 있습니다. 아래 1번과 2번만 콘솔에서 마치면 됩니다.
-  ------------------------------------------------------------------
-
-  ------------------------------------------------------------------
-  1. 교사 비밀번호 만들기
-  ------------------------------------------------------------------
-  Authentication > Sign-in method > 이메일/비밀번호 사용 설정
-  Authentication > Users > 사용자 추가
-      이메일   teacher@takeiteasy.local   (실제 메일 주소가 아니어도 됩니다)
-      비밀번호  선생님이 정할 값 (6자 이상)
-  이 비밀번호가 방을 열 때 입력하는 값입니다.
-  비밀번호는 이 파일 어디에도 저장되지 않습니다.
-
-  ------------------------------------------------------------------
-  2. Realtime Database 규칙  (반드시 설정하세요)
-  ------------------------------------------------------------------
-  Realtime Database > 규칙 에 붙여 넣고 '게시'를 누릅니다.
-  처음 주어지는 테스트 모드 규칙은 30일 뒤 자동으로 막히므로,
-  그대로 두면 어느 날 수업 중에 갑자기 동작하지 않습니다.
-
-     {
-       "rules": {
-         "rooms": {
-           "$code": {
-             ".read": true,
-             ".write": "auth != null",
-             "players": { "$pid": { ".write": true } },
-             "ranking": { "$pid": { ".write": true } }
-           }
-         }
-       }
-     }
-
-     - 방 만들기, 타일 뽑기, 새 게임은 로그인한 교사만 가능합니다.
-     - 학생은 자기 진행 상황과 최종 점수만 쓸 수 있습니다.
-     - 방 내용 읽기는 누구나 가능합니다. 학생이 타일을 받아야 하니까요.
-
-  ------------------------------------------------------------------
-  3. 배포
-  ------------------------------------------------------------------
-  이 파일 하나만 올리면 됩니다.
-  firebase deploy --only hosting / GitHub Pages / 학교 웹서버 모두 됩니다.
-
-  ------------------------------------------------------------------
-  연습 모드
-  ------------------------------------------------------------------
-  FIREBASE_CONFIG 의 databaseURL 을 지우면 연습 모드가 됩니다.
-  한 대에서 혼자 타일을 뽑아가며 전체 흐름을 확인할 수 있습니다.
--->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -132,6 +79,13 @@
   .tprog{font-size:16px;color:var(--mute)}
   .tprog b{color:var(--ink);font-size:23px;font-weight:800;font-variant-numeric:tabular-nums}
   .tprog.all b{color:var(--ok)}
+  .aichips{display:flex;gap:6px}
+  .chip{flex:1;padding:8px 4px;border:1px solid var(--line);border-radius:8px;
+    background:#11151c;color:var(--mute);font-size:12.5px;font-weight:600;text-align:center}
+  .chip:hover{background:#1b2029}
+  .chip[aria-pressed="true"]{background:#2b3a52;border-color:#47618c;color:var(--ink)}
+  .badge{font-size:10.5px;font-weight:800;padding:1px 5px;border-radius:4px;
+    background:#3a4a66;color:#cfe0ff;letter-spacing:.5px}
   .stageinner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;width:100%}
   .rankpanel{width:100%;height:100%;display:flex;flex-direction:column;gap:12px;min-height:0}
   .rankhead{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
@@ -294,6 +248,14 @@
      </div>
     </div>
     <div class="side">
+      <div class="sidebox" style="flex:0 0 auto">
+        <h3>AI 참가 <span id="aiNote">꺼짐</span></h3>
+        <div class="aichips">
+          <button class="chip" data-ai="easy" aria-pressed="false">AI 초급</button>
+          <button class="chip" data-ai="mid" aria-pressed="false">AI 중급</button>
+          <button class="chip" data-ai="hard" aria-pressed="false">AI 고급</button>
+        </div>
+      </div>
       <div class="sidebox" style="flex:1">
         <h3>접속한 학생 <span id="tCount">0명</span></h3>
         <div class="plist" id="tPlayers"></div>
@@ -591,7 +553,7 @@ $('btnHost').onclick = async ()=>{
 };
 
 /** 교사 화면 카운트다운 — 타일을 뽑은 시각부터 셉니다 */
-function teacherTimer(startAt){
+function teacherTimer(startAt, roundNo){
   clearInterval(tTimerId); tTimerId=null;
   const clock=$('tClock');
   if (!startAt || Date.now()-startAt > SECONDS_PER_TURN*1000 + 3000){
@@ -606,7 +568,11 @@ function teacherTimer(startAt){
     $('tFill').style.background = pct>0.5?'var(--ok)':(pct>0.22?'var(--warn)':'var(--bad)');
     $('tNum').textContent=(left/1000).toFixed(1);
     $('tNum').classList.toggle('over', left<=0);
-    if (left<=0){ clearInterval(tTimerId); tTimerId=null; $('tNum').textContent='0.0'; }
+    if (left<=0){
+      clearInterval(tTimerId); tTimerId=null; $('tNum').textContent='0.0';
+      // 마지막 타일의 20초가 끝나면 순위로 넘어간다
+      if (roundNo>=TOTAL_ROUNDS && !rankOpen) showRank(true);
+    }
   };
   tick(); tTimerId=setInterval(tick,100);
 }
@@ -630,7 +596,7 @@ function renderRanking(){
     if (sc!==prev){ rank=i+1; prev=sc; }          // 동점은 같은 등수
     html += '<div class="rkline '+(rank<=3?'top':'')+'">'
           + '<span class="no">'+rank+'</span>'
-          + '<span class="sid">'+esc(p.sid)+'</span>'
+          + (p.ai ? '<span class="badge">AI</span>' : '<span class="sid">'+esc(p.sid)+'</span>')
           + '<span class="nm">'+esc(p.name)+'</span>'
           + '<span class="sc">'+sc+'점</span></div>';
   });
@@ -660,21 +626,28 @@ function renderProgress(){
   const prog=$('tProg');
   prog.innerHTML = '타일을 놓은 학생 <b>'+done+'</b> / '+tList.length;
   prog.classList.toggle('all', tRound>0 && tList.length>0 && done===tList.length);
+  // 마지막 타일까지 전원이 끝냈으면 20초를 다 기다리지 않는다
+  if (tRound>=TOTAL_ROUNDS && tList.length>0 && !rankOpen
+      && tList.every(x=>x.done)) showRank(true);
 }
 
 function watchTeacher(){
+  bOn('rooms/'+roomCode+'/ai', v=>{ aiOn = Array.isArray(v)?v:[]; renderAIChips(); });
   bOn('rooms/'+roomCode+'/tile', v=>{
-    if (!v){ teacherTimer(0); return; }
-    teacherTimer(v.at||0);
+    if (!v){ teacherTimer(0,0); return; }
+    teacherTimer(v.at||0, v.round||0);
+    aiOnTile(v);
+    // 이미 끝난 게임을 나중에 열었을 때는 바로 순위
+    if ((v.round||0)>=TOTAL_ROUNDS && Date.now()-(v.at||0) > SECONDS_PER_TURN*1000 && !rankOpen) showRank(true);
   });
   bOn('rooms/'+roomCode+'/players', v=>{
-    const list = Object.values(v||{});
+    const list = Object.values(v||{}).filter(x=>x && typeof x==='object' && x.name);
     $('tCount').textContent = list.length+'명';
     tList = list;
     renderProgress(); renderRanking();
     list.sort((a,b)=>String(a.sid).localeCompare(String(b.sid)));
     $('tPlayers').innerHTML = list.map(p=>
-      `<div class="prow ${p.done?'done':''}"><span class="sid">${esc(p.sid)}</span><span class="nm">${esc(p.name)}</span><span class="pg">${p.done?(p.score+'점'):((p.placed||0)+'/19')}</span></div>`
+      `<div class="prow ${p.done?'done':''}">${p.ai?'<span class="badge">AI</span>':`<span class="sid">${esc(p.sid)}</span>`}<span class="nm">${esc(p.name)}</span><span class="pg">${p.done?(p.score+'점'):((p.placed||0)+'/19')}</span></div>`
     ).join('') || '<div style="color:var(--mute);font-size:13px">아직 없습니다</div>';
   });
   bOn('rooms/'+roomCode+'/drawn', v=>{
@@ -692,7 +665,7 @@ function watchTeacher(){
       $('tSub').textContent = drawn.length>=TOTAL_ROUNDS ? '모든 타일을 다 뽑았습니다' : '학생들이 20초 안에 놓습니다';
     }
     $('btnDraw').disabled = drawn.length>=TOTAL_ROUNDS;
-    if (drawn.length>=TOTAL_ROUNDS){ $('btnDraw').textContent='끝'; if(!rankOpen) showRank(true); }
+    if (drawn.length>=TOTAL_ROUNDS) $('btnDraw').textContent='끝';
   });
 }
 function renderTeacherTracker(drawn){
@@ -718,7 +691,9 @@ $('btnDraw').onclick = async ()=>{
 };
 $('btnReset').onclick = async ()=>{
   if (!confirm('지금까지 기록이 지워집니다. 새 게임을 시작할까요?')) return;
-  await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now() });
+  const keep = aiOn.slice();
+  await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now(), ai: keep.length?keep:null });
+  aiBoards = { easy:{}, mid:{}, hard:{} };
   showRank(false);
   clearInterval(tTimerId); tTimerId=null; tRound=0;
   $('tClock').style.visibility='hidden';
@@ -726,6 +701,118 @@ $('btnReset').onclick = async ()=>{
   $('tCall').textContent='시작 준비'; $('tBig').innerHTML=''; $('btnDraw').disabled=false; $('btnDraw').textContent='타일 뽑기';
 };
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ============================================================
+   AI 참가자 — 교사 화면에서만 돌아갑니다
+   같은 상황이면 늘 같은 수를 두므로, 교사가 창을 여러 개 띄워도
+   모든 창이 똑같이 계산해서 서로 충돌하지 않습니다.
+   ============================================================ */
+const AI_DEFS = {
+  // eps = 일부러 아무 칸에 두는 비율. 평균 점수는 차례로 약 62 / 97 / 140점입니다.
+  easy: { name:'AI 초급', eps:0.50, delay:[3.0,5.0] },
+  mid:  { name:'AI 중급', eps:0.25, delay:[2.0,4.0] },
+  hard: { name:'AI 고급', eps:0.00, delay:[1.5,3.0] }
+};
+const AI_ORDER = ['easy','mid','hard'];
+let aiOn = [], aiBoards = { easy:{}, mid:{}, hard:{} };
+
+/** 씨앗이 같으면 늘 같은 값이 나오는 난수 */
+function seeded(n){
+  let a = n|0;
+  return function(){
+    a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a>>>15, 1|a);
+    t = t + Math.imul(t ^ t>>>7, 61|t) ^ t;
+    return ((t ^ t>>>14) >>> 0) / 4294967296;
+  };
+}
+const aiSeed = (lv,round,id)=> (AI_ORDER.indexOf(lv)+1)*104729 + round*7919 + id*131;
+
+/** 살아 있는 줄의 진행도를 점수로 환산 — 끊긴 줄은 0 */
+function aiPotential(b){
+  let p = 0;
+  for (const L of LINES){
+    const f = [];
+    for (const c of L.cells){ const t=b[ck(c.q,c.r)]; if(t!==undefined) f.push(TILES[t][L.dir]); }
+    if (!f.length) continue;
+    const v0 = f[0];
+    if (!f.every(x=>x===v0)) continue;
+    p += v0 * L.cells.length * Math.pow(f.length/L.cells.length, 1.5);
+  }
+  return p;
+}
+function aiBestCell(b, id, empty){
+  let k0 = empty[0], bv = -Infinity;
+  for (const k of empty){
+    b[k] = id; const v = aiPotential(b); delete b[k];
+    if (v > bv){ bv = v; k0 = k; }
+  }
+  return k0;
+}
+function aiPickCell(lv, b, id, round){
+  const empty = CELLS.map(c=>ck(c.q,c.r)).filter(k=>b[k]===undefined);
+  if (!empty.length) return null;
+  const rnd = seeded(aiSeed(lv,round,id));
+  if (rnd() < AI_DEFS[lv].eps) return empty[Math.floor(rnd()*empty.length)];
+  return aiBestCell(b, id, empty);
+}
+async function aiSave(lv){
+  const b = aiBoards[lv], n = Object.keys(b).length, done = n>=TOTAL_ROUNDS;
+  const sc = done ? scoreBoard(b).total : 0;
+  await bUpdate('rooms/'+roomCode+'/players/ai_'+lv,
+    { sid:'AI', name:AI_DEFS[lv].name, placed:n, score:sc, done, ai:true, board:JSON.stringify(b) });
+  if (done) await bSet('rooms/'+roomCode+'/ranking/ai_'+lv,
+    { sid:'AI', name:AI_DEFS[lv].name, score:sc, at:Date.now() });
+}
+/** 뽑혀 있는 타일을 처음부터 다시 두어 진도를 맞춘다 */
+async function aiCatchUp(lv){
+  const drawn = (await bGet('rooms/'+roomCode+'/drawn')) || [];   // 교사 화면이므로 서버에서 읽는다
+  const b = {};
+  drawn.forEach((id,i)=>{
+    const k = aiPickCell(lv, b, id, i+1);
+    if (k) b[k] = id;
+  });
+  aiBoards[lv] = b;
+  await aiSave(lv);
+}
+async function aiPlace(lv, v){
+  if (aiOn.indexOf(lv)<0) return;
+  let b = aiBoards[lv];
+  if (Object.keys(b).length < v.round-1){        // 창을 늦게 열었으면 저장된 판을 읽는다
+    const prev = await bGet('rooms/'+roomCode+'/players/ai_'+lv);
+    if (prev && prev.board){ try{ b = JSON.parse(prev.board)||{}; }catch(_){ b={}; } }
+    aiBoards[lv] = b;
+  }
+  if (Object.values(b).indexOf(v.id) >= 0) return;   // 이미 놓았다
+  const k = aiPickCell(lv, b, v.id, v.round);
+  if (!k) return;
+  b[k] = v.id;
+  await aiSave(lv);
+}
+function aiOnTile(v){
+  aiOn.forEach(lv=>{
+    const d = AI_DEFS[lv]; if(!d) return;
+    const rnd = seeded(aiSeed(lv,v.round,v.id)+7);
+    const wait = (d.delay[0] + (d.delay[1]-d.delay[0])*rnd()) * 1000;
+    setTimeout(()=>aiPlace(lv,v).catch(()=>{}), wait);
+  });
+}
+function renderAIChips(){
+  document.querySelectorAll('.chip[data-ai]').forEach(el=>{
+    el.setAttribute('aria-pressed', aiOn.indexOf(el.dataset.ai)>=0);
+  });
+  $('aiNote').textContent = aiOn.length ? (aiOn.length+'명 참가') : '꺼짐';
+}
+document.querySelectorAll('.chip[data-ai]').forEach(el=>{
+  el.onclick = async ()=>{
+    const lv = el.dataset.ai;
+    const next = aiOn.indexOf(lv)>=0 ? aiOn.filter(x=>x!==lv) : AI_ORDER.filter(x=>x===lv||aiOn.indexOf(x)>=0);
+    await bSet('rooms/'+roomCode+'/ai', next.length?next:null);
+    if (next.indexOf(lv)>=0){ aiOn=next; renderAIChips(); await aiCatchUp(lv); }
+    else { aiBoards[lv]={}; await bSet('rooms/'+roomCode+'/players/ai_'+lv, null);
+           await bSet('rooms/'+roomCode+'/ranking/ai_'+lv, null); }
+  };
+});
 
 /* ============================================================
    학생 화면
@@ -1082,7 +1169,8 @@ async function finish(){
   const hl=new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
   $('rBoard').innerHTML = boardSVGString(hl);
   bOn('rooms/'+roomCode+'/ranking', v=>{
-    const list = Object.entries(v||{}).map(([pid,x])=>Object.assign({pid},x));
+    const list = Object.entries(v||{}).filter(([,x])=>x && typeof x==='object')
+                       .map(([pid,x])=>Object.assign({pid},x));
     list.sort((a,b)=>b.score-a.score);
     $('rRank').innerHTML = list.map((x,i)=>
       `<div class="rkrow ${x.pid===me.pid?'me':''}"><span class="no">${i+1}</span><span>${esc(x.sid)}</span><span>${esc(x.name)}</span><span class="sc">${x.score}점</span></div>`).join('')
