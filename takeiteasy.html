@@ -171,6 +171,11 @@
   .rwrap{width:100%;max-width:940px}
   .rtop{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:18px}
   .rscore{font-size:60px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .ceilbox{background:var(--panel2);border:1px solid var(--line);border-radius:12px;
+    padding:11px 16px;min-width:215px}
+  .ceilbox .lab{font-size:12.5px;color:var(--mute)}
+  .ceilbox .val{font-size:29px;font-weight:800;font-variant-numeric:tabular-nums;color:#ffd166;line-height:1.2}
+  .ceilbox .sub{font-size:13px;color:var(--mute)}
   .rgrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:20px}
   @media(max-width:820px){.rgrid{grid-template-columns:1fr}}
   .lines{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow:auto}
@@ -286,9 +291,9 @@
       <div class="sidebox" style="flex:0 0 auto">
         <h3>AI 참가 <span id="aiNote">꺼짐</span></h3>
         <div class="aichips">
-          <button class="chip" data-ai="easy" aria-pressed="false">AI 초급</button>
           <button class="chip" data-ai="mid" aria-pressed="false">AI 중급</button>
           <button class="chip" data-ai="hard" aria-pressed="false">AI 고급</button>
+          <button class="chip" data-ai="best" aria-pressed="false">AI 최고급</button>
         </div>
       </div>
       <div class="sidebox" style="flex:1">
@@ -298,6 +303,7 @@
       <div class="sidebox" style="flex:0 0 auto">
         <h3>남은 타일 <span id="tLeft">27장</span></h3>
         <div class="tgrid" id="tTracker" style="grid-template-columns:repeat(7,minmax(0,1fr))"></div>
+        <button class="btn" id="btnCopySeqT" style="margin-top:10px;padding:8px;font-size:13px">타일 순서 복사</button>
       </div>
     </div>
   </div>
@@ -340,7 +346,15 @@
       </div>
       <div style="color:var(--mute);font-size:14px" id="rNote"></div>
       <div style="flex:1"></div>
-      <button class="btn" id="btnBackHome">처음으로</button>
+      <div class="ceilbox">
+        <div class="lab">이 판에서 가능한 최고점 (탐색값)</div>
+        <div class="val" id="rCeil">계산 중…</div>
+        <div class="sub" id="rCeilSub">잠시만 기다려 주세요</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn" id="btnCopySeq">타일 순서 복사</button>
+        <button class="btn" id="btnBackHome">처음으로</button>
+      </div>
     </div>
     <div class="rgrid">
       <div class="card" style="display:flex;align-items:center;justify-content:center;padding:16px">
@@ -778,7 +792,7 @@ $('btnReset').onclick = async ()=>{
   if (!confirm('지금까지 기록이 지워집니다. 새 게임을 시작할까요?')) return;
   const keep = aiOn.slice();
   await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now(), ai: keep.length?keep:null });
-  aiBoards = { easy:{}, mid:{}, hard:{} }; aiSeq = { easy:[], mid:[], hard:[] };
+  aiBoards = { mid:{}, hard:{}, best:{} }; aiSeq = { mid:[], hard:[], best:[] };
   aiFollow = true; aiStep = 0;
   showRank(false);
   clearInterval(tTimerId); tTimerId=null; tRound=0;
@@ -794,13 +808,13 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
    모든 창이 똑같이 계산해서 서로 충돌하지 않습니다.
    ============================================================ */
 const AI_DEFS = {
-  // eps = 일부러 아무 칸에 두는 비율. 평균 점수는 차례로 약 62 / 97 / 140점입니다.
-  easy: { name:'AI 초급', eps:0.50, delay:[3.0,5.0] },
-  mid:  { name:'AI 중급', eps:0.25, delay:[2.0,4.0] },
-  hard: { name:'AI 고급', eps:0.00, delay:[1.5,3.0] }
+  // eps = 일부러 아무 칸에 두는 비율. 평균 점수는 차례로 약 93 / 141 / 150점입니다.
+  mid:  { name:'AI 중급',  eps:0.25, mode:'base', delay:[2.0,4.0] },
+  hard: { name:'AI 고급',  eps:0.00, mode:'base', delay:[1.5,3.0] },
+  best: { name:'AI 최고급', eps:0.00, mode:'long', delay:[1.2,2.5] }
 };
-const AI_ORDER = ['easy','mid','hard'];
-let aiOn = [], aiBoards = { easy:{}, mid:{}, hard:{} }, aiSeq = { easy:[], mid:[], hard:[] };
+const AI_ORDER = ['mid','hard','best'];
+let aiOn = [], aiBoards = { mid:{}, hard:{}, best:{} }, aiSeq = { mid:[], hard:[], best:[] };
 
 /** 씨앗이 같으면 늘 같은 값이 나오는 난수 */
 function seeded(n){
@@ -827,20 +841,54 @@ function aiPotential(b){
   }
   return p;
 }
-function aiBestCell(b, id, empty){
+/** 긴 줄과 큰 수에 가중치를 더 준다 */
+function aiPotLong(b){
+  let p = 0;
+  for (const L of LINES){
+    const f = [];
+    for (const c of L.cells){ const t=b[ck(c.q,c.r)]; if(t!==undefined) f.push(TILES[t][L.dir]); }
+    if (!f.length) continue;
+    const v0 = f[0];
+    if (!f.every(x=>x===v0)) continue;
+    const n = L.cells.length;
+    p += v0*n*Math.pow(f.length/n,1.5)*(1+0.35*(n-3))*(1+0.05*(v0-1));
+  }
+  return p;
+}
+/** 아직 나오지 않은 타일로 완성이 가능한 줄만 센다 */
+function aiPotBag(b, bag){
+  const cnt = [{},{},{}];
+  for (const t of bag) for (let d=0;d<3;d++){ const v=TILES[t][d]; cnt[d][v]=(cnt[d][v]||0)+1; }
+  let p = 0;
+  for (const L of LINES){
+    const f = [];
+    for (const c of L.cells){ const t=b[ck(c.q,c.r)]; if(t!==undefined) f.push(TILES[t][L.dir]); }
+    if (!f.length) continue;
+    const v0 = f[0];
+    if (!f.every(x=>x===v0)) continue;
+    const n = L.cells.length;
+    if ((cnt[L.dir][v0]||0) < n-f.length) continue;    // 남은 타일로는 불가능
+    p += v0*n*Math.pow(f.length/n,1.5);
+  }
+  return p;
+}
+function aiScoreFn(mode, bag){
+  return (mode==='long' && bag) ? (b=>aiPotLong(b)*0.6 + aiPotBag(b,bag)*0.6) : aiPotential;
+}
+function aiBestCell(b, id, empty, fn){
   let k0 = empty[0], bv = -Infinity;
   for (const k of empty){
-    b[k] = id; const v = aiPotential(b); delete b[k];
+    b[k] = id; const v = fn(b); delete b[k];
     if (v > bv){ bv = v; k0 = k; }
   }
   return k0;
 }
-function aiPickCell(lv, b, id, round){
+function aiPickCell(lv, b, id, round, bag){
   const empty = CELLS.map(c=>ck(c.q,c.r)).filter(k=>b[k]===undefined);
   if (!empty.length) return null;
   const rnd = seeded(aiSeed(lv,round,id));
   if (rnd() < AI_DEFS[lv].eps) return empty[Math.floor(rnd()*empty.length)];
-  return aiBestCell(b, id, empty);
+  return aiBestCell(b, id, empty, aiScoreFn(AI_DEFS[lv].mode, bag));
 }
 async function aiSave(lv){
   const b = aiBoards[lv], n = Object.keys(b).length, done = n>=TOTAL_ROUNDS;
@@ -857,7 +905,9 @@ async function aiCatchUp(lv){
   const drawn = (await bGet('rooms/'+roomCode+'/drawn')) || [];   // 교사 화면이므로 서버에서 읽는다
   const b = {}, seq = [];
   drawn.forEach((id,i)=>{
-    const k = aiPickCell(lv, b, id, i+1);
+    const seen = new Set(drawn.slice(0,i+1));
+    const bag = TILES.map((_,x)=>x).filter(x=>!seen.has(x));
+    const k = aiPickCell(lv, b, id, i+1, bag);
     if (k){ b[k] = id; seq.push({k, id}); }
   });
   aiBoards[lv] = b; aiSeq[lv] = seq;
@@ -873,7 +923,10 @@ async function aiPlace(lv, v){
     aiBoards[lv] = b;
   }
   if (Object.values(b).indexOf(v.id) >= 0) return;   // 이미 놓았다
-  const k = aiPickCell(lv, b, v.id, v.round);
+  const drawn = (await bGet('rooms/'+roomCode+'/drawn')) || [];
+  const seen = new Set(drawn.slice(0, v.round));
+  const bag = TILES.map((_,x)=>x).filter(x=>!seen.has(x));
+  const k = aiPickCell(lv, b, v.id, v.round, bag);
   if (!k) return;
   b[k] = v.id;
   (aiSeq[lv] = aiSeq[lv] || []).push({k, id:v.id});
@@ -1241,6 +1294,45 @@ function renderStudentTracker(drawn){
     `<div class="mini ${used.has(i)?'used':''}">${tileBoxSmall(t)}</div>`).join('');
 }
 
+/* ---------- 타일 순서 코드 ---------- */
+const SEQ_ALPHA = '0123456789abcdefghijklmnopq';   // 27가지
+function seqCode(ids){ return (ids||[]).map(i=>SEQ_ALPHA[i]).join(''); }
+async function copySeq(ids){
+  const code = seqCode(ids);
+  if (!code){ toast('아직 뽑은 타일이 없습니다.'); return; }
+  try { await navigator.clipboard.writeText(code); toast('타일 순서를 복사했습니다 ('+code.length+'장)'); }
+  catch(_){ prompt('아래 코드를 복사하세요', code); }
+}
+
+/* ---------- 이 판에서 가능한 최고점 찾기 ---------- */
+function climbOnce(ids){
+  const ks = CELLS.map(c=>ck(c.q,c.r)).sort(()=>Math.random()-0.5);
+  const b = {};
+  ks.forEach((k,i)=>{ b[k] = ids[i]; });         // 빈 칸은 undefined 로 남고 채점에서 제외된다
+  let cur = scoreBoard(b).total, noImp = 0;
+  while (noImp < 1500){
+    const i = Math.floor(Math.random()*ks.length), j = Math.floor(Math.random()*ks.length);
+    if (i===j){ noImp++; continue; }
+    const ki=ks[i], kj=ks[j];
+    const t=b[ki]; b[ki]=b[kj]; b[kj]=t;
+    const sc = scoreBoard(b).total;
+    if (sc>=cur){ if(sc>cur) noImp=0; else noImp++; cur=sc; }
+    else { const t2=b[ki]; b[ki]=b[kj]; b[kj]=t2; noImp++; }
+  }
+  return cur;
+}
+/** 화면이 멈추지 않도록 잘라서 계산한다 */
+function findCeiling(ids, budget, done){
+  const t0 = Date.now(); let best = 0;
+  (function chunk(){
+    const c0 = Date.now();
+    while (Date.now()-c0 < 70 && Date.now()-t0 < budget){
+      const v = climbOnce(ids); if (v>best) best = v;
+    }
+    if (Date.now()-t0 < budget) setTimeout(chunk, 0); else done(best);
+  })();
+}
+
 /* ---------- 결과 ---------- */
 async function finish(){
   if (finished) return;
@@ -1260,6 +1352,13 @@ async function finish(){
 
   const hl=new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
   $('rBoard').innerHTML = boardSVGString(hl);
+
+  // 같은 타일 19장을 가장 잘 놓았다면 몇 점이었을까
+  $('rCeil').textContent='계산 중…'; $('rCeilSub').textContent='잠시만 기다려 주세요';
+  findCeiling(Object.values(board), 1300, ceil=>{
+    $('rCeil').textContent = '약 '+ceil+'점';
+    $('rCeilSub').textContent = ceil ? ('당신은 그중 '+Math.round(total/ceil*100)+'%') : '';
+  });
   bOn('rooms/'+roomCode+'/ranking', v=>{
     const list = Object.entries(v||{}).filter(([,x])=>x && typeof x==='object')
                        .map(([pid,x])=>Object.assign({pid},x));
@@ -1271,6 +1370,8 @@ async function finish(){
   show('result');
 }
 $('btnBackHome').onclick = ()=>{ location.reload(); };
+$('btnCopySeq').onclick = ()=>copySeq(drawnList);
+$('btnCopySeqT').onclick = async ()=>copySeq((await bGet('rooms/'+roomCode+'/drawn'))||[]);
 
 /* ---------- 연습 모드: 학생 화면에서 직접 뽑기 ---------- */
 function enablePracticeDraw(){
