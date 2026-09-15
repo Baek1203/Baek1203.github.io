@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -80,8 +79,10 @@
   .tprog b{color:var(--ink);font-size:23px;font-weight:800;font-variant-numeric:tabular-nums}
   .tprog.all b{color:var(--ok)}
   .aichips{display:flex;gap:6px}
-  .chip{flex:1;padding:8px 4px;border:1px solid var(--line);border-radius:8px;
-    background:#11151c;color:var(--mute);font-size:12.5px;font-weight:600;text-align:center}
+  .chip{flex:1;padding:7px 4px;border:1px solid var(--line);border-radius:8px;
+    background:#11151c;color:var(--mute);text-align:center;line-height:1.25}
+  .chip b{display:block;font-size:14px;font-weight:800}
+  .chip i{display:block;font-size:11px;font-style:normal;opacity:.75}
   .chip:hover{background:#1b2029}
   .chip[aria-pressed="true"]{background:#2b3a52;border-color:#47618c;color:var(--ink)}
   .aiview{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;min-height:0}
@@ -291,9 +292,9 @@
       <div class="sidebox" style="flex:0 0 auto">
         <h3>AI 참가 <span id="aiNote">꺼짐</span></h3>
         <div class="aichips">
-          <button class="chip" data-ai="mid" aria-pressed="false">AI 중급</button>
-          <button class="chip" data-ai="hard" aria-pressed="false">AI 고급</button>
-          <button class="chip" data-ai="best" aria-pressed="false">AI 최고급</button>
+          <button class="chip" data-ai="zero" aria-pressed="false"><b>제로</b><i>모험</i></button>
+          <button class="chip" data-ai="nova" aria-pressed="false"><b>노바</b><i>균형</i></button>
+          <button class="chip" data-ai="lumen" aria-pressed="false"><b>루멘</b><i>집중</i></button>
         </div>
       </div>
       <div class="sidebox" style="flex:1">
@@ -672,6 +673,7 @@ function renderAIView(){
     const hl = new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
     return '<div class="aicard"><div class="aihead">'
       + '<span class="nm">'+AI_DEFS[lv].name+'</span>'
+      + '<span style="color:var(--mute);font-size:12px">'+AI_DEFS[lv].trait+'</span>'
       + '<span class="sc">'+total+'점</span>'
       + '<span class="pg">'+Object.keys(b).length+'/19</span></div>'
       + '<svg viewBox="0 0 400 433">'+boardSVGString(hl,b,last)+'</svg></div>';
@@ -792,7 +794,7 @@ $('btnReset').onclick = async ()=>{
   if (!confirm('지금까지 기록이 지워집니다. 새 게임을 시작할까요?')) return;
   const keep = aiOn.slice();
   await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now(), ai: keep.length?keep:null });
-  aiBoards = { mid:{}, hard:{}, best:{} }; aiSeq = { mid:[], hard:[], best:[] };
+  aiBoards = { zero:{}, nova:{}, lumen:{} }; aiSeq = { zero:[], nova:[], lumen:[] };
   aiFollow = true; aiStep = 0;
   showRank(false);
   clearInterval(tTimerId); tTimerId=null; tRound=0;
@@ -808,13 +810,14 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;',
    모든 창이 똑같이 계산해서 서로 충돌하지 않습니다.
    ============================================================ */
 const AI_DEFS = {
-  // eps = 일부러 아무 칸에 두는 비율. 평균 점수는 차례로 약 93 / 141 / 150점입니다.
-  mid:  { name:'AI 중급',  eps:0.25, mode:'base', delay:[2.0,4.0] },
-  hard: { name:'AI 고급',  eps:0.00, mode:'base', delay:[1.5,3.0] },
-  best: { name:'AI 최고급', eps:0.00, mode:'long', delay:[1.2,2.5] }
+  // eps = 일부러 아무 칸에 두는 비율. 평균 점수는 차례로 약 93 / 141 / 150점.
+  // 서열이 아니라 성향 차이입니다. 같은 타일로 붙으면 절반쯤은 순서가 뒤집힙니다.
+  zero:  { name:'제로', trait:'모험', eps:0.25, mode:'base', delay:[2.0,4.0] },
+  nova:  { name:'노바', trait:'균형', eps:0.00, mode:'base', delay:[1.5,3.0] },
+  lumen: { name:'루멘', trait:'집중', eps:0.00, mode:'long', delay:[1.2,2.5] }
 };
-const AI_ORDER = ['mid','hard','best'];
-let aiOn = [], aiBoards = { mid:{}, hard:{}, best:{} }, aiSeq = { mid:[], hard:[], best:[] };
+const AI_ORDER = ['zero','nova','lumen'];
+let aiOn = [], aiBoards = { zero:{}, nova:{}, lumen:{} }, aiSeq = { zero:[], nova:[], lumen:[] };
 
 /** 씨앗이 같으면 늘 같은 값이 나오는 난수 */
 function seeded(n){
