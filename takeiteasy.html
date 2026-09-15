@@ -1,5 +1,58 @@
 <!DOCTYPE html>
+<!--
+  테이크 잇 이지 (Take It Easy) 수업용 웹 앱
+  프로젝트: take-it-easy-e70f1 (asia-southeast1)
+  ==================================================================
 
+  설정값은 이미 채워져 있습니다. 아래 1번과 2번만 콘솔에서 마치면 됩니다.
+  ------------------------------------------------------------------
+
+  ------------------------------------------------------------------
+  1. 교사 비밀번호 만들기
+  ------------------------------------------------------------------
+  Authentication > Sign-in method > 이메일/비밀번호 사용 설정
+  Authentication > Users > 사용자 추가
+      이메일   teacher@takeiteasy.local   (실제 메일 주소가 아니어도 됩니다)
+      비밀번호  선생님이 정할 값 (6자 이상)
+  이 비밀번호가 방을 열 때 입력하는 값입니다.
+  비밀번호는 이 파일 어디에도 저장되지 않습니다.
+
+  ------------------------------------------------------------------
+  2. Realtime Database 규칙  (반드시 설정하세요)
+  ------------------------------------------------------------------
+  Realtime Database > 규칙 에 붙여 넣고 '게시'를 누릅니다.
+  처음 주어지는 테스트 모드 규칙은 30일 뒤 자동으로 막히므로,
+  그대로 두면 어느 날 수업 중에 갑자기 동작하지 않습니다.
+
+     {
+       "rules": {
+         "rooms": {
+           "$code": {
+             ".read": true,
+             ".write": "auth != null",
+             "players": { "$pid": { ".write": true } },
+             "ranking": { "$pid": { ".write": true } }
+           }
+         }
+       }
+     }
+
+     - 방 만들기, 타일 뽑기, 새 게임은 로그인한 교사만 가능합니다.
+     - 학생은 자기 진행 상황과 최종 점수만 쓸 수 있습니다.
+     - 방 내용 읽기는 누구나 가능합니다. 학생이 타일을 받아야 하니까요.
+
+  ------------------------------------------------------------------
+  3. 배포
+  ------------------------------------------------------------------
+  이 파일 하나만 올리면 됩니다.
+  firebase deploy --only hosting / GitHub Pages / 학교 웹서버 모두 됩니다.
+
+  ------------------------------------------------------------------
+  연습 모드
+  ------------------------------------------------------------------
+  FIREBASE_CONFIG 의 databaseURL 을 지우면 연습 모드가 됩니다.
+  한 대에서 혼자 타일을 뽑아가며 전체 흐름을 확인할 수 있습니다.
+-->
 <html lang="ko">
 <head>
 <meta charset="utf-8">
@@ -79,6 +132,22 @@
   .tprog{font-size:16px;color:var(--mute)}
   .tprog b{color:var(--ink);font-size:23px;font-weight:800;font-variant-numeric:tabular-nums}
   .tprog.all b{color:var(--ok)}
+  .stageinner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;width:100%}
+  .rankpanel{width:100%;height:100%;display:flex;flex-direction:column;gap:12px;min-height:0}
+  .rankhead{display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+  .rankhead .t{font-size:27px;font-weight:800}
+  .rankhead .m{font-size:15px;color:var(--mute)}
+  .rankcols{flex:1;min-height:0;overflow:auto;column-gap:20px;column-count:2}
+  .rkline{break-inside:avoid;display:flex;align-items:center;gap:11px;padding:8px 13px;
+    border-radius:9px;background:var(--panel2);margin-bottom:6px;font-size:16px}
+  .rkline .no{min-width:2.2ch;text-align:right;font-weight:800;color:var(--mute);font-variant-numeric:tabular-nums}
+  .rkline .sid{color:var(--mute);font-variant-numeric:tabular-nums;min-width:5ch;font-size:14px}
+  .rkline .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rkline .sc{font-weight:800;font-variant-numeric:tabular-nums}
+  .rkline.top{background:#3a3520;border:1px solid #6d5f2a}
+  .rkline.top .no,.rkline.top .sc{color:#ffd166}
+  .rkline.wait{opacity:.55}
+  .rkline.wait .sc{font-weight:600;color:var(--mute);font-size:14px}
   .callout{font-size:clamp(28px,5vh,46px);font-weight:800;letter-spacing:6px;font-variant-numeric:tabular-nums}
   .side{display:flex;flex-direction:column;gap:14px;min-height:0}
   .sidebox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:0;display:flex;flex-direction:column}
@@ -203,11 +272,13 @@
     <div class="code">방 번호 <b id="tCode">0000</b></div>
     <div class="roundnum"><b id="tRound">0</b>/ 19</div>
     <div style="flex:1"></div>
+    <button class="btn" id="btnRank">순위 보기</button>
     <button class="btn" id="btnReset">새 게임</button>
     <button class="btn primary big" id="btnDraw">타일 뽑기</button>
   </div>
   <div class="tbody">
     <div class="stage">
+     <div class="stageinner" id="tPlayView">
       <div class="callout" id="tCall">시작 준비</div>
       <div class="bigtile" id="tBig"></div>
       <div class="tclock" id="tClock" style="visibility:hidden">
@@ -216,6 +287,11 @@
       </div>
       <div class="tprog" id="tProg">타일을 놓은 학생 <b>0</b> / 0</div>
       <div class="roundnum" id="tSub">타일 뽑기를 누르면 학생 화면에 나타납니다</div>
+     </div>
+     <div class="rankpanel" id="tRankView" style="display:none">
+       <div class="rankhead"><span class="t">순위</span><span class="m" id="tRankMeta"></span></div>
+       <div class="rankcols" id="tRankList"></div>
+     </div>
     </div>
     <div class="side">
       <div class="sidebox" style="flex:1">
@@ -491,7 +567,7 @@ if (KEY_MISSING) $('modeTag').style.color = 'var(--warn)';
 /* ============================================================
    교사 화면
    ============================================================ */
-let roomCode=null, drawing=false, tRound=0, tTimerId=null, tDeadline=0, tList=[];
+let roomCode=null, drawing=false, tRound=0, tTimerId=null, tDeadline=0, tList=[], rankOpen=false;
 
 $('btnHost').onclick = async ()=>{
   const code = ($('inCodeT').value||'').trim() || String(Math.floor(1000+Math.random()*9000));
@@ -535,6 +611,50 @@ function teacherTimer(startAt){
   tick(); tTimerId=setInterval(tick,100);
 }
 
+function showRank(on){
+  rankOpen = on;
+  $('tPlayView').style.display = on ? 'none' : 'flex';
+  $('tRankView').style.display = on ? 'flex' : 'none';
+  $('btnRank').textContent = on ? '게임 화면' : '순위 보기';
+  if (on) renderRanking();
+}
+$('btnRank').onclick = ()=>showRank(!rankOpen);
+
+function renderRanking(){
+  if (!rankOpen) return;
+  const done = tList.filter(p=>p.done).sort((a,b)=>(b.score||0)-(a.score||0));
+  const rest = tList.filter(p=>!p.done).sort((a,b)=>(b.placed||0)-(a.placed||0));
+  let html='', rank=0, prev=null;
+  done.forEach((p,i)=>{
+    const sc=p.score||0;
+    if (sc!==prev){ rank=i+1; prev=sc; }          // 동점은 같은 등수
+    html += '<div class="rkline '+(rank<=3?'top':'')+'">'
+          + '<span class="no">'+rank+'</span>'
+          + '<span class="sid">'+esc(p.sid)+'</span>'
+          + '<span class="nm">'+esc(p.name)+'</span>'
+          + '<span class="sc">'+sc+'점</span></div>';
+  });
+  rest.forEach(p=>{
+    html += '<div class="rkline wait">'
+          + '<span class="no">·</span>'
+          + '<span class="sid">'+esc(p.sid)+'</span>'
+          + '<span class="nm">'+esc(p.name)+'</span>'
+          + '<span class="sc">'+(p.placed||0)+'/19</span></div>';
+  });
+  const list=$('tRankList');
+  list.innerHTML = html || '<div style="color:var(--mute);font-size:15px">아직 끝낸 학생이 없습니다.</div>';
+  list.style.columnCount = tList.length>14 ? 3 : (tList.length>6 ? 2 : 1);
+  const meta=$('tRankMeta');
+  if (done.length){
+    const sum=done.reduce((s,p)=>s+(p.score||0),0);
+    const avg=Math.round(sum/done.length);
+    const mid=done[Math.floor((done.length-1)/2)].score||0;
+    meta.textContent = tList.length+'명 중 '+done.length+'명 완료  ·  평균 '+avg+'점  ·  최고 '+(done[0].score||0)+'점  ·  중앙값 '+mid+'점';
+  } else {
+    meta.textContent = tList.length+'명 접속  ·  아직 완료한 학생이 없습니다';
+  }
+}
+
 function renderProgress(){
   const done = tRound ? tList.filter(x=>(x.placed||0)>=tRound).length : 0;
   const prog=$('tProg');
@@ -551,7 +671,7 @@ function watchTeacher(){
     const list = Object.values(v||{});
     $('tCount').textContent = list.length+'명';
     tList = list;
-    renderProgress();
+    renderProgress(); renderRanking();
     list.sort((a,b)=>String(a.sid).localeCompare(String(b.sid)));
     $('tPlayers').innerHTML = list.map(p=>
       `<div class="prow ${p.done?'done':''}"><span class="sid">${esc(p.sid)}</span><span class="nm">${esc(p.name)}</span><span class="pg">${p.done?(p.score+'점'):((p.placed||0)+'/19')}</span></div>`
@@ -572,7 +692,7 @@ function watchTeacher(){
       $('tSub').textContent = drawn.length>=TOTAL_ROUNDS ? '모든 타일을 다 뽑았습니다' : '학생들이 20초 안에 놓습니다';
     }
     $('btnDraw').disabled = drawn.length>=TOTAL_ROUNDS;
-    if (drawn.length>=TOTAL_ROUNDS) $('btnDraw').textContent='끝';
+    if (drawn.length>=TOTAL_ROUNDS){ $('btnDraw').textContent='끝'; if(!rankOpen) showRank(true); }
   });
 }
 function renderTeacherTracker(drawn){
@@ -599,6 +719,7 @@ $('btnDraw').onclick = async ()=>{
 $('btnReset').onclick = async ()=>{
   if (!confirm('지금까지 기록이 지워집니다. 새 게임을 시작할까요?')) return;
   await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now() });
+  showRank(false);
   clearInterval(tTimerId); tTimerId=null; tRound=0;
   $('tClock').style.visibility='hidden';
   $('tProg').innerHTML='타일을 놓은 학생 <b>0</b> / 0'; $('tProg').classList.remove('all');
@@ -690,8 +811,10 @@ function watchStudent(){
 }
 
 function onNewTile(v){
-  // 새로고침 후 돌아온 경우: 이번 타일을 이미 놓았다면 다시 놓지 않는다
-  if (Object.keys(board).length >= v.round){
+  const placedIds = new Set(Object.values(board));
+
+  // 이 타일을 이미 놓았다면 (새로고침 후 복귀) 다시 놓지 않는다
+  if (placedIds.has(v.id)){
     curTile = { id:v.id, round:v.round };
     placedThisRound = true; lastPlacedKey = null;
     $('btnUndo').disabled = true;
@@ -702,21 +825,28 @@ function onNewTile(v){
     renderBoard();
     return;
   }
-  // 늦게 들어온 학생: 이미 지나간 타일은 무작위로 채워 진도를 맞춘다
-  const missing = v.round - 1 - Object.keys(board).length;
-  if (missing > 0){
-    for (let i=0;i<missing;i++){
-      const id = drawnList[i];
-      if (id===undefined) break;
-      const k = randomEmptyCell();
-      if (k) board[k]=id;
-    }
-    if (missing>0){
-      toast('늦게 들어와서 지나간 타일 '+missing+'장은 임의로 놓았습니다.');
-      bUpdate('rooms/'+roomCode+'/players/'+me.pid,
-        { placed:Object.keys(board).length, board:JSON.stringify(board) });
-    }
+
+  // 직전 타일을 못 놓은 채 다음 타일이 온 경우 (다른 탭에 있었거나 시간 초과)
+  let auto = 0;
+  if (curTile && !placedThisRound && curTile.id!==v.id && !placedIds.has(curTile.id)){
+    const k = randomEmptyCell();
+    if (k){ board[k]=curTile.id; placedIds.add(curTile.id); auto++; }
   }
+  // 그 밖에 아직 놓지 않은 지난 타일을 채운다 — 같은 타일을 두 번 놓지 않는다
+  for (const id of drawnList){
+    if (id===v.id || placedIds.has(id)) continue;
+    const k = randomEmptyCell();
+    if (!k) break;
+    board[k]=id; placedIds.add(id); auto++;
+  }
+  if (auto>0){
+    toast('놓지 못한 타일 '+auto+'장은 빈 칸에 임의로 들어갔습니다.');
+    bUpdate('rooms/'+roomCode+'/players/'+me.pid,
+      { placed:Object.keys(board).length, board:JSON.stringify(board) });
+  }
+
+  if (Object.keys(board).length >= TOTAL_ROUNDS){ renderBoard(); finish(); return; }
+
   curTile = { id:v.id, round:v.round };
   placedThisRound = false;
   lastPlacedKey = null;
@@ -758,6 +888,11 @@ function tick(){
     }
   }
 }
+// 다른 탭에 있다 돌아오면 브라우저가 늦춘 타이머를 즉시 따라잡는다
+document.addEventListener('visibilitychange', ()=>{
+  if (!document.hidden && timerId) tick();
+});
+
 function randomEmptyCell(){
   const empty = CELLS.filter(c=>board[ck(c.q,c.r)]===undefined);
   if (!empty.length) return null;
