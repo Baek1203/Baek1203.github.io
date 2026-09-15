@@ -84,6 +84,24 @@
     background:#11151c;color:var(--mute);font-size:12.5px;font-weight:600;text-align:center}
   .chip:hover{background:#1b2029}
   .chip[aria-pressed="true"]{background:#2b3a52;border-color:#47618c;color:var(--ink)}
+  .aiview{width:100%;height:100%;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .aitop{display:flex;align-items:center;gap:16px;flex:0 0 auto}
+  .aitop .call{font-size:24px;font-weight:800;letter-spacing:4px;font-variant-numeric:tabular-nums;min-width:6.5ch}
+  .aitop .bar{flex:1;height:11px;background:#0d1117;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  .aitop .fill{height:100%;width:0%;background:var(--ok);transition:width .1s linear,background .3s}
+  .aitop .num{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;min-width:4.2ch;text-align:right}
+  .aiboards{flex:1;min-height:0;display:flex;gap:12px;justify-content:center}
+  .aicard{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;
+    background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px}
+  .aicard svg{width:100%;flex:1;min-height:0}
+  .aihead{display:flex;align-items:baseline;gap:8px;font-size:13.5px}
+  .aihead .nm{font-weight:800}
+  .aihead .sc{color:#ffd166;font-weight:800;font-variant-numeric:tabular-nums}
+  .aihead .pg{margin-left:auto;color:var(--mute);font-variant-numeric:tabular-nums}
+  .aistep{flex:0 0 auto;display:flex;align-items:center;gap:10px}
+  .aistep input[type=range]{flex:1;accent-color:#6ea8ff}
+  .aistep .lab{font-size:13px;color:var(--mute);min-width:9ch;font-variant-numeric:tabular-nums}
+  .aistep .btn{padding:7px 12px;font-size:13px}
   .badge{font-size:10.5px;font-weight:800;padding:1px 5px;border-radius:4px;
     background:#3a4a66;color:#cfe0ff;letter-spacing:.5px}
   .stageinner{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;width:100%}
@@ -226,6 +244,7 @@
     <div class="code">방 번호 <b id="tCode">0000</b></div>
     <div class="roundnum"><b id="tRound">0</b>/ 19</div>
     <div style="flex:1"></div>
+    <button class="btn" id="btnAi">AI 판 보기</button>
     <button class="btn" id="btnRank">순위 보기</button>
     <button class="btn" id="btnReset">새 게임</button>
     <button class="btn primary big" id="btnDraw">타일 뽑기</button>
@@ -241,6 +260,22 @@
       </div>
       <div class="tprog" id="tProg">타일을 놓은 학생 <b>0</b> / 0</div>
       <div class="roundnum" id="tSub">타일 뽑기를 누르면 학생 화면에 나타납니다</div>
+     </div>
+     <div class="aiview" id="tAiView" style="display:none">
+       <div class="aitop">
+         <span class="call" id="tAiCall">—</span>
+         <div class="bar"><div class="fill" id="tAiFill"></div></div>
+         <span class="num" id="tAiNum">—</span>
+       </div>
+       <div class="aiboards" id="tAiBoards"></div>
+       <div class="aistep">
+         <button class="btn" id="aiFirst">처음</button>
+         <button class="btn" id="aiPrev">◀</button>
+         <input type="range" id="aiRange" min="0" max="19" value="19">
+         <button class="btn" id="aiNext">▶</button>
+         <button class="btn" id="aiLastBtn">최신</button>
+         <span class="lab" id="aiStepLab">19수</span>
+       </div>
      </div>
      <div class="rankpanel" id="tRankView" style="display:none">
        <div class="rankhead"><span class="t">순위</span><span class="m" id="tRankMeta"></span></div>
@@ -567,6 +602,9 @@ function teacherTimer(startAt, roundNo){
     $('tFill').style.width=(pct*100).toFixed(1)+'%';
     $('tFill').style.background = pct>0.5?'var(--ok)':(pct>0.22?'var(--warn)':'var(--bad)');
     $('tNum').textContent=(left/1000).toFixed(1);
+    $('tAiNum').textContent=(left/1000).toFixed(1);
+    $('tAiFill').style.width=$('tFill').style.width;
+    $('tAiFill').style.background=$('tFill').style.background;
     $('tNum').classList.toggle('over', left<=0);
     if (left<=0){
       clearInterval(tTimerId); tTimerId=null; $('tNum').textContent='0.0';
@@ -577,14 +615,60 @@ function teacherTimer(startAt, roundNo){
   tick(); tTimerId=setInterval(tick,100);
 }
 
-function showRank(on){
-  rankOpen = on;
-  $('tPlayView').style.display = on ? 'none' : 'flex';
-  $('tRankView').style.display = on ? 'flex' : 'none';
-  $('btnRank').textContent = on ? '게임 화면' : '순위 보기';
-  if (on) renderRanking();
+let tView = 'play';          // play | ai | rank
+function setView(v){
+  tView = v; rankOpen = (v==='rank');
+  $('tPlayView').style.display = v==='play' ? 'flex' : 'none';
+  $('tAiView').style.display   = v==='ai'   ? 'flex' : 'none';
+  $('tRankView').style.display = v==='rank' ? 'flex' : 'none';
+  $('btnRank').textContent = v==='rank' ? '게임 화면' : '순위 보기';
+  $('btnAi').textContent   = v==='ai'   ? '게임 화면' : 'AI 판 보기';
+  if (v==='rank') renderRanking();
+  if (v==='ai'){ aiFollow = true; renderAIView(); }
 }
-$('btnRank').onclick = ()=>showRank(!rankOpen);
+function showRank(on){ setView(on ? 'rank' : 'play'); }
+$('btnRank').onclick = ()=>setView(tView==='rank' ? 'play' : 'rank');
+$('btnAi').onclick   = ()=>setView(tView==='ai'   ? 'play' : 'ai');
+
+/* ---------- AI 판 관전 / 복기 ---------- */
+let aiFollow = true, aiStep = 19;
+function aiMaxStep(){
+  return Math.max(0, ...aiOn.map(lv=>(aiSeq[lv]||[]).length));
+}
+/** n수까지만 놓은 판을 만든다 */
+function aiBoardAt(lv, n){
+  const seq = aiSeq[lv]||[], b = {};
+  for (let i=0;i<Math.min(n,seq.length);i++) b[seq[i].k] = seq[i].id;
+  return { b, last: (n>0 && seq[n-1]) ? seq[n-1].k : null };
+}
+function renderAIView(){
+  if (tView!=='ai') return;
+  const wrap = $('tAiBoards'), mx = aiMaxStep();
+  if (!aiOn.length){
+    wrap.innerHTML = '<div style="color:var(--mute);font-size:16px;align-self:center">오른쪽에서 AI를 켜면 판이 여기에 보입니다.</div>';
+    $('aiStepLab').textContent = '—'; return;
+  }
+  if (aiFollow) aiStep = mx;
+  aiStep = Math.min(aiStep, mx);
+  const r = $('aiRange'); r.max = String(Math.max(mx,1)); r.value = String(aiStep);
+  $('aiStepLab').textContent = aiStep + ' / ' + mx + '수';
+  wrap.innerHTML = aiOn.map(lv=>{
+    const {b,last} = aiBoardAt(lv, aiStep);
+    const {total,got} = scoreBoard(b);
+    const hl = new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
+    return '<div class="aicard"><div class="aihead">'
+      + '<span class="nm">'+AI_DEFS[lv].name+'</span>'
+      + '<span class="sc">'+total+'점</span>'
+      + '<span class="pg">'+Object.keys(b).length+'/19</span></div>'
+      + '<svg viewBox="0 0 400 433">'+boardSVGString(hl,b,last)+'</svg></div>';
+  }).join('');
+}
+function aiRefresh(){ if (tView==='ai') renderAIView(); }
+$('aiRange').oninput = ()=>{ aiFollow=false; aiStep=+$('aiRange').value; renderAIView(); };
+$('aiPrev').onclick  = ()=>{ aiFollow=false; aiStep=Math.max(0,aiStep-1); renderAIView(); };
+$('aiNext').onclick  = ()=>{ aiStep=Math.min(aiMaxStep(),aiStep+1); aiFollow=(aiStep===aiMaxStep()); renderAIView(); };
+$('aiFirst').onclick = ()=>{ aiFollow=false; aiStep=0; renderAIView(); };
+$('aiLastBtn').onclick = ()=>{ aiFollow=true; renderAIView(); };
 
 function renderRanking(){
   if (!rankOpen) return;
@@ -632,7 +716,7 @@ function renderProgress(){
 }
 
 function watchTeacher(){
-  bOn('rooms/'+roomCode+'/ai', v=>{ aiOn = Array.isArray(v)?v:[]; renderAIChips(); });
+  bOn('rooms/'+roomCode+'/ai', v=>{ aiOn = Array.isArray(v)?v:[]; renderAIChips(); aiRefresh(); });
   bOn('rooms/'+roomCode+'/tile', v=>{
     if (!v){ teacherTimer(0,0); return; }
     teacherTimer(v.at||0, v.round||0);
@@ -661,6 +745,7 @@ function watchTeacher(){
     if (last!==null && last!==undefined){
       const t=TILES[last];
       $('tCall').textContent = t.join(' - ');
+      $('tAiCall').textContent = t.join(' - ');
       $('tBig').innerHTML = tileBox(t);
       $('tSub').textContent = drawn.length>=TOTAL_ROUNDS ? '모든 타일을 다 뽑았습니다' : '학생들이 20초 안에 놓습니다';
     }
@@ -693,7 +778,8 @@ $('btnReset').onclick = async ()=>{
   if (!confirm('지금까지 기록이 지워집니다. 새 게임을 시작할까요?')) return;
   const keep = aiOn.slice();
   await bSet('rooms/'+roomCode, { status:'playing', round:0, tile:null, drawn:null, players:null, ranking:null, at:Date.now(), ai: keep.length?keep:null });
-  aiBoards = { easy:{}, mid:{}, hard:{} };
+  aiBoards = { easy:{}, mid:{}, hard:{} }; aiSeq = { easy:[], mid:[], hard:[] };
+  aiFollow = true; aiStep = 0;
   showRank(false);
   clearInterval(tTimerId); tTimerId=null; tRound=0;
   $('tClock').style.visibility='hidden';
@@ -714,7 +800,7 @@ const AI_DEFS = {
   hard: { name:'AI 고급', eps:0.00, delay:[1.5,3.0] }
 };
 const AI_ORDER = ['easy','mid','hard'];
-let aiOn = [], aiBoards = { easy:{}, mid:{}, hard:{} };
+let aiOn = [], aiBoards = { easy:{}, mid:{}, hard:{} }, aiSeq = { easy:[], mid:[], hard:[] };
 
 /** 씨앗이 같으면 늘 같은 값이 나오는 난수 */
 function seeded(n){
@@ -759,20 +845,22 @@ function aiPickCell(lv, b, id, round){
 async function aiSave(lv){
   const b = aiBoards[lv], n = Object.keys(b).length, done = n>=TOTAL_ROUNDS;
   const sc = done ? scoreBoard(b).total : 0;
+  aiRefresh();
   await bUpdate('rooms/'+roomCode+'/players/ai_'+lv,
-    { sid:'AI', name:AI_DEFS[lv].name, placed:n, score:sc, done, ai:true, board:JSON.stringify(b) });
+    { sid:'AI', name:AI_DEFS[lv].name, placed:n, score:sc, done, ai:true,
+      board:JSON.stringify(b), seq:JSON.stringify(aiSeq[lv]||[]) });
   if (done) await bSet('rooms/'+roomCode+'/ranking/ai_'+lv,
     { sid:'AI', name:AI_DEFS[lv].name, score:sc, at:Date.now() });
 }
 /** 뽑혀 있는 타일을 처음부터 다시 두어 진도를 맞춘다 */
 async function aiCatchUp(lv){
   const drawn = (await bGet('rooms/'+roomCode+'/drawn')) || [];   // 교사 화면이므로 서버에서 읽는다
-  const b = {};
+  const b = {}, seq = [];
   drawn.forEach((id,i)=>{
     const k = aiPickCell(lv, b, id, i+1);
-    if (k) b[k] = id;
+    if (k){ b[k] = id; seq.push({k, id}); }
   });
-  aiBoards[lv] = b;
+  aiBoards[lv] = b; aiSeq[lv] = seq;
   await aiSave(lv);
 }
 async function aiPlace(lv, v){
@@ -781,12 +869,14 @@ async function aiPlace(lv, v){
   if (Object.keys(b).length < v.round-1){        // 창을 늦게 열었으면 저장된 판을 읽는다
     const prev = await bGet('rooms/'+roomCode+'/players/ai_'+lv);
     if (prev && prev.board){ try{ b = JSON.parse(prev.board)||{}; }catch(_){ b={}; } }
+    if (prev && prev.seq){ try{ aiSeq[lv] = JSON.parse(prev.seq)||[]; }catch(_){ aiSeq[lv]=[]; } }
     aiBoards[lv] = b;
   }
   if (Object.values(b).indexOf(v.id) >= 0) return;   // 이미 놓았다
   const k = aiPickCell(lv, b, v.id, v.round);
   if (!k) return;
   b[k] = v.id;
+  (aiSeq[lv] = aiSeq[lv] || []).push({k, id:v.id});
   await aiSave(lv);
 }
 function aiOnTile(v){
@@ -809,7 +899,7 @@ document.querySelectorAll('.chip[data-ai]').forEach(el=>{
     const next = aiOn.indexOf(lv)>=0 ? aiOn.filter(x=>x!==lv) : AI_ORDER.filter(x=>x===lv||aiOn.indexOf(x)>=0);
     await bSet('rooms/'+roomCode+'/ai', next.length?next:null);
     if (next.indexOf(lv)>=0){ aiOn=next; renderAIChips(); await aiCatchUp(lv); }
-    else { aiBoards[lv]={}; await bSet('rooms/'+roomCode+'/players/ai_'+lv, null);
+    else { aiBoards[lv]={}; aiSeq[lv]=[]; aiRefresh(); await bSet('rooms/'+roomCode+'/players/ai_'+lv, null);
            await bSet('rooms/'+roomCode+'/ranking/ai_'+lv, null); }
   };
 });
@@ -988,14 +1078,16 @@ function randomEmptyCell(){
 }
 
 /* ---------- 판 ---------- */
-function boardSVGString(hl){
+function boardSVGString(hl, src, lastKey){
+  const b = src || board;
   const R=50; let s='';
   for (const c of CELLS){
     const key = ck(c.q,c.r);
     const x = 200 + 1.5*R*c.q, y = 216.5 - R*S3*(c.r + c.q/2);
-    const t = board[key], empty = (t===undefined);
+    const t = b[key], empty = (t===undefined);
     s += tileSVG(empty?null:TILES[t], x, y, R, {slotFill: empty?'#232a35':'#ffffff', stroke:'#2a2f3a'});
     if (hl && hl.has(key)) s += `<path d="${hexPath(x,y,R)}" fill="none" stroke="#ffd166" stroke-width="4"/>`;
+    if (lastKey===key) s += `<path d="${hexPath(x,y,R)}" fill="none" stroke="#5aa9ff" stroke-width="5.5"/>`;
   }
   return s;
 }
