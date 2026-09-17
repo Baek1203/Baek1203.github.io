@@ -195,6 +195,7 @@
     flex-direction:column;gap:4px;background:#fff;border:1.8px solid var(--ink);
     border-radius:9px;padding:5px;box-shadow:0 10px 24px rgba(20,18,16,.22)}
   .rwrap:hover .pop,.rwrap:focus-within .pop,.pop.open{display:flex}
+  .pop.shut{display:none!important}
   .pop button{padding:9px 0;border-radius:6px;cursor:pointer;border:1.5px solid var(--rule);
     background:#fff;font:800 11.5px/1 var(--f);color:var(--soft)}
   .pop button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -332,7 +333,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v7 · 2026-09-09";
+const VER="사건 파일 v8 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -530,7 +531,7 @@ const QUAL=[
   give:o=>{gSeg("A","B",70,64,7,o);},
   cm:7},
  {k:"ang",n:"2",title:"크기가 같은 각 옮기기",
-  ask:"<em>∠XOY</em>와 <b>크기가 같은 각</b>을, 점 <em>P</em>에서 시작하는 반직선을 한 변으로 하여 작도하시오.",
+  ask:"<em>∠XOY</em>와 <b>크기가 같은 각</b>을, 반직선 <em>PQ</em>를 한 변으로 하여 작도하시오.",
   give:o=>{gAng("O","X","Y",150,150,52,120,o);},
   deg:52}
 ];
@@ -541,11 +542,12 @@ let QI=0;                                      /* 지금 시험 번호 */
 
 function givenQual(k){
   GID=0;
-  const out=[],y=440;
+  const out=[],y=438;
   out.push({t:"P",id:"L1",x:36,y:y,given:true,hidden:true});
   out.push({t:"P",id:"L2",x:764,y:y,given:true,hidden:true});
   out.push({t:"S",id:"l",a:"L1",b:"L2",kind:"segment",given:true,name:"l"});
   out.push({t:"P",id:"B",x:150,y:y,given:true,label:"P"});
+  out.push({t:"P",id:"Q",x:470,y:y,given:true,label:"Q"});   /* 반직선 PQ 의 다른 끝 */
   QUAL[k].give(out);
   return out;
 }
@@ -724,6 +726,7 @@ function givenFor(i,more){
   out.push({t:"P",id:"L2",x:764,y:y,given:true,hidden:true});
   out.push({t:"S",id:"l",a:"L1",b:"L2",kind:"segment",given:true,name:"l"});
   out.push({t:"P",id:"B",x:120,y:y,given:true,label:"B"});
+  out.push({t:"P",id:"M",x:470,y:y,given:true,label:"M"});   /* 방향을 잡을 점 */
   const g=(more&&CASES[i].more)?CASES[i].more.give:CASES[i].give;
   g(out);
   return out;
@@ -978,8 +981,8 @@ function boardSVG(){
   for(const o of items){
     if(o.t!=="S")continue;
     const e=segEnds(o);if(!e)continue;
-    const col=o.given?"#8A8271":(me&&me.color)||"#1F3F94";
-    const w=o.given?2:3.2;
+    const col=o.given?(o.name?"#5A5347":"#8A8271"):(me&&me.color)||"#1F3F94";
+    const w=o.given?(o.name?2.8:2.2):3.2;
     g.push(`<line x1="${e[0].x.toFixed(1)}" y1="${e[0].y.toFixed(1)}"
       x2="${e[1].x.toFixed(1)}" y2="${e[1].y.toFixed(1)}"
       stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`);
@@ -1004,12 +1007,17 @@ function boardSVG(){
   for(const o of items){
     if(o.t!=="P"||o.hidden)continue;
     const on=pend.indexOf(o.id)>=0;
-    g.push(`<circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="${on?7:4.6}"
+    const big=o.given&&o.y>400&&["P","B","Q","M"].indexOf(o.label)>=0;
+    g.push(`<circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="${on?7:(big?6:4.6)}"
       fill="${on?"#C98A10":"#241F16"}"/>`);
-    if(o.label)g.push(`<text x="${(o.x+9).toFixed(1)}" y="${(o.y-9).toFixed(1)}"
-      font-size="17" font-weight="800" fill="#241F16"
+    if(o.label)g.push(`<text x="${(o.x+10).toFixed(1)}" y="${(o.y+(big?22:-9)).toFixed(1)}"
+      font-size="${big?19:17}" font-weight="800" fill="#241F16"
       font-family="Georgia,serif">${o.label}</text>`);
   }
+  {const l=items.find(o=>o.t==="S"&&o.name==="l");
+   if(l){const a=P(l.a);
+     g.push(`<text x="40" y="${(a.y-13).toFixed(1)}" font-size="12" font-weight="800"
+       fill="#A99F8A">여기에 작도합니다</text>`);}}
   if(TOOL==="compass")g.push(compassSVG());
   return g.join("");
 }
@@ -1375,7 +1383,11 @@ function drawWork(){
     TOOL=b.dataset.t;pend=[];paintBoard();paintTools();});
   $("kinds").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
     KIND=b.dataset.k;TOOL="ruler";pend=[];
-    $("kinds").classList.remove("open");paintBoard();paintTools();});
+    const k=$("kinds");
+    k.classList.remove("open");k.classList.add("shut");   /* 고르면 닫는다 */
+    b.blur();paintBoard();paintTools();});
+  const rw=document.querySelector(".rwrap");
+  if(rw)rw.addEventListener("mouseleave",()=>$("kinds").classList.remove("shut"));
   $("bOpen").onclick=()=>{C.r=110;C.theta=-Math.PI/2.4;C.flip=1;C.from=null;TOOL="compass";
     foldCompass();paintBoard();paintTools();toast("컴퍼스를 처음 크기로 되돌렸습니다.");};
   $("bUndo").onclick=()=>{if(undo.length){restore(undo.pop());paintBoard();paintTools();refresh();}};
