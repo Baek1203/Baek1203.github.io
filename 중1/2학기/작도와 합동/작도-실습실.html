@@ -234,6 +234,49 @@
   .skgot{display:inline-block;margin-top:6px;font:800 10.5px/1 var(--sans);color:#2A7148;
     background:#EFF7F1;border-radius:99px;padding:4px 8px}
   .skhint{margin:8px 0 0;font:700 11px/1.6 var(--sans);color:var(--ink-soft)}
+  .sheet.wide{max-width:660px}
+  #caseModal .sheet{background:#EFE9DB;border:3px solid #1C1A16}
+  #caseModal h3{letter-spacing:.02em}
+  .sheet .cnt{float:right;font:800 12.5px/1 var(--sans);color:var(--ink-soft)}
+  .sheet .sub{margin:0 0 14px;font:700 12.5px/1.7 var(--sans);color:var(--ink-soft)}
+  .ccards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .ccard{position:relative;border:2px solid #C6B994;border-radius:4px 12px 4px 4px;
+    padding:13px 14px 12px;background:
+      linear-gradient(180deg,#FBF6E9 0%,#F4EDDC 100%);
+    text-align:left;cursor:pointer;font:inherit;
+    box-shadow:0 1px 0 #D8CEB6}
+  .ccard::before{content:"";position:absolute;left:-2px;top:-2px;width:52px;height:13px;
+    background:#C6B994;border-radius:4px 4px 0 0}
+  .ccard:hover{border-color:var(--gold)}
+  .ccard.on{border-color:var(--ink);background:#FFFCF4}
+  .ccard.ok{border-color:#9FC9AF}
+  .ccard.ok::after{content:"해결";position:absolute;right:10px;bottom:10px;
+    border:2px solid #2A7148;color:#2A7148;border-radius:4px;padding:2px 7px;
+    font:900 10.5px/1 var(--sans);transform:rotate(-8deg);opacity:.85}
+  .ccard h5{margin:9px 0 6px;font:800 13.5px/1 var(--sans);display:flex;align-items:center;gap:6px}
+  .ccard h5 i{font-style:normal;margin-left:auto;font:800 11px/1 var(--sans);color:#2A7148}
+  .ccard p{margin:0;font:700 12px/1.7 "Noto Serif KR",var(--serif),serif;color:#241F16;
+    border-left:3px solid #C0342A;padding-left:9px}
+  .ccard .st{display:block;margin-top:8px;font:800 11px/1 var(--sans);color:var(--ink-soft)}
+  /* ── 사건 파일 화면 ── */
+  body.casefile .wrap{background:
+    linear-gradient(180deg,#F3EEE2 0%,#EFE9DB 100%)}
+  body.casefile .prompt{background:#1C1A16;color:#F6F1E6;border-color:#1C1A16;
+    position:relative;padding-left:104px}
+  body.casefile .prompt::before{content:"CASE FILE";position:absolute;left:14px;top:50%;
+    transform:translateY(-50%) rotate(-7deg);border:2.5px solid #C0342A;color:#C0342A;
+    border-radius:5px;padding:5px 9px;font:900 11px/1 var(--sans);letter-spacing:.1em;
+    opacity:.92}
+  body.casefile .prompt b{color:#F0C86A}
+  body.casefile .panel{border-color:#B9AE96}
+  body.casefile .board{box-shadow:0 2px 0 #D8CEB6,0 0 0 1px #CFC4A8}
+  .casebox{border:1.6px solid var(--rule);border-radius:11px;padding:11px 12px;margin-top:10px;
+    background:#fff}
+  .casebox h4{margin:0 0 8px;font:800 12.5px/1 var(--sans)}
+  .casebox .qz{display:flex;gap:5px;margin-bottom:9px}
+  .casebox .qz i{flex:1;height:8px;border-radius:99px;background:#E9E1CC}
+  .casebox .qz i.on{background:#2A7148}
+  .casebox p{margin:0 0 9px;font:700 11px/1.6 var(--sans);color:var(--ink-soft)}
   .minimap{background:#fff;border:1px solid var(--rule);border-radius:10px;padding:9px 10px}
   .minimap[hidden]{display:none}
   .mtiles{display:flex;gap:5px;margin-bottom:6px}
@@ -497,6 +540,7 @@
         <button class="mini danger" id="clear">처음부터</button>
       </div>
       <div class="skillbox" id="skillbox" hidden></div>
+      <div class="casebox" id="casebox" hidden></div>
       <div class="minimap" id="mini" hidden></div>
       <div class="logbox" id="logbox" hidden></div>
     </div>
@@ -512,7 +556,29 @@
 
     <div class="hud">
       <div class="verdict" id="verdict"></div>
-      <div class="toast" id="toast"></div>
+      <div class="modal" id="caseModal" hidden><div class="sheet wide">
+  <h3>사건 배당 <span id="caseCnt" class="cnt"></span></h3>
+  <p class="sub">배당받은 네 건입니다. 해결한 사건은 <b>✓</b>로 표시됩니다.
+    아무 때나 다시 열어 바꿀 수 있습니다.</p>
+  <div class="ccards" id="caseCards"></div>
+  <button class="mbtn" id="caseClose">닫기</button>
+</div></div>
+
+<div class="modal" id="idInfo" hidden><div class="sheet">
+  <h3>감식관 신원 확인</h3>
+  <p class="sub">이번 시간은 <b>개인 평가</b>입니다. 학번과 이름을 넣어 주세요.
+    코드네임은 그대로 씁니다.</p>
+  <div class="idrow"><label>코드네임</label>
+    <b id="iiNick" style="flex:1;font:800 15px/1 var(--sans)"></b></div>
+  <div class="idrow"><label>학번</label>
+    <input id="iiSid" inputmode="numeric" placeholder="예) 10315" maxlength="6" style="flex:1"></div>
+  <div class="idrow"><label>이름</label>
+    <input id="iiName" placeholder="이름" maxlength="10" style="flex:1"></div>
+  <p class="idmsg" id="iiMsg"></p>
+  <button class="mbtn solid" id="iiSave">확인</button>
+</div></div>
+
+<div class="toast" id="toast"></div>
     </div>
   </div>
 </div>
@@ -1073,7 +1139,15 @@ function foldCompass(){
   for(const o of opt){const q=outN(o.t,o.f);if(q<bn){bn=q;best=o;}}
   C.theta=best.t;C.flip=best.f;
 }
-function needle(){const C=S.compass;return C.center?pt(C.center):C.free;}
+function needle(){
+  const C=S.compass;
+  if(C.center){
+    const p=pt(C.center);
+    if(p)return p;
+    C.center=null;                 /* 가리키던 점이 사라졌으면 놓아 준다 */
+  }
+  return C.free||(C.free={x:400,y:300});
+}
 function geom(){
   const C=S.compass,c=needle(),r=Math.max(C.r,0);
   const leg=Math.max(135,r*0.62),al=Math.acos(Math.min(1,(r/2)/leg));
@@ -1451,9 +1525,15 @@ function removeCascade(id){
         :(it.def&&it.def.k==="x")?[it.def.a,it.def.b]:[];   /* 구역 등 def 없는 항목 보호 */
       if(refs.some(r=>dead.has(r))){dead.add(it.id);grew=true;}
     }}
-  S.items=S.items.filter(i=>!dead.has(i.id));
   const C=S.compass;
-  if(dead.has(C.center)){C.free={x:needle().x,y:needle().y};C.center=null;}
+  /* 점을 지우기 전에 바늘 자리를 미리 적어 둔다 — 지운 뒤에는 읽을 수 없다 */
+  let keep=null;
+  if(C.center&&dead.has(C.center)){
+    const n=pt(C.center);
+    keep=n?{x:n.x,y:n.y}:(C.free||{x:400,y:300});
+  }
+  S.items=S.items.filter(i=>!dead.has(i.id));
+  if(keep){C.free=keep;C.center=null;}
   if(C.from&&(dead.has(C.from[0])||dead.has(C.from[1])))C.from=null;
 }
 function eraseAt(pos){
@@ -2070,14 +2150,80 @@ const CASES=[
   {label:"사건 5",say:"세 각이 각각 ∠XOY, ∠X′O′Y′, ∠X″O″Y″와 같았습니다.",mk:()=>mkAAA(45,60,75)}
 ];
 const CASET=CASES.map(c=>c.mk());
+/* ── 사건 파일 · 개별 평가 ──
+   ① 자격 시험(선분 1 · 각 1)을 통과해야 ② 사건을 배당받는다.
+   사건은 SSS·SAS·ASA 세 건에, 정해지지 않는 사건 한 건을 더한 네 건이다. */
+const QUALN=2;
+function myCases(){                       /* 코드네임으로 네 번째 사건이 정해진다 */
+  let h=0;const k=String(me.no||"");
+  for(let i=0;i<k.length;i++)h=(h*31+k.charCodeAt(i))>>>0;
+  return [0,1,2,(h%2)?3:4];
+}
+const cqKey=()=>`caseq:${me.cls||"?"}:${me.no||"?"}`;
+let CQ={q:0,done:[],pick:null};
+window.cqLoad=function(){
+  CQ=LS.get(cqKey(),{q:0,done:[],pick:null});
+  if(typeof CQ.q!=="number")CQ={q:0,done:[],pick:null};
+  if(!Array.isArray(CQ.done))CQ.done=[];
+};
+const cqSave=()=>LS.set(cqKey(),CQ);
+const cqReady=()=>CQ.q>=QUALN;
+const QUALQ=[0,10];                       /* 자격 문항 — 선분 ①, 각 ① */
+
 TASKS.t10={
-  lock:true,kind:"tri",fab:"submit",jitter:true,noConfetti:true,
+  lock:true,kind:"tri",fab:"submit",jitter:true,noConfetti:true,nosave:true,
   win:"몽타주를 하나 작도했습니다. 왼쪽 <b>게시판에 내기</b>를 눌러 제출하세요.",
-  variants:CASES.map((c,i)=>({label:c.label,i})),
-  prompt:V=>`<b>${CASES[V.i].label}</b> · 목격자 진술 — “${CASES[V.i].say}” 진술만으로 몽타주를 작도하시오.`,
-  build:V=>CASET[V.i].build(),
-  steps(st){return CASET[st.variant].steps.call(CASET[st.variant],st);},
-  check(st){return CASET[st.variant].check(st);}
+  get variants(){return null;},
+  prompt(){
+    if(!cqReady()){
+      const d=DRILL[QUALQ[CQ.q]];
+      return `<b>감식관 자격 시험 ${CQ.q+1} / ${QUALN}</b> · ${d.prompt}`;
+    }
+    const i=CQ.pick;
+    if(i==null)return "왼쪽 <b>사건 고르기</b>를 눌러 사건을 고르세요.";
+    return `<b>${CASES[i].label}</b> · 목격자 진술 — “${CASES[i].say}” 진술만으로 몽타주를 작도하시오.`;
+  },
+  build(){
+    if(!cqReady()){
+      const d=DRILL[QUALQ[CQ.q]];
+      return d.kind==="seg"?d.build():angBuild(d);
+    }
+    return (CQ.pick==null)?[]:CASET[CQ.pick].build();
+  },
+  steps(st){
+    if(!cqReady()){
+      const d=DRILL[QUALQ[CQ.q]];
+      return TASKS.drill.steps.call(TASKS.drill,
+        Object.assign({},st,{qi:QUALQ[CQ.q]}));
+    }
+    if(CQ.pick==null)return [{t:"사건을 고른다",ok:false}];
+    return CASET[CQ.pick].steps.call(CASET[CQ.pick],st);
+  },
+  check(st){
+    if(!cqReady()){
+      const d=DRILL[QUALQ[CQ.q]];
+      return TASKS.drill.check.call(TASKS.drill,
+        Object.assign({},st,{qi:QUALQ[CQ.q]}));
+    }
+    if(CQ.pick==null)return {none:true,msg:"사건을 먼저 고르세요."};
+    return CASET[CQ.pick].check(st);
+  },
+  onWin(st){
+    if(cqReady()&&CQ.pick!=null){
+      if(CQ.done.indexOf(CQ.pick)<0){CQ.done.push(CQ.pick);cqSave();}
+      if(window.paintCase)paintCase();
+      return;
+    }
+    if(!cqReady()){
+      CQ.q=Math.min(QUALN,CQ.q+1);cqSave();
+      if(window.paintCase)paintCase();
+      setTimeout(()=>{
+        if(S.taskId!=="t10")return;
+        loadTask("t10");
+        if(cqReady())setTimeout(()=>caseModal(true),400);
+      },1300);
+    }
+  }
 };
 
 /* ==================================================================
@@ -2182,7 +2328,7 @@ TASKS.drill={
   },
 
   steps(st){
-    const d=DRILL[skNow(SKG[st.variant]||"seg")];
+    const d=DRILL[st.qi!=null?st.qi:skNow(SKG[st.variant]||"seg")];
     if(d.kind==="seg"){
       const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P"),l=KEY(st,"l");
       const AB=[A.id,B.id];
@@ -2210,7 +2356,7 @@ TASKS.drill={
   },
 
   check(st){
-    const d=DRILL[skNow(SKG[st.variant]||"seg")];
+    const d=DRILL[st.qi!=null?st.qi:skNow(SKG[st.variant]||"seg")];
     if(d.kind==="seg"){
       const A=byLabel(st,"A"),B=byLabel(st,"B"),Pp=byLabel(st,"P");
       const l=st.items.find(i=>i.name==="l");
@@ -2514,15 +2660,23 @@ const Net={
 let progSig="";
 function reportProgress(){
   if(!me.nick||!S)return;
+  window.__extra=(S.taskId==="t10")?{
+    sid:me.sid||"",name:me.name||"",
+    qual:(typeof CQ!=="undefined")?CQ.q:0,
+    cases:(typeof CQ!=="undefined")?CQ.done.slice():[],
+    pick:(typeof CQ!=="undefined"&&CQ.pick!=null)?CASES[CQ.pick].label:""
+  }:null;
   const T=TASKS[S.taskId];let st=[];
   try{st=T.steps(S);}catch(e){return;}
-  const sig=`${S.taskId}/${S.variant}/${st.map(x=>x.ok?1:0).join("")}`;
+  const sig=`${S.taskId}/${S.variant}/${st.map(x=>x.ok?1:0).join("")}/${
+    window.__extra?JSON.stringify(window.__extra):""}`;
   if(sig===progSig)return;progSig=sig;
   let done=false;try{done=!!T.check(S).ok;}catch(e){}
   dbPut(`progress/${cls()}/${me.no}`,{nick:me.nick,group:me.group,task:S.taskId,
     variant:S.variant,steps:st.map(x=>x.ok?1:0),
     titles:st.map(x=>x.t.replace(/<[^>]+>/g,"").slice(0,30)),
-    done,at:Date.now(),seen:Date.now()}).catch(()=>{});
+    done,at:Date.now(),seen:Date.now(),
+    x:window.__extra||null}).catch(()=>{});
 }
 setInterval(()=>{if(me.nick)dbPut(`progress/${cls()}/${me.no}/seen`,Date.now()).catch(()=>{});},30000);
 
@@ -2593,6 +2747,7 @@ async function saveId(force){
   me={cls:c,nick:nk,no:nk,group:g||"",color:me.color};
   LS.set("me",me);
   if(window.skLoad){skLoad();if(window.paintSkill)paintSkill();}
+  if(window.cqLoad){cqLoad();if(window.paintCase)paintCase();}
   if(owner!=="offline")dbPut(`codes/${c}/${nk}`,{dev:DEV,at:Date.now()}).catch(()=>{});
   idBusy=false;idNote("");
   $("idSave").textContent="저장";delete $("idSave").dataset.force;
@@ -2624,7 +2779,7 @@ const unlockedNow=()=>{
   if(q)q.split(",").forEach(k=>u[k]=true);
   return u;
 };
-const isLocked=id=>!!TASKS[id].lock&&!unlockedNow()[id];
+const isLocked=id=>false;        /* 모든 과제를 열어 둔다 */
 
 /* ---- 탭 ---- */
 function buildTabs(){
@@ -2763,7 +2918,11 @@ window.ONTASK=function(T,V){
   PL=null;
   if(SKNEXT){clearTimeout(SKNEXT);SKNEXT=null;}
   paintVariants(T);paintFab();paintMini();
+  document.body.classList.toggle("casefile",S.taskId==="t10");
+  if(S.taskId==="t10"&&window.cqLoad)cqLoad();
   if(window.paintSkill)paintSkill();
+  if(window.paintCase)paintCase();
+  if(S.taskId==="t10"&&window.askInfo)setTimeout(askInfo,60);
   buildTabs();          /* 묶음 탭(조사 2·3)까지 한 번에 맞춘다 */
 };
 
@@ -3491,7 +3650,7 @@ function skWin(g){                              /* 한 문제 성공 */
   return SK[g].n===SKNEED;
 }
 function skReset(g){SK[g]={n:0,i:SK[g].i};skSave();}
-const SKTASK=["t8","t9","t11","t10"];           /* 조사 3부터 쓸 수 있다 */
+const SKTASK=["t8","t9","t11"];           /* 조사 3부터 쓸 수 있다 */
 window.skUsable=g=>skGot(g)&&SKTASK.indexOf(S.taskId)>=0;
 /* 어느 화면에서 보일지 · 쓸 수 있을지 */
 window.skShow=g=>({show:SKTASK.indexOf(S.taskId)>=0, on:skGot(g)});
@@ -3604,6 +3763,69 @@ function nextLabel(){
   for(const k of (S.pool||POOL))if(!used.has(k))return k;
   return null;
 }
+
+/* ── 학번·이름 확인 (개인 평가) ── */
+window.askInfo=function(force){
+  if(!me.nick)return;
+  if(!force&&me.sid&&me.name)return;
+  $("iiNick").textContent=`${me.cls} · ${me.nick}`;
+  $("iiSid").value=me.sid||"";$("iiName").value=me.name||"";
+  $("iiMsg").textContent="";$("iiMsg").className="idmsg";
+  $("idInfo").hidden=false;
+};
+$("iiSave").onclick=()=>{
+  const sid=$("iiSid").value.trim(), nm=$("iiName").value.trim();
+  if(!/^\d{3,6}$/.test(sid)){
+    $("iiMsg").textContent="학번을 숫자로 넣어 주세요.";$("iiMsg").className="idmsg bad";return;}
+  if(nm.length<2){
+    $("iiMsg").textContent="이름을 넣어 주세요.";$("iiMsg").className="idmsg bad";return;}
+  me.sid=sid;me.name=nm;LS.set("me",me);
+  $("idInfo").hidden=true;
+  toast("확인했습니다. 자격 시험을 시작하세요.");
+};
+
+/* ── 사건 카드 모달 ── */
+window.caseModal=function(open){
+  const m=$("caseModal");
+  if(!open){m.hidden=true;return;}
+  const list=myCases();
+  $("caseCnt").textContent=`${CQ.done.length} / ${list.length} 해결`;
+  $("caseCards").innerHTML=list.map(i=>{
+    const done=CQ.done.indexOf(i)>=0, on=(CQ.pick===i);
+    return `<button class="ccard${on?" on":""}${done?" ok":""}" data-case="${i}">
+      <h5>${CASES[i].label}${done?'<i>✓ 해결</i>':""}</h5>
+      <p>“${CASES[i].say}”</p>
+      <span class="st">${done?"다시 열어 볼 수 있습니다":(on?"지금 맡은 사건":"누르면 이 사건을 맡습니다")}</span>
+    </button>`;}).join("");
+  $("caseCards").querySelectorAll("[data-case]").forEach(b=>b.onclick=()=>{
+    CQ.pick=+b.dataset.case;cqSave();
+    m.hidden=true;loadTask("t10");
+  });
+  m.hidden=false;
+};
+$("caseClose").onclick=()=>caseModal(false);
+
+/* 왼쪽 칸 — 자격과 사건 상태 */
+window.paintCase=function(){
+  const box=$("casebox");
+  if(!box)return;
+  if(S.taskId!=="t10"){box.hidden=true;return;}
+  box.hidden=false;
+  if(!cqReady()){
+    const dots=[0,1].map(k=>`<i class="${k<CQ.q?"on":""}"></i>`).join("");
+    box.innerHTML=`<h4>감식관 자격 시험</h4><div class="qz">${dots}</div>
+      <p>선분 옮기기와 각 옮기기를 <b>한 번씩</b> 해내면 사건을 배당받습니다.</p>`;
+    return;
+  }
+  const list=myCases();
+  box.innerHTML=`<h4>사건 배당 <span style="float:right;font:700 11px/1 var(--sans);
+      color:var(--ink-soft)">${CQ.done.length} / ${list.length}</span></h4>
+    <p>${CQ.pick==null?"아직 고르지 않았습니다.":
+      `지금 맡은 사건 — <b>${CASES[CQ.pick].label}</b>`}</p>
+    <button class="peek" id="caseOpen">사건 고르기</button>`;
+  const o=$("caseOpen");
+  if(o)o.onclick=()=>{o.blur();caseModal(true);};
+};
 
 /* 왼쪽 칸에 스킬 진행을 보여 준다 */
 window.paintSkill=function(){
