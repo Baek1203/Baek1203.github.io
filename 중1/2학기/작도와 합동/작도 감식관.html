@@ -365,7 +365,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v13 · 2026-09-09";
+const VER="사건 파일 v14 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1160,12 +1160,8 @@ let MAG=null;                                  /* 가까이 붙은 교점을 크
 const MAGK=4.2, MAGR=78;
 function magFind(p){
   if(TOOL!=="point")return null;
-  const near=spots().filter(q=>d2(q,p)<34);
-  if(near.length<2)return null;
-  let mn=1e9;
-  for(let i=0;i<near.length;i++)for(let j=i+1;j<near.length;j++)
-    mn=Math.min(mn,d2(near[i],near[j]));
-  if(mn>26)return null;                        /* 충분히 떨어져 있으면 필요 없다 */
+  const near=spots().filter(q=>d2(q,p)<32);
+  if(!near.length)return null;                 /* 하나만 있어도 열어 준다 */
   const cx=near.reduce((a,q)=>a+q.x,0)/near.length;
   const cy=near.reduce((a,q)=>a+q.y,0)/near.length;
   return {cx,cy,pts:near,
@@ -1186,7 +1182,7 @@ function magSVG(base){
   });
   g+=`<circle cx="${ix}" cy="${iy}" r="${MAGR}" fill="none" stroke="#8A6A0E" stroke-width="3"/>
     <text x="${ix}" y="${iy-MAGR+18}" font-size="11.5" font-weight="900" fill="#8A6A0E"
-      text-anchor="middle">돋보기 · 눌러서 고르기</text></g>`;
+      text-anchor="middle">돋보기</text></g>`;
   /* 어디를 보고 있는지 표시 */
   g+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${(MAGR/MAGK).toFixed(1)}"
     fill="none" stroke="#C98A10" stroke-width="1.6" stroke-dasharray="4 4" opacity=".8"/>`;
@@ -1748,7 +1744,7 @@ function paintTools(){
       {segment:"선분",ray:"반직선",line:"직선"}[KIND]}</b>.`,
     compass:`<b>중심쪽 다리</b>=옮기기 · <b>바깥쪽 다리</b>=벌리기 ·
       <b>가운데 손잡이</b>=돌려 그리기. 지금 <b>${(C.r/U).toFixed(2)}칸</b>.`,
-    point:"<b>노란 자리</b>를 누르면 교점을 찍습니다. 두 자리가 붙어 있으면 <b>돋보기</b>가 열립니다.",
+    point:"<b>노란 자리</b>를 누르면 교점을 찍습니다. 가까이 가면 <b>돋보기</b>가 열립니다.",
     erase:"내가 그린 <b>선·원·점</b>을 누르면 지워집니다."
   })[TOOL]||"";
 }
@@ -1876,7 +1872,7 @@ function onDown(e){
   const p=toBoard(e);
   if(TOOL==="ruler"){
     const h=hitPoint(p);
-    if(!h)return toast("<b>점</b> 위를 눌러 주세요.");
+    if(!h)return;
     if(pend.length===0){pend=[h.id];paintBoard();return;}
     if(pend[0]===h.id){pend=[];paintBoard();return;}
     pushUndo();
@@ -1898,46 +1894,32 @@ function onDown(e){
       grab(e);paintBoard();paintTools();return;
     }
     const h=hitPoint(p);                        /* 점을 톡 누르면 침이 옮겨감 */
-    if(!h)return toast("컴퍼스의 <b>세 부분</b>을 잡고 끌어 보세요. 점을 누르면 침이 그 점으로 갑니다.");
+    if(!h)return;
     pushUndo();
     C.center=h.id;C.free={x:h.x,y:h.y};
     if(C.r>=1)toast("침만 옮겼습니다. <b>벌림은 그대로</b>입니다.");
     paintBoard();paintTools();return;
   }
   if(TOOL==="point"){
-    if(MAG&&d2(p,{x:MAG.ix,y:MAG.iy})<MAGR){    /* 돋보기 안에서 고른다 */
-      let pick=null,bd=1e9;
+    let put=null;
+    if(MAG&&d2(p,{x:MAG.ix,y:MAG.iy})<MAGR){    /* 돋보기 안을 누르면 그 안에서 고른다 */
+      let bd=1e9;
       MAG.pts.forEach(q=>{
         const X=MAG.ix+(q.x-MAG.cx)*MAGK, Y=MAG.iy+(q.y-MAG.cy)*MAGK;
-        const d=d2(p,{x:X,y:Y});if(d<bd){bd=d;pick=q;}
+        const d=d2(p,{x:X,y:Y});if(d<bd){bd=d;put=q;}
       });
-      if(pick&&bd<26){
-        pushUndo();
-        items.push({t:"P",id:"p"+(nextId++),x:pick.x,y:pick.y,label:newLabel()});
-        MAG=null;paintBoard();refresh();return;
-      }
-      return toast("돋보기 안의 <b>번호</b>를 눌러 주세요.");
+    }else{                                      /* 판에서 바로 찍어도 된다 */
+      let bd=22;
+      for(const q of spots()){const d=d2(q,p);if(d<bd){bd=d;put=q;}}
     }
-    let best=null,bd=20;
-    for(const q of spots()){const d=d2(q,p);if(d<bd){bd=d;best=q;}}
-    if(!best)return toast("두 선이 <b>만나는 자리</b>를 눌러 주세요.");
-    const close=spots().filter(q=>d2(q,best)<26&&q!==best);
-    if(close.length){                            /* 너무 붙어 있으면 돋보기로 */
-      const grp=[best].concat(close);
-      const gx=grp.reduce((a,q)=>a+q.x,0)/grp.length;
-      const gy=grp.reduce((a,q)=>a+q.y,0)/grp.length;
-      MAG={cx:gx,cy:gy,pts:grp,
-        ix:(gx<400?800-MAGR-16:MAGR+16), iy:(gy<260?520-MAGR-16:MAGR+16)};
-      paintBoard();
-      return toast("가까이 붙은 자리가 있습니다. <b>돋보기</b>에서 골라 주세요.");
-    }
+    if(!put)return;
     pushUndo();
-    items.push({t:"P",id:"p"+(nextId++),x:best.x,y:best.y,label:newLabel()});
-    paintBoard();refresh();return;
+    items.push({t:"P",id:"p"+(nextId++),x:put.x,y:put.y,label:newLabel()});
+    MAG=null;paintBoard();refresh();return;
   }
   if(TOOL==="erase"){
     const h=hitCurve(p);
-    if(!h)return toast("지울 것을 눌러 주세요. <b>처음 주어진 것</b>은 지워지지 않습니다.");
+    if(!h)return;
     pushUndo();removeItem(h.id);paintBoard();refresh();return;
   }
 }
