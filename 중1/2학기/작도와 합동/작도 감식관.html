@@ -89,6 +89,10 @@
   .file .say2 em{font-style:normal;background:#FBE9A7;padding:0 4px;border-radius:3px;
     font-weight:900}
   .file .arrow{display:block;margin-top:11px;font:900 12.5px/1 var(--f);color:var(--red)}
+  .file.fin::after{content:"완료";position:absolute;right:11px;bottom:11px;
+    border:2.5px solid var(--ok);color:var(--ok);border-radius:5px;padding:3px 8px;
+    font:900 12px/1 var(--f);transform:rotate(-9deg)}
+  .file.fin{opacity:.9}
   .file.done::after{content:"검거";position:absolute;right:11px;bottom:11px;
     border:2.5px solid var(--ok);color:var(--ok);border-radius:5px;padding:3px 8px;
     font:900 12px/1 var(--f);transform:rotate(-9deg)}
@@ -128,6 +132,24 @@
   .rnd{width:100%;padding:11px;border-radius:9px;cursor:pointer;border:2px solid var(--gold);
     background:#FFF6E3;font:800 12.5px/1 var(--f);color:#8A6A0E}
 
+  .repgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:13px}
+  .repmini{background:var(--card);border:2px solid var(--rule);border-radius:10px;overflow:hidden}
+  .rmh{background:#141210;color:#F6F1E6;padding:8px 12px;display:flex;
+    justify-content:space-between;align-items:center}
+  .rmh span{font:900 11px/1 var(--f);letter-spacing:.12em;color:var(--red)}
+  .rmh i{font-style:normal;border:2px solid #9FD9B4;color:#9FD9B4;border-radius:4px;
+    padding:2px 7px;font:900 10.5px/1 var(--f);transform:rotate(-6deg)}
+  .rmb{display:flex;gap:10px;padding:11px 12px}
+  .rmb .ph{flex:0 0 auto;border:1.5px solid var(--rule);border-radius:5px;overflow:hidden;
+    line-height:0;background:#EFE9DB}
+  .rmt{flex:1;min-width:0}
+  .rmt b{display:block;font:900 13.5px/1.2 var(--f)}
+  .rmt p{margin:5px 0 0;font:700 11.5px/1.6 var(--s);color:var(--ink)}
+  .rmt p.ex{color:#8A6A0E}
+  .rmt em{font-style:normal;background:#FBE9A7;padding:0 3px;border-radius:3px;font-weight:900}
+  .rmf{display:flex;gap:9px;align-items:center;border-top:1.5px solid var(--rule);
+    padding:9px 12px;background:#fff}
+  .rmf span{font:800 11.5px/1.4 var(--f);color:var(--soft)}
   /* ── 수사 보고서 ── */
   .rep{position:fixed;inset:0;z-index:55;background:rgba(10,9,8,.86);overflow:auto;
     padding:24px 16px}
@@ -153,38 +175,42 @@
   .repl dd em{font-style:normal;background:#FBE9A7;padding:0 5px;border-radius:3px;font-weight:900}
   .repl .why{background:#EFF7F1;border-left:5px solid var(--ok);border-radius:8px;
     padding:11px 13px;font:800 13.5px/1.75 var(--f);color:#1E5636}
-  .repsus{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid var(--rule);
+  .repsus{display:flex;gap:12px;align-items:center;background:#fff;border:2px solid var(--rule);
     border-radius:10px;padding:10px 12px}
-  .repsus svg{flex:0 0 auto}
-  .repsus b{font:900 14px/1.3 var(--f)}
-  .repsus small{display:block;margin-top:3px;font:700 11.5px/1.4 var(--f);color:var(--soft)}
+  .repsus>span:first-child{flex:0 0 auto;line-height:0}
+  .repsus .txt{flex:1;min-width:0}
+  .repsus b{display:block;font:900 14px/1.3 var(--f)}
+  .repsus small{display:block;margin-top:4px;font:700 11.5px/1.5 var(--f);color:var(--soft);
+    word-break:keep-all}
   /* ── 수사 화면 ── */
-  .work{display:flex;flex-direction:column;height:100%;background:var(--paper)}
-  .dos{background:var(--dark);color:#F6F1E6;padding:14px 18px 16px;
+  #app{height:100%;display:flex;flex-direction:column}
+  .work{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--paper)}
+  .dos{background:var(--dark);color:#F6F1E6;padding:11px 16px 13px;flex:0 0 auto;
     border-bottom:3px solid var(--red)}
   .dos .no{font:900 10.5px/1 var(--f);color:var(--red);letter-spacing:.16em;margin-bottom:9px}
-  .dos .say{font:800 21px/1.55 var(--s);color:#FBF6E9;letter-spacing:-.01em;
-    padding-left:14px;border-left:4px solid var(--red)}
+  .dos .say{font:800 18px/1.5 var(--s);color:#FBF6E9;letter-spacing:-.01em;
+    padding-left:13px;border-left:4px solid var(--red)}
   .dos .say em{font-style:normal;background:#FBE9A7;color:#241F16;padding:1px 7px;
     border-radius:4px;font-weight:900}
-  .dos .extra{margin-top:11px;padding:10px 14px;border-radius:8px;background:#2A2620;
-    font:800 17px/1.5 var(--s);color:#F0C86A;border-left:4px solid var(--gold)}
+  .dos .extra{margin-top:9px;padding:8px 13px;border-radius:8px;background:#2A2620;
+    font:800 15px/1.45 var(--s);color:#F0C86A;border-left:4px solid var(--gold)}
   .dos .extra em{font-style:normal;background:#F0C86A;color:#241F16;padding:1px 6px;
     border-radius:4px}
   .dos .extra span{display:block;font:900 9.5px/1 var(--f);color:#8A8474;
     letter-spacing:.14em;margin-bottom:6px}
   @media (max-width:760px){.dos .say{font-size:17px}.dos .extra{font-size:15px}}
 
-  .mid{flex:1;min-height:0;display:flex;gap:12px;padding:12px 14px 14px}
-  .side{flex:0 0 230px;display:flex;flex-direction:column;gap:10px;min-width:0}
+  .mid{flex:1;min-height:0;display:flex;gap:11px;padding:10px 12px 12px;overflow:auto}
+  .side{flex:0 0 212px;display:flex;flex-direction:column;gap:9px;min-width:0}
   .bwrap{flex:1;min-width:0;display:flex;align-items:center;justify-content:center}
-  svg#board{width:100%;height:100%;max-height:100%;background:#FCFAF3;
-    border:2px solid var(--rule);border-radius:10px;touch-action:none;display:block}
+  svg#board{width:100%;height:auto;max-height:100%;aspect-ratio:800/520;background:#FCFAF3;
+    border:2px solid var(--rule);border-radius:10px;touch-action:none;display:block;
+    max-width:min(100%,760px)}
 
-  .card{background:#fff;border:1.8px solid var(--rule);border-radius:10px;padding:11px 12px}
+  .card{background:#fff;border:1.8px solid var(--rule);border-radius:10px;padding:10px 11px}
   .card h5{margin:0 0 8px;font:900 12.5px/1 var(--f)}
   .tools{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-  .tool{padding:11px 4px;border-radius:9px;cursor:pointer;border:2px solid var(--rule);
+  .tool{padding:9px 4px;border-radius:9px;cursor:pointer;border:2px solid var(--rule);
     background:#fff;font:800 12px/1.3 var(--f);color:var(--ink);display:flex;
     flex-direction:column;align-items:center;gap:5px}
   .tool[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
@@ -220,20 +246,20 @@
   /* ── 용의자 ── */
   .ov{position:fixed;inset:0;z-index:40;background:rgba(10,9,8,.75);overflow:auto;
     padding:22px 16px}
-  .ovin{max-width:980px;margin:0 auto;background:var(--paper);border:3px solid #000;
+  .ovin{max-width:1040px;margin:0 auto;background:var(--paper);border:3px solid #000;
     border-radius:4px}
   .ovh{background:var(--dark);color:#F6F1E6;padding:16px 20px}
   .ovh .no{font:900 10px/1 var(--f);color:var(--red);letter-spacing:.14em}
   .ovh h2{margin:7px 0 6px;font:900 20px/1.2 var(--f)}
   .ovh p{margin:0;font:700 12px/1.7 var(--f);color:#B9B2A2}
   .ovb{padding:16px 20px 20px}
-  .sus{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:11px}
+  .sus{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:13px}
   .sc{border:2px solid var(--rule);border-radius:10px;background:#fff;padding:9px;cursor:pointer;
     font:inherit;text-align:center}
   .sc[aria-pressed="true"]{border-color:var(--red);background:#FFF6F4;box-shadow:0 0 0 3px #F3D7D2}
-  .sc svg{width:100%;height:96px;display:block}
-  .sc b{display:block;margin-top:6px;font:900 12.5px/1 var(--f)}
-  .sc small{display:block;margin-top:3px;font:700 10.5px/1 var(--f);color:var(--soft)}
+  .sc svg{display:block;margin:0 auto}
+  .sc b{display:block;margin-top:9px;font:900 15px/1 var(--f)}
+  .sc small{display:block;margin-top:5px;font:700 12px/1.5 var(--f);color:var(--soft)}
   .ovacts{display:flex;gap:8px;margin-top:15px;flex-wrap:wrap}
   .ovacts button{flex:1;min-width:150px;padding:13px;border-radius:9px;cursor:pointer;
     font:900 13px/1 var(--f);border:2.2px solid var(--ink);background:#fff;color:var(--ink)}
@@ -286,15 +312,17 @@
     border-radius:6px;background:#E9E1CC;color:#8A8271;font:800 11px/1 var(--f);font-style:normal}
   .cs i.ok{background:var(--ok);color:#fff}
   .cs i.try{background:#F3D7D2;color:#8E2A22}
-  .thumb{width:62px;height:44px;background:#fff;border:1px solid var(--rule);border-radius:5px}
+  .thumb{display:inline-block;width:62px;height:44px;background:#fff;
+    border:1px solid var(--rule);border-radius:5px;overflow:hidden;vertical-align:middle;
+    margin:1px;line-height:0}
+  .thumb svg{width:62px;height:44px}
+  td .thumbs{display:flex;gap:3px;flex-wrap:wrap;max-width:210px}
   .none{padding:36px 0;text-align:center;font:800 13.5px/1.8 var(--f);color:#9A9484}
 
   /* 진술 먼저 보여 주기 */
   .flash{position:fixed;inset:0;z-index:70;background:#0C0B0A;display:flex;
-    align-items:center;justify-content:center;padding:30px 24px;
-    animation:fin .35s ease both}
+    align-items:center;justify-content:center;padding:30px 24px;opacity:1}
   .flash.out{animation:fout .7s ease both}
-  @keyframes fin{from{opacity:0}to{opacity:1}}
   @keyframes fout{from{opacity:1}to{opacity:0}}
   .fbox{max-width:760px;text-align:center}
   .fbox .no{font:900 11px/1 var(--f);color:var(--red);letter-spacing:.22em;margin-bottom:20px;
@@ -316,7 +344,7 @@
     border-radius:99px;opacity:0;pointer-events:none;transition:.22s;z-index:90;max-width:88vw;
     text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (max-width:760px){
+  @media (max-width:860px){
     .mid{flex-direction:column}
     .side{flex:0 0 auto;flex-direction:row;flex-wrap:wrap}
     .side .card{flex:1;min-width:190px}
@@ -333,7 +361,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v8 · 2026-09-09";
+const VER="사건 파일 v11 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -383,6 +411,15 @@ async function netProbe(){
 
 /* ══════════ 기하 ══════════ */
 const U=24;                                   /* 1칸 = 24px */
+const ZCUT=196;                               /* 위는 주어진 것, 아래는 작도하는 곳 */
+const zoneOfPt=p=>(p.y<ZCUT?"give":"work");
+function zoneOf(o){
+  if(o.t==="P")return zoneOfPt(o);
+  if(o.t==="S"){const a=P(o.a),b=P(o.b);
+    if(!a||!b)return "work";
+    return zoneOfPt({y:(a.y+b.y)/2});}
+  const c=arcCenter(o);return c?zoneOfPt(c):"work";
+}
 const d2=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const ang=(a,b)=>Math.atan2(b.y-a.y,b.x-a.x);
 const nr=(a,b,t)=>Math.abs(a-b)<=t;
@@ -417,29 +454,29 @@ function triSSA(a,b,deg,far){const t=-deg*Math.PI/180;
 
 const CASES=[
  {n:"01",label:"사건 1",
-  give:o=>{gSeg("P","Q",56,58,7,o);gSeg("R","S",56,104,5,o);gSeg("T","U",56,150,4,o);},
+  give:o=>{gSeg("P","Q",58,62,7,o);gSeg("R","S",58,110,5,o);gSeg("T","U",58,158,4,o);},
   say:"세 변이 각각 <em>7</em>, <em>5</em>, <em>4</em>였습니다.",
   cond:{k:"sss",v:[7,5,4]},
   sus:[triSSS(7,5,4),triSSS(7,6,4),triSSS(7,5,5),triSSS(8,5,4)],
   fit:[0]},
  {n:"02",label:"사건 2",
-  give:o=>{gSeg("P","Q",56,58,6,o);gSeg("R","S",56,110,4,o);
-           gAng("O","X","Y",430,140,50,96,o);},
+  give:o=>{gSeg("P","Q",58,66,6,o);gSeg("R","S",58,130,4,o);
+           gAng("O","X","Y",470,158,50,86,o);},
   say:"두 변이 <em>6</em>, <em>4</em>였고, <em>그 두 변 사이의 각</em>이 <em>50°</em>였습니다.",
   cond:{k:"sas",v:[6,4,50]},
   sus:[triSAS(6,4,50),triSAS(6,4,70),triSAS(6,5,50),triSAS(7,4,50)],
   fit:[0]},
  {n:"03",label:"사건 3",
-  give:o=>{gSeg("P","Q",56,52,7,o);
-           gAng("O","X","Y",330,146,45,92,o);
-           gAng("O′","X′","Y′",580,146,65,92,o);},
+  give:o=>{gSeg("P","Q",58,60,7,o);
+           gAng("O","X","Y",350,160,45,84,o);
+           gAng("O′","X′","Y′",600,160,65,84,o);},
   say:"한 변이 <em>7</em>이었고, <em>그 변의 양 끝 각</em>이 <em>45°</em>와 <em>65°</em>였습니다.",
   cond:{k:"asa",v:[7,45,65]},
   sus:[triASA(7,45,65),triASA(7,55,65),triASA(6,45,65),triASA(7,45,80)],
   fit:[0]},
  {n:"04",label:"사건 4",
-  give:o=>{gSeg("P","Q",56,58,8,o);gSeg("R","S",56,110,6,o);
-           gAng("O","X","Y",440,140,40,96,o);},
+  give:o=>{gSeg("P","Q",58,66,8,o);gSeg("R","S",58,130,6,o);
+           gAng("O","X","Y",480,158,40,86,o);},
   say:"두 변이 <em>8</em>, <em>6</em>이었고, 길이 <em>8</em>인 변의 <em>한쪽 끝 각</em>이 <em>40°</em>였습니다.",
   cond:{k:"ssa",v:[8,6,40]},
   sus:[triSSA(8,6,40,false),triSSA(8,6,40,true),triSSA(8,7,40,false),triSSA(9,6,40,true)],
@@ -455,12 +492,12 @@ const CASES=[
     why:"몽타주의 모양과 상관없는 물음입니다."}],
   more:{say:"다시 물어보니, <em>40°</em>인 각은 <em>두 변 사이의 각</em>이었다고 합니다.",
         cond:{k:"sas",v:[8,6,40]}, fit:[],
-        give:o=>{gSeg("P","Q",56,58,8,o);gSeg("R","S",56,110,6,o);
-                 gAng("O","X","Y",440,140,40,96,o);}}},
+        give:o=>{gSeg("P","Q",58,66,8,o);gSeg("R","S",58,130,6,o);
+                 gAng("O","X","Y",480,158,40,86,o);}}},
  {n:"05",label:"사건 5",
-  give:o=>{gAng("O","X","Y",90,150,45,86,o);
-           gAng("O′","X′","Y′",330,150,60,86,o);
-           gAng("O″","X″","Y″",570,150,75,86,o);},
+  give:o=>{gAng("O","X","Y",100,162,45,82,o);
+           gAng("O′","X′","Y′",340,162,60,82,o);
+           gAng("O″","X″","Y″",580,162,75,82,o);},
   say:"세 각이 각각 <em>45°</em>, <em>60°</em>, <em>75°</em>였습니다.",
   cond:{k:"aaa",v:[45,60,75]},
   sus:[triASA(5,45,60),triASA(7,45,60),triASA(9,45,60),triASA(7,50,60)],
@@ -476,9 +513,9 @@ const CASES=[
     why:"세 각을 이미 알고 있으므로 새로운 것이 없습니다."}],
   more:{say:"다시 물어보니, <em>45°</em>와 <em>60°</em> 사이의 변이 <em>7</em>이었다고 합니다.",
         cond:{k:"asa",v:[7,45,60]}, fit:[1],
-        give:o=>{gSeg("P","Q",56,52,7,o);
-                 gAng("O","X","Y",330,146,45,92,o);
-                 gAng("O′","X′","Y′",580,146,60,92,o);}}}
+        give:o=>{gSeg("P","Q",58,60,7,o);
+                 gAng("O","X","Y",350,160,45,84,o);
+                 gAng("O′","X′","Y′",600,160,60,84,o);}}}
 ];
 /* 추가 진술이 붙은 뒤의 용의자들 */
 CASES[3].more.sus=[triSAS(8,6,40),triSSA(8,6,40,true),triSAS(8,7,40),triSAS(9,6,40)];
@@ -528,11 +565,11 @@ function rollNick(){
 const QUAL=[
  {k:"seg",n:"1",title:"길이가 같은 선분 옮기기",
   ask:"선분 <em>AB</em>와 <b>길이가 같은 선분</b>을, 직선 <em>l</em> 위의 점 <em>P</em>에서 시작하도록 작도하시오.",
-  give:o=>{gSeg("A","B",70,64,7,o);},
+  give:o=>{gSeg("A","B",70,100,7,o);},
   cm:7},
  {k:"ang",n:"2",title:"크기가 같은 각 옮기기",
   ask:"<em>∠XOY</em>와 <b>크기가 같은 각</b>을, 반직선 <em>PQ</em>를 한 변으로 하여 작도하시오.",
-  give:o=>{gAng("O","X","Y",150,150,52,120,o);},
+  give:o=>{gAng("O","X","Y",190,168,52,104,o);},
   deg:52}
 ];
 let QU=LS.get("qu",{seg:false,ang:false});
@@ -542,12 +579,13 @@ let QI=0;                                      /* 지금 시험 번호 */
 
 function givenQual(k){
   GID=0;
-  const out=[],y=438;
+  const out=[],y=452;
   out.push({t:"P",id:"L1",x:36,y:y,given:true,hidden:true});
   out.push({t:"P",id:"L2",x:764,y:y,given:true,hidden:true});
   out.push({t:"S",id:"l",a:"L1",b:"L2",kind:"segment",given:true,name:"l"});
   out.push({t:"P",id:"B",x:150,y:y,given:true,label:"P"});
-  out.push({t:"P",id:"Q",x:470,y:y,given:true,label:"Q"});   /* 반직선 PQ 의 다른 끝 */
+  if(QUAL[k].k==="ang")                                      /* 각은 반직선 PQ 가 필요하다 */
+    out.push({t:"P",id:"Q",x:470,y:y,given:true,label:"Q"});
   QUAL[k].give(out);
   return out;
 }
@@ -590,76 +628,127 @@ function qualOK(){
 }
 
 /* ══════════ 감식관 신분증 그림 ══════════ */
+const SKIN="#F0D3B4", HAIRC="#2E2118";
+const SEX=[
+ {n:"남",sh:"M12 170 Q12 116 46 102 L60 116 L74 102 Q108 116 108 170 Z"},
+ {n:"여",sh:"M16 170 Q16 118 46 103 L60 116 L74 103 Q104 118 104 170 Z"},
+ {n:"밝히지 않음",sh:"M14 170 Q14 117 46 102 L60 116 L74 102 Q106 117 106 170 Z"}
+];
 const HAIR=[
- {n:"단정",d:c=>`<path d="M32 56 Q32 22 60 22 Q88 22 88 56 Q88 40 60 40 Q32 40 32 56 Z" fill="${c}"/>`},
- {n:"곱슬",d:c=>`<g fill="${c}"><circle cx="38" cy="38" r="13"/><circle cx="60" cy="28" r="15"/>
-   <circle cx="82" cy="38" r="13"/><circle cx="48" cy="30" r="12"/><circle cx="72" cy="30" r="12"/></g>`},
- {n:"긴 머리",d:c=>`<path d="M30 54 Q30 20 60 20 Q90 20 90 54 L90 104 Q84 96 84 74
-   Q84 44 60 44 Q36 44 36 74 L36 104 Q30 96 30 54 Z" fill="${c}"/>`},
- {n:"짧은 머리",d:c=>`<path d="M34 50 Q36 26 60 26 Q84 26 86 50 Q78 38 60 38 Q42 38 34 50 Z"
-   fill="${c}"/>`},
- {n:"묶음",d:c=>`<g fill="${c}"><path d="M32 54 Q32 22 60 22 Q88 22 88 54 Q88 40 60 40
-   Q32 40 32 54 Z"/><circle cx="94" cy="54" r="11"/></g>`},
- {n:"없음",d:c=>``}
+ {n:"짧은 머리",d:()=>`<path d="M33 52 Q35 26 60 26 Q85 26 87 52 Q78 38 60 38 Q42 38 33 52 Z"
+   fill="${HAIRC}"/>`},
+ {n:"투블럭",d:()=>`<g fill="${HAIRC}"><path d="M34 44 Q36 22 60 22 Q84 22 86 44 L86 36
+   Q60 30 34 36 Z"/><rect x="33" y="40" width="54" height="7" rx="3"/></g>`},
+ {n:"곱슬",d:()=>`<g fill="${HAIRC}"><circle cx="39" cy="40" r="12"/><circle cx="60" cy="29" r="14"/>
+   <circle cx="81" cy="40" r="12"/><circle cx="49" cy="31" r="11"/><circle cx="71" cy="31" r="11"/></g>`},
+ {n:"긴 생머리",d:()=>`<path d="M31 52 Q31 22 60 22 Q89 22 89 52 L89 112 Q83 104 83 74
+   Q83 42 60 42 Q37 42 37 74 L37 112 Q31 104 31 52 Z" fill="${HAIRC}"/>`},
+ {n:"포니테일",d:()=>`<g fill="${HAIRC}"><path d="M33 52 Q33 22 60 22 Q87 22 87 52
+   Q78 38 60 38 Q42 38 33 52 Z"/><path d="M86 44 Q100 52 98 74 Q96 92 88 96 Q96 78 88 56 Z"/></g>`},
+ {n:"양갈래",d:()=>`<g fill="${HAIRC}"><path d="M33 52 Q33 22 60 22 Q87 22 87 52
+   Q78 38 60 38 Q42 38 33 52 Z"/><circle cx="30" cy="62" r="10"/><circle cx="90" cy="62" r="10"/></g>`},
+ {n:"뱅 헤어",d:()=>`<g fill="${HAIRC}"><path d="M31 54 Q31 22 60 22 Q89 22 89 54 L89 66
+   Q84 46 60 46 Q36 46 36 66 L31 54 Z"/><rect x="34" y="34" width="52" height="14" rx="7"/></g>`},
+ {n:"삭발",d:()=>``}
 ];
 const HAT=[
  {n:"없음",d:()=>``},
- {n:"감식모",d:c=>`<g><path d="M28 40 Q28 14 60 14 Q92 14 92 40 Z" fill="${c}"/>
-   <rect x="22" y="38" width="76" height="8" rx="4" fill="#141210"/>
-   <path d="M60 18 L64 30 L56 30 Z" fill="#F0C86A"/></g>`},
- {n:"중절모",d:c=>`<g><ellipse cx="60" cy="42" rx="46" ry="9" fill="#2A2620"/>
-   <path d="M34 42 Q34 12 60 12 Q86 12 86 42 Z" fill="${c}"/>
-   <rect x="34" y="34" width="52" height="8" fill="#F0C86A"/></g>`},
+ {n:"야구모자",d:c=>`<g><path d="M30 40 Q30 14 60 14 Q90 14 90 40 Z" fill="${c}"/>
+   <path d="M88 38 Q108 40 110 48 L86 46 Z" fill="${c}" opacity=".85"/>
+   <circle cx="60" cy="15" r="4" fill="#FBF6E9"/></g>`},
  {n:"비니",d:c=>`<g><path d="M30 42 Q30 16 60 16 Q90 16 90 42 Z" fill="${c}"/>
-   <rect x="26" y="38" width="68" height="10" rx="5" fill="#F0C86A"/></g>`},
- {n:"헬멧",d:c=>`<g><path d="M26 46 Q26 12 60 12 Q94 12 94 46 Z" fill="${c}"/>
-   <rect x="22" y="44" width="76" height="7" rx="3.5" fill="#2A2620"/>
-   <rect x="56" y="14" width="8" height="30" fill="#FBF6E9" opacity=".55"/></g>`}
+   <rect x="26" y="38" width="68" height="10" rx="5" fill="#F0C86A"/>
+   <circle cx="60" cy="14" r="6" fill="#F0C86A"/></g>`},
+ {n:"버킷햇",d:c=>`<g><path d="M34 40 Q34 14 60 14 Q86 14 86 40 Z" fill="${c}"/>
+   <path d="M22 40 Q60 56 98 40 L94 46 Q60 62 26 46 Z" fill="${c}"/></g>`},
+ {n:"탐정 모자",d:c=>`<g><ellipse cx="60" cy="42" rx="46" ry="9" fill="#2A2620"/>
+   <path d="M36 42 Q36 12 60 12 Q84 12 84 42 Z" fill="#2A2620"/>
+   <rect x="36" y="33" width="48" height="8" fill="${c}"/></g>`},
+ {n:"헤드폰",d:c=>`<g fill="none" stroke="${c}" stroke-width="7"><path d="M28 60 Q28 22 60 22
+   Q92 22 92 60"/></g><rect x="20" y="54" width="14" height="24" rx="7" fill="${c}"/>
+   <rect x="86" y="54" width="14" height="24" rx="7" fill="${c}"/>`},
+ {n:"왕관",d:()=>`<path d="M36 40 L36 20 L46 30 L60 14 L74 30 L84 20 L84 40 Z" fill="#F0C86A"
+   stroke="#8A6A0E" stroke-width="2"/>`}
+];
+const EYES=[
+ {n:"기본",d:()=>`<circle cx="50" cy="60" r="3.2" fill="#241F16"/>
+   <circle cx="70" cy="60" r="3.2" fill="#241F16"/>`},
+ {n:"반짝",d:()=>`<g fill="#241F16"><circle cx="50" cy="60" r="4"/><circle cx="70" cy="60" r="4"/></g>
+   <circle cx="51.5" cy="58.5" r="1.4" fill="#fff"/><circle cx="71.5" cy="58.5" r="1.4" fill="#fff"/>`},
+ {n:"윙크",d:()=>`<circle cx="50" cy="60" r="3.2" fill="#241F16"/>
+   <path d="M65 60 Q70 56 75 60" fill="none" stroke="#241F16" stroke-width="2.6"
+   stroke-linecap="round"/>`},
+ {n:"안경",d:c=>`<g fill="#241F16"><circle cx="50" cy="60" r="3"/><circle cx="70" cy="60" r="3"/></g>
+   <g fill="none" stroke="${c}" stroke-width="2.4"><circle cx="50" cy="60" r="9"/>
+   <circle cx="70" cy="60" r="9"/><path d="M59 60 h2"/><path d="M41 58 L34 56"/>
+   <path d="M79 58 L86 56"/></g>`},
+ {n:"선글라스",d:()=>`<g fill="#241F16"><rect x="39" y="53" width="20" height="13" rx="5"/>
+   <rect x="61" y="53" width="20" height="13" rx="5"/><rect x="58" y="57" width="4" height="3"/>
+   <path d="M39 55 L32 53 M81 55 L88 53" stroke="#241F16" stroke-width="2.4"/></g>`}
+];
+const MOUTH=[
+ {n:"웃음",d:()=>`<path d="M50 72 Q60 81 70 72" fill="none" stroke="#241F16" stroke-width="2.4"
+   stroke-linecap="round"/>`},
+ {n:"미소",d:()=>`<path d="M53 74 Q60 78 67 74" fill="none" stroke="#241F16" stroke-width="2.2"
+   stroke-linecap="round"/>`},
+ {n:"시크",d:()=>`<path d="M53 75 h14" fill="none" stroke="#241F16" stroke-width="2.4"
+   stroke-linecap="round"/>`},
+ {n:"놀람",d:()=>`<ellipse cx="60" cy="75" rx="5" ry="6" fill="#241F16"/>`},
+ {n:"메롱",d:()=>`<g><path d="M50 72 Q60 80 70 72" fill="none" stroke="#241F16"
+   stroke-width="2.4" stroke-linecap="round"/><path d="M57 77 Q60 84 64 77 Z" fill="#C0342A"/></g>`}
 ];
 const NECK=[
  {n:"없음",d:()=>``},
- {n:"넥타이",d:c=>`<path d="M60 100 L67 108 L60 132 L53 108 Z" fill="${c}"
-   stroke="#8A8271" stroke-width="1.4"/>`},
- {n:"스카프",d:c=>`<path d="M40 100 Q60 116 80 100 L84 112 Q60 128 36 112 Z" fill="${c}"
-   stroke="#8A8271" stroke-width="1.4"/>`},
- {n:"감식 배지",d:c=>`<g><circle cx="86" cy="116" r="11" fill="#F0C86A" stroke="#8A6A0E"
-   stroke-width="2"/><path d="M86 109 L88.5 114 L94 114 L89.5 117.5 L91 123 L86 119.5
-   L81 123 L82.5 117.5 L78 114 L83.5 114 Z" fill="#8A6A0E"/></g>`},
- {n:"목도리",d:c=>`<path d="M34 98 Q60 120 86 98 L90 116 Q60 136 30 116 Z" fill="${c}"
-   stroke="#8A8271" stroke-width="1.4"/>`}
+ {n:"넥타이",d:c=>`<path d="M60 100 L67 108 L60 134 L53 108 Z" fill="${c}"
+   stroke="#8A8271" stroke-width="1.2"/>`},
+ {n:"후드 끈",d:()=>`<g stroke="#FBF6E9" stroke-width="3.4" stroke-linecap="round">
+   <path d="M52 108 L50 130"/><path d="M68 108 L70 130"/></g>
+   <circle cx="50" cy="132" r="3" fill="#FBF6E9"/><circle cx="70" cy="132" r="3" fill="#FBF6E9"/>`},
+ {n:"목걸이",d:()=>`<g fill="none" stroke="#F0C86A" stroke-width="2.6">
+   <path d="M46 104 Q60 122 74 104"/></g><circle cx="60" cy="121" r="5" fill="#F0C86A"
+   stroke="#8A6A0E" stroke-width="1.4"/>`},
+ {n:"감식 배지",d:()=>`<g><circle cx="88" cy="118" r="11" fill="#F0C86A" stroke="#8A6A0E"
+   stroke-width="2"/><path d="M88 111 L90.5 116 L96 116 L91.5 119.5 L93 125 L88 121.5
+   L83 125 L84.5 119.5 L80 116 L85.5 116 Z" fill="#8A6A0E"/></g>`},
+ {n:"헤드셋 마이크",d:c=>`<g fill="none" stroke="${c}" stroke-width="3.4">
+   <path d="M86 70 Q94 92 74 96"/></g><circle cx="71" cy="96" r="5" fill="${c}"/>`}
 ];
 const SHIRT=[
- {n:"감식복",d:c=>`<g><path d="M14 170 Q14 118 46 104 L60 118 L74 104 Q106 118 106 170 Z"
-   fill="${c}"/><path d="M46 104 L60 118 L74 104 L68 100 L60 108 L52 100 Z" fill="#FBF6E9"/></g>`},
- {n:"셔츠와 재킷",d:c=>`<g><path d="M14 170 Q14 118 46 104 L60 118 L74 104 Q106 118 106 170 Z"
-   fill="#2A2620"/><path d="M48 106 L60 120 L72 106 L66 170 L54 170 Z" fill="#FBF6E9"/>
-   <path d="M46 104 L60 118 L74 104" fill="none" stroke="${c}" stroke-width="3"/></g>`},
- {n:"조끼",d:c=>`<g><path d="M14 170 Q14 118 46 104 L60 118 L74 104 Q106 118 106 170 Z"
-   fill="#EFE9DB"/><path d="M32 170 Q32 126 50 112 L60 124 L70 112 Q88 126 88 170 Z"
-   fill="${c}"/><rect x="34" y="128" width="16" height="12" rx="2" fill="#FBF6E9" opacity=".8"/></g>`},
- {n:"후드",d:c=>`<g><path d="M14 170 Q14 118 46 104 L60 118 L74 104 Q106 118 106 170 Z"
-   fill="${c}"/><path d="M40 104 Q60 130 80 104 Q74 98 60 110 Q46 98 40 104 Z"
-   fill="#141210" opacity=".28"/></g>`}
+ {n:"감식복",d:(c,sh)=>`<g><path d="${sh}" fill="${c}"/>
+   <path d="M46 102 L60 116 L74 102 L68 98 L60 106 L52 98 Z" fill="#FBF6E9"/></g>`},
+ {n:"후드티",d:(c,sh)=>`<g><path d="${sh}" fill="${c}"/>
+   <path d="M40 102 Q60 130 80 102 Q73 96 60 110 Q47 96 40 102 Z" fill="#141210" opacity=".26"/></g>`},
+ {n:"교복",d:(c,sh)=>`<g><path d="${sh}" fill="#2A2620"/>
+   <path d="M48 104 L60 118 L72 104 L66 170 L54 170 Z" fill="#FBF6E9"/>
+   <path d="M46 102 L60 116 L74 102" fill="none" stroke="${c}" stroke-width="3"/></g>`},
+ {n:"가디건",d:(c,sh)=>`<g><path d="${sh}" fill="#EFE9DB"/>
+   <path d="M32 170 Q32 124 50 110 L60 122 L70 110 Q88 124 88 170 Z" fill="${c}"/>
+   <circle cx="60" cy="136" r="2.6" fill="#FBF6E9"/><circle cx="60" cy="150" r="2.6" fill="#FBF6E9"/></g>`},
+ {n:"트레이닝복",d:(c,sh)=>`<g><path d="${sh}" fill="${c}"/>
+   <path d="M30 128 L34 170 M90 128 L86 170" stroke="#FBF6E9" stroke-width="5"/></g>`}
 ];
-let AV=LS.get("av",{hair:0,hat:1,neck:3,shirt:0,issued:false});
+const AVDEF={sex:0,hair:0,hat:1,eyes:0,mouth:0,neck:4,shirt:0,issued:false};
+let AV=Object.assign({},AVDEF,LS.get("av",{}));
 const saveAV=()=>LS.set("av",AV);
+const PARTS=[["sex","성별",SEX],["hair","머리",HAIR],["hat","모자",HAT],
+             ["eyes","눈",EYES],["mouth","입",MOUTH],["neck","목장식",NECK],
+             ["shirt","상의",SHIRT]];
+const pick=(arr,i)=>arr[((i|0)%arr.length+arr.length)%arr.length];
 function avatarSVG(W,H,av){
-  const a=av||AV, col=(me&&me.color)||"#1F3F94";
-  const skin="#F0D3B4";
+  const a=Object.assign({},AVDEF,av||AV), col=(me&&me.color)||"#1F3F94";
+  const sx=pick(SEX,a.sex);
   return `<svg viewBox="0 0 120 170" width="${W}" height="${H}">
     <rect x="0" y="0" width="120" height="170" fill="#EFE9DB"/>
-    ${(SHIRT[a.shirt%SHIRT.length]).d(col)}
-    <rect x="52" y="86" width="16" height="22" fill="${skin}"/>
-    ${(HAIR[a.hair%HAIR.length]).d("#3A2A1E")}
-    <circle cx="60" cy="62" r="27" fill="${skin}"/>
-    <path d="M33 56 Q34 30 60 30 Q86 30 87 56 Q78 42 60 42 Q42 42 33 56 Z"
-      fill="#3A2A1E" opacity="${a.hair===5?0:1}"/>
-    <circle cx="50" cy="60" r="3.1" fill="#241F16"/>
-    <circle cx="70" cy="60" r="3.1" fill="#241F16"/>
-    <path d="M52 73 Q60 78 68 73" fill="none" stroke="#241F16" stroke-width="2.2"
-      stroke-linecap="round"/>
-    ${(NECK[a.neck%NECK.length]).d("#F3EBD8")}
-    ${(HAT[a.hat%HAT.length]).d("#2A2620")}
+    ${pick(SHIRT,a.shirt).d(col,sx.sh)}
+    <rect x="52" y="84" width="16" height="24" fill="${SKIN}"/>
+    ${pick(HAIR,a.hair).d()}
+    <circle cx="60" cy="62" r="27" fill="${SKIN}"/>
+    ${a.hair===7?"":`<path d="M33 56 Q34 30 60 30 Q86 30 87 56 Q78 42 60 42 Q42 42 33 56 Z"
+      fill="${HAIRC}"/>`}
+    ${pick(EYES,a.eyes).d(col)}
+    ${pick(MOUTH,a.mouth).d()}
+    ${pick(NECK,a.neck).d(col)}
+    ${pick(HAT,a.hat).d(col)}
   </svg>`;
 }
 
@@ -684,6 +773,7 @@ let items=[], nextId=1, undo=[], pend=[];
    중심쪽 다리 = 옮기기 · 바깥쪽 다리 = 벌리기 · 가운데 손잡이 = 돌려 그리기 */
 let C={center:null,free:{x:190,y:330},r:110,theta:-Math.PI/2.4,flip:1,from:null};
 let drag=null, hover=null;
+let FRESH=[], freshT=0;                       /* 방금 생긴 교점 */
 const TAU=Math.PI*2;
 const CO={body:"#3A342B",wood:"#C98A10",arc:"#C0342A",hollow:"#8A8271",paper:"#FCFAF3"};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -726,7 +816,6 @@ function givenFor(i,more){
   out.push({t:"P",id:"L2",x:764,y:y,given:true,hidden:true});
   out.push({t:"S",id:"l",a:"L1",b:"L2",kind:"segment",given:true,name:"l"});
   out.push({t:"P",id:"B",x:120,y:y,given:true,label:"B"});
-  out.push({t:"P",id:"M",x:470,y:y,given:true,label:"M"});   /* 방향을 잡을 점 */
   const g=(more&&CASES[i].more)?CASES[i].more.give:CASES[i].give;
   g(out);
   return out;
@@ -757,6 +846,7 @@ function arcCenter(o){                /* 중심이 사라져도 좌표로 살아
 /* 두 곡선의 교점 */
 function meet(u,v){
   const out=[];
+  if(zoneOf(u)!==zoneOf(v))return out;        /* 다른 영역끼리는 만나지 않는다 */
   const lineOf=s=>{const e=segEnds(s);if(!e)return null;return e;};
   if(u.t==="S"&&v.t==="S"){
     const A=lineOf(u),B=lineOf(v);if(!A||!B)return out;
@@ -808,6 +898,7 @@ function spots(){                             /* 찍을 수 있는 교점 */
     for(const p of meet(cv[i],cv[j])){
       if(p.x<6||p.x>794||p.y<6||p.y>514)continue;
       if(!onArc(cv[i],p)||!onArc(cv[j],p))continue;
+      if(zoneOfPt(p)!==zoneOf(cv[i]))continue;
       if(items.some(o=>o.t==="P"&&!o.hidden&&d2(o,p)<3))continue;
       if(out.some(o=>d2(o,p)<3))continue;
       out.push(p);
@@ -969,10 +1060,26 @@ function bubble(x,y,t){
       text-anchor="middle">${t}</text></g>`;
 }
 
+let blinkT=null;
+function blink(){
+  if(blinkT)clearInterval(blinkT);
+  blinkT=setInterval(()=>{
+    if(Date.now()-freshT>3200){clearInterval(blinkT);blinkT=null;FRESH=[];}
+    paintBoard();
+  },260);
+}
+
 /* ══════════ 그리기 ══════════ */
 function boardSVG(){
   const g=[];
   g.push(`<rect x="0" y="0" width="800" height="520" fill="#FCFAF3"/>`);
+  g.push(`<rect x="6" y="6" width="788" height="${ZCUT-14}" rx="12" fill="#FDF6E0"
+    stroke="#D9C58A" stroke-width="2" stroke-dasharray="8 6"/>`);
+  g.push(`<text x="20" y="27" font-size="13" font-weight="900" fill="#8A6A0E">주어진 것</text>`);
+  g.push(`<rect x="6" y="${ZCUT}" width="788" height="${514-ZCUT}" rx="12" fill="#F3F7FC"
+    stroke="#B9CBE0" stroke-width="2" stroke-dasharray="8 6"/>`);
+  g.push(`<text x="20" y="${ZCUT+22}" font-size="13" font-weight="900" fill="#3E5F87">
+    여기에 작도하세요</text>`);
   for(const o of items){
     if(o.t!=="C")continue;
     const c=arcCenter(o);if(!c)continue;
@@ -1000,10 +1107,20 @@ function boardSVG(){
       stroke="${CO.arc}" stroke-width="1" stroke-dasharray="3 6" opacity=".35"/>`);
     g.push(arcPath(c,C.r,drag.a0+drag.lo,Math.min(drag.hi-drag.lo,TAU-1e-6),CO.arc,2.8,1));
   }
-  if(TOOL==="point")for(const p of spots())
-    g.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7"
-      fill="#C98A10" opacity=".32"/><circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.6"
-      fill="#C98A10"/>`);
+  {const want=(TOOL==="point");
+   const on=FRESH.length&&(Date.now()-freshT<3200)&&(Math.floor((Date.now()-freshT)/260)%2===0);
+   for(const p of FRESH){
+     if(!on)break;
+     g.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="17" fill="none"
+       stroke="#E9A61A" stroke-width="3.4" opacity=".9"/>`);
+   }
+   for(const p of spots()){
+     if(want)g.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="12"
+       fill="#E9A61A" opacity=".2"/>`);
+     g.push(`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${want?7:6}"
+       fill="#FCFAF3" stroke="${want?"#E9A61A":"#8A8271"}" stroke-width="${want?2.4:1.6}"
+       stroke-dasharray="2.6 2.4"/>`);
+   }}
   for(const o of items){
     if(o.t!=="P"||o.hidden)continue;
     const on=pend.indexOf(o.id)>=0;
@@ -1014,10 +1131,7 @@ function boardSVG(){
       font-size="${big?19:17}" font-weight="800" fill="#241F16"
       font-family="Georgia,serif">${o.label}</text>`);
   }
-  {const l=items.find(o=>o.t==="S"&&o.name==="l");
-   if(l){const a=P(l.a);
-     g.push(`<text x="40" y="${(a.y-13).toFixed(1)}" font-size="12" font-weight="800"
-       fill="#A99F8A">여기에 작도합니다</text>`);}}
+
   if(TOOL==="compass")g.push(compassSVG());
   return g.join("");
 }
@@ -1039,8 +1153,9 @@ function susSVG(tri,col,W,H){
   const sp=Math.max(...pts.map(p=>Math.hypot(p.x,p.y)))*2.1;
   const k=Math.min(W,H)*0.86/Math.max(1,sp);
   const q=pts.map(p=>`${(W/2+p.x*k).toFixed(1)},${(H/2+p.y*k).toFixed(1)}`).join(" ");
-  return `<svg viewBox="0 0 ${W} ${H}"><polygon points="${q}" fill="${col}" fill-opacity=".10"
-    stroke="${col}" stroke-width="2.4" stroke-linejoin="round"/></svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}"
+    style="display:block;width:${W}px;height:${H}px"><polygon points="${q}" fill="${col}"
+    fill-opacity=".10" stroke="${col}" stroke-width="2.4" stroke-linejoin="round"/></svg>`;
 }
 
 /* ══════════ 화면 ══════════ */
@@ -1056,6 +1171,7 @@ function head(extra){
 function draw(){
   if(SC==="reg")return drawReg();
   if(SC==="list")return drawList();
+  if(SC==="files")return drawFiles();
   if(SC==="cert")return drawCert();
   if(SC==="idcard")return drawId();
   if(SC==="qual")return drawQual();
@@ -1065,7 +1181,7 @@ function draw(){
 
 /* ── 등록 ── */
 function drawReg(){
-  const cls=["1-1","1-2","1-3","1-4","1-5","1-6","1-7","1-8"];
+  const cls=["1-1","1-2","1-3","1-4","1-5","1-6","1-7","1-8","1-9"];
   $("app").innerHTML=`<div class="reg"><div class="rcard">
     <div class="rhead">
       <div class="no">감식반 · 신원 등록</div>
@@ -1115,7 +1231,8 @@ function drawReg(){
 
 /* ── 사건 목록 ── */
 function drawList(){
-  $("app").innerHTML=head(`<button class="tb" id="hCard">신분증</button>`)
+  $("app").innerHTML=head(`<button class="tb" id="hCard">신분증</button>`
+    +`<button class="tb" id="hFiles">보고서 모음 ${closed()}</button>`)
    +`<div class="list"><div class="lin">
     <h1>미해결 사건 목록</h1>
     <p class="sub">${esc(me.nick)} 감식관 · ${rank()} ·
@@ -1137,8 +1254,7 @@ function drawList(){
             :(can?"서류철 열기 →":`사건 ${CASES[i-1].n} 를 먼저 닫아야 합니다`)}</span>
         </button>`;}).join("")}
     </div>
-    <p class="lfoot"><a id="lTeach" style="float:right;color:#6A6355;cursor:pointer;
-      text-decoration:underline">선생님 화면</a>사건은 <b>차례대로</b> 열립니다 ·
+    <p class="lfoot">사건은 <b>차례대로</b> 열립니다 ·
       <b>몽타주를 그린 뒤 용의자를 불러 범인을 특정해야</b> 사건이 닫힙니다 ·
       특정할 수 없으면 <b>추가 진술</b>을 요구하세요</p>
   </div></div>`;
@@ -1149,7 +1265,7 @@ function drawList(){
     openCase(i);
   });
   $("hCard").onclick=()=>{SC="idcard";draw();};
-  $("lTeach").onclick=()=>teachIn();
+  $("hFiles").onclick=()=>{SC="files";draw();};
   setNet(NETOK);
 }
 
@@ -1164,7 +1280,7 @@ function drawCert(){
     <div class="files" id="certs">
       ${QUAL.map((q,i)=>{
         const ok=QU[q.k];
-        return `<button type="button" class="file${ok?" done":""}" data-q="${i}">
+        return `<button type="button" class="file${ok?" fin":""}" data-q="${i}">
           <span class="tab">${q.n}</span>
           <h4>${esc(q.title)}</h4>
           <p class="say2">${q.ask}</p>
@@ -1186,9 +1302,41 @@ function drawCert(){
   setNet(NETOK);
 }
 
+/* ── 보고서 모음 ── */
+function drawFiles(){
+  const done=CASES.map((c,i)=>i).filter(i=>stOf(i).done);
+  $("app").innerHTML=head(`<button class="tb" id="hList">사건 목록</button>`)
+   +`<div class="list"><div class="lin">
+    <h1>수사 보고서 모음</h1>
+    <p class="sub">${esc(me.nick)} 감식관 · 종결한 사건 ${done.length}건</p>
+    <hr>
+    ${done.length?`<div class="repgrid">${done.map(i=>repCard(i)).join("")}</div>`
+      :`<p class="lfoot">아직 종결한 사건이 없습니다. 사건을 닫으면 보고서가 여기에 쌓입니다.</p>`}
+  </div></div>`;
+  $("hList").onclick=()=>{SC="list";draw();};
+  setNet(NETOK);
+}
+function repCard(i){
+  const c=CASES[i], s=stOf(i);
+  const set=(s.more&&c.more)?c.more:c;
+  const col=(me&&me.color)||"#1F3F94";
+  const tri=(set.sus[s.pick]||[]).map(p=>({x:p.x*U,y:p.y*U}));
+  return `<div class="repmini">
+    <div class="rmh"><span>사건 ${c.n}</span><i>해결</i></div>
+    <div class="rmb">
+      <span class="ph">${avatarSVG(48,68,AV)}</span>
+      <div class="rmt">
+        <b>${esc(me.nick)}</b>
+        <p>“${c.say}”</p>
+        ${s.more&&c.more?`<p class="ex">“${c.more.say}”</p>`:""}
+      </div>
+    </div>
+    <div class="rmf">${tri.length?susSVG(tri,col,72,54):""}
+      <span>용의자 ${s.pick+1} 검거${s.tries?` · 시도 ${s.tries}회`:""}</span></div>
+  </div>`;
+}
+
 /* ── 감식관 신분증 ── */
-const PARTS=[["hat","모자",HAT],["hair","머리",HAIR],["neck","목장식",NECK],
-             ["shirt","상의",SHIRT]];
 function drawId(){
   const first=!AV.issued;
   $("app").innerHTML=head(AV.issued?`<button class="tb" id="hList">사건 목록</button>`:"")
@@ -1216,7 +1364,7 @@ function drawId(){
 function paintCard(){
   const el=$("idcard");if(!el)return;
   el.innerHTML=`<div class="idc">
-    <div class="idtop"><span>감식반 · 신분증</span><b>KAMSIK</b></div>
+    <div class="idtop"><span>감식반 · 신분증</span><b>YHMS</b></div>
     <div class="idbody">
       <div class="photo">${avatarSVG(120,170,AV)}</div>
       <dl>
@@ -1378,8 +1526,11 @@ function drawWork(){
   </div>`;
   $("hList").onclick=()=>{SC="list";draw();};
   $("tools").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{
-    if(b.dataset.t==="ruler"&&TOOL==="ruler")$("kinds").classList.toggle("open");
-    else $("kinds").classList.remove("open");
+    const k=$("kinds");
+    if(b.dataset.t==="ruler"){
+      k.classList.remove("shut");                 /* 자를 누르면 다시 열 수 있다 */
+      if(TOOL==="ruler")k.classList.toggle("open");else k.classList.add("open");
+    }else{k.classList.remove("open");k.classList.remove("shut");}
     TOOL=b.dataset.t;pend=[];paintBoard();paintTools();});
   $("kinds").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
     KIND=b.dataset.k;TOOL="ruler";pend=[];
@@ -1387,7 +1538,8 @@ function drawWork(){
     k.classList.remove("open");k.classList.add("shut");   /* 고르면 닫는다 */
     b.blur();paintBoard();paintTools();});
   const rw=document.querySelector(".rwrap");
-  if(rw)rw.addEventListener("mouseleave",()=>$("kinds").classList.remove("shut"));
+  if(rw)rw.addEventListener("mouseleave",()=>{
+    const k=$("kinds");if(k&&!k.classList.contains("open"))k.classList.remove("shut");});
   $("bOpen").onclick=()=>{C.r=110;C.theta=-Math.PI/2.4;C.flip=1;C.from=null;TOOL="compass";
     foldCompass();paintBoard();paintTools();toast("컴퍼스를 처음 크기로 되돌렸습니다.");};
   $("bUndo").onclick=()=>{if(undo.length){restore(undo.pop());paintBoard();paintTools();refresh();}};
@@ -1563,8 +1715,15 @@ function onUp(){
       toast("<b>가운데 손잡이</b>를 잡고 빙 돌리면 원이 그려집니다.");}
     else{
       const c=needle();
+      const was=spots().map(p=>p.x.toFixed(0)+","+p.y.toFixed(0));
       items.push({t:"C",id:"c"+(nextId++),cid:C.center,cx:c.x,cy:c.y,
         r:C.r,a0:norm2pi(d.a0+d.lo),sw:span});
+      FRESH=spots().filter(p=>was.indexOf(p.x.toFixed(0)+","+p.y.toFixed(0))<0);
+      freshT=Date.now();
+      if(FRESH.length){
+        toast(`새로 <b>만나는 자리 ${FRESH.length}곳</b>이 생겼습니다. <b>점</b> 도구로 찍어 보세요.`);
+        blink();
+      }
       refresh();
     }
   }
@@ -1637,7 +1796,7 @@ function openSus(){
     <div class="ovb">
       <div class="sus" id="susList">
         ${set.sus.map((t,i)=>`<button type="button" class="sc" data-s="${i}"
-          aria-pressed="false">${susSVG(t.map(p=>({x:p.x*U,y:p.y*U})),col,150,96)}
+          aria-pressed="false">${susSVG(t.map(p=>({x:p.x*U,y:p.y*U})),col,196,140)}
           <b>용의자 ${i+1}</b><small>${susInfo(t)}</small></button>`).join("")}
       </div>
       <p class="vmsg" id="vMsg"></p>
@@ -1664,7 +1823,7 @@ function susInfo(t){
   const T=triOf(t.map(p=>({x:p.x*U,y:p.y*U})));
   const s=T.sides.map(x=>(x/U).toFixed(1)).sort((a,b)=>a-b);
   const a=T.angles.map(x=>Math.round(x)).sort((x,y)=>x-y);
-  return `변 ${s.join(" · ")} / 각 ${a.join("° ")}°`;
+  return `변 ${s.join(" · ")}<br>각 ${a.join("° · ")}°`;
 }
 function judge(w){
   const c=CASES[CUR], s=stOf(CUR);
@@ -1771,8 +1930,9 @@ function result(){
         <dd>“${c.say}”</dd>
         ${s.more&&c.more?`<dt>추가 진술</dt><dd>“${c.more.say}”</dd>`:""}
         <dt>특정한 범인</dt>
-        <dd><span class="repsus">${susSVG(tri,col,86,64)}
-          <span><b>용의자 ${s.pick+1}</b><small>${susInfo(set.sus[s.pick])}</small></span></span></dd>
+        <dd><span class="repsus"><span>${susSVG(tri,col,96,72)}</span>
+          <span class="txt"><b>용의자 ${s.pick+1}</b>
+            <small>${susInfo(set.sus[s.pick])}</small></span></span></dd>
         <dt>판정 근거</dt>
         <dd class="why">${why(CUR)}</dd>
         ${s.tries?`<dt>수사 기록</dt>
@@ -1826,7 +1986,7 @@ function drawTeach(){
     .sort((a,b)=>String(a.sid).localeCompare(String(b.sid)));
   const tot=rows.length, fin=rows.filter(r=>(r.closed|0)>=CASES.length).length;
   const sumClosed=rows.reduce((n,r)=>n+(r.closed|0),0);
-  const cls=["1-1","1-2","1-3","1-4","1-5","1-6","1-7","1-8"];
+  const cls=["1-1","1-2","1-3","1-4","1-5","1-6","1-7","1-8","1-9"];
   $("app").innerHTML=`<div class="top">
       <b class="brand">감식 상황판</b><span class="ver">${VER}</span>
       <select class="tb" id="tCls">${cls.map(c=>
@@ -1870,10 +2030,10 @@ function tTable(rows){
         return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div></td>
       <td class="c">${CASES.map((c,i)=>{const s=cs[i]||{};
         return (s.pick!=null&&s.pick>=0)?(i+1)+"→"+(s.pick+1):"";}).filter(Boolean).join(" ")||"—"}</td>
-      <td class="c">${CASES.map((c,i)=>{const s=cs[i]||{};
+      <td class="c"><div class="thumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
         if(!s.tri)return "";
         return `<span class="thumb" title="${esc(c.label)}">${
-          susSVG(s.tri,r.color||"#1F3F94",62,44)}</span>`;}).join("")||"—"}</td>
+          susSVG(s.tri,r.color||"#1F3F94",62,44)}</span>`;}).join("")||"—"}</div></td>
       <td>${r.at?new Date(r.at).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}):"—"}</td>
     </tr>`;
   }
@@ -1893,6 +2053,13 @@ function tCsv(rows){
   a.download=`감식상황판_${TCLS}_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
 }
+
+/* 선택 창 밖을 누르면 닫는다 */
+document.addEventListener("pointerdown",e=>{
+  const k=$("kinds");if(!k)return;
+  if(e.target.closest(".rwrap"))return;
+  k.classList.remove("open");k.classList.add("shut");
+},true);
 
 /* ══════════ 시작 ══════════ */
 const qp=new URLSearchParams(location.search);
