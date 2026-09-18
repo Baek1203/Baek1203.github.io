@@ -516,7 +516,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v33 · 2026-09-09";
+const VER="사건 파일 v35 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -803,10 +803,12 @@ const BADGES=[
   on:r=>r.cases.some(c=>c&&c.copy)},
  {id:"ang", ic:"ang",  n:"각을 옮긴 감식관", col:"#7A3FBF",
   d:"주어진 각에 호를 그려 같은 크기의 각을 만들어 냈습니다.",
-  on:r=>r.cases.some(c=>c&&(c.arcG|0)>=1&&(c.arcW|0)>=2)},
+  on:r=>[1,2,3,4,5].some(i=>{const c=r.cases[i];
+    return c&&(c.arcG|0)>=1&&(c.arcW|0)>=2;})},
  {id:"once",ic:"check",n:"한 번에 완성", col:"#0E7C8A",
-  d:"되돌리기 없이 사건을 종결했습니다.",
-  on:r=>r.cases.some(c=>c&&c.done&&!(c.undos|0))},
+  d:"사건 1~5를 모두 되돌리기와 처음부터 없이 종결했습니다.",
+  on:r=>[0,1,2,3,4].every(i=>{const c=r.cases[i];
+    return c&&c.done&&!(c.undos|0);})},
  {id:"neat",ic:"neat", n:"깔끔한 작도", col:"#0E7C8A",
   d:"사건 1~5를 모두 선과 호 28개 이하로 마쳤습니다.",
   on:r=>[0,1,2,3,4].every(i=>{const c=r.cases[i];
@@ -834,7 +836,20 @@ function recOf(){                              /* 내 기록을 보고 꼴로 */
       return {done:!!t.done,copy:!!t.copy,arcG:t.arcG|0,arcW:t.arcW|0,
         undos:t.undos|0,items:t.items|0,redo:t.redo|0,tri2:!!t.tri2};})};
 }
-const myBadges=()=>badgesFrom(recOf());
+let BG=LS.get("bdg",[]);
+function chkBadge(){                           /* 새로 받은 배지를 알려 준다 */
+  const b0=BG.slice();
+  const nw=myBadges().filter(x=>b0.indexOf(x)<0);
+  if(nw.length)toast(`새 배지 · <b>${nw.map(id=>badgeOf(id).n).join(" · ")}</b>`);
+  return nw;
+}
+function myBadges(){                           /* 한 번 받으면 사라지지 않는다 */
+  const now=badgesFrom(recOf());
+  let ch=false;
+  for(const id of now)if(BG.indexOf(id)<0){BG.push(id);ch=true;}
+  if(ch)LS.set("bdg",BG);
+  return BADGES.filter(b=>BG.indexOf(b.id)>=0).map(b=>b.id);
+}
 const badgeOf=id=>BADGES.filter(b=>b.id===id)[0];
 function badgeChip(b,got,big){
   const s=big?44:36;
@@ -2044,7 +2059,7 @@ function openCase(i){
   const s=stOf(i);
   flashSay(CASES[i],s.more);                   /* 먼저 덮고 */
   loadCase(i);
-  s.seen=true;s.drew=s.drew||false;saveST();report();
+  s.seen=true;s.drew=false;saveST();report();   /* 판을 비우므로 다시 그려야 한다 */
   SC="work";draw();                            /* 그 뒤에 판을 그린다 */
 }
 function flashSay(c,more){
@@ -2252,7 +2267,7 @@ function refresh(){
     }else{
       s.tri=t0;s.items=myCount();
     }
-    saveST();report();}
+    saveST();chkBadge();report();}
   const li=document.querySelectorAll(".steps li");
   if(li.length>=3){
     li[1].className=ok?"ok":"on";li[1].querySelector("b").textContent=ok?"✓":"2";
