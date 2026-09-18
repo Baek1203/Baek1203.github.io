@@ -133,12 +133,13 @@
   .bdgbox h5 em{font-style:normal;color:var(--ink)}
   .bdgbox p.bh{margin:0 0 11px;font:700 11.5px/1.6 var(--f);color:var(--soft)}
   .bdgs{display:flex;gap:9px;flex-wrap:wrap}
-  .bdg{display:flex;flex-direction:column;align-items:center;gap:5px;width:70px;
+  .bdg{display:flex;flex-direction:column;align-items:center;gap:5px;width:74px;
     opacity:.34;filter:grayscale(1)}
   .bdg.got{opacity:1;filter:none}
   .bdg i{width:var(--bs);height:var(--bs);border-radius:99px;background:var(--bc);
-    color:#fff;font:900 15px/var(--bs) var(--f);font-style:normal;text-align:center;
-    box-shadow:0 2px 0 rgba(20,18,16,.28);display:block}
+    box-shadow:0 2px 0 rgba(20,18,16,.28);display:flex;align-items:center;
+    justify-content:center;font-style:normal}
+  .bdg i svg{width:66%;height:66%;display:block}
   .bdg.got i{box-shadow:0 2px 0 rgba(20,18,16,.28),0 0 0 3px #fff,0 0 0 4.5px var(--bc)}
   .bdg em{font-style:normal;font:800 10px/1.3 var(--f);color:var(--ink);text-align:center;
     word-break:keep-all}
@@ -487,7 +488,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v24 · 2026-09-09";
+const VER="사건 파일 v25 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -705,69 +706,114 @@ function condOK(cond,t){
 
 /* ══════════ 배지 ══════════ */
 const CLEAN=28;                                /* 깔끔한 작도 기준 */
-const anyDone=()=>CASES.some((c,i)=>stOf(i).done);
+/* 배지 그림 — 30×30, 흰 선 */
+const BI={
+ card:`<rect x="5" y="8" width="20" height="14" rx="3"/><rect x="8" y="12" width="6" height="6" rx="3"
+   fill="#fff" stroke="none"/><path d="M17 13h5M17 17h5"/>`,
+ compass:`<path d="M15 5v9"/><path d="M9 26 15 14l6 12"/><path d="M11 21h8"/>`,
+ glass:`<circle cx="13" cy="13" r="7"/><path d="M18.5 18.5 25 25"/>`,
+ tri3:`<path d="M15 6 26 24H4Z"/><circle cx="9.5" cy="15" r="1.9" fill="#fff" stroke="none"/>
+   <circle cx="20.5" cy="15" r="1.9" fill="#fff" stroke="none"/>
+   <circle cx="15" cy="23.6" r="1.9" fill="#fff" stroke="none"/>`,
+ triA:`<path d="M15 6 26 24H4Z"/><path d="M15 6 11.2 12.2a7.2 7.2 0 0 0 7.6 0Z"
+   fill="#fff" stroke="none"/>`,
+ tri2A:`<path d="M15 6 26 24H4Z"/><path d="M4 24h7.4a7.5 7.5 0 0 0-3.7-6Z" fill="#fff"
+   stroke="none"/><path d="M26 24h-7.4a7.5 7.5 0 0 1 3.7-6Z" fill="#fff" stroke="none"/>`,
+ twin:`<path d="M11 8 19 22H3Z"/><path d="M19 8 27 22H11Z" opacity=".5"/>`,
+ nest:`<path d="M15 3 28 26H2Z" opacity=".38"/><path d="M15 9 23 25H7Z" opacity=".7"/>
+   <path d="M15 15 19 24H11Z"/>`,
+ star:`<path d="M15 5 18.2 12.3 26 13.1 20.2 18.3 21.8 26 15 22.2 8.2 26 9.8 18.3 4 13.1
+   11.8 12.3Z"/>`,
+ flip:`<path d="M11 6 19 20H3Z"/><path d="M27 20 19 6l-8 14Z" opacity=".5"/>
+   <path d="M15 24v4M12 26h6" opacity=".9"/>`,
+ no:`<path d="M15 7 25 23H5Z"/><path d="M7 25 23 5"/>`,
+ crown:`<path d="M5 22V10l5 5 5-9 5 9 5-5v12Z" stroke-linejoin="round"/><path d="M5 25h20"/>`,
+ len:`<path d="M6 21h18"/><path d="M6 17v8M24 17v8"/><path d="M8 11a9 9 0 0 1 14 0"/>`,
+ ang:`<path d="M6 24h19"/><path d="M6 24 22 8"/><path d="M12 24a8 8 0 0 0 2.4-5.7"/>`,
+ check:`<path d="M6 16.5 12.5 23 25 8" stroke-width="3.4" stroke-linejoin="round"/>`,
+ neat:`<path d="M15 8 24 22H6Z"/><path d="M25 7l1.4 3 3 1.4-3 1.4L25 16l-1.4-3-3-1.4 3-1.4Z"
+   fill="#fff" stroke="none"/>`,
+ redo:`<path d="M24 15a9 9 0 1 1-3-6.7"/><path d="M24 6v4h-4" stroke-linejoin="round"/>`,
+ hands:`<path d="M9 8 16 22H2Z"/><path d="M21 12 27 22H15Z"/>`,
+ redoAll:`<path d="M24 15a9 9 0 1 1-3-6.7"/><path d="M24 6v4h-4" stroke-linejoin="round"/>
+   <path d="M11 15.5 14 18.5 19.5 13" stroke-width="2.6" stroke-linejoin="round"/>`
+};
 const BADGES=[
- {id:"reg",  ic:"신", n:"감식관 등록", col:"#1F3F94",
-  d:"신분증을 발급받았다", on:()=>!!AV.issued},
- {id:"qual", ic:"자", n:"자격 취득", col:"#1F3F94",
-  d:"선분 옮기기와 각 옮기기를 모두 해냈다", on:()=>quDone()},
- {id:"first",ic:"첫", n:"첫 검거", col:"#1F3F94",
-  d:"사건을 하나 종결했다", on:()=>anyDone()},
+ {id:"reg",  ic:"card",   n:"감식관 등록", col:"#1F3F94",
+  d:"신분증을 발급받았다", on:r=>!!(r.av&&r.av.issued)},
+ {id:"qual", ic:"compass",n:"자격 취득", col:"#1F3F94",
+  d:"선분 옮기기와 각 옮기기를 모두 해냈다", on:r=>(r.qual|0)>=2},
+ {id:"first",ic:"glass",  n:"첫 검거", col:"#1F3F94",
+  d:"사건을 하나 종결했다", on:r=>r.cases.some(c=>c&&c.done)},
 
- {id:"c1", ic:"1", n:"세 변의 증언", col:"#2A7148",
-  d:"사건 1 종결 — 세 변을 알면 하나로 정해진다", on:()=>stOf(0).done},
- {id:"c2", ic:"2", n:"끼인각의 증언", col:"#2A7148",
-  d:"사건 2 종결 — 두 변과 그 사이 각", on:()=>stOf(1).done},
- {id:"c3", ic:"3", n:"양 끝 각의 증언", col:"#2A7148",
-  d:"사건 3 종결 — 한 변과 그 양 끝 각", on:()=>stOf(2).done},
- {id:"c4", ic:"4", n:"함정 통과", col:"#C0342A",
-  d:"사건 4 종결 — 용의자가 둘이었던 사건", on:()=>stOf(3).done},
- {id:"c5", ic:"5", n:"무한의 발견", col:"#C0342A",
-  d:"사건 5 종결 — 크기가 정해지지 않던 사건", on:()=>stOf(4).done},
- {id:"all",ic:"全", n:"전건 종결", col:"#C98A10",
-  d:"미해결 사건 다섯 건을 모두 해결했다", on:()=>closed()>=BASE},
+ {id:"c1", ic:"tri3", n:"세 변의 증언", col:"#2A7148",
+  d:"사건 1 종결 — 세 변을 알면 하나로 정해진다", on:r=>!!(r.cases[0]&&r.cases[0].done)},
+ {id:"c2", ic:"triA", n:"끼인각의 증언", col:"#2A7148",
+  d:"사건 2 종결 — 두 변과 그 사이 각", on:r=>!!(r.cases[1]&&r.cases[1].done)},
+ {id:"c3", ic:"tri2A",n:"양 끝 각의 증언", col:"#2A7148",
+  d:"사건 3 종결 — 한 변과 그 양 끝 각", on:r=>!!(r.cases[2]&&r.cases[2].done)},
+ {id:"c4", ic:"twin", n:"함정 통과", col:"#C0342A",
+  d:"사건 4 종결 — 용의자가 둘이었던 사건", on:r=>!!(r.cases[3]&&r.cases[3].done)},
+ {id:"c5", ic:"nest", n:"무한의 발견", col:"#C0342A",
+  d:"사건 5 종결 — 크기가 정해지지 않던 사건", on:r=>!!(r.cases[4]&&r.cases[4].done)},
+ {id:"all",ic:"star", n:"전건 종결", col:"#C98A10",
+  d:"미해결 사건 다섯 건을 모두 해결했다",
+  on:r=>[0,1,2,3,4].every(i=>r.cases[i]&&r.cases[i].done)},
 
- {id:"a1", ic:"心", n:"뒤집힌 사건", col:"#C9A227",
-  d:"심화 1 종결 — 각이 사이에 없어도 하나로 정해지는 경우", on:()=>stOf(BASE).done},
- {id:"a2", ic:"不", n:"불가능 보고", col:"#C9A227",
-  d:"심화 2 종결 — 삼각형이 만들어지지 않는 진술", on:()=>stOf(BASE+1).done},
- {id:"aall",ic:"特", n:"특별 감식관", col:"#C9A227",
-  d:"심화 사건을 모두 해결했다", on:()=>closedAdv()>=advN()},
+ {id:"a1", ic:"flip", n:"뒤집힌 사건", col:"#C9A227",
+  d:"심화 1 종결 — 각이 사이에 없어도 하나로 정해지는 경우",
+  on:r=>!!(r.cases[5]&&r.cases[5].done)},
+ {id:"a2", ic:"no",   n:"불가능 보고", col:"#C9A227",
+  d:"심화 2 종결 — 삼각형이 만들어지지 않는 진술",
+  on:r=>!!(r.cases[6]&&r.cases[6].done)},
+ {id:"aall",ic:"crown",n:"특별 감식관", col:"#C9A227",
+  d:"심화 사건을 모두 해결했다",
+  on:r=>[5,6].every(i=>r.cases[i]&&r.cases[i].done)},
 
- {id:"copy",ic:"길", n:"길이를 옮긴 감식관", col:"#7A3FBF",
+ {id:"copy",ic:"len",  n:"길이를 옮긴 감식관", col:"#7A3FBF",
   d:"컴퍼스로 주어진 선분 길이를 그대로 옮겨 썼다",
-  on:()=>CASES.some((c,i)=>stOf(i).copy)},
- {id:"ang", ic:"각", n:"각을 옮긴 감식관", col:"#7A3FBF",
+  on:r=>r.cases.some(c=>c&&c.copy)},
+ {id:"ang", ic:"ang",  n:"각을 옮긴 감식관", col:"#7A3FBF",
   d:"주어진 각에 호를 그려 각을 옮겨 냈다",
-  on:()=>CASES.some((c,i)=>{const t=stOf(i);return (t.arcG|0)>=1&&(t.arcW|0)>=2;})},
- {id:"once",ic:"한", n:"한 번에 완성", col:"#0E7C8A",
+  on:r=>r.cases.some(c=>c&&(c.arcG|0)>=1&&(c.arcW|0)>=2)},
+ {id:"once",ic:"check",n:"한 번에 완성", col:"#0E7C8A",
   d:"되돌리기와 처음부터를 쓰지 않고 사건을 종결했다",
-  on:()=>CASES.some((c,i)=>{const t=stOf(i);return t.done&&!(t.undos|0);})},
- {id:"neat",ic:"깔", n:"깔끔한 작도", col:"#0E7C8A",
+  on:r=>r.cases.some(c=>c&&c.done&&!(c.undos|0))},
+ {id:"neat",ic:"neat", n:"깔끔한 작도", col:"#0E7C8A",
   d:`사건 1~5를 모두 ${CLEAN}개 이하로 작도해 종결했다`,
-  on:()=>CASES.every((c,i)=>i>=BASE||(stOf(i).done&&(stOf(i).items|0)>0
-    &&(stOf(i).items|0)<=CLEAN))},
+  on:r=>[0,1,2,3,4].every(i=>{const c=r.cases[i];
+    return c&&c.done&&(c.items|0)>0&&(c.items|0)<=CLEAN;})},
 
- {id:"again",ic:"재", n:"재수사", col:"#B03A6E",
+ {id:"again",ic:"redo", n:"재수사", col:"#B03A6E",
   d:"종결한 사건을 다시 열어 작도해 냈다",
-  on:()=>CASES.some((c,i)=>(stOf(i).redo|0)>=1)},
- {id:"both",ic:"양", n:"양손잡이 감식관", col:"#B03A6E",
+  on:r=>r.cases.some(c=>c&&(c.redo|0)>=1)},
+ {id:"both",ic:"hands", n:"양손잡이 감식관", col:"#B03A6E",
   d:"같은 사건을 다른 자리에 다시 작도해 냈다",
-  on:()=>CASES.some((c,i)=>stOf(i).tri2)},
- {id:"reall",ic:"완", n:"완전 재수사", col:"#B03A6E",
+  on:r=>r.cases.some(c=>c&&c.tri2)},
+ {id:"reall",ic:"redoAll",n:"완전 재수사", col:"#B03A6E",
   d:"사건 1~5를 모두 다시 작도해 냈다",
-  on:()=>CASES.every((c,i)=>i>=BASE||(stOf(i).redo|0)>=1)}
+  on:r=>[0,1,2,3,4].every(i=>r.cases[i]&&(r.cases[i].redo|0)>=1)}
 ];
-function myBadges(){
+function badgesFrom(rec){
+  const r={av:rec.av||{},qual:rec.qual|0,cases:rec.cases||[]};
   const out=[];
-  for(const b of BADGES){try{if(b.on())out.push(b.id);}catch(e){}}
+  for(const b of BADGES){try{if(b.on(r))out.push(b.id);}catch(e){}}
   return out;
 }
+function recOf(){                              /* 내 기록을 보고 꼴로 */
+  return {av:AV,qual:(QU.seg?1:0)+(QU.ang?1:0),
+    cases:CASES.map((c,i)=>{const t=stOf(i);
+      return {done:!!t.done,copy:!!t.copy,arcG:t.arcG|0,arcW:t.arcW|0,
+        undos:t.undos|0,items:t.items|0,redo:t.redo|0,tri2:!!t.tri2};})};
+}
+const myBadges=()=>badgesFrom(recOf());
 const badgeOf=id=>BADGES.filter(b=>b.id===id)[0];
 function badgeChip(b,got,big){
-  const s=big?44:34;
+  const s=big?44:36;
   return `<span class="bdg${got?" got":""}" title="${esc(b.n)} — ${esc(b.d)}"
-    style="--bc:${b.col};--bs:${s}px"><i>${b.ic}</i><em>${esc(b.n)}</em></span>`;
+    style="--bc:${b.col};--bs:${s}px"><i><svg viewBox="0 0 30 30" fill="none" stroke="#fff"
+    stroke-width="2.2" stroke-linecap="round">${BI[b.ic]||""}</svg></i>
+    <em>${esc(b.n)}</em></span>`;
 }
 
 /* ══════════ 코드네임 뽑기 ══════════ */
@@ -2594,6 +2640,7 @@ async function saveNote(sid,obj){
 /* ── 학생 하나를 자세히 ── */
 function detailOf(sid){
   const r=TD[sid];if(!r)return;
+  const bg=(r.badges&&r.badges.length)?r.badges:badgesFrom(r);
   const who={nick:r.nick||sid,col:r.color||"#1F3F94",av:r.av||{}};
   const cs=r.cases||[];
   const done=cs.map((s,i)=>({s,i})).filter(x=>x.s&&x.s.done);
@@ -2626,9 +2673,9 @@ function detailOf(sid){
           return `<span class="thumb" title="${esc(c.label)} 작도">${
             susSVG(s.tri,who.col,62,44)}</span>`;}).join("")}</div>
       </div>
-      <h4 class="dth">모은 배지 ${(r.badges||[]).length} / ${BADGES.length}</h4>
+      <h4 class="dth">모은 배지 ${bg.length} / ${BADGES.length}</h4>
       <div class="bdgs" style="margin-bottom:16px">${BADGES.map(b=>
-        badgeChip(b,(r.badges||[]).indexOf(b.id)>=0)).join("")}</div>
+        badgeChip(b,bg.indexOf(b.id)>=0)).join("")}</div>
       <h4 class="dth">수사 보고서 ${done.length}건</h4>
       ${done.length?`<div class="repgrid">${done.map(x=>repCard(x.i,x.s,who)).join("")}</div>`
         :`<p class="none">아직 종결한 사건이 없습니다.</p>`}
@@ -2732,6 +2779,7 @@ function tTable(rows){
     <th style="width:62px">마지막</th></tr>`;
   for(const r of rows){
     const cs=(r.cases||[]);
+    const bg=(r.badges&&r.badges.length)?r.badges:badgesFrom(r);
     h+=`<tr class="row${r.help?" needhelp":""}" data-row="${esc(r.sid)}"
       tabindex="0" title="누르면 상세보기">
       <td class="nw"><b>${esc(r.sid)}</b></td>
@@ -2740,8 +2788,6 @@ function tTable(rows){
         <small>${r.closed|0} / ${CASES.length}</small></td>
       <td class="c"><div class="cs">${[0,1].map(k=>
         `<i class="${(r.qual|0)>k?"ok":""}">${k+1}</i>`).join("")}</div></td>
-      <td class="c bdgn">${(r.badges||[]).length
-        ?`<b>${(r.badges||[]).length}</b><small>/ ${BADGES.length}</small>`:"—"}</td>
       <td class="c"><div class="cs2">
         <div class="cs">${CASES.slice(0,BASE).map((c,i)=>{
           const s=cs[i]||{};
@@ -2752,6 +2798,8 @@ function tTable(rows){
           const k=s.done?"ok":(s.tries?"try":"");
           return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
       </div></td>
+      <td class="c bdgn">${bg.length
+        ?`<b>${bg.length}</b><small>/ ${BADGES.length}</small>`:"—"}</td>
       <td class="c"><div class="thumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
         if(!s.tri)return "";
         return `<span class="thumb" title="${esc(c.label)}">${
@@ -2778,8 +2826,9 @@ function tCsv(rows){
       cs.map((s,i)=>s.done?(i+1):"").filter(Boolean).join(" "),
       cs.map((s,i)=>(s.pick!=null&&s.pick>=0)?`${i+1}->${s.pick+1}`:"").filter(Boolean).join(" "),
       cs.map(s=>s.tries|0).join(" "),
-      (r.badges||[]).length,
-      (r.badges||[]).map(id=>(badgeOf(id)||{}).n||id).join(" "),
+      ((r.badges&&r.badges.length)?r.badges:badgesFrom(r)).length,
+      ((r.badges&&r.badges.length)?r.badges:badgesFrom(r))
+        .map(id=>(badgeOf(id)||{}).n||id).join(" "),
       r.help?"O":"",r.note||""];});
   const csv=[head].concat(body).map(x=>x.map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`)
     .join(",")).join("\n");
