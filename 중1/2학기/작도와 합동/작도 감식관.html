@@ -404,19 +404,31 @@
     border:1px solid var(--rule);border-radius:5px;overflow:hidden;vertical-align:middle;
     margin:1px;line-height:0}
   .thumb svg{width:44px;height:32px}
-  .tscroll{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch}
-  table.tt{table-layout:fixed;width:100%;min-width:1102px}
-  table.tt th,table.tt td{vertical-align:middle}
-  table.tt td{overflow:hidden}
-  td .thumbs{display:flex;gap:3px;flex-wrap:nowrap;justify-content:flex-start;
-    overflow-x:auto;overflow-y:hidden;padding-bottom:2px}
-  td .thumbs::-webkit-scrollbar{height:5px}
-  td .thumbs::-webkit-scrollbar-thumb{background:#CFC4A8;border-radius:9px}
-  td.nw{white-space:nowrap;text-overflow:ellipsis}
-  td.nick{font-weight:800}
-  td .rk{display:block;font:800 12.5px/1.3 var(--f)}
-  td .rk+small{display:block;margin-top:2px;font:700 11px/1 var(--f);color:#8A8271}
-  td.memo{white-space:nowrap}
+  .tscroll{overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;
+    border:1.8px solid var(--rule);border-radius:11px;background:var(--card)}
+  .tl{display:block}
+  .tlh,.tlr{display:flex;align-items:center}
+  .tlh{background:#E7E0CE;position:sticky;top:0}
+  .tlh span{padding:9px;font:800 11.5px/1.3 var(--f);white-space:nowrap;
+    box-sizing:border-box}
+  .tlh span.c{text-align:center}
+  .tlr{border-top:1px solid #E4DCC6;cursor:pointer}
+  .tlr:hover{background:#F4EEDC}
+  .tlr:focus{outline:none;background:#F4EEDC}
+  .tlr.needhelp{background:#FBF0EE;box-shadow:inset 4px 0 0 var(--red)}
+  .tlr.needhelp:hover{background:#F6E4E0}
+  .tlr>span{padding:8px 9px;font:700 12.5px/1.5 var(--f);overflow:hidden;
+    box-sizing:border-box}
+  .tlr>span.c{text-align:center}
+  .tlr>span.nw{white-space:nowrap;text-overflow:ellipsis}
+  .tlr>span.nick{font-weight:800}
+  .tlr>span.memo{white-space:nowrap}
+  .thumbs{display:flex;gap:3px;flex-wrap:nowrap;justify-content:center;
+    overflow-x:auto;overflow-y:hidden}
+  .thumbs::-webkit-scrollbar{height:5px}
+  .thumbs::-webkit-scrollbar-thumb{background:#CFC4A8;border-radius:9px}
+  .rk{display:block;font:800 12.5px/1.3 var(--f)}
+  .rk+small{display:block;margin-top:2px;font:700 11px/1 var(--f);color:#8A8271}
   .mv{width:28px;height:28px;border-radius:7px;cursor:pointer;border:1.6px solid var(--rule);
     background:#fff;color:var(--soft);font:900 14px/1 var(--f)}
   .mv:hover{border-color:var(--gold);color:var(--ink)}
@@ -426,13 +438,7 @@
   .note{width:138px;padding:6px 8px;border-radius:7px;border:1.6px solid var(--rule);
     background:#fff;font:700 12px/1.4 var(--f);color:var(--ink);vertical-align:middle}
   .note:focus{outline:none;border-color:var(--gold);background:#FFFCF4}
-  tr.row{cursor:pointer}
-  tr.row:hover td{background:#F4EEDC}
-  tr.row:focus{outline:none}
-  tr.row:focus td{background:#F4EEDC;box-shadow:inset 0 0 0 1.5px var(--gold)}
-  tr.needhelp td{background:#FBF0EE}
-  tr.needhelp.row:hover td{background:#F6E4E0}
-  tr.needhelp td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+
   .dtop{display:flex;gap:14px;align-items:flex-start;background:#fff;
     border:2px solid var(--rule);border-radius:11px;padding:13px 15px;margin-bottom:15px}
   .dtop .ph{flex:0 0 auto;border:2px solid var(--rule);border-radius:7px;overflow:hidden;
@@ -446,8 +452,8 @@
   .thumb.big{width:62px;height:44px}
   .thumb.big svg{width:62px;height:44px}
   .dth{margin:0 0 10px;font:900 13px/1 var(--f);color:var(--soft)}
-  td.bdgn b{font:900 15px/1 var(--f)}
-  td.bdgn small{display:block;margin-top:2px;font:700 10.5px/1 var(--f);color:#8A8271}
+  .bdgn b{font:900 15px/1 var(--f)}
+  .bdgn small{display:block;margin-top:2px;font:700 10.5px/1 var(--f);color:#8A8271}
   .thint{margin:12px 0 0;font:700 11.5px/1.7 var(--f);color:#9A9484}
   .thint b{color:#C9C2B0}
   .none{padding:36px 0;text-align:center;font:800 13.5px/1.8 var(--f);color:#9A9484}
@@ -494,7 +500,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v26 · 2026-09-09";
+const VER="사건 파일 v27 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2744,7 +2750,7 @@ function drawTeach(){
   document.querySelectorAll("[data-mv]").forEach(b=>{
     b.onclick=()=>moveOne(b.dataset.mv);
   });
-  const tb=document.querySelector(".tw table");
+  const tb=document.querySelector(".tw .tl");
   if(tb){
     tb.addEventListener("click",e=>{
       if(e.target.closest("input,button,select,textarea"))return;  /* 메모·단추는 그대로 */
@@ -2761,7 +2767,7 @@ function drawTeach(){
     b.onclick=()=>{
       const sid=b.dataset.h, on=!b.classList.contains("on");
       b.classList.toggle("on",on);
-      b.closest("tr").classList.toggle("needhelp",on);
+      const tr=b.closest(".tlr");if(tr)tr.classList.toggle("needhelp",on);
       if(TD[sid])TD[sid].help=on;
       saveNote(sid,{help:on});
     };
@@ -2771,26 +2777,30 @@ function drawTeach(){
   $("tOut").onclick=()=>{SC=me?"list":"reg";draw();};
   setNet(NETOK);
 }
+/* 머리글과 줄이 같은 목록에서 너비를 받으므로 어긋날 수 없다.
+   0 은 남는 폭을 차지한다. */
+const COL=[["학번",72],["코드네임",118],["계급",98],["자격",56],["사건별 상태",94],
+           ["배지",66],["작도한 몽타주",0],["옮기기",48],["선생님 메모",184],["마지막",66]];
+const COLMIN=COL.reduce((a,c)=>a+(c[1]||320),0);
+const cwid=w=>w?`flex:0 0 ${w}px;width:${w}px`:`flex:1 1 320px;min-width:320px`;
 function tTable(rows){
-  const COLW=[70,116,96,54,92,64,320,46,180,64];
-  let h=`<div class="tscroll"><table class="tt">
-    <colgroup>${COLW.map(x=>`<col style="width:${x}px">`).join("")}</colgroup>
-    <tr><th>학번</th><th>코드네임</th><th>계급</th>
-    <th class="c">자격</th><th class="c">사건별 상태</th><th class="c">배지</th>
-    <th class="c">작도한 몽타주</th><th class="c">옮기기</th>
-    <th>선생님 메모</th><th>마지막</th></tr>`;
+  let h=`<div class="tscroll"><div class="tl" style="min-width:${COLMIN}px">
+    <div class="tlh">${COL.map(([n,w],k)=>
+      `<span style="${cwid(w)}" class="${k>=3&&k<=7?"c":""}">${n}</span>`).join("")}</div>`;
   for(const r of rows){
     const cs=(r.cases||[]);
     const bg=(r.badges&&r.badges.length)?r.badges:badgesFrom(r);
-    h+=`<tr class="row${r.help?" needhelp":""}" data-row="${esc(r.sid)}"
+    const cell=(k,inner,cls)=>`<span style="${cwid(COL[k][1])}"
+      class="${cls||""}">${inner}</span>`;
+    h+=`<div class="tlr${r.help?" needhelp":""}" data-row="${esc(r.sid)}"
       tabindex="0" title="누르면 상세보기">
-      <td class="nw"><b>${esc(r.sid)}</b></td>
-      <td class="nw nick">${esc(r.nick||"")}</td>
-      <td class="nw"><b class="rk">${esc(r.rank||"")}</b>
-        <small>${r.closed|0} / ${CASES.length}</small></td>
-      <td class="c"><div class="cs">${[0,1].map(k=>
-        `<i class="${(r.qual|0)>k?"ok":""}">${k+1}</i>`).join("")}</div></td>
-      <td class="c"><div class="cs2">
+      ${cell(0,`<b>${esc(r.sid)}</b>`,"nw")}
+      ${cell(1,esc(r.nick||""),"nw nick")}
+      ${cell(2,`<b class="rk">${esc(r.rank||"")}</b>
+        <small>${r.closed|0} / ${CASES.length}</small>`,"nw")}
+      ${cell(3,`<div class="cs">${[0,1].map(k=>
+        `<i class="${(r.qual|0)>k?"ok":""}">${k+1}</i>`).join("")}</div>`,"c")}
+      ${cell(4,`<div class="cs2">
         <div class="cs">${CASES.slice(0,BASE).map((c,i)=>{
           const s=cs[i]||{};
           const k=s.done?"ok":(s.tries?"try":"");
@@ -2799,27 +2809,25 @@ function tTable(rows){
           const s=cs[i]||{};
           const k=s.done?"ok":(s.tries?"try":"");
           return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
-      </div></td>
-      <td class="c bdgn">${bg.length
-        ?`<b>${bg.length}</b><small>/ ${BADGES.length}</small>`:"—"}</td>
-      <td class="c"><div class="thumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
+      </div>`,"c")}
+      ${cell(5,bg.length?`<b>${bg.length}</b><small>/ ${BADGES.length}</small>`:"—","c bdgn")}
+      ${cell(6,`<div class="thumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
         if(!s.tri)return "";
         return `<span class="thumb" title="${esc(c.label)}">${
-          susSVG(s.tri,r.color||"#1F3F94",44,32)}</span>`;}).join("")||"—"}</div></td>
-      <td class="c"><button class="mv" data-mv="${esc(r.sid)}"
-        title="다른 반으로 옮기기">⇄</button></td>
-      <td class="memo">
-        <button class="flag${r.help?" on":""}" data-h="${esc(r.sid)}"
+          susSVG(s.tri,r.color||"#1F3F94",44,32)}</span>`;}).join("")||"—"}</div>`,"c")}
+      ${cell(7,`<button class="mv" data-mv="${esc(r.sid)}"
+        title="다른 반으로 옮기기">⇄</button>`,"c")}
+      ${cell(8,`<button class="flag${r.help?" on":""}" data-h="${esc(r.sid)}"
           title="작도 절차 도움이 필요한 학생">⚑</button>
         <input class="note" data-n="${esc(r.sid)}" value="${esc(r.note||"")}"
-          placeholder="메모 (예: 컴퍼스 옮기기 도움)">
-      </td>
-      <td class="nw">${r.at?new Date(r.at).toLocaleTimeString("ko-KR",
-        {hour:"2-digit",minute:"2-digit"}):"—"}</td>
-    </tr>`;
+          placeholder="메모 (예: 컴퍼스 도움)">`,"memo")}
+      ${cell(9,r.at?new Date(r.at).toLocaleTimeString("ko-KR",
+        {hour:"2-digit",minute:"2-digit"}):"—","nw")}
+    </div>`;
   }
-  return h+`</table></div>`;
+  return h+`</div></div>`;
 }
+
 function tCsv(rows){
   const head=["학번","코드네임","계급","검거","사건별 종결","고른 용의자","특정 실패 횟수",
     "배지 수","배지 목록","도움 표시","선생님 메모"];
