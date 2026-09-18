@@ -462,6 +462,12 @@
   .thumb.big{width:62px;height:44px}
   .thumb.big svg{width:62px;height:44px}
   .dth{margin:0 0 10px;font:900 13px/1 var(--f);color:var(--soft)}
+  .dth.gold{margin-top:16px;padding-top:14px;border-top:1.5px solid var(--rule);
+    color:#8A6A0E}
+  .repgrid+.dth.gold{margin-top:16px}
+  .repgrid.adv .repmini{border-color:#C9A227;background:#FBF6E4}
+  .repgrid.adv .rmh{background:#3E2F08}
+  .repgrid.adv .rmh span{color:#F0C86A}
   .bdgn b{font:900 15px/1 var(--f)}
   .bdgn small{display:block;margin-top:2px;font:700 10.5px/1 var(--f);color:#8A8271}
   .thint{margin:12px 0 0;font:700 11.5px/1.7 var(--f);color:#9A9484}
@@ -510,7 +516,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v31 · 2026-09-09";
+const VER="사건 파일 v33 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1586,7 +1592,7 @@ function susSVG(tri,col,W,H){
 function head(extra){
   return `<div class="top">
     <b class="brand">사건 파일</b><span class="ver">${VER}</span>
-    ${me?`<span class="me">${esc(me.nick)} · ${rank()} · 검거 ${closed()}/${CASES.length}</span>`:""}
+    ${me?`<span class="me">${esc(me.nick)} · ${rank()} · 해결한 사건 ${closed()+closedAdv()}건</span>`:""}
     ${extra||""}
     <span class="sp"></span>
     <span class="net" id="net">연결 확인 중</span>
@@ -1663,7 +1669,7 @@ function drawList(){
    +`<div class="list"><div class="lin">
     <h1>미해결 사건 목록</h1>
     <p class="sub">${esc(me.nick)} 감식관 · ${rank()} ·
-      검거 ${closed()}건 / 미결 ${BASE-closed()}건${
+      해결한 사건 ${closed()}건 / 남은 사건 ${BASE-closed()}건${
       closed()>=BASE?" · <b style=\"color:#9FD9B4\">전건 종결</b>":""}${
       closedAdv()?` · 심화 ${closedAdv()}건`:""}</p>
     <hr>
@@ -1838,7 +1844,7 @@ function drawFiles(){
   $("app").innerHTML=head(`<button class="tb" id="hList">사건 목록</button>`)
    +`<div class="list"><div class="lin">
     <h1>수사 보고서 모음</h1>
-    <p class="sub">${esc(me.nick)} 감식관 · 종결한 사건 ${done.length}건</p>
+    <p class="sub">${esc(me.nick)} 감식관 · 해결한 사건 ${done.length}건</p>
     <hr>
     ${done.length?`<div class="repgrid">${done.map(i=>repCard(i)).join("")}</div>`
       :`<p class="lfoot">아직 종결한 사건이 없습니다. 사건을 닫으면 보고서가 여기에 쌓입니다.</p>`}
@@ -2608,7 +2614,7 @@ function result(){
             s.more?" · 추가 진술을 확보해 좁혔습니다":""}.</dd>`:""}
       </dl>
       <p style="margin:0 0 13px;font:800 13px/1.6 var(--f)">
-        지금 계급 — <b>${rank()}</b> · 검거 ${closed()} / ${CASES.length}</p>
+        지금 계급 — <b>${rank()}</b> · 해결한 사건 ${closed()+closedAdv()}건</p>
       <button class="go" id="rNext">사건 목록으로</button>
     </div>
   </div>`;
@@ -2713,9 +2719,16 @@ function detailOf(sid){
       <h4 class="dth">모은 배지 ${bg.length} / ${BADGES.length}</h4>
       <div class="bdgs flow" style="margin-bottom:16px">${BADGES.map(b=>
         badgeChip(b,bg.indexOf(b.id)>=0)).join("")}</div>
-      <h4 class="dth">수사 보고서 ${done.length}건</h4>
-      ${done.length?`<div class="repgrid">${done.map(x=>repCard(x.i,x.s,who)).join("")}</div>`
-        :`<p class="none">아직 종결한 사건이 없습니다.</p>`}
+      ${(()=>{
+        const base=done.filter(x=>x.i<BASE), adv=done.filter(x=>x.i>=BASE);
+        if(!done.length)return `<h4 class="dth">수사 보고서</h4>
+          <p class="none">아직 종결한 사건이 없습니다.</p>`;
+        let o="";
+        if(base.length)o+=`<h4 class="dth">수사 보고서 ${base.length}건</h4>
+          <div class="repgrid">${base.map(x=>repCard(x.i,x.s,who)).join("")}</div>`;
+        if(adv.length)o+=`<h4 class="dth gold">심화 사건 보고서 ${adv.length}건</h4>
+          <div class="repgrid adv">${adv.map(x=>repCard(x.i,x.s,who)).join("")}</div>`;
+        return o;})()}
       <div class="ovacts"><button class="ghost" id="dtClose">닫기</button></div>
     </div>
   </div>`;
@@ -2823,7 +2836,7 @@ function tTable(rows){
       ${cell(0,`<b>${esc(r.sid)}</b>`,"nw")}
       ${cell(1,esc(r.nick||""),"nw nick")}
       ${cell(2,`<b class="rk">${esc(r.rank||"")}</b>
-        <small>검거 ${r.closed|0}</small>`,"nw")}
+        <small>해결 ${r.closed|0}건</small>`,"nw")}
       ${cell(3,`<div class="cs">${[0,1].map(k=>
         `<i class="${(r.qual|0)>k?"ok":""}">${k+1}</i>`).join("")}</div>`,"c")}
       ${cell(4,`<div class="cs">${CASES.slice(0,BASE).map((c,i)=>{
