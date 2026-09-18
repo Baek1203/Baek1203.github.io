@@ -110,6 +110,7 @@
   .certgo .go{max-width:320px;margin:0 auto}
 
   .idwrap{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .idleft{flex:0 0 auto;display:flex;flex-direction:column;gap:13px;width:330px}
   .idc{width:330px;background:var(--card);border:3px solid #141210;border-radius:8px;
     overflow:hidden;box-shadow:0 6px 0 #080706}
   .idtop{background:#141210;color:#F6F1E6;padding:9px 13px;display:flex;
@@ -127,13 +128,16 @@
   .idfoot{background:#E7E0CE;border-top:2px solid var(--rule);padding:7px 13px;
     font:700 10.5px/1 var(--f);color:var(--soft);text-align:center;letter-spacing:.04em}
 
-  .bdgbox{margin-top:15px;background:var(--card);border:2px solid var(--rule);
-    border-radius:12px;padding:13px 15px}
-  .bdgbox h5{margin:0 0 4px;font:900 12px/1 var(--f);color:var(--soft)}
+  .bdgbox{background:var(--card);border:2px solid var(--rule);
+    border-radius:12px;padding:12px 13px}
+  .bdgbox h5{margin:0 0 10px;font:900 12px/1 var(--f);color:var(--soft)}
   .bdgbox h5 em{font-style:normal;color:var(--ink)}
-  .bdgbox p.bh{margin:0 0 11px;font:700 11.5px/1.6 var(--f);color:var(--soft)}
-  .bdgs{display:flex;gap:9px;flex-wrap:wrap}
-  .bdg{display:flex;flex-direction:column;align-items:center;gap:5px;width:74px;
+  .bpick{margin:11px 0 0;padding-top:10px;border-top:1.5px solid var(--rule);
+    font:700 11.5px/1.6 var(--f);color:var(--soft);min-height:34px}
+  .bpick b{display:block;font:900 12.5px/1.5 var(--f);color:var(--ink)}
+  .bdgs{display:flex;gap:7px;flex-wrap:wrap}
+  .bdg{display:flex;flex-direction:column;align-items:center;gap:4px;width:70px;
+    cursor:pointer;
     opacity:.34;filter:grayscale(1)}
   .bdg.got{opacity:1;filter:none}
   .bdg i{width:var(--bs);height:var(--bs);border-radius:99px;background:var(--bc);
@@ -141,8 +145,9 @@
     justify-content:center;font-style:normal}
   .bdg i svg{width:66%;height:66%;display:block}
   .bdg.got i{box-shadow:0 2px 0 rgba(20,18,16,.28),0 0 0 3px #fff,0 0 0 4.5px var(--bc)}
-  .bdg em{font-style:normal;font:800 10px/1.3 var(--f);color:var(--ink);text-align:center;
+  .bdg em{font-style:normal;font:800 9.5px/1.3 var(--f);color:var(--ink);text-align:center;
     word-break:keep-all}
+  .bdgs>[data-b]{display:block}
   .newbdg{display:flex;gap:10px;align-items:center;background:#FFF6E3;
     border-left:5px solid var(--gold);border-radius:9px;padding:10px 12px;margin-bottom:12px}
   .newbdg .t{font:900 12.5px/1.5 var(--f);color:#8A6A0E}
@@ -156,6 +161,7 @@
     border:1.8px solid var(--rule);background:#fff;color:var(--ink);width:104px}
   .frow button{padding:9px 14px;border-radius:8px;cursor:pointer;border:2px solid var(--ink);
     background:var(--ink);color:#fff;font:800 12.5px/1 var(--f)}
+  .frow .ghost3{background:#fff;color:var(--ink);border-color:var(--ink)}
   .fxmsg{margin:9px 0 0;font:700 11.5px/1.6 var(--f);color:var(--soft)}
   .dress{flex:1;min-width:250px;background:var(--card);border:2px solid var(--rule);
     border-radius:12px;padding:14px 16px}
@@ -391,11 +397,12 @@
   tr:last-child td{border-bottom:0}
   td.c{text-align:center;white-space:nowrap}
   .cs2{display:flex;flex-direction:column;gap:4px;align-items:center}
-  .cs{display:flex;gap:4px;justify-content:center}
-  .cs.adv i{width:20px;height:18px;border-radius:5px;font-size:10px;
-    background:#EFE4C6;color:#8A6A0E}
-  .cs.adv i.ok{background:#C9A227;color:#fff}
-  .cs.adv i.try{background:#F3D7D2;color:#8E2A22}
+  .cs{display:flex;gap:4px;justify-content:center;align-items:center}
+  .csbar{flex:0 0 auto;width:2px;height:16px;background:#C9A227;border-radius:2px;
+    margin:0 4px;opacity:.7}
+  .cs i.adv{background:#F3EAD0;color:#8A6A0E;box-shadow:inset 0 0 0 1.5px #C9A227}
+  .cs i.adv.ok{background:#C9A227;color:#fff;box-shadow:none}
+  .cs i.adv.try{background:#F3D7D2;color:#8E2A22;box-shadow:inset 0 0 0 1.5px #C0342A}
   .cs i{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
     border-radius:6px;background:#E9E1CC;color:#8A8271;font:800 11px/1 var(--f);font-style:normal}
   .cs i.ok{background:var(--ok);color:#fff}
@@ -500,7 +507,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v27 · 2026-09-09";
+const VER="사건 파일 v28 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -752,58 +759,58 @@ const BI={
 };
 const BADGES=[
  {id:"reg",  ic:"card",   n:"감식관 등록", col:"#1F3F94",
-  d:"신분증을 발급받았다", on:r=>!!(r.av&&r.av.issued)},
+  d:"신분증을 발급받았습니다.", on:r=>!!(r.av&&r.av.issued)},
  {id:"qual", ic:"compass",n:"자격 취득", col:"#1F3F94",
-  d:"선분 옮기기와 각 옮기기를 모두 해냈다", on:r=>(r.qual|0)>=2},
+  d:"선분 옮기기와 각 옮기기를 스스로 해냈습니다.", on:r=>(r.qual|0)>=2},
  {id:"first",ic:"glass",  n:"첫 검거", col:"#1F3F94",
-  d:"사건을 하나 종결했다", on:r=>r.cases.some(c=>c&&c.done)},
+  d:"첫 사건을 종결했습니다.", on:r=>r.cases.some(c=>c&&c.done)},
 
  {id:"c1", ic:"tri3", n:"세 변의 증언", col:"#2A7148",
-  d:"사건 1 종결 — 세 변을 알면 하나로 정해진다", on:r=>!!(r.cases[0]&&r.cases[0].done)},
+  d:"사건 1 — 세 변만으로 몽타주를 특정했습니다.", on:r=>!!(r.cases[0]&&r.cases[0].done)},
  {id:"c2", ic:"triA", n:"끼인각의 증언", col:"#2A7148",
-  d:"사건 2 종결 — 두 변과 그 사이 각", on:r=>!!(r.cases[1]&&r.cases[1].done)},
+  d:"사건 2 — 두 변과 그 사이 각으로 특정했습니다.", on:r=>!!(r.cases[1]&&r.cases[1].done)},
  {id:"c3", ic:"tri2A",n:"양 끝 각의 증언", col:"#2A7148",
-  d:"사건 3 종결 — 한 변과 그 양 끝 각", on:r=>!!(r.cases[2]&&r.cases[2].done)},
+  d:"사건 3 — 한 변과 그 양 끝 각으로 특정했습니다.", on:r=>!!(r.cases[2]&&r.cases[2].done)},
  {id:"c4", ic:"twin", n:"함정 통과", col:"#C0342A",
-  d:"사건 4 종결 — 용의자가 둘이었던 사건", on:r=>!!(r.cases[3]&&r.cases[3].done)},
+  d:"사건 4 — 조건이 셋인데도 용의자가 둘이던 사건을 해결했습니다.", on:r=>!!(r.cases[3]&&r.cases[3].done)},
  {id:"c5", ic:"nest", n:"무한의 발견", col:"#C0342A",
-  d:"사건 5 종결 — 크기가 정해지지 않던 사건", on:r=>!!(r.cases[4]&&r.cases[4].done)},
+  d:"사건 5 — 세 각만으로는 크기가 정해지지 않음을 밝혔습니다.", on:r=>!!(r.cases[4]&&r.cases[4].done)},
  {id:"all",ic:"star", n:"전건 종결", col:"#C98A10",
-  d:"미해결 사건 다섯 건을 모두 해결했다",
+  d:"미해결 사건 다섯 건을 모두 종결했습니다.",
   on:r=>[0,1,2,3,4].every(i=>r.cases[i]&&r.cases[i].done)},
 
  {id:"a1", ic:"flip", n:"뒤집힌 사건", col:"#C9A227",
-  d:"심화 1 종결 — 각이 사이에 없어도 하나로 정해지는 경우",
+  d:"심화 1 — 각이 두 변 사이에 없어도 하나로 정해지는 경우를 찾아냈습니다.",
   on:r=>!!(r.cases[5]&&r.cases[5].done)},
  {id:"a2", ic:"no",   n:"불가능 보고", col:"#C9A227",
-  d:"심화 2 종결 — 삼각형이 만들어지지 않는 진술",
+  d:"심화 2 — 세 변으로 삼각형이 만들어지지 않음을 보고했습니다.",
   on:r=>!!(r.cases[6]&&r.cases[6].done)},
  {id:"aall",ic:"crown",n:"특별 감식관", col:"#C9A227",
-  d:"심화 사건을 모두 해결했다",
+  d:"심화 사건을 모두 해결했습니다.",
   on:r=>[5,6].every(i=>r.cases[i]&&r.cases[i].done)},
 
  {id:"copy",ic:"len",  n:"길이를 옮긴 감식관", col:"#7A3FBF",
-  d:"컴퍼스로 주어진 선분 길이를 그대로 옮겨 썼다",
+  d:"컴퍼스를 주어진 선분에 맞춰 벌려 그 길이를 그대로 옮겼습니다.",
   on:r=>r.cases.some(c=>c&&c.copy)},
  {id:"ang", ic:"ang",  n:"각을 옮긴 감식관", col:"#7A3FBF",
-  d:"주어진 각에 호를 그려 각을 옮겨 냈다",
+  d:"주어진 각에 호를 그려 같은 크기의 각을 만들어 냈습니다.",
   on:r=>r.cases.some(c=>c&&(c.arcG|0)>=1&&(c.arcW|0)>=2)},
  {id:"once",ic:"check",n:"한 번에 완성", col:"#0E7C8A",
-  d:"되돌리기와 처음부터를 쓰지 않고 사건을 종결했다",
+  d:"되돌리기 없이 사건을 종결했습니다.",
   on:r=>r.cases.some(c=>c&&c.done&&!(c.undos|0))},
  {id:"neat",ic:"neat", n:"깔끔한 작도", col:"#0E7C8A",
-  d:`사건 1~5를 모두 ${CLEAN}개 이하로 작도해 종결했다`,
+  d:"사건 1~5를 모두 선과 호 28개 이하로 마쳤습니다.",
   on:r=>[0,1,2,3,4].every(i=>{const c=r.cases[i];
     return c&&c.done&&(c.items|0)>0&&(c.items|0)<=CLEAN;})},
 
  {id:"again",ic:"redo", n:"재수사", col:"#B03A6E",
-  d:"종결한 사건을 다시 열어 작도해 냈다",
+  d:"이미 종결한 사건을 다시 열어 작도했습니다.",
   on:r=>r.cases.some(c=>c&&(c.redo|0)>=1)},
  {id:"both",ic:"hands", n:"양손잡이 감식관", col:"#B03A6E",
-  d:"같은 사건을 다른 자리에 다시 작도해 냈다",
+  d:"같은 사건을 다른 자리에 한 번 더 작도했습니다.",
   on:r=>r.cases.some(c=>c&&c.tri2)},
  {id:"reall",ic:"redoAll",n:"완전 재수사", col:"#B03A6E",
-  d:"사건 1~5를 모두 다시 작도해 냈다",
+  d:"사건 1~5를 모두 다시 작도했습니다.",
   on:r=>[0,1,2,3,4].every(i=>r.cases[i]&&(r.cases[i].redo|0)>=1)}
 ];
 function badgesFrom(rec){
@@ -1870,14 +1877,15 @@ function drawId(){
       :"언제든 다시 꾸밀 수 있습니다."}</p>
     <hr>
     <div class="idwrap">
-      <div class="idcard" id="idcard"></div>
+      <div class="idleft">
+        <div class="idcard" id="idcard"></div>
+        <div class="bdgbox">
+          <h5>감식 배지 <em id="bdgN"></em></h5>
+          <div class="bdgs" id="bdgs"></div>
+          <p class="bpick" id="bdgPick">배지를 누르면 받는 조건이 보입니다.</p>
+        </div>
+      </div>
       <div class="dress" id="dress"></div>
-    </div>
-    <div class="bdgbox">
-      <h5>감식 배지 <em id="bdgN"></em></h5>
-      <p class="bh">사건을 해결하고 작도를 잘하면 배지를 받습니다.
-        흐린 배지에 손을 올리면 조건이 보입니다.</p>
-      <div class="bdgs" id="bdgs"></div>
     </div>
     <div class="fixid">
       <h5>신원 고치기</h5>
@@ -1887,9 +1895,14 @@ function drawId(){
           `<option value="${c}"${c===me.cls?" selected":""}>${c}</option>`).join("")}</select>
         <label>학번</label>
         <input id="fxSid" inputmode="numeric" maxlength="6" value="${esc(me.sid)}">
+      </div>
+      <div class="frow">
+        <label>코드네임</label>
+        <input id="fxNick" readonly value="${esc(me.nick)}" style="width:132px">
+        <button id="fxDice" class="ghost3">🎲 다시 뽑기</button>
         <button id="fxGo">고치기</button>
       </div>
-      <p class="fxmsg" id="fxMsg">반이나 학번을 잘못 넣었으면 여기서 고칩니다.
+      <p class="fxmsg" id="fxMsg">반·학번·코드네임을 잘못 넣었으면 여기서 고칩니다.
         고치면 <b>새 반으로 다시 보고</b>됩니다.</p>
     </div>
     <button class="go" id="idGo" style="max-width:340px;margin-top:18px">
@@ -1897,16 +1910,19 @@ function drawId(){
   </div></div>`;
   paintCard();paintDress();paintBadges();
   if($("hList"))$("hList").onclick=()=>{SC="list";draw();};
+  $("fxDice").onclick=()=>{$("fxNick").value=rollNick();
+    $("fxMsg").innerHTML="<b>고치기</b>를 눌러야 바뀝니다.";};
   $("fxGo").onclick=async()=>{
-    const c=$("fxCls").value, sid=$("fxSid").value.trim();
+    const c=$("fxCls").value, sid=$("fxSid").value.trim(), nk=$("fxNick").value.trim();
     if(!/^\d{3,6}$/.test(sid)){$("fxMsg").innerHTML="<b>학번을 숫자로</b> 넣어 주세요.";return;}
+    if(nk.length<2){$("fxMsg").innerHTML="코드네임을 <b>다시 뽑아</b> 주세요.";return;}
     const oc=me.cls, os=me.sid;
-    if(c===oc&&sid===os){$("fxMsg").textContent="바뀐 것이 없습니다.";return;}
-    me.cls=c;me.sid=sid;LS.set("me",me);
+    if(c===oc&&sid===os&&nk===me.nick){$("fxMsg").textContent="바뀐 것이 없습니다.";return;}
+    me.cls=c;me.sid=sid;me.nick=nk;LS.set("me",me);
     await report();
     if(oc!==c||os!==sid){try{await dbDel(`caseapp/${oc}/${os}`);}catch(e){}}
     paintCard();
-    $("fxMsg").innerHTML=`<b>${esc(c)} · ${esc(sid)}</b> 로 고쳤습니다.`;
+    $("fxMsg").innerHTML=`<b>${esc(c)} · ${esc(sid)} · ${esc(nk)}</b> 로 고쳤습니다.`;
     toast("신원을 고쳤습니다.");
   };
   $("idGo").onclick=()=>{
@@ -1920,7 +1936,12 @@ function paintBadges(){
   const box=$("bdgs");if(!box)return;
   const got=myBadges();
   $("bdgN").textContent=`${got.length} / ${BADGES.length}`;
-  box.innerHTML=BADGES.map(b=>badgeChip(b,got.indexOf(b.id)>=0)).join("");
+  box.innerHTML=BADGES.map(b=>
+    `<span data-b="${b.id}">${badgeChip(b,got.indexOf(b.id)>=0)}</span>`).join("");
+  box.querySelectorAll("[data-b]").forEach(el=>el.onclick=()=>{
+    const b=badgeOf(el.dataset.b), on=got.indexOf(b.id)>=0;
+    $("bdgPick").innerHTML=`<b>${esc(b.n)}${on?" · 받음":""}</b>${esc(b.d)}`;
+  });
 }
 function paintCard(){
   const el=$("idcard");if(!el)return;
@@ -2737,7 +2758,7 @@ function drawTeach(){
       ${rows.length?tTable(rows)
         +`<p class="thint"><b>줄을 누르면</b> 그 학생의 수사 보고서를 볼 수 있습니다 ·
           <b>⚑</b> 도움 표시 · <b>⇄</b> 반 옮기기 ·
-          사건 칸은 위가 <b>1~5</b>, 아래가 <b>심화 6~7</b></p>`
+          사건 칸의 <b>금색 6·7</b>은 심화 사건 · 작도한 몽타주는 <b>줄을 눌러</b> 보세요</p>`
         :`<p class="none">아직 등록한 학생이 없습니다.<br>
         학생이 신원을 등록하면 여기에 나타납니다.</p>`}
     </div></div>`;
@@ -2779,14 +2800,14 @@ function drawTeach(){
 }
 /* 머리글과 줄이 같은 목록에서 너비를 받으므로 어긋날 수 없다.
    0 은 남는 폭을 차지한다. */
-const COL=[["학번",72],["코드네임",118],["계급",98],["자격",56],["사건별 상태",94],
-           ["배지",66],["작도한 몽타주",0],["옮기기",48],["선생님 메모",184],["마지막",66]];
-const COLMIN=COL.reduce((a,c)=>a+(c[1]||320),0);
-const cwid=w=>w?`flex:0 0 ${w}px;width:${w}px`:`flex:1 1 320px;min-width:320px`;
+const COL=[["학번",78],["코드네임",126],["계급",106],["자격",62],["사건별 상태",204],
+           ["배지",72],["옮기기",54],["선생님 메모",0],["마지막",74]];
+const COLMIN=COL.reduce((a,c)=>a+(c[1]||210),0);
+const cwid=w=>w?`flex:0 0 ${w}px;width:${w}px`:`flex:1 1 210px;min-width:210px`;
 function tTable(rows){
   let h=`<div class="tscroll"><div class="tl" style="min-width:${COLMIN}px">
     <div class="tlh">${COL.map(([n,w],k)=>
-      `<span style="${cwid(w)}" class="${k>=3&&k<=7?"c":""}">${n}</span>`).join("")}</div>`;
+      `<span style="${cwid(w)}" class="${(k>=3&&k<=6)?"c":""}">${n}</span>`).join("")}</div>`;
   for(const r of rows){
     const cs=(r.cases||[]);
     const bg=(r.badges&&r.badges.length)?r.badges:badgesFrom(r);
@@ -2800,28 +2821,24 @@ function tTable(rows){
         <small>${r.closed|0} / ${CASES.length}</small>`,"nw")}
       ${cell(3,`<div class="cs">${[0,1].map(k=>
         `<i class="${(r.qual|0)>k?"ok":""}">${k+1}</i>`).join("")}</div>`,"c")}
-      ${cell(4,`<div class="cs2">
-        <div class="cs">${CASES.slice(0,BASE).map((c,i)=>{
+      ${cell(4,`<div class="cs">${CASES.slice(0,BASE).map((c,i)=>{
           const s=cs[i]||{};
           const k=s.done?"ok":(s.tries?"try":"");
-          return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
-        <div class="cs adv">${CASES.map((c,i)=>({c,i})).filter(x=>x.i>=BASE).map(({c,i})=>{
+          return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}
+        <b class="csbar"></b>
+        ${CASES.map((c,i)=>({c,i})).filter(x=>x.i>=BASE).map(({c,i})=>{
           const s=cs[i]||{};
           const k=s.done?"ok":(s.tries?"try":"");
-          return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
-      </div>`,"c")}
+          return `<i class="adv ${k}" title="${esc(c.label)} (심화)">${i+1}</i>`;}).join("")}
+        </div>`,"c")}
       ${cell(5,bg.length?`<b>${bg.length}</b><small>/ ${BADGES.length}</small>`:"—","c bdgn")}
-      ${cell(6,`<div class="thumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
-        if(!s.tri)return "";
-        return `<span class="thumb" title="${esc(c.label)}">${
-          susSVG(s.tri,r.color||"#1F3F94",44,32)}</span>`;}).join("")||"—"}</div>`,"c")}
-      ${cell(7,`<button class="mv" data-mv="${esc(r.sid)}"
+      ${cell(6,`<button class="mv" data-mv="${esc(r.sid)}"
         title="다른 반으로 옮기기">⇄</button>`,"c")}
-      ${cell(8,`<button class="flag${r.help?" on":""}" data-h="${esc(r.sid)}"
+      ${cell(7,`<button class="flag${r.help?" on":""}" data-h="${esc(r.sid)}"
           title="작도 절차 도움이 필요한 학생">⚑</button>
         <input class="note" data-n="${esc(r.sid)}" value="${esc(r.note||"")}"
-          placeholder="메모 (예: 컴퍼스 도움)">`,"memo")}
-      ${cell(9,r.at?new Date(r.at).toLocaleTimeString("ko-KR",
+          placeholder="메모 (예: 컴퍼스 옮기기 도움)">`,"memo")}
+      ${cell(8,r.at?new Date(r.at).toLocaleTimeString("ko-KR",
         {hour:"2-digit",minute:"2-digit"}):"—","nw")}
     </div>`;
   }
