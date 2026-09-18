@@ -423,7 +423,6 @@
   .tlh span.c{text-align:center}
   .tlr{border-top:1px solid #E4DCC6;cursor:pointer}
   .tlr:hover{background:#F4EEDC}
-  .tlr:focus{outline:none;background:#F4EEDC}
   .tlr.needhelp{background:#FBF0EE;box-shadow:inset 4px 0 0 var(--red)}
   .tlr.needhelp:hover{background:#F6E4E0}
   .tlr>span{padding:8px 9px;font:700 12.5px/1.5 var(--f);overflow:hidden;
@@ -511,7 +510,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v30 · 2026-09-09";
+const VER="사건 파일 v31 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2676,6 +2675,7 @@ async function saveNote(sid,obj){
 
 /* ── 학생 하나를 자세히 ── */
 function detailOf(sid){
+  const old=$("dtOv");if(old)old.remove();       /* 창이 겹치지 않게 */
   const r=TD[sid];if(!r)return;
   const bg=(r.badges&&r.badges.length)?r.badges:badgesFrom(r);
   const who={nick:r.nick||sid,col:r.color||"#1F3F94",av:r.av||{}};
@@ -2769,7 +2769,6 @@ function drawTeach(){
   $("tCls").onchange=()=>{TCLS=$("tCls").value;LS.set("tcls",TCLS);tPull();};
   document.querySelectorAll(".memo,.memoin").forEach(el=>{
     el.addEventListener("click",e=>e.stopPropagation());
-    el.addEventListener("keydown",e=>e.stopPropagation());
   });
   document.querySelectorAll("[data-n]").forEach(el=>{
     el.onfocus=()=>{NOTING=true;};
@@ -2788,12 +2787,7 @@ function drawTeach(){
       const tr=e.target.closest("[data-row]");
       if(tr)detailOf(tr.dataset.row);
     });
-    tb.addEventListener("keydown",e=>{
-      if(e.key!=="Enter"&&e.key!==" ")return;
-      if(noRow(e.target))return;                 /* 메모에 스페이스를 쳐도 열리지 않게 */
-      const tr=e.target.closest&&e.target.closest("[data-row]");
-      if(tr){e.preventDefault();detailOf(tr.dataset.row);}
-    });
+
   }
   document.querySelectorAll("[data-h]").forEach(b=>{
     b.onclick=()=>{
@@ -2825,7 +2819,7 @@ function tTable(rows){
     const cell=(k,inner,cls)=>`<span style="${cwid(COL[k][1])}"
       class="${cls||""}">${inner}</span>`;
     h+=`<div class="tlr${r.help?" needhelp":""}" data-row="${esc(r.sid)}"
-      tabindex="0" title="누르면 상세보기">
+      title="누르면 상세보기">
       ${cell(0,`<b>${esc(r.sid)}</b>`,"nw")}
       ${cell(1,esc(r.nick||""),"nw nick")}
       ${cell(2,`<b class="rk">${esc(r.rank||"")}</b>
