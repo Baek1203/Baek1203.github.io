@@ -431,7 +431,7 @@
   .tlr>span.c{text-align:center}
   .tlr>span.nw{white-space:nowrap;text-overflow:ellipsis}
   .tlr>span.nick{font-weight:800}
-  .tlr>span.memo{white-space:nowrap}
+  .tlr>span.memo{white-space:nowrap;cursor:default}
   .thumbs{display:flex;gap:3px;flex-wrap:nowrap;justify-content:center;
     overflow-x:auto;overflow-y:hidden}
   .thumbs::-webkit-scrollbar{height:5px}
@@ -511,7 +511,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v29 · 2026-09-09";
+const VER="사건 파일 v30 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2767,6 +2767,10 @@ function drawTeach(){
         학생이 신원을 등록하면 여기에 나타납니다.</p>`}
     </div></div>`;
   $("tCls").onchange=()=>{TCLS=$("tCls").value;LS.set("tcls",TCLS);tPull();};
+  document.querySelectorAll(".memo,.memoin").forEach(el=>{
+    el.addEventListener("click",e=>e.stopPropagation());
+    el.addEventListener("keydown",e=>e.stopPropagation());
+  });
   document.querySelectorAll("[data-n]").forEach(el=>{
     el.onfocus=()=>{NOTING=true;};
     el.onblur=()=>{NOTING=false;saveNote(el.dataset.n,{note:el.value.trim()});};
@@ -2777,13 +2781,16 @@ function drawTeach(){
   });
   const tb=document.querySelector(".tw .tl");
   if(tb){
+    const noRow=t=>!t||!t.closest||
+      !!t.closest("input,button,select,textarea,.memo,.memoin");
     tb.addEventListener("click",e=>{
-      if(e.target.closest("input,button,select,textarea"))return;  /* 메모·단추는 그대로 */
+      if(noRow(e.target))return;                 /* 메모 칸과 단추는 줄 클릭에서 뺀다 */
       const tr=e.target.closest("[data-row]");
       if(tr)detailOf(tr.dataset.row);
     });
     tb.addEventListener("keydown",e=>{
       if(e.key!=="Enter"&&e.key!==" ")return;
+      if(noRow(e.target))return;                 /* 메모에 스페이스를 쳐도 열리지 않게 */
       const tr=e.target.closest&&e.target.closest("[data-row]");
       if(tr){e.preventDefault();detailOf(tr.dataset.row);}
     });
