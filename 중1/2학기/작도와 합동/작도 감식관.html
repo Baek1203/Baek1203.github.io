@@ -127,6 +127,25 @@
   .idfoot{background:#E7E0CE;border-top:2px solid var(--rule);padding:7px 13px;
     font:700 10.5px/1 var(--f);color:var(--soft);text-align:center;letter-spacing:.04em}
 
+  .bdgbox{margin-top:15px;background:var(--card);border:2px solid var(--rule);
+    border-radius:12px;padding:13px 15px}
+  .bdgbox h5{margin:0 0 4px;font:900 12px/1 var(--f);color:var(--soft)}
+  .bdgbox h5 em{font-style:normal;color:var(--ink)}
+  .bdgbox p.bh{margin:0 0 11px;font:700 11.5px/1.6 var(--f);color:var(--soft)}
+  .bdgs{display:flex;gap:9px;flex-wrap:wrap}
+  .bdg{display:flex;flex-direction:column;align-items:center;gap:5px;width:70px;
+    opacity:.34;filter:grayscale(1)}
+  .bdg.got{opacity:1;filter:none}
+  .bdg i{width:var(--bs);height:var(--bs);border-radius:99px;background:var(--bc);
+    color:#fff;font:900 15px/var(--bs) var(--f);font-style:normal;text-align:center;
+    box-shadow:0 2px 0 rgba(20,18,16,.28);display:block}
+  .bdg.got i{box-shadow:0 2px 0 rgba(20,18,16,.28),0 0 0 3px #fff,0 0 0 4.5px var(--bc)}
+  .bdg em{font-style:normal;font:800 10px/1.3 var(--f);color:var(--ink);text-align:center;
+    word-break:keep-all}
+  .newbdg{display:flex;gap:10px;align-items:center;background:#FFF6E3;
+    border-left:5px solid var(--gold);border-radius:9px;padding:10px 12px;margin-bottom:12px}
+  .newbdg .t{font:900 12.5px/1.5 var(--f);color:#8A6A0E}
+  .newbdg .t b{display:block;font:900 14px/1.4 var(--f);color:var(--ink)}
   .fixid{margin-top:15px;background:var(--card);border:2px solid var(--rule);border-radius:12px;
     padding:13px 15px}
   .fixid h5{margin:0 0 9px;font:900 12px/1 var(--f);color:var(--soft)}
@@ -281,11 +300,10 @@
   .tool svg{width:20px;height:20px}
   .rwrap{position:relative;display:flex}
   .rwrap .tool{flex:1}
-  .pop{position:absolute;left:0;right:0;top:calc(100% + 5px);z-index:12;display:none;
+  .pop{position:fixed;z-index:70;display:none;
     flex-direction:column;gap:4px;background:#fff;border:1.8px solid var(--ink);
-    border-radius:9px;padding:5px;box-shadow:0 10px 24px rgba(20,18,16,.22)}
-  .rwrap:hover .pop,.rwrap:focus-within .pop,.pop.open{display:flex}
-  .pop.shut{display:none!important}
+    border-radius:9px;padding:5px;box-shadow:0 12px 28px rgba(20,18,16,.28)}
+  .pop.open{display:flex}
   .pop button{padding:9px 0;border-radius:6px;cursor:pointer;border:1.5px solid var(--rule);
     background:#fff;font:800 11.5px/1 var(--f);color:var(--soft)}
   .pop button[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
@@ -371,16 +389,28 @@
   th{background:#E7E0CE;font:800 11.5px/1.3 var(--f);white-space:nowrap}
   tr:last-child td{border-bottom:0}
   td.c{text-align:center;white-space:nowrap}
+  .cs2{display:flex;flex-direction:column;gap:4px;align-items:center}
   .cs{display:flex;gap:4px;justify-content:center}
+  .cs.adv i{width:20px;height:18px;border-radius:5px;font-size:10px;
+    background:#EFE4C6;color:#8A6A0E}
+  .cs.adv i.ok{background:#C9A227;color:#fff}
+  .cs.adv i.try{background:#F3D7D2;color:#8E2A22}
   .cs i{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
     border-radius:6px;background:#E9E1CC;color:#8A8271;font:800 11px/1 var(--f);font-style:normal}
   .cs i.ok{background:var(--ok);color:#fff}
   .cs i.try{background:#F3D7D2;color:#8E2A22}
-  .thumb{display:inline-block;width:62px;height:44px;background:#fff;
+  .thumb{display:inline-block;width:66px;height:47px;background:#fff;
     border:1px solid var(--rule);border-radius:5px;overflow:hidden;vertical-align:middle;
     margin:1px;line-height:0}
-  .thumb svg{width:62px;height:44px}
-  td .thumbs{display:flex;gap:3px;flex-wrap:wrap;max-width:210px}
+  .thumb svg{width:66px;height:47px}
+  td .thumbs{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+  table.tt{table-layout:fixed}
+  table.tt td{overflow:hidden}
+  table.tt td.c{overflow:visible}
+  td.nw{white-space:nowrap;text-overflow:ellipsis}
+  td.nick{font-weight:800}
+  td .rk{display:block;font:800 12.5px/1.3 var(--f)}
+  td .rk+small{display:block;margin-top:2px;font:700 11px/1 var(--f);color:#8A8271}
   td.memo{white-space:nowrap}
   .mv{width:28px;height:28px;border-radius:7px;cursor:pointer;border:1.6px solid var(--rule);
     background:#fff;color:var(--soft);font:900 14px/1 var(--f)}
@@ -388,11 +418,31 @@
   .flag{width:26px;height:26px;border-radius:7px;cursor:pointer;border:1.6px solid var(--rule);
     background:#fff;color:#B4AC9A;font:900 13px/1 var(--f);vertical-align:middle;margin-right:5px}
   .flag.on{background:var(--red);border-color:var(--red);color:#fff}
-  .note{width:170px;padding:6px 8px;border-radius:7px;border:1.6px solid var(--rule);
+  .note{width:138px;padding:6px 8px;border-radius:7px;border:1.6px solid var(--rule);
     background:#fff;font:700 12px/1.4 var(--f);color:var(--ink);vertical-align:middle}
   .note:focus{outline:none;border-color:var(--gold);background:#FFFCF4}
+  tr.row{cursor:pointer}
+  tr.row:hover td{background:#F4EEDC}
+  tr.row:focus{outline:none}
+  tr.row:focus td{background:#F4EEDC;box-shadow:inset 0 0 0 1.5px var(--gold)}
   tr.needhelp td{background:#FBF0EE}
+  tr.needhelp.row:hover td{background:#F6E4E0}
   tr.needhelp td:first-child{box-shadow:inset 4px 0 0 var(--red)}
+  .dtop{display:flex;gap:14px;align-items:flex-start;background:#fff;
+    border:2px solid var(--rule);border-radius:11px;padding:13px 15px;margin-bottom:15px}
+  .dtop .ph{flex:0 0 auto;border:2px solid var(--rule);border-radius:7px;overflow:hidden;
+    line-height:0;background:#EFE9DB}
+  .dtt{flex:1;min-width:0}
+  .dtt .cs{justify-content:flex-start;margin-bottom:9px}
+  .dtt p{margin:0;font:700 12.5px/1.8 var(--f)}
+  .dtt .dnote2{margin-top:9px;padding:8px 11px;border-radius:8px;background:#FBF0EE;
+    border-left:4px solid var(--red);font:800 12.5px/1.6 var(--f);color:#7E251E}
+  .dthumbs{flex:0 0 auto;display:flex;flex-direction:column;gap:5px}
+  .dth{margin:0 0 10px;font:900 13px/1 var(--f);color:var(--soft)}
+  td.bdgn b{font:900 15px/1 var(--f)}
+  td.bdgn small{display:block;margin-top:2px;font:700 10.5px/1 var(--f);color:#8A8271}
+  .thint{margin:12px 0 0;font:700 11.5px/1.7 var(--f);color:#9A9484}
+  .thint b{color:#C9C2B0}
   .none{padding:36px 0;text-align:center;font:800 13.5px/1.8 var(--f);color:#9A9484}
 
   /* 진술 먼저 보여 주기 */
@@ -437,7 +487,7 @@
    사건 파일 · 감식반 — 독립 앱
    ══════════════════════════════════════════════════════ */
 const DB="https://jak-do-default-rtdb.asia-southeast1.firebasedatabase.app", TKEY="gamsik";
-const VER="사건 파일 v16 · 2026-09-09";
+const VER="사건 파일 v24 · 2026-09-09";
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>
   ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -653,6 +703,73 @@ function condOK(cond,t){
   return false;
 }
 
+/* ══════════ 배지 ══════════ */
+const CLEAN=28;                                /* 깔끔한 작도 기준 */
+const anyDone=()=>CASES.some((c,i)=>stOf(i).done);
+const BADGES=[
+ {id:"reg",  ic:"신", n:"감식관 등록", col:"#1F3F94",
+  d:"신분증을 발급받았다", on:()=>!!AV.issued},
+ {id:"qual", ic:"자", n:"자격 취득", col:"#1F3F94",
+  d:"선분 옮기기와 각 옮기기를 모두 해냈다", on:()=>quDone()},
+ {id:"first",ic:"첫", n:"첫 검거", col:"#1F3F94",
+  d:"사건을 하나 종결했다", on:()=>anyDone()},
+
+ {id:"c1", ic:"1", n:"세 변의 증언", col:"#2A7148",
+  d:"사건 1 종결 — 세 변을 알면 하나로 정해진다", on:()=>stOf(0).done},
+ {id:"c2", ic:"2", n:"끼인각의 증언", col:"#2A7148",
+  d:"사건 2 종결 — 두 변과 그 사이 각", on:()=>stOf(1).done},
+ {id:"c3", ic:"3", n:"양 끝 각의 증언", col:"#2A7148",
+  d:"사건 3 종결 — 한 변과 그 양 끝 각", on:()=>stOf(2).done},
+ {id:"c4", ic:"4", n:"함정 통과", col:"#C0342A",
+  d:"사건 4 종결 — 용의자가 둘이었던 사건", on:()=>stOf(3).done},
+ {id:"c5", ic:"5", n:"무한의 발견", col:"#C0342A",
+  d:"사건 5 종결 — 크기가 정해지지 않던 사건", on:()=>stOf(4).done},
+ {id:"all",ic:"全", n:"전건 종결", col:"#C98A10",
+  d:"미해결 사건 다섯 건을 모두 해결했다", on:()=>closed()>=BASE},
+
+ {id:"a1", ic:"心", n:"뒤집힌 사건", col:"#C9A227",
+  d:"심화 1 종결 — 각이 사이에 없어도 하나로 정해지는 경우", on:()=>stOf(BASE).done},
+ {id:"a2", ic:"不", n:"불가능 보고", col:"#C9A227",
+  d:"심화 2 종결 — 삼각형이 만들어지지 않는 진술", on:()=>stOf(BASE+1).done},
+ {id:"aall",ic:"特", n:"특별 감식관", col:"#C9A227",
+  d:"심화 사건을 모두 해결했다", on:()=>closedAdv()>=advN()},
+
+ {id:"copy",ic:"길", n:"길이를 옮긴 감식관", col:"#7A3FBF",
+  d:"컴퍼스로 주어진 선분 길이를 그대로 옮겨 썼다",
+  on:()=>CASES.some((c,i)=>stOf(i).copy)},
+ {id:"ang", ic:"각", n:"각을 옮긴 감식관", col:"#7A3FBF",
+  d:"주어진 각에 호를 그려 각을 옮겨 냈다",
+  on:()=>CASES.some((c,i)=>{const t=stOf(i);return (t.arcG|0)>=1&&(t.arcW|0)>=2;})},
+ {id:"once",ic:"한", n:"한 번에 완성", col:"#0E7C8A",
+  d:"되돌리기와 처음부터를 쓰지 않고 사건을 종결했다",
+  on:()=>CASES.some((c,i)=>{const t=stOf(i);return t.done&&!(t.undos|0);})},
+ {id:"neat",ic:"깔", n:"깔끔한 작도", col:"#0E7C8A",
+  d:`사건 1~5를 모두 ${CLEAN}개 이하로 작도해 종결했다`,
+  on:()=>CASES.every((c,i)=>i>=BASE||(stOf(i).done&&(stOf(i).items|0)>0
+    &&(stOf(i).items|0)<=CLEAN))},
+
+ {id:"again",ic:"재", n:"재수사", col:"#B03A6E",
+  d:"종결한 사건을 다시 열어 작도해 냈다",
+  on:()=>CASES.some((c,i)=>(stOf(i).redo|0)>=1)},
+ {id:"both",ic:"양", n:"양손잡이 감식관", col:"#B03A6E",
+  d:"같은 사건을 다른 자리에 다시 작도해 냈다",
+  on:()=>CASES.some((c,i)=>stOf(i).tri2)},
+ {id:"reall",ic:"완", n:"완전 재수사", col:"#B03A6E",
+  d:"사건 1~5를 모두 다시 작도해 냈다",
+  on:()=>CASES.every((c,i)=>i>=BASE||(stOf(i).redo|0)>=1)}
+];
+function myBadges(){
+  const out=[];
+  for(const b of BADGES){try{if(b.on())out.push(b.id);}catch(e){}}
+  return out;
+}
+const badgeOf=id=>BADGES.filter(b=>b.id===id)[0];
+function badgeChip(b,got,big){
+  const s=big?44:34;
+  return `<span class="bdg${got?" got":""}" title="${esc(b.n)} — ${esc(b.d)}"
+    style="--bc:${b.col};--bs:${s}px"><i>${b.ic}</i><em>${esc(b.n)}</em></span>`;
+}
+
 /* ══════════ 코드네임 뽑기 ══════════ */
 const ADJ=["초록","파랑","붉은","노란","보라","하얀","검은","금빛","은빛","고요한",
   "날쌘","커다란","작은","밝은","깊은","맑은","단단한","빠른","조용한","씩씩한"];
@@ -691,7 +808,7 @@ function givenQual(k){
   return out;
 }
 function loadQual(k){
-  QI=k;items=givenQual(k);nextId=1;undo=[];pend=[];drag=null;hover=null;
+  QI=k;items=givenQual(k);nextId=1;undo=[];pend=[];drag=null;hover=null;LAST=null;MAG=null;
   TOOL="compass";KIND="segment";
   C={center:null,free:{x:230,y:330},r:110,theta:-Math.PI/2.4,flip:1,from:null};
 }
@@ -940,8 +1057,11 @@ const COLORS=[["#1F3F94","파랑"],["#C0342A","빨강"],["#2A7148","초록"],["#
 let me=LS.get("me",null);                     /* {cls,sid,nick,color} */
 let ST=LS.get("st",{});                       /* 사건별 진행 */
 const stOf=i=>ST[i]||(ST[i]={seen:false,drew:false,more:false,pick:null,tries:0,
-  done:false,tri:null,asked:[]});
-const openable=i=>(i>=BASE)?advOpen():((i===0)||stOf(i-1).done);
+  done:false,tri:null,asked:[],av:null,at:0,
+  copy:false,arcG:0,arcW:0,undos:0,items:0,redo:0,tri2:false});
+const doneUpTo=n=>{for(let k=0;k<n;k++)if(!stOf(k).done)return false;return true;};
+const openable=i=>(i>=BASE)?advOpen():(i<=2?true:doneUpTo(i));
+const needFor=i=>(i===3)?["사건 1~3","을"]:(i===4)?["사건 1~4","를"]:["다섯 건","을"];
 const saveST=()=>LS.set("st",ST);
 const BASE=5;
 const closed=()=>CASES.filter((c,i)=>i<BASE&&stOf(i).done).length;
@@ -1013,7 +1133,7 @@ function givenFor(i,more){
 function loadCase(i){
   CUR=i;
   items=givenFor(i,stOf(i).more);
-  nextId=1;undo=[];pend=[];drag=null;hover=null;MAG=null;FRESH=[];
+  nextId=1;undo=[];pend=[];drag=null;hover=null;MAG=null;FRESH=[];LAST=null;
   TOOL="compass";KIND="segment";
   C={center:null,free:{x:190,y:330},r:110,theta:-Math.PI/2.4,flip:1,from:null};
 }
@@ -1150,6 +1270,7 @@ function foundTri(){
   }
   return null;
 }
+const myCount=()=>items.filter(o=>!o.given).length;
 function drewOK(){
   const t=foundTri();if(!t)return false;
   const s=stOf(CUR), cd=(s.more&&CASES[CUR].more)?CASES[CUR].more.cond:CASES[CUR].cond;
@@ -1261,6 +1382,7 @@ function blink(){                              /* 1.4초 동안 은은하게 */
 }
 
 /* ══════════ 그리기 ══════════ */
+let LAST=null;                                 /* 마지막으로 그은 것 */
 let MAG=null;                                  /* 가까이 붙은 교점을 크게 보여 준다 */
 const MAGK=4.2, MAGR=78;
 function magFind(p){
@@ -1306,13 +1428,19 @@ function boardSVG(){
   for(const o of items){
     if(o.t!=="C")continue;
     const c=arcCenter(o);if(!c)continue;
-    g.push(arcPath(c,radOf(o),o.a0||0,(o.sw==null?6.2831:o.sw),"#C0342A",2,.78));
+    if(o.id===LAST)
+      g.push(arcPath(c,radOf(o),o.a0||0,(o.sw==null?6.2831:o.sw),"#E9A61A",8,.30));
+    g.push(arcPath(c,radOf(o),o.a0||0,(o.sw==null?6.2831:o.sw),"#C0342A",
+      o.id===LAST?2.6:2,.78));
   }
   for(const o of items){
     if(o.t!=="S")continue;
     const e=segEnds(o);if(!e)continue;
     const col=o.given?(o.name?"#5A5347":"#8A8271"):(me&&me.color)||"#1F3F94";
-    const w=o.given?(o.name?2.8:2.2):3.2;
+    const w=o.given?(o.name?2.8:2.2):(o.id===LAST?4:3.2);
+    if(o.id===LAST)g.push(`<line x1="${e[0].x.toFixed(1)}" y1="${e[0].y.toFixed(1)}"
+      x2="${e[1].x.toFixed(1)}" y2="${e[1].y.toFixed(1)}"
+      stroke="#E9A61A" stroke-width="11" stroke-linecap="round" opacity=".30"/>`);
     g.push(`<line x1="${e[0].x.toFixed(1)}" y1="${e[0].y.toFixed(1)}"
       x2="${e[1].x.toFixed(1)}" y2="${e[1].y.toFixed(1)}"
       stroke="${col}" stroke-width="${w}" stroke-linecap="round"/>`);
@@ -1349,6 +1477,8 @@ function boardSVG(){
     if(o.t!=="P"||o.hidden)continue;
     const on=pend.indexOf(o.id)>=0;
     const big=o.given&&o.y>400&&["P","B","Q","M"].indexOf(o.label)>=0;
+    if(o.id===LAST)g.push(`<circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="10"
+      fill="#E9A61A" opacity=".30"/>`);
     g.push(`<circle cx="${o.x.toFixed(1)}" cy="${o.y.toFixed(1)}" r="${on?7:(big?6:4.6)}"
       fill="${on?"#C98A10":"#241F16"}"/>`);
     if(o.label)g.push(`<text x="${(o.x+10).toFixed(1)}" y="${(o.y+(big?22:-9)).toFixed(1)}"
@@ -1460,6 +1590,7 @@ function drawReg(){
 function drawList(){
   $("app").innerHTML=head(`<button class="tb" id="hCard">신분증</button>`
     +`<button class="tb" id="hFiles">보고서 모음 ${closed()}</button>`
+    +`<button class="tb" id="hBdg">배지 ${myBadges().length}/${BADGES.length}</button>`
     +(closed()>=BASE?`<button class="tb red" id="hFin">최종 보고</button>`:""))
    +`<div class="list"><div class="lin">
     <h1>미해결 사건 목록</h1>
@@ -1471,36 +1602,36 @@ function drawList(){
     <div class="files" id="files">
       ${CASES.slice(0,BASE).map((c,i)=>{
         const s=stOf(i), can=openable(i);
-        const st=s.done?["d","검거"]:(!can?["l","잠김"]:(s.seen?["i","열람"]:["n","미열람"]));
+        const st=s.done?["d","검거"]:(!can?["l","잠김"]:(s.seen?["i","수사 중"]:["n","새 사건"]));
         return `<button type="button" class="file${s.done?" done":""}${can?"":" lock"}"
           data-f="${i}" ${can?"":"disabled"}>
           <span class="tab">${c.n}</span>
           <h4>${esc(c.label)}</h4>
-          ${s.seen
+          ${can
             ? `<p class="say2">“${c.say}”</p>`
-            : `<p class="seal">목격자 진술 ${can?"봉인":"열람 권한 없음"}</p>`}
+            : `<p class="seal">목격자 진술 · 열람 권한 없음</p>`}
           <span class="st ${st[0]}">${st[1]}</span>
           <span class="arrow">${s.done?"다시 열어 보기 →"
-            :(can?"서류철 열기 →":`사건 ${CASES[i-1].n} 를 먼저 닫아야 합니다`)}</span>
+            :(can?"서류철 열기 →":`${needFor(i)[0]}${needFor(i)[1]} 먼저 해결해야 합니다`)}</span>
         </button>`;}).join("")}
     </div>
     ${advOpen()?`<h2 class="advh">심화 사건 <em>${closedAdv()} / ${advN()}</em></h2>
-      <p class="advs">다섯 건을 모두 닫은 감식관에게만 넘어오는 사건입니다.</p>
+      <p class="advs">다섯 건을 모두 해결한 감식관에게만 넘어오는 사건입니다.</p>
       <div class="files" id="advs">
         ${CASES.map((c,i)=>({c,i})).filter(x=>x.i>=BASE).map(({c,i})=>{
           const s=stOf(i);
-          const st=s.done?["d","검거"]:(s.seen?["i","열람"]:["n","미열람"]);
+          const st=s.done?["d","검거"]:(s.seen?["i","수사 중"]:["n","새 사건"]);
           return `<button type="button" class="file adv${s.done?" done":""}" data-f="${i}">
             <span class="tab">${c.n}</span>
             <h4>${esc(c.label)}</h4>
-            ${s.seen?`<p class="say2">“${c.say}”</p>`
-              :`<p class="seal">목격자 진술 봉인</p>`}
+            <p class="say2">“${c.say}”</p>
             <span class="st ${st[0]}">${st[1]}</span>
             <span class="arrow">${s.done?"다시 열어 보기 →":"서류철 열기 →"}</span>
           </button>`;}).join("")}
       </div>`:""}
-    <p class="lfoot">사건은 <b>차례대로</b> 열립니다 ·
-      <b>몽타주를 그린 뒤 용의자를 불러 범인을 특정해야</b> 사건이 닫힙니다 ·
+    <p class="lfoot"><b>사건 1~3</b>은 처음부터 열려 있습니다 ·
+      <b>4번</b>은 1~3을, <b>5번</b>은 1~4를 해결하면 열립니다 ·
+      <b>몽타주를 그린 뒤 용의자를 불러 범인을 특정해야</b> 사건이 종결됩니다 ·
       특정할 수 없으면 <b>추가 진술</b>을 요구하세요</p>
   </div></div>`;
   const onPick=e=>{
@@ -1513,6 +1644,8 @@ function drawList(){
   if($("advs"))$("advs").addEventListener("click",onPick);
   $("hCard").onclick=()=>{SC="idcard";draw();};
   $("hFiles").onclick=()=>{SC="files";draw();};
+  $("hBdg").onclick=()=>{SC="idcard";draw();
+    setTimeout(()=>{const b=$("bdgs");if(b)b.scrollIntoView({block:"center"});},60);};
   if($("hFin"))$("hFin").onclick=()=>{SC="fin";draw();};
   setNet(NETOK);
 }
@@ -1579,6 +1712,11 @@ function drawFin(){
         <span class="bigstamp">수석<br>감식관</span>
       </div>
 
+      <h4>모은 배지</h4>
+      <div class="bdgs" style="margin-bottom:17px">${
+        (()=>{const g=myBadges();
+          return BADGES.filter(b=>g.indexOf(b.id)>=0).map(b=>badgeChip(b,true)).join("");})()}</div>
+
       <h4>수사 기록</h4>
       <table class="fintb">
         <tr><th>사건</th><th>진술</th><th class="c">몽타주</th><th>까닭</th></tr>
@@ -1640,24 +1778,27 @@ function drawFiles(){
   $("hList").onclick=()=>{SC="list";draw();};
   setNet(NETOK);
 }
-function repCard(i){
-  const c=CASES[i], s=stOf(i);
+function repCard(i,st,who){
+  const c=CASES[i], s=st||stOf(i);
+  const w=who||{nick:me.nick,col:(me&&me.color)||"#1F3F94",av:AV};
   const set=(s.more&&c.more)?c.more:c;
-  const col=(me&&me.color)||"#1F3F94";
-  const tri=(s.pick===-2)?[]:(set.sus[s.pick]||[]).map(p=>({x:p.x*U,y:p.y*U}));
+  const col=w.col||"#1F3F94";
+  const tri=(s.pick===-2)?[]:((set.sus[s.pick]||[]).map(p=>({x:p.x*U,y:p.y*U})));
   return `<div class="repmini">
     <div class="rmh"><span>사건 ${c.n}</span><i>해결</i></div>
     <div class="rmb">
-      <span class="ph">${avatarSVG(48,68,AV)}</span>
+      <span class="ph">${avatarSVG(48,68,s.av||w.av)}</span>
       <div class="rmt">
-        <b>${esc(me.nick)}</b>
+        <b>${esc(w.nick||"")}</b>
         <p>“${c.say}”</p>
         ${s.more&&c.more?`<p class="ex">“${c.more.say}”</p>`:""}
       </div>
     </div>
     <div class="rmf">${tri.length?susSVG(tri,col,72,54):""}
       <span>${s.pick===-2?"그릴 수 없음 보고":`용의자 ${s.pick+1} 검거`}${
-        s.tries?` · 시도 ${s.tries}회`:""}</span></div>
+        s.tries?` · 시도 ${s.tries}회`:""}${
+        s.at?" · "+new Date(s.at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",
+          hour:"2-digit",minute:"2-digit"}):""}</span></div>
   </div>`;
 }
 
@@ -1673,6 +1814,12 @@ function drawId(){
     <div class="idwrap">
       <div class="idcard" id="idcard"></div>
       <div class="dress" id="dress"></div>
+    </div>
+    <div class="bdgbox">
+      <h5>감식 배지 <em id="bdgN"></em></h5>
+      <p class="bh">사건을 해결하고 작도를 잘하면 배지를 받습니다.
+        흐린 배지에 손을 올리면 조건이 보입니다.</p>
+      <div class="bdgs" id="bdgs"></div>
     </div>
     <div class="fixid">
       <h5>신원 고치기</h5>
@@ -1690,7 +1837,7 @@ function drawId(){
     <button class="go" id="idGo" style="max-width:340px;margin-top:18px">
       ${first?"이 신분증으로 발급받기":"저장하고 사건 목록으로"}</button>
   </div></div>`;
-  paintCard();paintDress();
+  paintCard();paintDress();paintBadges();
   if($("hList"))$("hList").onclick=()=>{SC="list";draw();};
   $("fxGo").onclick=async()=>{
     const c=$("fxCls").value, sid=$("fxSid").value.trim();
@@ -1710,6 +1857,12 @@ function drawId(){
     toast(first?"신분증이 발급되었습니다. <b>사건 1</b>부터 시작하세요.":"저장했습니다.");
   };
   setNet(NETOK);
+}
+function paintBadges(){
+  const box=$("bdgs");if(!box)return;
+  const got=myBadges();
+  $("bdgN").textContent=`${got.length} / ${BADGES.length}`;
+  box.innerHTML=BADGES.map(b=>badgeChip(b,got.indexOf(b.id)>=0)).join("");
 }
 function paintCard(){
   const el=$("idcard");if(!el)return;
@@ -1885,30 +2038,7 @@ function drawWork(){
     </div>
   </div>`;
   $("hList").onclick=()=>{SC="list";draw();};
-  $("tools").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{
-    const k=$("kinds");
-    MAG=null;
-    if(b.dataset.t==="ruler"){
-      k.classList.remove("shut");                 /* 자를 누르면 다시 열 수 있다 */
-      if(TOOL==="ruler")k.classList.toggle("open");else k.classList.add("open");
-    }else{k.classList.remove("open");k.classList.remove("shut");}
-    TOOL=b.dataset.t;pend=[];paintBoard();paintTools();});
-  $("kinds").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
-    KIND=b.dataset.k;TOOL="ruler";pend=[];
-    const k=$("kinds");
-    k.classList.remove("open");k.classList.add("shut");   /* 고르면 닫는다 */
-    b.blur();paintBoard();paintTools();});
-  const rw=document.querySelector(".rwrap");
-  if(rw){
-    rw.addEventListener("mouseenter",()=>{           /* 올리면 늘 펼쳐진다 */
-      const k=$("kinds");if(k)k.classList.remove("shut");});
-    rw.addEventListener("mouseleave",()=>{
-      const k=$("kinds");if(k)k.classList.remove("open");});
-  }
-  $("bOpen").onclick=()=>{C.r=110;C.theta=-Math.PI/2.4;C.flip=1;C.from=null;TOOL="compass";
-    foldCompass();paintBoard();paintTools();toast("컴퍼스를 처음 크기로 되돌렸습니다.");};
-  $("bUndo").onclick=()=>{if(undo.length){restore(undo.pop());paintBoard();paintTools();refresh();}};
-  $("bClear").onclick=()=>{pushUndo();loadCase(CUR);paintBoard();paintTools();refresh();};
+  wireTools();
   $("bSus").onclick=()=>openSus();
   const b=$("board");
   b.addEventListener("pointerdown",onDown);
@@ -1941,18 +2071,45 @@ function toolCard(){
     <p class="hint" id="hint"></p>
   </div>`;
 }
+let popT=null;
+function popPlace(){
+  const b=document.querySelector(".rwrap .tool"), p=$("kinds");
+  if(!b||!p)return;
+  const r=b.getBoundingClientRect();
+  p.style.width=Math.max(126,r.width)+"px";
+  p.style.left=Math.min(window.innerWidth-142,Math.max(6,r.left))+"px";
+  const h=126;
+  p.style.top=((r.bottom+h>window.innerHeight)?Math.max(6,r.top-h-4):(r.bottom+5))+"px";
+}
+function popOpen(v){
+  const p=$("kinds");if(!p)return;
+  if(v){popPlace();p.classList.add("open");}else p.classList.remove("open");
+}
 function wireTools(){
   $("tools").querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{
-    if(b.dataset.t==="ruler"&&TOOL==="ruler")$("kinds").classList.toggle("open");
-    else $("kinds").classList.remove("open");
+    MAG=null;
+    if(b.dataset.t==="ruler")popOpen(!$("kinds").classList.contains("open"));
+    else popOpen(false);
     TOOL=b.dataset.t;pend=[];paintBoard();paintTools();});
   $("kinds").querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
     KIND=b.dataset.k;TOOL="ruler";pend=[];
-    $("kinds").classList.remove("open");paintBoard();paintTools();});
+    popOpen(false);b.blur();paintBoard();paintTools();});
+  const rw=document.querySelector(".rwrap"), pp=$("kinds");
+  if(rw&&pp){
+    const show=()=>{clearTimeout(popT);popOpen(true);};
+    const hide=()=>{clearTimeout(popT);popT=setTimeout(()=>popOpen(false),160);};
+    rw.addEventListener("mouseenter",show);
+    rw.addEventListener("mouseleave",hide);
+    pp.addEventListener("mouseenter",show);
+    pp.addEventListener("mouseleave",hide);
+  }
   $("bOpen").onclick=()=>{C.r=110;C.theta=-Math.PI/2.4;C.flip=1;C.from=null;TOOL="compass";
     foldCompass();paintBoard();paintTools();toast("컴퍼스를 처음 크기로 되돌렸습니다.");};
-  $("bUndo").onclick=()=>{if(undo.length){restore(undo.pop());paintBoard();paintTools();refresh();}};
+  $("bUndo").onclick=()=>{if(undo.length){
+    if(SC==="work"&&CUR!=null){const t=stOf(CUR);t.undos=(t.undos|0)+1;saveST();}
+    restore(undo.pop());paintBoard();paintTools();refresh();}};
   $("bClear").onclick=()=>{pushUndo();
+    if(SC==="work"&&CUR!=null){const t=stOf(CUR);t.undos=(t.undos|0)+1;saveST();}
     if(SC==="qual")loadQual(QI);else loadCase(CUR);
     paintBoard();paintTools();refresh();};
 }
@@ -1996,7 +2153,17 @@ function refresh(){
   }
   const s=stOf(CUR);
   const ok=drewOK();
-  if(ok&&!s.drew){s.drew=true;s.tri=foundTri().pts.map(p=>({x:+p.x.toFixed(1),y:+p.y.toFixed(1)}));
+  if(ok&&!s.drew){
+    s.drew=true;
+    const t0=foundTri().pts.map(p=>({x:+p.x.toFixed(1),y:+p.y.toFixed(1)}));
+    if(s.done&&s.tri){                           /* 종결한 사건을 다시 작도했다 */
+      s.redo=(s.redo|0)+1;
+      const c0=(a)=>({x:(a[0].x+a[1].x+a[2].x)/3,y:(a[0].y+a[1].y+a[2].y)/3});
+      const A=c0(s.tri),B=c0(t0);
+      if(Math.hypot(A.x-B.x,A.y-B.y)>20)s.tri2=true;
+    }else{
+      s.tri=t0;s.items=myCount();
+    }
     saveST();report();}
   const li=document.querySelectorAll(".steps li");
   if(li.length>=3){
@@ -2091,7 +2258,14 @@ function onUp(){
       toast("<b>가운데 손잡이</b>를 잡고 빙 돌리면 원이 그려집니다.");}
     else{
       const c=needle();
+      const st0=(SC==="work"&&CUR!=null)?stOf(CUR):null;
+      if(st0){
+        if(zoneOfPt(c)==="give")st0.arcG=(st0.arcG|0)+1; else st0.arcW=(st0.arcW|0)+1;
+        if(C.from)st0.copy=true;                 /* 주어진 길이를 그대로 옮겼다 */
+        saveST();
+      }
       const was=spots().map(p=>p.x.toFixed(0)+","+p.y.toFixed(0));
+      LAST="c"+nextId;
       items.push({t:"C",id:"c"+(nextId++),cid:C.center,cx:c.x,cy:c.y,
         r:C.r,a0:norm2pi(d.a0+d.lo),sw:span});
       FRESH=spots().filter(p=>was.indexOf(p.x.toFixed(0)+","+p.y.toFixed(0))<0);
@@ -2111,6 +2285,7 @@ function onDown(e){
     if(pend.length===0){pend=[h.id];paintBoard();return;}
     if(pend[0]===h.id){pend=[];paintBoard();return;}
     pushUndo();
+    LAST="s"+nextId;
     items.push({t:"S",id:"s"+(nextId++),a:pend[0],b:h.id,kind:KIND});
     pend=[];paintBoard();refresh();return;
   }
@@ -2149,18 +2324,21 @@ function onDown(e){
     }
     if(!put)return;
     pushUndo();
+    LAST="p"+nextId;
     items.push({t:"P",id:"p"+(nextId++),x:put.x,y:put.y,label:newLabel()});
     MAG=null;paintBoard();refresh();return;
   }
   if(TOOL==="erase"){
     const h=hitCurve(p);
     if(!h)return;
-    pushUndo();removeItem(h.id);paintBoard();refresh();return;
+    pushUndo();removeItem(h.id);
+    if(h.id===LAST)LAST=null;
+    paintBoard();refresh();return;
   }
 }
 
 /* ── 용의자 ── */
-let SPICK=null;
+let SPICK=null, NEWB=[];
 function openSus(){
   const c=CASES[CUR], s=stOf(CUR);
   const set=(s.more&&c.more)?c.more:c;
@@ -2203,7 +2381,9 @@ function openSus(){
   if($("vMore"))$("vMore").onclick=()=>askMore(w);
   if($("vNone"))$("vNone").onclick=()=>{
     const st=stOf(CUR);
-    st.pick=-2;st.done=true;saveST();report();
+    const b0=myBadges();
+    st.pick=-2;st.done=true;st.av=Object.assign({},AV);st.at=Date.now();saveST();report();
+    NEWB=myBadges().filter(x=>b0.indexOf(x)<0);
     w.remove();result();
   };
 }
@@ -2236,7 +2416,9 @@ function judge(w){
       +`<b>변의 길이와 각</b>을 다시 견주어 보세요.`;
     return;
   }
-  s.pick=SPICK;s.done=true;saveST();report();
+  const b0=myBadges();
+  s.pick=SPICK;s.done=true;s.av=Object.assign({},AV);s.at=Date.now();saveST();report();
+  NEWB=myBadges().filter(x=>b0.indexOf(x)<0);
   w.remove();result();
 }
 function askMore(w){
@@ -2315,11 +2497,17 @@ function result(){
     </div>
     <div class="repb">
       <div class="repwho">
-        <span class="ph">${avatarSVG(62,88,AV)}</span>
+        <span class="ph">${avatarSVG(62,88,s.av||AV)}</span>
         <span><b>${esc(me.nick)}</b>
-          <small>${esc(me.cls)} 감식반 · ${rank()} · 번호 ${esc(me.sid)}</small></span>
+          <small>${esc(me.cls)} 감식반 · 번호 ${esc(me.sid)}${
+            s.at?" · "+new Date(s.at).toLocaleString("ko-KR",{month:"numeric",day:"numeric",
+              hour:"2-digit",minute:"2-digit"}):""}</small></span>
         <span class="stamp2">사건 해결</span>
       </div>
+      ${NEWB.length?`<div class="newbdg">
+        ${NEWB.map(id=>badgeChip(badgeOf(id),true,1)).join("")}
+        <span class="t">새 배지 ${NEWB.length}개<b>${
+          NEWB.map(id=>esc(badgeOf(id).n)).join(" · ")}</b></span></div>`:""}
       <dl class="repl">
         <dt>목격자 진술</dt>
         <dd>“${c.say}”</dd>
@@ -2345,7 +2533,7 @@ function result(){
   document.body.appendChild(w);
   const all=(closed()>=BASE&&CUR<BASE);
   if(all)$("rNext").textContent="최종 보고 받기";
-  $("rNext").onclick=()=>{w.remove();SC=all?"fin":"list";draw();};
+  $("rNext").onclick=()=>{w.remove();NEWB=[];SC=all?"fin":"list";draw();};
 }
 function why(i){
   return ["세 변의 길이를 알면 삼각형은 하나로 정해집니다.",
@@ -2362,6 +2550,7 @@ async function report(){
   if(!me)return;
   const body={sid:me.sid,nick:me.nick,color:me.color,at:Date.now(),
     rank:rank(),closed:closed()+closedAdv(),qual:(QU.seg?1:0)+(QU.ang?1:0),av:AV,
+    badges:myBadges(),
     cases:CASES.map((c,i)=>{const s=stOf(i);
       return {drew:!!s.drew,more:!!s.more,pick:(s.pick==null?-1:s.pick),
         tries:s.tries|0,done:!!s.done,tri:s.tri||null};})};
@@ -2402,6 +2591,55 @@ async function saveNote(sid,obj){
   catch(e){setNet(false,"메모를 저장하지 못했습니다.");}
 }
 
+/* ── 학생 하나를 자세히 ── */
+function detailOf(sid){
+  const r=TD[sid];if(!r)return;
+  const who={nick:r.nick||sid,col:r.color||"#1F3F94",av:r.av||{}};
+  const cs=r.cases||[];
+  const done=cs.map((s,i)=>({s,i})).filter(x=>x.s&&x.s.done);
+  const w=document.createElement("div");
+  w.className="ov";w.id="dtOv";
+  w.innerHTML=`<div class="ovin" style="max-width:900px">
+    <div class="ovh">
+      <div class="no">감식반 · 감식관 기록</div>
+      <h2>${esc(sid)} ${esc(r.nick||"")}</h2>
+      <p>${esc(TCLS)} · ${esc(r.rank||"")} · 종결 ${done.length}건 ·
+        자격 ${(r.qual|0)}/2${r.help?" · <b style=\"color:#F0A79C\">도움 표시</b>":""}</p>
+    </div>
+    <div class="ovb">
+      <div class="dtop">
+        <span class="ph">${avatarSVG(76,108,r.av||{})}</span>
+        <div class="dtt">
+          <div class="cs">${CASES.map((c,i)=>{
+            const s=cs[i]||{};
+            const k=s.done?"ok":(s.tries?"try":"");
+            return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
+          <p>${CASES.map((c,i)=>{const s=cs[i]||{};
+            if(!s||(!s.done&&!s.tries&&!s.drew))return "";
+            return `<b>${c.n}</b> ${s.done?"종결":(s.drew?"작도함":"수사 중")}${
+              s.tries?` · 시도 ${s.tries}회`:""}${s.more?" · 추가 진술":""}`;
+            }).filter(Boolean).join("<br>")||"아직 기록이 없습니다."}</p>
+          ${r.note?`<p class="dnote2">선생님 메모 — ${esc(r.note)}</p>`:""}
+        </div>
+        <div class="dthumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
+          if(!s.tri)return "";
+          return `<span class="thumb" title="${esc(c.label)} 작도">${
+            susSVG(s.tri,who.col,62,44)}</span>`;}).join("")}</div>
+      </div>
+      <h4 class="dth">모은 배지 ${(r.badges||[]).length} / ${BADGES.length}</h4>
+      <div class="bdgs" style="margin-bottom:16px">${BADGES.map(b=>
+        badgeChip(b,(r.badges||[]).indexOf(b.id)>=0)).join("")}</div>
+      <h4 class="dth">수사 보고서 ${done.length}건</h4>
+      ${done.length?`<div class="repgrid">${done.map(x=>repCard(x.i,x.s,who)).join("")}</div>`
+        :`<p class="none">아직 종결한 사건이 없습니다.</p>`}
+      <div class="ovacts"><button class="ghost" id="dtClose">닫기</button></div>
+    </div>
+  </div>`;
+  document.body.appendChild(w);
+  $("dtClose").onclick=()=>w.remove();
+  w.addEventListener("click",e=>{if(e.target===w)w.remove();});
+}
+
 /* ══════════ 교사 화면 ══════════ */
 let TD={},TCLS=LS.get("tcls","1-1");
 async function tPull(force){
@@ -2437,7 +2675,11 @@ function drawTeach(){
           style="border-color:#D9B4AD;background:#FBF4F2"><b style="color:#8E2A22">도움 표시</b>
           <i style="color:#8E2A22">${rows.filter(r=>r.help).length}<small> 명</small></i></div>`:""}
       </div>
-      ${rows.length?tTable(rows):`<p class="none">아직 등록한 학생이 없습니다.<br>
+      ${rows.length?tTable(rows)
+        +`<p class="thint"><b>줄을 누르면</b> 그 학생의 수사 보고서를 볼 수 있습니다 ·
+          <b>⚑</b> 도움 표시 · <b>⇄</b> 반 옮기기 ·
+          사건 칸은 위가 <b>1~5</b>, 아래가 <b>심화 6~7</b></p>`
+        :`<p class="none">아직 등록한 학생이 없습니다.<br>
         학생이 신원을 등록하면 여기에 나타납니다.</p>`}
     </div></div>`;
   $("tCls").onchange=()=>{TCLS=$("tCls").value;LS.set("tcls",TCLS);tPull();};
@@ -2449,6 +2691,19 @@ function drawTeach(){
   document.querySelectorAll("[data-mv]").forEach(b=>{
     b.onclick=()=>moveOne(b.dataset.mv);
   });
+  const tb=document.querySelector(".tw table");
+  if(tb){
+    tb.addEventListener("click",e=>{
+      if(e.target.closest("input,button,select,textarea"))return;  /* 메모·단추는 그대로 */
+      const tr=e.target.closest("[data-row]");
+      if(tr)detailOf(tr.dataset.row);
+    });
+    tb.addEventListener("keydown",e=>{
+      if(e.key!=="Enter"&&e.key!==" ")return;
+      const tr=e.target.closest&&e.target.closest("[data-row]");
+      if(tr){e.preventDefault();detailOf(tr.dataset.row);}
+    });
+  }
   document.querySelectorAll("[data-h]").forEach(b=>{
     b.onclick=()=>{
       const sid=b.dataset.h, on=!b.classList.contains("on");
@@ -2464,49 +2719,67 @@ function drawTeach(){
   setNet(NETOK);
 }
 function tTable(rows){
-  let h=`<table><tr><th>학번</th><th>코드네임</th><th>계급</th>
-    <th class="c">자격</th><th class="c">사건별 상태</th><th class="c">고른 용의자</th>
-    <th class="c">작도한 몽타주</th><th class="c">반 옮기기</th>
-    <th style="width:210px">선생님 메모</th>
-    <th>마지막</th></tr>`;
+  let h=`<table class="tt"><tr>
+    <th style="width:66px">학번</th>
+    <th style="width:114px">코드네임</th>
+    <th style="width:92px">계급</th>
+    <th class="c" style="width:52px">자격</th>
+    <th class="c" style="width:88px">사건별 상태</th>
+    <th class="c" style="width:62px">배지</th>
+    <th class="c">작도한 몽타주</th>
+    <th class="c" style="width:44px">옮기기</th>
+    <th style="width:180px">선생님 메모</th>
+    <th style="width:62px">마지막</th></tr>`;
   for(const r of rows){
     const cs=(r.cases||[]);
-    h+=`<tr class="${r.help?"needhelp":""}">
-      <td><b>${esc(r.sid)}</b></td>
-      <td>${esc(r.nick||"")}</td>
-      <td>${esc(r.rank||"")} <small style="color:#8A8271">${r.closed|0}/5</small></td>
+    h+=`<tr class="row${r.help?" needhelp":""}" data-row="${esc(r.sid)}"
+      tabindex="0" title="누르면 상세보기">
+      <td class="nw"><b>${esc(r.sid)}</b></td>
+      <td class="nw nick">${esc(r.nick||"")}</td>
+      <td class="nw"><b class="rk">${esc(r.rank||"")}</b>
+        <small>${r.closed|0} / ${CASES.length}</small></td>
       <td class="c"><div class="cs">${[0,1].map(k=>
         `<i class="${(r.qual|0)>k?"ok":""}">${k+1}</i>`).join("")}</div></td>
-      <td class="c"><div class="cs">${CASES.map((c,i)=>{
-        const s=cs[i]||{};
-        const k=s.done?"ok":(s.tries?"try":"");
-        return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div></td>
-      <td class="c">${CASES.map((c,i)=>{const s=cs[i]||{};
-        return (s.pick!=null&&s.pick>=0)?(i+1)+"→"+(s.pick+1):"";}).filter(Boolean).join(" ")||"—"}</td>
+      <td class="c bdgn">${(r.badges||[]).length
+        ?`<b>${(r.badges||[]).length}</b><small>/ ${BADGES.length}</small>`:"—"}</td>
+      <td class="c"><div class="cs2">
+        <div class="cs">${CASES.slice(0,BASE).map((c,i)=>{
+          const s=cs[i]||{};
+          const k=s.done?"ok":(s.tries?"try":"");
+          return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
+        <div class="cs adv">${CASES.map((c,i)=>({c,i})).filter(x=>x.i>=BASE).map(({c,i})=>{
+          const s=cs[i]||{};
+          const k=s.done?"ok":(s.tries?"try":"");
+          return `<i class="${k}" title="${esc(c.label)}">${i+1}</i>`;}).join("")}</div>
+      </div></td>
       <td class="c"><div class="thumbs">${CASES.map((c,i)=>{const s=cs[i]||{};
         if(!s.tri)return "";
         return `<span class="thumb" title="${esc(c.label)}">${
-          susSVG(s.tri,r.color||"#1F3F94",62,44)}</span>`;}).join("")||"—"}</div></td>
-      <td class="c"><button class="mv" data-mv="${esc(r.sid)}" title="다른 반으로 옮기기">⇄</button></td>
+          susSVG(s.tri,r.color||"#1F3F94",66,47)}</span>`;}).join("")||"—"}</div></td>
+      <td class="c"><button class="mv" data-mv="${esc(r.sid)}"
+        title="다른 반으로 옮기기">⇄</button></td>
       <td class="memo">
         <button class="flag${r.help?" on":""}" data-h="${esc(r.sid)}"
           title="작도 절차 도움이 필요한 학생">⚑</button>
         <input class="note" data-n="${esc(r.sid)}" value="${esc(r.note||"")}"
           placeholder="메모 (예: 컴퍼스 옮기기 도움)">
       </td>
-      <td>${r.at?new Date(r.at).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}):"—"}</td>
+      <td class="nw">${r.at?new Date(r.at).toLocaleTimeString("ko-KR",
+        {hour:"2-digit",minute:"2-digit"}):"—"}</td>
     </tr>`;
   }
   return h+`</table>`;
 }
 function tCsv(rows){
   const head=["학번","코드네임","계급","검거","사건별 종결","고른 용의자","특정 실패 횟수",
-    "도움 표시","선생님 메모"];
+    "배지 수","배지 목록","도움 표시","선생님 메모"];
   const body=rows.map(r=>{const cs=r.cases||[];
     return [r.sid,r.nick,r.rank,r.closed,
       cs.map((s,i)=>s.done?(i+1):"").filter(Boolean).join(" "),
       cs.map((s,i)=>(s.pick!=null&&s.pick>=0)?`${i+1}->${s.pick+1}`:"").filter(Boolean).join(" "),
       cs.map(s=>s.tries|0).join(" "),
+      (r.badges||[]).length,
+      (r.badges||[]).map(id=>(badgeOf(id)||{}).n||id).join(" "),
       r.help?"O":"",r.note||""];});
   const csv=[head].concat(body).map(x=>x.map(v=>`"${String(v==null?"":v).replace(/"/g,'""')}"`)
     .join(",")).join("\n");
@@ -2519,9 +2792,11 @@ function tCsv(rows){
 /* 선택 창 밖을 누르면 닫는다 */
 document.addEventListener("pointerdown",e=>{
   const k=$("kinds");if(!k)return;
-  if(e.target.closest(".rwrap"))return;
-  k.classList.remove("open");k.classList.add("shut");
+  if(e.target.closest(".rwrap")||e.target.closest("#kinds"))return;
+  k.classList.remove("open");
 },true);
+window.addEventListener("resize",()=>popOpen(false));
+window.addEventListener("scroll",()=>popOpen(false),true);
 
 /* ══════════ 시작 ══════════ */
 const qp=new URLSearchParams(location.search);
