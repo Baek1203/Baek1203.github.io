@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>숫자 지그소</title>
+<style>
+  :root{
+    --ink:#0E1621; --panel:#16212F; --panel-2:#1E2C3D; --line:#2C3E54;
+    --paper:#FFFFFF; --seg:#101820;
+    --amber:#FAC029; --amber-dim:#8A6A16;
+    --ok:#31C06B; --no:#F0604D;
+    --text:#E8EEF6; --muted:#8FA3BC;
+    --cell:96px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:radial-gradient(1200px 700px at 50% -10%, #1D2B3D 0%, transparent 70%), var(--ink);
+    color:var(--text);
+    font-family:'Pretendard','Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,-apple-system,sans-serif;
+    display:flex;flex-direction:column;overflow:hidden;user-select:none;
+  }
+
+  header{
+    flex:0 0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:11px clamp(14px,3vw,32px) 9px;border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex;align-items:baseline;gap:9px}
+  .brand h1{margin:0;font-size:clamp(15px,1.5vw,19px);font-weight:800;letter-spacing:-.01em;white-space:nowrap}
+  .brand span{color:var(--muted);font-size:12px;white-space:nowrap}
+
+  .who{display:flex;align-items:center;gap:7px}
+  .who label{color:var(--muted);font-size:12px;white-space:nowrap}
+  .who input{
+    width:120px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    color:var(--text);font:inherit;font-size:13px;padding:7px 10px;
+  }
+  .who input:focus{outline:none;border-color:var(--amber)}
+  #warn{color:var(--no);font-size:11.5px;max-width:190px;line-height:1.35}
+
+  .levels{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+  .lv{
+    appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    font:inherit;font-weight:700;font-size:13px;padding:8px 13px;border-radius:8px;cursor:pointer;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .lv:hover{border-color:var(--amber-dim);color:var(--text)}
+  .lv[aria-current="true"]{background:var(--amber);border-color:var(--amber);color:#20180A}
+  .lv .cnt{margin-left:7px;font-size:11px;font-weight:700;opacity:.8}
+  .lv.allDone{border-color:var(--ok)}
+  .lv.allDone .cnt{color:var(--ok)}
+  .lv.allDone[aria-current="true"] .cnt{color:#06240F}
+
+  .subbar{
+    flex:0 0 auto;display:flex;align-items:center;gap:12px;
+    padding:9px clamp(14px,3vw,32px);border-bottom:1px solid var(--line);
+    overflow-x:auto;scrollbar-width:thin;
+  }
+  .subbar .note{color:var(--muted);font-size:12.5px;white-space:nowrap}
+  .chips{display:flex;gap:5px}
+  .chip{
+    appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    font:inherit;font-weight:700;font-size:13px;min-width:34px;height:32px;padding:0 9px;
+    border-radius:7px;cursor:pointer;white-space:nowrap;
+    transition:background .15s,color .15s,border-color .15s;
+  }
+  .chip:hover{border-color:var(--amber-dim);color:var(--text)}
+  .chip[aria-current="true"]{background:var(--amber);border-color:var(--amber);color:#20180A}
+  .chip.done{background:rgba(49,192,107,.16);border-color:var(--ok);color:#BDF2D3}
+  .chip.done::after{content:'✓';margin-left:5px;font-size:11px;opacity:.9}
+  .chip.done[aria-current="true"]{background:var(--ok);border-color:var(--ok);color:#06240F}
+
+  main{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 14px;position:relative}
+  .stage{display:flex;align-items:flex-start;gap:12px}
+  .lamps{display:flex;flex-direction:column}
+  .lamp{height:var(--cell);width:30px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:transparent;transition:color .2s}
+  .lamp.ok{color:var(--ok)}
+  .lamp.no{color:var(--no)}
+
+  #board{position:relative;touch-action:none}
+  .strip{
+    position:absolute;top:0;left:0;width:var(--cell);
+    background:var(--paper);border-radius:9px;
+    box-shadow:0 2px 0 rgba(0,0,0,.35), 0 10px 22px rgba(0,0,0,.38);
+    cursor:grab;overflow:hidden;will-change:transform;
+    transition:transform .26s cubic-bezier(.2,.8,.25,1), box-shadow .18s;
+  }
+  .strip:focus-visible{outline:3px solid var(--amber);outline-offset:3px}
+  .strip.dragging{cursor:grabbing;z-index:30;transition:none;box-shadow:0 8px 0 rgba(0,0,0,.3), 0 26px 44px rgba(0,0,0,.5)}
+  .strip.sel{box-shadow:0 0 0 3px var(--amber), 0 10px 22px rgba(0,0,0,.4)}
+  .strip.bad{box-shadow:0 0 0 3px var(--no), 0 10px 22px rgba(0,0,0,.4)}
+  .cell{width:var(--cell);height:var(--cell);display:block;border-bottom:1px solid #D8DEE6}
+  .cell:last-child{border-bottom:0}
+  .cell svg{display:block;width:100%;height:100%}
+  .cell svg rect,.cell svg circle{fill:var(--seg)}
+  .cell svg line{stroke:var(--seg);fill:none}
+
+  .solved #board .strip{box-shadow:0 0 0 3px var(--amber), 0 12px 26px rgba(250,192,41,.22)}
+  .banner{
+    position:absolute;left:50%;top:2px;transform:translateX(-50%) translateY(-14px);
+    background:var(--amber);color:#20180A;font-weight:800;font-size:15px;padding:9px 20px;border-radius:999px;
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;
+  }
+  .solved .banner{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  footer{flex:0 0 auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:11px clamp(14px,3vw,32px);border-top:1px solid var(--line)}
+  .btn{
+    appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--text);
+    font:inherit;font-size:14px;font-weight:600;padding:10px 16px;border-radius:9px;cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s,transform .1s;
+  }
+  .btn:hover{background:var(--panel-2);border-color:var(--amber-dim)}
+  .btn:active{transform:translateY(1px)}
+  .btn.primary{background:var(--amber);border-color:var(--amber);color:#20180A}
+  .btn.primary:hover{background:#FFCF48}
+  .btn.ghost{background:transparent}
+  .btn.armed{border-color:var(--no);color:var(--no)}
+  .help{margin-left:auto;color:var(--muted);font-size:12.5px;line-height:1.55;text-align:right}
+  .help kbd{background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;font:inherit;font-size:11.5px;color:var(--text)}
+
+  @media (max-width:900px){ .help{display:none} .levels{margin-left:0} }
+  @media (prefers-reduced-motion:reduce){ *{transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><h1>숫자 지그소</h1><span id="lvNote">연습</span></div>
+  <div class="who">
+    <label for="who">모둠 / 이름</label>
+    <input id="who" type="text" maxlength="14" placeholder="예: 3모둠" autocomplete="off">
+    <span id="warn" hidden>이 기기에는 기록이 저장되지 않습니다</span>
+  </div>
+  <nav class="levels" id="levels" aria-label="레벨 선택"></nav>
+</header>
+
+<div class="subbar">
+  <span class="note">문제</span>
+  <div class="chips" id="chips" aria-label="문제 선택"></div>
+</div>
+
+<main>
+  <div class="stage">
+    <div class="lamps" id="lamps"></div>
+    <div id="board"></div>
+  </div>
+  <div class="banner" id="banner">완성했습니다</div>
+</main>
+
+<footer>
+  <button class="btn primary" id="bCheck">확인하기</button>
+  <button class="btn" id="bRotate">선택한 막대 돌리기</button>
+  <button class="btn" id="bShuffle">다시 섞기</button>
+  <button class="btn ghost" id="bReset">처음으로</button>
+  <button class="btn ghost" id="bWipe">기록 지우기</button>
+  <div class="help">
+    막대를 <b>끌어서</b> 순서를 바꾸고, <b>오른쪽 클릭</b>으로 180도 돌립니다.<br>
+    <kbd>←</kbd><kbd>→</kbd> 막대 선택 · <kbd>Shift</kbd>+<kbd>←</kbd><kbd>→</kbd> 막대 옮기기 · <kbd>R</kbd> 돌리기 · <kbd>[</kbd><kbd>]</kbd> 문제 이동
+  </div>
+</footer>
+
+<script>
+const LEVELS = [
+{"key":"0","label":"level 0","note":"연습","items":[
+  {"id":"예시","rows":3,"strips":[["1","9","9"],["=","-","="],["+","=","-"],["9","8","1"],["5","2","5"]],"solution":[["1","=","6","-","5"],["8","-","6","=","2"],["6","=","1","+","5"]],"label":"규칙 안내 예시"},
+  {"id":1,"rows":3,"strips":[["=","+","="],["+","=","-"],["9","5","1"],["8","6","9"],["1","1","8"]],"solution":[["8","+","1","=","9"],["6","=","1","+","5"],["9","-","8","=","1"]]},
+  {"id":2,"rows":3,"strips":[["=","+","="],["8","1","6"],["-","=","-"],["6","8","5"],["2","9","1"]],"solution":[["6","=","8","-","2"],["8","+","1","=","9"],["5","=","6","-","1"]]},
+  {"id":3,"rows":3,"strips":[["2","8","6"],["+","=","+"],["=","-","="],["1","1","2"],["0","6","8"]],"solution":[["1","+","8","=","9"],["1","=","9","-","8"],["2","+","0","=","2"]]},
+  {"id":4,"rows":3,"strips":[["=","=","+"],["6","6","1"],["5","1","1"],["=","-","+"],["1","5","2"]],"solution":[["6","=","5","+","1"],["6","-","1","=","5"],["1","+","1","=","2"]]},
+  {"id":5,"rows":4,"strips":[["=","=","=","-"],["8","8","6","5"],["1","8","0","5"],["6","0","6","0"],["+","+","+","="]],"solution":[["5","+","0","=","5"],["0","+","9","=","9"],["8","+","0","=","8"],["1","=","9","-","8"]]},
+  {"id":6,"rows":4,"strips":[["+","=","=","="],["9","1","8","1"],["5","1","5","1"],["+","-","-","="],["8","6","9","6"]],"solution":[["8","+","1","=","9"],["6","-","5","=","1"],["9","-","1","=","8"],["6","=","5","+","1"]]}
+]},
+{"key":"1","label":"level 1","note":"한 자리 수 · + −","items":[
+  {"id":1,"rows":4,"strips":[["8","9","9","2"],["=","=","-","-"],["=","=","-","+"],["9","2","5","1"],["1","1","8","2"]],"solution":[["2","-","1","=","1"],["6","-","1","=","5"],["6","=","8","-","2"],["8","=","2","+","6"]]},
+  {"id":2,"rows":4,"strips":[["8","9","1","2"],["=","=","-","+"],["+","-","=","="],["1","2","8","0"],["1","1","1","8"]],"solution":[["8","+","0","=","8"],["9","-","8","=","1"],["1","=","2","-","1"],["2","=","1","+","1"]]},
+  {"id":3,"rows":4,"strips":[["=","+","=","="],["+","=","+","-"],["2","8","8","2"],["2","1","2","8"],["6","6","9","0"]],"solution":[["2","=","8","-","6"],["8","=","2","+","6"],["8","+","1","=","9"],["2","=","2","+","0"]]},
+  {"id":4,"rows":4,"strips":[["8","5","2","1"],["2","1","0","8"],["=","=","-","="],["9","2","6","6"],["+","+","=","-"]],"solution":[["9","=","1","+","8"],["2","=","2","+","0"],["6","-","5","=","1"],["6","=","8","-","2"]]},
+  {"id":5,"rows":4,"strips":[["-","=","=","="],["5","1","5","1"],["=","+","-","+"],["0","2","1","8"],["5","1","9","6"]],"solution":[["9","-","8","=","1"],["6","=","1","+","5"],["1","=","2","-","1"],["5","=","0","+","5"]]},
+  {"id":6,"rows":4,"strips":[["+","+","=","-"],["1","2","0","8"],["=","=","-","="],["1","5","1","6"],["8","1","5","9"]],"solution":[["9","-","1","=","8"],["1","=","2","-","1"],["5","+","0","=","5"],["1","+","8","=","9"]]},
+  {"id":7,"rows":4,"strips":[["2","5","6","1"],["-","=","+","="],["6","5","5","1"],["=","-","=","-"],["8","1","0","1"]],"solution":[["2","-","1","=","1"],["5","=","5","+","0"],["6","-","5","=","1"],["1","=","9","-","8"]]},
+  {"id":8,"rows":4,"strips":[["9","1","9","9"],["8","6","9","8"],["+","=","=","="],["2","0","8","2"],["-","+","-","="]],"solution":[["8","-","2","=","6"],["6","+","0","=","6"],["9","-","8","=","1"],["8","=","2","+","6"]]},
+  {"id":9,"rows":4,"strips":[["2","1","2","1"],["8","1","5","0"],["+","+","=","="],["2","9","1","6"],["=","=","+","-"]],"solution":[["9","-","8","=","1"],["1","+","1","=","2"],["6","=","5","+","1"],["2","=","0","+","2"]]},
+  {"id":10,"rows":4,"strips":[["6","9","1","2"],["=","=","-","-"],["1","1","6","6"],["=","=","+","-"],["8","5","8","5"]],"solution":[["5","=","6","-","1"],["8","=","9","-","1"],["5","+","1","=","6"],["8","-","2","=","6"]]},
+  {"id":11,"rows":4,"strips":[["=","-","+","+"],["1","2","0","9"],["6","1","1","8"],["-","=","=","="],["6","1","1","0"]],"solution":[["6","+","0","=","6"],["0","+","1","=","1"],["2","-","1","=","1"],["1","=","9","-","8"]]},
+  {"id":12,"rows":4,"strips":[["5","2","6","1"],["-","=","+","="],["2","1","6","1"],["-","=","+","="],["1","8","8","6"]],"solution":[["1","=","2","-","1"],["8","+","1","=","9"],["8","=","6","+","2"],["6","-","1","=","5"]]}
+]},
+{"key":"2","label":"level 2","note":"두 자리 수 · + − × ÷","items":[
+  {"id":1,"rows":4,"strips":[["1","1","8","6"],["1","1","=","="],["=","=","8","0"],["8","2","2","6"],["-","/","*","+"],["2","9","6","2"]],"solution":[["1","0","=","2","+","8"],["1","8","=","9","*","2"],["8","=","1","6","/","2"],["6","=","1","2","-","6"]]},
+  {"id":2,"rows":4,"strips":[["2","5","5","5"],["+","+","-","*"],["=","1","=","="],["0","1","=","9"],["1","5","1","1"],["5","9","0","8"]],"solution":[["1","6","=","8","*","2"],["5","=","1","0","-","5"],["1","1","=","6","+","5"],["1","0","=","5","+","5"]]},
+  {"id":3,"rows":4,"strips":[["/","=","2","+"],["=","5","-","1"],["6","6","=","9"],["2","5","5","8"],["=","1","*","1"],["2","1","5","1"]],"solution":[["2","=","1","6","/","8"],["1","1","-","6","=","5"],["5","*","5","=","2","5"],["1","1","=","9","+","2"]]},
+  {"id":4,"rows":4,"strips":[["2","1","5","9"],["=","*","+","="],["6","0","5","6"],["-","1","2","-"],["5","=","=","1"],["1","6","5","1"]],"solution":[["6","=","1","5","-","9"],["5","*","5","=","2","5"],["1","+","9","=","1","0"],["2","=","1","1","-","9"]]},
+  {"id":5,"rows":4,"strips":[["2","0","=","+"],["9","6","1","1"],["2","1","0","="],["*","+","-","1"],["=","=","1","6"],["2","9","1","1"]],"solution":[["2","+","9","=","1","1"],["9","=","1","0","-","1"],["1","0","=","1","+","9"],["1","2","=","2","*","6"]]},
+  {"id":6,"rows":4,"strips":[["5","1","2","1"],["0","6","0","6"],["=","5","=","1"],["1","=","1","="],["5","8","6","2"],["+","-","+","/"]],"solution":[["5","=","1","0","/","2"],["1","5","=","6","+","9"],["2","=","1","0","-","8"],["1","1","=","6","+","5"]]},
+  {"id":7,"rows":4,"strips":[["2","5","9","5"],["=","*","5","0"],["1","8","/","-"],["-","1","=","="],["1","=","5","8"],["6","2","2","1"]],"solution":[["6","=","1","1","-","5"],["2","*","8","=","1","6"],["2","5","/","5","=","5"],["1","0","-","8","=","2"]]},
+  {"id":8,"rows":4,"strips":[["=","=","=","9"],["-","/","-","+"],["=","1","1","1"],["1","0","5","8"],["6","2","6","8"],["2","5","9","1"]],"solution":[["1","6","=","8","+","8"],["6","=","1","5","-","9"],["5","=","1","0","/","2"],["2","=","1","1","-","9"]]},
+  {"id":9,"rows":4,"strips":[["6","5","2","2"],["9","2","6","="],["2","/","/","="],["5","0","2","*"],["9","1","1","1"],["1","=","=","+"]],"solution":[["1","5","=","9","+","6"],["1","0","/","2","=","5"],["1","2","/","6","=","2"],["6","*","2","=","1","2"]]},
+  {"id":10,"rows":4,"strips":[["1","1","9","1"],["=","0","+","8"],["*","1","+","-"],["2","1","5","9"],["9","=","5","0"],["=","5","=","1"]],"solution":[["1","8","=","9","*","2"],["6","+","5","=","1","1"],["1","0","=","5","+","5"],["1","=","1","0","-","9"]]},
+  {"id":11,"rows":4,"strips":[["1","5","1","1"],["8","=","6","0"],["+","*","-","="],["9","1","2","8"],["9","6","8","2"],["-","1","=","="]],"solution":[["1","8","-","9","=","9"],["5","=","1","1","-","6"],["1","6","=","2","*","8"],["1","0","=","8","+","2"]]},
+  {"id":12,"rows":4,"strips":[["1","1","6","1"],["=","=","1","="],["8","1","*","0"],["2","=","5","9"],["8","8","6","9"],["-","-","2","-"]],"solution":[["1","0","-","2","=","8"],["9","*","2","=","1","8"],["1","1","-","5","=","6"],["1","8","-","9","=","9"]]}
+]},
+{"key":"3","label":"level 3","note":"7칸 · + − × ÷","items":[
+  {"id":1,"rows":4,"strips":[["1","6","1","8"],["2","9","6","2"],["6","-","8","1"],["/","8","=","+"],["9","+","2","1"],["=","=","1","="],["6","5","5","9"]],"solution":[["6","1","+","1","=","6","2"],["5","2","=","6","1","-","9"],["5","+","8","1","=","8","6"],["9","6","/","8","=","1","2"]]},
+  {"id":2,"rows":4,"strips":[["9","2","9","5"],["6","-","2","="],["9","=","5","="],["8","+","=","5"],["-","0","2","+"],["5","2","+","1"],["6","2","6","8"]],"solution":[["9","=","9","5","-","8","6"],["2","2","=","2","0","+","2"],["9","-","5","+","2","=","6"],["5","9","=","1","+","5","8"]]},
+  {"id":3,"rows":4,"strips":[["9","8","8","9"],["+","-","9","1"],["-","=","1","0"],["6","0","6","6"],["=","=","9","1"],["5","9","+","="],["0","8","2","5"]],"solution":[["9","5","=","9","0","+","5"],["8","9","=","9","1","-","2"],["8","+","9","0","=","9","8"],["9","=","1","9","-","1","0"]]},
+  {"id":4,"rows":4,"strips":[["-","0","5","*"],["1","6","-","5"],["5","6","2","5"],["=","6","=","2"],["=","8","+","5"],["6","8","6","1"],["1","=","+","1"]],"solution":[["5","=","2","1","-","1","6"],["6","8","=","6","0","+","8"],["2","+","9","-","5","=","6"],["5","5","=","5","*","1","1"]]},
+  {"id":5,"rows":4,"strips":[["+","0","9","0"],["9","6","=","8"],["5","-","5","5"],["8","5","9","6"],["8","+","-","+"],["=","=","2","="],["5","9","5","9"]],"solution":[["9","5","=","9","+","8","6"],["6","5","=","6","0","+","5"],["5","-","2","=","9","-","6"],["8","5","=","8","0","+","5"]]},
+  {"id":6,"rows":4,"strips":[["-","=","-","5"],["-","5","=","+"],["9","5","1","="],["8","+","2","="],["5","-","2","9"],["9","8","2","9"],["9","9","0","2"]],"solution":[["9","5","=","8","6","+","9"],["8","-","1","+","2","=","9"],["2","=","5","2","-","5","0"],["9","-","6","=","5","-","2"]]},
+  {"id":7,"rows":4,"strips":[["2","9","+","0"],["-","9","=","-"],["1","5","0","0"],["5","1","+","="],["1","=","6","2"],["5","1","1","2"],["=","+","2","9"]],"solution":[["5","2","-","2","=","5","0"],["1","9","=","9","+","1","0"],["1","+","6","=","2","+","5"],["2","0","-","1","9","=","1"]]},
+  {"id":8,"rows":4,"strips":[["6","=","+","="],["2","2","2","5"],["-","0","=","+"],["=","8","8","5"],["9","9","-","9"],["0","0","2","0"],["9","5","1","2"]],"solution":[["2","=","6","2","-","6","0"],["1","8","=","2","0","-","2"],["5","8","+","2","=","6","0"],["6","5","=","5","+","6","0"]]},
+  {"id":9,"rows":4,"strips":[["=","=","6","5"],["2","8","5","+"],["2","2","5","1"],["2","6","6","1"],["=","1","2","6"],["1","-","/","+"],["-","=","2","2"]],"solution":[["1","2","+","9","=","2","1"],["5","8","/","2","=","2","9"],["2","5","-","1","6","=","9"],["2","+","1","=","5","-","2"]]},
+  {"id":10,"rows":4,"strips":[["0","2","2","2"],["=","=","5","9"],["/","-","5","6"],["+","+","+","0"],["=","=","1","6"],["2","1","5","*"],["1","2","1","1"]],"solution":[["1","+","2","=","6","/","2"],["2","+","1","=","5","-","2"],["1","+","5","1","=","5","2"],["1","0","*","6","=","6","0"]]},
+  {"id":11,"rows":4,"strips":[["0","1","5","8"],["6","-","/","-"],["=","2","0","5"],["=","1","0","1"],["2","1","2","8"],["9","=","=","+"],["5","2","9","+"]],"solution":[["2","=","9","+","1","-","8"],["1","2","=","6","0","/","5"],["2","0","=","2","1","-","1"],["8","5","+","5","=","9","0"]]},
+  {"id":12,"rows":4,"strips":[["2","8","9","5"],["2","9","9","2"],["9","0","2","5"],["5","-","-","2"],["*","9","1","="],["8","9","6","0"],["=","=","=","*"]],"solution":[["2","5","*","2","=","5","0"],["8","2","=","9","1","-","9"],["9","0","=","9","6","-","6"],["5","6","=","2","*","2","8"]]}
+]},
+{"key":"4","label":"level 4","note":"8칸 · + − × ÷","items":[
+  {"id":1,"rows":4,"strips":[["6","6","5","5"],["8","9","1","1"],["8","9","2","5"],["8","6","0","6"],["2","6","8","9"],["=","=","+","+"],["=","=","+","-"],["6","5","8","9"]],"solution":[["6","6","+","1","9","=","8","5"],["8","5","+","1","0","=","9","5"],["9","8","=","6","9","+","2","9"],["2","9","=","8","8","-","5","9"]]},
+  {"id":2,"rows":4,"strips":[["8","8","8","6"],["6","9","8","8"],["1","2","1","1"],["9","-","-","5"],["=","0","9","="],["+","2","5","*"],["-","5","1","/"],["2","=","=","2"]],"solution":[["8","=","5","+","1","2","-","9"],["8","0","-","2","2","=","5","8"],["6","9","-","5","1","=","1","8"],["9","=","6","*","1","2","/","8"]]},
+  {"id":3,"rows":4,"strips":[["5","2","2","5"],["0","6","2","8"],["2","6","*","2"],["2","1","8","8"],["+","5","-","="],["8","9","9","8"],["=","-","=","+"],["2","=","8","9"]],"solution":[["8","6","=","2","8","+","5","8"],["8","8","-","6","6","=","2","2"],["1","=","5","*","6","-","2","9"],["2","2","+","2","8","=","5","0"]]},
+  {"id":4,"rows":4,"strips":[["-","/","5","6"],["=","=","8","5"],["6","1","8","6"],["8","2","1","1"],["+","2","9","5"],["2","5","6","1"],["-","+","*","1"],["=","=","9","6"]],"solution":[["8","5","-","2","9","=","5","6"],["2","6","+","5","5","=","8","1"],["1","2","*","6","/","9","=","8"],["1","+","1","1","-","6","=","6"]]},
+  {"id":5,"rows":4,"strips":[["-","9","6","9"],["9","8","8","="],["2","9","8","5"],["1","=","=","+"],["6","5","9","+"],["=","-","+","6"],["9","9","2","2"],["6","2","8","6"]],"solution":[["9","=","1","6","-","9","+","2"],["9","8","=","2","9","+","6","9"],["2","8","=","8","6","-","5","8"],["2","6","+","6","9","=","9","5"]]},
+  {"id":6,"rows":4,"strips":[["1","2","2","6"],["+","-","-","="],["8","1","*","8"],["9","0","=","2"],["2","2","6","1"],["9","1","2","2"],["=","6","=","-"],["8","9","0","0"]],"solution":[["1","8","=","9","9","-","8","1"],["2","9","-","1","0","=","1","9"],["2","0","-","2","=","9","*","2"],["6","0","+","2","2","=","8","2"]]},
+  {"id":7,"rows":4,"strips":[["=","2","9","="],["8","=","=","2"],["2","1","9","1"],["1","2","2","5"],["9","8","1","1"],["+","-","+","-"],["8","8","0","6"],["*","8","6","+"]],"solution":[["2","5","-","9","=","8","+","8"],["1","2","+","8","6","=","9","8"],["9","2","-","1","2","=","8","0"],["1","1","+","1","=","2","*","6"]]},
+  {"id":8,"rows":4,"strips":[["8","5","0","1"],["8","2","6","="],["5","1","1","+"],["8","-","=","+"],["1","1","2","9"],["5","1","2","6"],["=","-","=","-"],["2","1","2","9"]],"solution":[["6","9","=","1","8","+","5","1"],["2","2","-","1","2","=","1","0"],["1","1","=","2","6","-","1","5"],["2","5","-","9","=","8","+","8"]]},
+  {"id":9,"rows":4,"strips":[["+","6","2","1"],["+","1","6","5"],["0","=","0","6"],["2","1","8","2"],["=","2","+","="],["9","*","1","8"],["-","=","/","5"],["6","8","2","2"]],"solution":[["2","9","=","8","1","-","5","2"],["8","0","+","1","2","=","9","2"],["1","=","2","*","9","/","1","8"],["2","0","=","6","+","5","+","9"]]},
+  {"id":10,"rows":4,"strips":[["=","6","=","2"],["9","5","1","2"],["9","2","1","="],["1","=","8","1"],["1","+","9","/"],["1","2","1","*"],["5","1","6","8"],["6","+","-","-"]],"solution":[["9","=","6","*","1","2","/","8"],["5","1","+","1","8","=","6","9"],["1","2","-","2","=","9","+","1"],["2","6","-","1","1","=","1","5"]]},
+  {"id":11,"rows":4,"strips":[["8","6","-","6"],["*","9","9","="],["-","8","=","0"],["8","6","9","9"],["1","1","2","5"],["5","+","+","5"],["+","0","1","="],["2","=","8","/"]],"solution":[["5","+","5","=","8","0","/","8"],["2","0","+","6","6","=","8","6"],["1","1","+","6","-","8","=","9"],["1","=","5","*","6","-","2","9"]]},
+  {"id":12,"rows":4,"strips":[["0","9","=","+"],["6","1","8","2"],["/","-","8","2"],["5","6","8","5"],["1","1","-","5"],["=","5","1","2"],["5","2","-","="],["*","=","2","0"]],"solution":[["5","*","5","=","5","0","/","2"],["8","=","2","5","-","9","-","8"],["9","2","-","1","1","=","8","1"],["5","0","=","2","1","+","2","9"]]}
+]}
+];
+
+
+/* ---------- 7세그먼트 글리프 ---------- */
+const SEG = {'0':'abcdef','1':'I','2':'abged','5':'afgcd','6':'afgedc','8':'abcdefg','9':'abcdfg'};
+const RC = {
+  a:[27,17,46,10.5], d:[27,72.5,46,10.5], g:[27,44.75,46,10.5],
+  f:[27,17,10.5,38.25], b:[62.5,17,10.5,38.25],
+  e:[27,44.75,10.5,38.25], c:[62.5,44.75,10.5,38.25], I:[44.75,17,10.5,66]
+};
+const rct = r => `<rect x="${r[0]}" y="${r[1]}" width="${r[2]}" height="${r[3]}" rx="1"/>`;
+function glyph(ch){
+  let b;
+  if (ch === '+')      b = rct([28,45,44,10]) + rct([45,28,10,44]);
+  else if (ch === '-') b = rct([28,45,44,10]);
+  else if (ch === '=') b = rct([28,33.5,44,10]) + rct([28,56.5,44,10]);
+  else if (ch === '*') b = `<line x1="32" y1="32" x2="68" y2="68" stroke-width="9"/><line x1="32" y1="68" x2="68" y2="32" stroke-width="9"/>`;
+  else if (ch === '/') b = rct([28,45,44,10]) + `<circle cx="50" cy="35.5" r="6.2"/><circle cx="50" cy="64.5" r="6.2"/>`;
+  else b = [...SEG[ch]].map(k => rct(RC[k])).join('');
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${b}</svg>`;
+}
+
+/* ---------- 정확한 유리수 계산 ---------- */
+function gcd(a,b){ a=Math.abs(a); b=Math.abs(b); while(b){ [a,b]=[b,a%b]; } return a||1; }
+function fr(n,d=1){ if(d<0){n=-n;d=-d;} const g=gcd(n,d); return {n:n/g, d:d/g}; }
+const add = (x,y) => fr(x.n*y.d + y.n*x.d, x.d*y.d);
+const sub = (x,y) => fr(x.n*y.d - y.n*x.d, x.d*y.d);
+const mul = (x,y) => fr(x.n*y.n, x.d*y.d);
+const dvd = (x,y) => y.n === 0 ? null : fr(x.n*y.d, x.d*y.n);
+const eqf = (x,y) => x.n === y.n && x.d === y.d;
+
+/* ---------- 식 판정 (표준 연산순서, 음수 허용) ---------- */
+const FLIP = {'0':'0','1':'1','2':'2','5':'5','6':'9','8':'8','9':'6','+':'+','-':'-','*':'*','/':'/','=':'='};
+const OPS = new Set(['+','-','*','/','=']);
+function effective(cells, rot){ return rot ? cells.slice().reverse().map(c => FLIP[c]) : cells.slice(); }
+function tokenize(cells){
+  const t = []; let cur = '';
+  for (const c of cells){
+    if (OPS.has(c)){ if (!cur) return null; t.push(cur); cur = ''; t.push(c); }
+    else cur += c;
+  }
+  if (!cur) return null;
+  t.push(cur);
+  for (const x of t) if (!OPS.has(x) && x.length > 1 && x[0] === '0') return null;
+  return t;
+}
+function evalSide(t){
+  const vals = [fr(Number(t[0]))], ops = [];
+  for (let i = 1; i < t.length; i += 2){
+    const nx = fr(Number(t[i+1]));
+    if (t[i] === '*') vals[vals.length-1] = mul(vals[vals.length-1], nx);
+    else if (t[i] === '/'){
+      const r = dvd(vals[vals.length-1], nx);
+      if (!r) return null;
+      vals[vals.length-1] = r;
+    } else { ops.push(t[i]); vals.push(nx); }
+  }
+  let v = vals[0];
+  ops.forEach((op,k) => { v = op === '+' ? add(v, vals[k+1]) : sub(v, vals[k+1]); });
+  return v;
+}
+function rowValid(cells){
+  if (!cells.length || OPS.has(cells[0]) || OPS.has(cells[cells.length-1])) return false;
+  if (cells.filter(c => c === '=').length !== 1) return false;
+  for (let i = 0; i < cells.length-1; i++) if (OPS.has(cells[i]) && OPS.has(cells[i+1])) return false;
+  const e = cells.indexOf('=');
+  const L = tokenize(cells.slice(0,e)), R = tokenize(cells.slice(e+1));
+  if (!L || !R) return false;
+  const a = evalSide(L), b = evalSide(R);
+  return !!(a && b && eqf(a,b));
+}
+
+/* ---------- 진행 기록 (localStorage, 막히면 메모리) ---------- */
+const KEY = 'numjigsaw.v1';
+let storageOK = true, mem = null;
+try {
+  localStorage.setItem(KEY + '.t', '1');
+  localStorage.removeItem(KEY + '.t');
+} catch (e) { storageOK = false; }
+
+function loadDB(){
+  if (!storageOK) return mem || (mem = {who:'', progress:{}});
+  try {
+    const o = JSON.parse(localStorage.getItem(KEY) || '{}');
+    return {who: o.who || '', progress: o.progress || {}};
+  } catch (e) {
+    storageOK = false;
+    return mem || (mem = {who:'', progress:{}});
+  }
+}
+function saveDB(){
+  if (!storageOK){ mem = DB; return; }
+  try { localStorage.setItem(KEY, JSON.stringify(DB)); }
+  catch (e){ storageOK = false; mem = DB; showWarn(); }
+}
+const DB = loadDB();
+const whoKey = () => (DB.who || '').trim() || '(이름 없음)';
+const doneSet = () => new Set(DB.progress[whoKey()] || []);
+function markDone(lvKey, id){
+  const s = doneSet();
+  s.add(lvKey + ':' + id);
+  DB.progress[whoKey()] = [...s];
+  saveDB();
+  paintProgress();
+}
+function showWarn(){ document.getElementById('warn').hidden = false; }
+
+/* ---------- 상태 ---------- */
+const board = document.getElementById('board');
+const lamps = document.getElementById('lamps');
+const chips = document.getElementById('chips');
+const levelsNav = document.getElementById('levels');
+let LV = 0, IX = 0;
+let P, N, order, rot, sel = 0, nodes = [];
+
+const cellPx = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell'));
+const slotX = i => i * (cellPx() + 10);
+
+function gridNow(){
+  const g = [];
+  for (let r = 0; r < P.rows; r++) g.push(order.map(si => effective(P.strips[si], rot[si])[r]));
+  return g;
+}
+const isSolved = () => gridNow().every(rowValid);
+
+function sizeCells(){
+  const gap = 10;
+  const availW = Math.min(window.innerWidth - 110, 1240);
+  const availH = window.innerHeight - 268;
+  const cell = Math.max(44, Math.min(148, Math.floor(Math.min(
+    (availW - gap*(N-1)) / N, availH / P.rows
+  ))));
+  document.documentElement.style.setProperty('--cell', cell + 'px');
+  board.style.width  = (cell*N + gap*(N-1)) + 'px';
+  board.style.height = (cell*P.rows) + 'px';
+  layout();
+}
+function layout(skip){
+  order.forEach((si,i) => {
+    const el = nodes[si];
+    if (el === skip) return;
+    el.style.transform = `translateX(${slotX(i)}px) rotate(${rot[si] ? 180 : 0}deg)`;
+  });
+}
+function markSel(){ nodes.forEach((el,si) => el.classList.toggle('sel', si === order[sel])); }
+function clearLamps(){ [...lamps.children].forEach(l => { l.className = 'lamp'; l.textContent = ''; }); }
+function showLamps(){
+  const g = gridNow();
+  [...lamps.children].forEach((l,r) => {
+    const ok = rowValid(g[r]);
+    l.className = 'lamp ' + (ok ? 'ok' : 'no');
+    l.textContent = ok ? '✓' : '✕';
+  });
+}
+// 배치가 바뀌면 판정 표시를 지운다. 정답 여부는 '확인하기'를 눌러야만 드러난다.
+function changed(){
+  clearLamps();
+  document.body.classList.remove('solved');
+  nodes.forEach(el => el.classList.remove('bad'));
+}
+
+function paintProgress(){
+  const s = doneSet();
+  [...chips.children].forEach((b,i) => {
+    b.classList.toggle('done', s.has(LEVELS[LV].key + ':' + LEVELS[LV].items[i].id));
+  });
+  [...levelsNav.children].forEach((b,i) => {
+    const L = LEVELS[i];
+    const n = L.items.filter(it => s.has(L.key + ':' + it.id)).length;
+    b.querySelector('.cnt').textContent = n ? `${n}/${L.items.length}` : '';
+    b.classList.toggle('allDone', n === L.items.length);
+  });
+}
+
+function buildChips(){
+  chips.innerHTML = '';
+  LEVELS[LV].items.forEach((p,i) => {
+    const b = document.createElement('button');
+    b.className = 'chip';
+    b.textContent = p.id;
+    b.setAttribute('aria-label', p.label || `${p.id}번 문제`);
+    b.onclick = () => { IX = i; build(); };
+    chips.appendChild(b);
+  });
+}
+
+function build(){
+  P = LEVELS[LV].items[IX];
+  N = P.strips.length;
+  order = [...Array(N).keys()];
+  rot = Array(N).fill(false);
+  sel = 0;
+  document.body.classList.remove('solved');
+  document.getElementById('lvNote').textContent = LEVELS[LV].note;
+  [...levelsNav.children].forEach((b,i) => b.setAttribute('aria-current', String(i === LV)));
+  [...chips.children].forEach((b,i) => b.setAttribute('aria-current', String(i === IX)));
+
+  board.innerHTML = '';
+  nodes = P.strips.map((cells,si) => {
+    const el = document.createElement('div');
+    el.className = 'strip';
+    el.tabIndex = 0;
+    el.dataset.si = si;
+    el.setAttribute('role','button');
+    el.setAttribute('aria-label', `막대 ${si+1}`);
+    el.innerHTML = cells.map(c => `<div class="cell">${glyph(c)}</div>`).join('');
+    el.addEventListener('focus', () => { sel = order.indexOf(si); markSel(); });
+    board.appendChild(el);
+    return el;
+  });
+  lamps.innerHTML = Array.from({length:P.rows}, () => '<div class="lamp"></div>').join('');
+  sizeCells();
+  markSel();
+  paintProgress();
+}
+
+/* ---------- 조작 ---------- */
+let drag = null;
+
+board.addEventListener('pointerdown', e => {
+  const el = e.target.closest('.strip');
+  if (!el || e.button === 2) return;
+  const si = +el.dataset.si;
+  sel = order.indexOf(si); markSel();
+  el.setPointerCapture(e.pointerId);
+  drag = { el, si, startX:e.clientX, startY:e.clientY, from:order.indexOf(si), moved:false,
+           lp:setTimeout(() => { if (drag && !drag.moved){ rotate(si); drag.done = true; } }, 550) };
+});
+
+board.addEventListener('pointermove', e => {
+  if (!drag || drag.done) return;
+  const dx = e.clientX - drag.startX, dy = e.clientY - drag.startY;
+  if (!drag.moved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+  if (!drag.dragging){
+    clearTimeout(drag.lp);
+    drag.dragging = true; drag.moved = true;
+    drag.el.classList.add('dragging');
+  }
+  const x = slotX(drag.from) + dx;
+  drag.el.style.transform =
+    `translate(${x}px, ${Math.max(-24, Math.min(24, dy))}px) rotate(${rot[drag.si] ? 180 : 0}deg) scale(1.04)`;
+  const target = Math.max(0, Math.min(N-1, Math.round(x / (cellPx() + 10))));
+  const cur = order.indexOf(drag.si);
+  if (target !== cur){
+    order.splice(cur,1);
+    order.splice(target,0,drag.si);
+    layout(drag.el);
+  }
+});
+
+function endDrag(){
+  if (!drag) return;
+  clearTimeout(drag.lp);
+  drag.el.classList.remove('dragging');
+  drag.el.style.transform = '';
+  const d = drag; drag = null;
+  layout();
+  sel = order.indexOf(d.si); markSel();
+  if (d.dragging) changed();
+}
+board.addEventListener('pointerup', endDrag);
+board.addEventListener('pointercancel', endDrag);
+
+board.addEventListener('contextmenu', e => {
+  e.preventDefault();
+  const el = e.target.closest('.strip');
+  if (!el) return;
+  const si = +el.dataset.si;
+  sel = order.indexOf(si); markSel();
+  rotate(si);
+});
+
+function rotate(si){ rot[si] = !rot[si]; layout(); changed(); }
+
+/* ---------- 버튼 ---------- */
+document.getElementById('bCheck').onclick = () => {
+  showLamps();
+  if (isSolved()){
+    document.body.classList.add('solved');
+    markDone(LEVELS[LV].key, P.id);
+  } else {
+    document.body.classList.remove('solved');
+    nodes.forEach(el => {
+      el.classList.add('bad');
+      setTimeout(() => el.classList.remove('bad'), 700);
+    });
+  }
+};
+document.getElementById('bRotate').onclick = () => rotate(order[sel]);
+document.getElementById('bShuffle').onclick = () => {
+  for (let t = 0; t < 30; t++){
+    for (let i = N-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [order[i],order[j]] = [order[j],order[i]]; }
+    rot = rot.map(() => Math.random() < 0.5);
+    if (!gridNow().some(rowValid)) break;
+  }
+  sel = 0;
+  layout(); changed(); markSel();
+};
+document.getElementById('bReset').onclick = () => build();
+
+/* ---------- 이름 · 기록 지우기 ---------- */
+const whoInput = document.getElementById('who');
+whoInput.value = DB.who || '';
+whoInput.addEventListener('input', () => { DB.who = whoInput.value; saveDB(); paintProgress(); });
+
+const bWipe = document.getElementById('bWipe');
+let wipeTimer = null;
+function disarmWipe(){
+  clearTimeout(wipeTimer); wipeTimer = null;
+  bWipe.textContent = '기록 지우기';
+  bWipe.classList.remove('armed');
+}
+bWipe.onclick = () => {
+  if (!wipeTimer){
+    bWipe.textContent = '정말 지울까요?';
+    bWipe.classList.add('armed');
+    wipeTimer = setTimeout(disarmWipe, 4000);
+    return;
+  }
+  disarmWipe();
+  delete DB.progress[whoKey()];
+  saveDB();
+  paintProgress();
+};
+
+/* ---------- 키보드 ---------- */
+addEventListener('keydown', e => {
+  if (e.target === whoInput) return;
+  if (e.key === '[' || e.key === ']'){
+    const d = e.key === '[' ? -1 : 1;
+    IX = (IX + d + LEVELS[LV].items.length) % LEVELS[LV].items.length;
+    build(); return;
+  }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){
+    e.preventDefault();
+    const d = e.key === 'ArrowLeft' ? -1 : 1;
+    if (e.shiftKey){
+      const to = Math.max(0, Math.min(N-1, sel + d));
+      if (to !== sel){
+        const [si] = order.splice(sel,1);
+        order.splice(to,0,si);
+        sel = to; layout(); changed();
+      }
+    } else sel = (sel + d + N) % N;
+    markSel();
+    return;
+  }
+  if (e.key === 'r' || e.key === 'R') rotate(order[sel]);
+});
+
+/* ---------- 시작 ---------- */
+LEVELS.forEach((L,i) => {
+  const b = document.createElement('button');
+  b.className = 'lv';
+  b.innerHTML = `${L.label}<span class="cnt"></span>`;
+  b.onclick = () => { LV = i; IX = 0; buildChips(); build(); };
+  levelsNav.appendChild(b);
+});
+addEventListener('resize', () => { if (P) sizeCells(); });
+if (!storageOK) showWarn();
+buildChips();
+build();
+</script>
+</body>
+</html>
