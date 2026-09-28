@@ -81,10 +81,25 @@
     display:flex;flex-direction:column;min-height:0}
   .box h3{margin:0 0 9px;font-size:12.5px;color:var(--mute);font-weight:600;
     display:flex;justify-content:space-between;align-items:baseline}
-  .tray{flex:1;min-height:0;display:flex;flex-wrap:wrap;gap:7px;justify-content:center;align-content:flex-start;overflow:auto}
+  .tray{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,var(--tw,96px));
+    gap:7px;justify-content:center;align-content:start;overflow:auto}
+  .tray .note{grid-column:1 / -1}
   .tile{position:relative;width:var(--tw,96px);height:calc(var(--tw,96px) * 0.866);
     border-radius:6px;cursor:grab;flex:0 0 auto;overflow:hidden;touch-action:none}
   .tile.dragging{opacity:.22}
+  .grp{grid-column:1 / -1;display:flex;align-items:baseline;gap:6px;margin:4px 0 -2px;
+    font-size:12px;font-weight:800;color:#6ea8ff}
+  .grp span{font-weight:600;color:var(--mute);font-size:11px}
+  .grp:first-child{margin-top:0}
+  .checklist{display:flex;flex-direction:column;gap:7px}
+  .ckgrp .ghd{font-size:11.5px;font-weight:800;color:#6ea8ff;margin-bottom:3px}
+  .ckgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px 6px}
+  .ck1{display:flex;align-items:center;gap:6px;font-size:13px;color:#566072;
+    font-variant-numeric:tabular-nums;letter-spacing:.2px}
+  .ck1 .bx{width:13px;height:13px;flex:0 0 13px;border:1.5px solid #465063;border-radius:3px;
+    display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;line-height:1}
+  .ck1.on{color:var(--ink);font-weight:700}
+  .ck1.on .bx{border-color:var(--gold);background:var(--gold);color:#14181f}
   .tile.used{cursor:default}
   .tile svg{display:block;width:100%;height:100%}
   .sizectl{display:flex;align-items:center;gap:6px}
@@ -171,6 +186,11 @@
     <div class="box" style="flex:1;min-height:0">
       <h3><span>완성한 줄</span><span id="lineCount">0개</span></h3>
       <div class="lines" id="lines"></div>
+    </div>
+
+    <div class="box" style="flex:0 0 auto">
+      <h3><span id="usedTitle">사용한 타일</span><span id="usedCount">0장</span></h3>
+      <div class="checklist" id="checklist"></div>
     </div>
 
     <div class="box" style="flex:0 0 auto">
@@ -334,12 +354,12 @@ function renderTray(){
   const list = mode==='free' ? TILES.map((_,i)=>i) : pool;
   const nextId = freeOrder()? null : placeableId();
   const nextIdx = freeOrder()? -1 : nextSeqIdx();
-  $('trayTitle').textContent = mode==='free' ? '타일 27장' : '타일 19장 (순서대로)';
+  $('trayTitle').textContent = mode==='free' ? '타일 27장' : '받은 타일 19장';
   $('trayNote').textContent = mode==='free'
     ? (TILES.length-used.size)+'장 남음'
     : (pool.length? (nextIdx<pool.length? (nextIdx+1)+'번째 차례' : '다 놓았습니다') : '코드를 불러오세요');
-  $('tray').innerHTML = list.map((id,idx)=>{
-    const isUsed = mode==='free' ? used.has(id) : idx<nextIdx;
+  const tileHTML=(id,idx)=>{
+    const isUsed = freeOrder() ? used.has(id) : idx<nextIdx;   // 순서 무시 중에도 놓은 타일은 흐리게
     const cls = ['tile'];
     if(isUsed) cls.push('used');
     if(mode==='free' && selected===id) cls.push('sel');
@@ -348,7 +368,19 @@ function renderTray(){
     return `<div class="${cls.join(' ')}" data-id="${id}" data-idx="${idx}">`
          + (mode==='seq'?`<span class="ord">${idx+1}</span>`:'')
          + tileBox(TILES[id]) + '</div>';
-  }).join('') || '<div class="note">순서 코드를 붙여 넣고 불러오기를 누르세요.</div>';
+  };
+  let html='';
+  if(mode==='seq' && pool.length){
+    // 학습지 목록과 같은 순서: 세로 1·5·9 묶음, 묶음 안은 1-2-3, 1-2-4 … 순
+    for(const v of VERT){
+      const items=pool.map((id,idx)=>({id,idx})).filter(o=>TILES[o.id][0]===v).sort((a,b)=>a.id-b.id);
+      html+=`<div class="grp">세로 ${v}<span>${items.length}장</span></div>`;
+      html+=items.map(o=>tileHTML(o.id,o.idx)).join('');
+    }
+  } else {
+    html=list.map((id,idx)=>tileHTML(id,idx)).join('');
+  }
+  $('tray').innerHTML = html || '<div class="note">순서 코드를 붙여 넣고 불러오기를 누르세요.</div>';
   $('tray').querySelectorAll('.tile').forEach(el=>{
     el.onclick=()=>{
       if(Date.now()-lastDragEnd < 250) return;
@@ -373,7 +405,24 @@ function renderHint(){
       : '19장을 다 놓았습니다';
   }
 }
-function renderAll(){ renderBoard(); renderTray(); renderHint(); applyTileW(); }
+/** 학습지와 같은 모양의 체크 목록: 자유 배치는 판에 놓은 타일, 순서 배치는 받은 19장 */
+function renderChecklist(){
+  const on = new Set(mode==='free' ? usedIds() : pool);
+  $('usedTitle').textContent = mode==='free' ? '사용한 타일' : '받은 타일';
+  $('usedCount').textContent = on.size+'장';
+  let html='';
+  for(const v of VERT){
+    html+='<div class="ckgrp"><div class="ghd">세로 '+v+'</div><div class="ckgrid">';
+    for(const b of DIA1) for(const e of DIA2){
+      const id=TILES.findIndex(t=>t[0]===v&&t[1]===b&&t[2]===e);
+      const isOn=on.has(id);
+      html+='<div class="ck1'+(isOn?' on':'')+'"><span class="bx">'+(isOn?'✓':'')+'</span>'+v+'-'+b+'-'+e+'</div>';
+    }
+    html+='</div></div>';
+  }
+  $('checklist').innerHTML=html;
+}
+function renderAll(){ renderBoard(); renderTray(); renderHint(); renderChecklist(); applyTileW(); }
 
 /* ===================== 모드 ===================== */
 function setMode(m){
@@ -531,9 +580,13 @@ function computeTileW(){
   const w = (tray.clientWidth || 280) - 2;
   const h = (tray.clientHeight || 640) - 2;
   const cols = 3, gap = 7;
-  const rows = Math.ceil((mode==='free' ? 27 : 19) / cols);
+  let rows, extra=0;
+  if(mode==='seq' && pool.length){
+    rows = VERT.reduce((sum,v)=>sum+Math.ceil(pool.filter(id=>TILES[id][0]===v).length/cols),0);
+    extra = 3*(18+gap);                                   // 세로 1·5·9 제목 세 줄
+  } else rows = Math.ceil((mode==='free' ? 27 : 19) / cols);
   const byW = Math.floor((w - (cols-1)*gap) / cols);
-  const byH = Math.floor(((h - (rows-1)*gap - rows - 8) / rows) / 0.866);
+  const byH = Math.floor(((h - extra - (rows-1)*gap - rows - 8) / rows) / 0.866);
   // 화면이 낮으면 살짝 넘겨 스크롤하더라도 읽을 만한 크기는 지킨다
   const base = Math.max(72, Math.min(byW, byH));
   return Math.max(48, Math.min(220, Math.round(base*tileScale)));
@@ -550,8 +603,8 @@ let rzT; addEventListener('resize', ()=>{ clearTimeout(rzT); rzT=setTimeout(appl
 try{
   const h=location.hash.replace('#','').trim();
   if(h.length===19){ $('inCode').value=h; setMode('seq'); loadCode(h); }
-  else setMode('free');
-}catch(_){ setMode('free'); }
+  else setMode('seq');
+}catch(_){ setMode('seq'); }
 </script>
 </body>
 </html>
