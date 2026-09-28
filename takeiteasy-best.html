@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>테이크 잇 이지 — 최고점 계산기</title>
+<style>
+  :root{
+    --bg:#14181f; --panel:#1e242e; --panel2:#252c38; --line:#2f3746;
+    --ink:#e8ebf0; --mute:#828d9f; --gold:#ffd166; --bad:#e2574c;
+    --c0:#6ea8ff; --c1:#4fbf7a; --c2:#d9983a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",Roboto,sans-serif;
+    font-size:15px;-webkit-user-select:none;user-select:none}
+  button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+  input{font:inherit;user-select:text;-webkit-user-select:text}
+  .hidden{display:none !important}
+  .btn{background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    padding:9px 15px;border-radius:9px;font-weight:600}
+  .btn:hover{background:#2f3846}
+  .btn:disabled{opacity:.35;cursor:default}
+  .btn.primary{background:#fff;color:#14181f;border-color:#fff}
+  .btn.primary:hover{background:#dfe4ec}
+  .btn.small{padding:7px 11px;font-size:13px}
+
+  header{display:flex;align-items:center;gap:14px;padding:12px 20px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+  .title{font-size:19px;font-weight:800;letter-spacing:-.3px}
+  .tag{font-size:11.5px;font-weight:700;color:#14181f;background:var(--gold);padding:2px 7px;border-radius:5px}
+  .codewrap{display:flex;gap:6px;align-items:center}
+  .codewrap input{background:#11151c;border:1px solid var(--line);color:var(--ink);
+    padding:9px 12px;border-radius:8px;width:282px;letter-spacing:2.5px;font-family:ui-monospace,Consolas,monospace;font-size:15px}
+  .codewrap input:focus{outline:none;border-color:#5b7fb8}
+  .err{color:var(--bad);font-size:13.5px}
+
+  main{position:absolute;top:61px;left:0;right:0;bottom:0;display:grid;
+    grid-template-columns:minmax(0,1fr) 420px;gap:18px;padding:16px 20px}
+  .boardpane{display:flex;flex-direction:column;min-height:0}
+  .boardwrap{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+  #board{width:100%;height:100%;max-height:100%}
+  .empty{color:var(--mute);font-size:15px;text-align:center;line-height:1.7}
+
+  .side{display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px}
+  .box h3{margin:0 0 10px;font-size:12.5px;color:var(--mute);font-weight:600;
+    display:flex;justify-content:space-between;align-items:baseline}
+  .score{display:flex;align-items:baseline;gap:8px}
+  .score b{font-size:54px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+  .score span{color:var(--mute)}
+  .sub{font-size:12.5px;color:var(--mute);margin-top:8px;line-height:1.55}
+  .nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .nav .lab{font-size:13.5px;flex:1;min-width:150px;white-space:nowrap}
+  .nav .lab b{font-variant-numeric:tabular-nums}
+
+  .calc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .calc .col h4{margin:0 0 6px;font-size:12.5px}
+  .calc .row{font-size:13.5px;font-variant-numeric:tabular-nums;padding:3px 0;border-bottom:1px dashed #2c3442;white-space:nowrap}
+  .calc .row i{font-style:normal;font-weight:800;margin-right:4px}
+  .calc .none{font-size:12.5px;color:#58627a;padding:3px 0}
+  .calc .sum{margin-top:6px;font-size:13px;color:var(--mute)}
+  .calc .sum b{color:var(--ink)}
+  .total{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px;
+    padding-top:10px;border-top:1px solid var(--line);font-size:14px}
+  .total b{font-size:20px;color:var(--gold);font-variant-numeric:tabular-nums}
+
+  .checklist{display:flex;flex-direction:column;gap:7px}
+  .ghd{font-size:11.5px;font-weight:800;color:var(--c0);margin-bottom:3px}
+  .ckgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px 6px}
+  .ck1{display:flex;align-items:center;gap:6px;font-size:13px;color:#566072;font-variant-numeric:tabular-nums}
+  .ck1 .bx{width:13px;height:13px;flex:0 0 13px;border:1.5px solid #465063;border-radius:3px;
+    display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900;line-height:1}
+  .ck1.on{color:var(--ink);font-weight:700}
+  .ck1.on .bx{border-color:var(--gold);background:var(--gold);color:#14181f}
+  a.link{color:var(--c0);font-size:12.5px;text-decoration:none}
+  a.link:hover{text-decoration:underline}
+  .toast{position:fixed;left:50%;top:74px;transform:translateX(-50%);background:#0d1117;
+    border:1px solid var(--line);padding:10px 18px;border-radius:9px;font-size:14px;
+    opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1}
+  @media(max-width:1000px){ main{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;overflow:auto} }
+</style>
+</head>
+<body>
+<header>
+  <span class="title">최고점 계산기</span><span class="tag">선생님용</span>
+  <div class="codewrap">
+    <input id="inCode" placeholder="19자 순서 코드" maxlength="40" autocomplete="off" spellcheck="false">
+    <button class="btn primary small" id="btnGo">계산</button>
+    <button class="btn small" id="btnPaste">붙여넣기</button>
+  </div>
+  <span class="err" id="err"></span>
+</header>
+
+<main>
+  <div class="boardpane">
+    <div class="boardwrap" id="boardWrap">
+      <div class="empty" id="emptyMsg">수업용 앱의 <b>타일 순서 복사</b>로 얻은 19자 코드를 넣으면<br>
+        그 19장으로 낼 수 있는 가장 높은 점수와 배치를 보여 줍니다.</div>
+      <svg id="board" class="hidden" viewBox="-34 -34 468 501"></svg>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="box">
+      <h3><span>이 19장으로 낼 수 있는 최고점</span></h3>
+      <div class="score"><b id="best">—</b><span>점</span></div>
+      <div class="sub">컴퓨터가 15개 줄의 모든 경우를 빠짐없이 따져서 구한 값입니다. 이보다 높은 배치는 없습니다.</div>
+    </div>
+
+    <div class="box" id="navBox">
+      <div class="nav">
+        <div class="lab" id="navLab">—</div>
+        <button class="btn small" id="btnPrev">◀</button>
+        <button class="btn small" id="btnNext">▶</button>
+        <button class="btn small" id="btnRot" title="판을 180° 돌린 모양. 점수는 같습니다">↻ 180°</button>
+      </div>
+      <div class="sub" id="navNote">판을 180° 돌려도 모든 줄이 같은 방향·같은 길이의 줄로 옮겨 가서 점수가 같습니다. 아이 판이 뒤집혀 보이면 돌려서 비교하세요.</div>
+    </div>
+
+    <div class="box">
+      <h3><span>최고점 계산</span><span>학습지 4번과 같은 모양</span></h3>
+      <div class="calc" id="calc"></div>
+      <div class="total"><span>세 방향 합계</span><b id="total">—</b></div>
+    </div>
+
+    <div class="box">
+      <h3><span>받은 19장</span><span>학습지 2번과 같은 모양</span></h3>
+      <div class="checklist" id="checklist"></div>
+      <div style="margin-top:10px"><a class="link" id="labLink" href="#" target="_blank">이 19장을 lab에서 열기 ↗</a></div>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== 게임 상수 ===================== */
+const VERT=[1,5,9], DIA1=[2,6,7], DIA2=[3,4,8];
+const COLOR={1:'#8a8f98',5:'#2f6fd0',9:'#c62828',2:'#1b7f3b',6:'#e07b00',7:'#7b2fbe',3:'#8d5a00',4:'#d81b7a',8:'#00767f'};
+const DIRCOL=['#6ea8ff','#4fbf7a','#d9983a'];
+const DIRNAME=['세로','↗','↘'];
+const CIRC='①②③④⑤';
+const SEQ_ALPHA='0123456789abcdefghijklmnopq';
+const TILES=[]; for(const a of VERT) for(const b of DIA1) for(const c of DIA2) TILES.push([a,b,c]);
+const CELLS=[]; for(let q=-2;q<=2;q++) for(let r=-2;r<=2;r++) if(Math.abs(q+r)<=2) CELLS.push({q,r});
+const ck=(q,r)=>q+','+r;
+const KEYS=CELLS.map(c=>ck(c.q,c.r));
+const LINES=[];
+for(let q=-2;q<=2;q++) LINES.push({dir:0,cells:CELLS.filter(c=>c.q===q)});
+for(let r=-2;r<=2;r++) LINES.push({dir:1,cells:CELLS.filter(c=>c.r===r)});
+for(let s=-2;s<=2;s++) LINES.push({dir:2,cells:CELLS.filter(c=>-c.q-c.r===s)});
+/* 학습지 번호: 세로는 왼쪽부터, 대각선은 위에서부터 ①~⑤ */
+function lineNo(li){ const d=Math.floor(li/5), i=li%5; return d===1 ? 4-i : i; }
+
+/* ===================== 그리기 ===================== */
+const S3=Math.sqrt(3), R=50;
+const X=c=>200+1.5*R*c.q, Y=c=>216.5-R*S3*(c.r+c.q/2);
+function hexPath(cx,cy,r){ let d='';
+  for(let i=0;i<6;i++){ const a=Math.PI/180*(60*i); d+=(i?'L':'M')+(cx+r*Math.cos(a)).toFixed(2)+' '+(cy-r*Math.sin(a)).toFixed(2)+' '; }
+  return d+'Z'; }
+function ends(cx,cy,r,k){
+  if(k===0) return [[cx,cy-r*S3/2],[cx,cy+r*S3/2]];
+  if(k===1) return [[cx-.75*r,cy+r*S3/4],[cx+.75*r,cy-r*S3/4]];
+  return [[cx-.75*r,cy-r*S3/4],[cx+.75*r,cy+r*S3/4]]; }
+function bead(cx,cy,r,k,f=.50){
+  if(k===0) return [cx,cy-f*r*S3/2];
+  if(k===1) return [cx-f*.75*r,cy+f*r*S3/4];
+  return [cx+f*.75*r,cy+f*r*S3/4]; }
+function tileSVG(t,cx,cy,r){
+  let s=`<path d="${hexPath(cx,cy,r)}" fill="#fff" stroke="#2a2f3a" stroke-width="${(r*.03).toFixed(2)}"/>`;
+  for(let k=0;k<3;k++){ const n=t[k],[p0,p1]=ends(cx,cy,r,k);
+    s+=`<line x1="${p0[0].toFixed(2)}" y1="${p0[1].toFixed(2)}" x2="${p1[0].toFixed(2)}" y2="${p1[1].toFixed(2)}" stroke="${COLOR[n]}" stroke-width="${(r*.15).toFixed(2)}"/>`; }
+  for(let k=0;k<3;k++){ const n=t[k],[bx,by]=bead(cx,cy,r,k);
+    s+=`<circle cx="${bx.toFixed(2)}" cy="${by.toFixed(2)}" r="${(r*.215).toFixed(2)}" fill="#fff" stroke="${COLOR[n]}" stroke-width="${(r*.045).toFixed(2)}"/>`
+      +`<text x="${bx.toFixed(2)}" y="${by.toFixed(2)}" fill="${COLOR[n]}" font-size="${(r*.34).toFixed(2)}" font-weight="800" text-anchor="middle" dominant-baseline="central">${n}</text>`; }
+  return s; }
+
+/* ===================== 채점 ===================== */
+function completed(b){
+  const got=[];
+  LINES.forEach((L,li)=>{
+    const v=L.cells.map(c=>{const x=b[ck(c.q,c.r)]; return x===undefined?null:TILES[x][L.dir];});
+    if(v.some(x=>x===null)) return;
+    if(v.every(x=>x===v[0])) got.push({li,d:L.dir,no:lineNo(li),n:v[0],len:L.cells.length,pts:v[0]*L.cells.length,cells:L.cells});
+  });
+  return got; }
+
+/* ===================== 정확한 최고점과 모든 최고점 조합 =====================
+   15개 줄 하나하나를 '이 숫자로 완성' 또는 '포기'로 정해 나가면서, 그 조건대로 19장을
+   19칸에 겹치지 않게 놓을 수 있는지(이분 매칭) 확인한다. 1단계에서 최고점을 찾고,
+   2단계에서 그 점수를 내는 줄 조합을 모두 모은다. */
+function solveAll(ids,cap){
+  cap=cap||80;
+  const VAL=[VERT,DIA1,DIA2];
+  const T=ids.map(i=>TILES[i]), N=T.length, FULL=(1<<N)-1;
+  const cellIdx={}; CELLS.forEach((c,i)=>cellIdx[ck(c.q,c.r)]=i);
+  const LN=LINES.map(L=>({d:L.dir,n:L.cells.length,cells:L.cells.map(c=>cellIdx[ck(c.q,c.r)])}));
+  const cellLines=CELLS.map(()=>[]); LN.forEach((L,li)=>L.cells.forEach(ci=>cellLines[ci].push(li)));
+  const ORDER=[...LN.keys()].sort((a,b)=>LN[b].n-LN[a].n || a-b);
+  const cnt=[{},{},{}], mask=[{},{},{}];
+  T.forEach((t,k)=>{ for(let d=0;d<3;d++){ cnt[d][t[d]]=(cnt[d][t[d]]||0)+1; mask[d][t[d]]=(mask[d][t[d]]||0)|(1<<k); } });
+  const assign=new Array(15).fill(0), used=[{},{},{}];
+  const allow=new Array(19), matchT=new Array(N);
+  function ub(i){ let s=0;
+    for(let j=i;j<15;j++){ const L=LN[ORDER[j]]; let m=0;
+      for(const v of VAL[L.d]) if((cnt[L.d][v]||0)-(used[L.d][v]||0)>=L.n && v*L.n>m) m=v*L.n;
+      s+=m; } return s; }
+  function tryCell(c,seen){ let m=allow[c]&~seen.v;
+    while(m){ const b=m&-m,k=31-Math.clz32(b); m&=m-1; seen.v|=b;
+      if(matchT[k]<0 || tryCell(matchT[k],seen)){ matchT[k]=c; return true; } } return false; }
+  function feasible(){
+    for(let c=0;c<19;c++){ let m=FULL;
+      for(const li of cellLines[c]){ const v=assign[li]; if(v) m&=(mask[LN[li].d][v]||0); }
+      if(!m) return false; allow[c]=m; }
+    matchT.fill(-1);
+    for(let c=0;c<19;c++) if(!tryCell(c,{v:0})) return false;
+    return true; }
+  let best=0, pats=[], mode='find';
+  function leaf(){ feasible(); const board={};
+    for(let k=0;k<N;k++) board[KEYS[matchT[k]]]=ids[k];
+    return {assign:assign.slice(), board}; }
+  function dfs(i,score){
+    const u=score+ub(i);
+    if(mode==='find' ? u<=best : u<best) return;
+    if(i===15){ if(mode==='find'){ best=score; pats=[leaf()]; }
+                else if(score===best && pats.length<cap) pats.push(leaf()); return; }
+    if(mode==='collect' && pats.length>=cap) return;
+    const li=ORDER[i], L=LN[li];
+    for(let x=2;x>=0;x--){ const v=VAL[L.d][x], need=(used[L.d][v]||0)+L.n;
+      if(need>(cnt[L.d][v]||0)) continue;
+      assign[li]=v; used[L.d][v]=need;
+      if(feasible()) dfs(i+1,score+v*L.n);
+      assign[li]=0; used[L.d][v]=need-L.n; }
+    dfs(i+1,score);
+  }
+  dfs(0,0); mode='collect'; pats=[]; dfs(0,0);
+  return {best,patterns:pats,capped:pats.length>=cap};
+}
+/* 180° 돌리기: (q,r) → (−q,−r). 줄은 같은 방향의 반대편 줄로 옮겨 간다 */
+function rotBoard(b){ const o={}; for(const c of CELLS) o[ck(-c.q,-c.r)]=b[ck(c.q,c.r)]; return o; }
+function rotAssign(a){ const o=a.slice(); for(let d=0;d<3;d++) for(let i=0;i<5;i++) o[d*5+i]=a[d*5+4-i]; return o; }
+/** 돌린 모양끼리는 하나로 묶는다 */
+function dedupe(pats){
+  const seen=new Map();
+  for(const p of pats){
+    const k1=p.assign.join(','), k2=rotAssign(p.assign).join(',');
+    const key=k1<k2?k1:k2;
+    if(!seen.has(key)) seen.set(key,p);
+  }
+  return [...seen.values()];
+}
+
+/* ===================== 화면 ===================== */
+const $=id=>document.getElementById(id);
+let toastT; function toast(m){ const t=$('toast'); t.textContent=m; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2200); }
+let IDS=[], BEST=0, PATS=[], cur=0, rotated=false, CODE='';
+
+function renderBoard(){
+  const p=PATS[cur]; if(!p) return;
+  const b = rotated ? rotBoard(p.board) : p.board;
+  const got=completed(b);
+  const hl=new Set(); got.forEach(g=>g.cells.forEach(c=>hl.add(ck(c.q,c.r))));
+  let s='';
+  for(const c of CELLS){ const x=X(c), y=Y(c), t=b[ck(c.q,c.r)];
+    s+=tileSVG(TILES[t],x,y,R);
+    if(hl.has(ck(c.q,c.r))) s+=`<path d="${hexPath(x,y,R)}" fill="none" stroke="#ffd166" stroke-width="4"/>`; }
+  // 완성된 줄에만 학습지 번호를 단다
+  for(const g of got){
+    const pts=g.cells.map(c=>[X(c),Y(c)]);
+    let near,far;
+    if(g.d===0){ pts.sort((a,b)=>b[1]-a[1]); near=pts[0]; far=pts[pts.length-1]; }   // 세로: 아래 끝
+    else { pts.sort((a,b)=>a[0]-b[0]); near=pts[0]; far=pts[pts.length-1]; }        // 대각선: 왼쪽 끝
+    const dx=near[0]-far[0], dy=near[1]-far[1], L=Math.hypot(dx,dy)||1;
+    const lx=near[0]+dx/L*R*1.12, ly=near[1]+dy/L*R*1.12;
+    s+=`<circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="13" fill="${DIRCOL[g.d]}"/>`
+      +`<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" fill="#14181f" font-size="15" font-weight="900" text-anchor="middle" dominant-baseline="central">${g.no+1}</text>`;
+  }
+  $('board').innerHTML=s;
+  renderCalc(got);
+}
+function renderCalc(got){
+  let html='', total=0;
+  for(let d=0;d<3;d++){
+    const rows=got.filter(g=>g.d===d).sort((a,b)=>a.no-b.no);
+    const sum=rows.reduce((t,g)=>t+g.pts,0); total+=sum;
+    html+=`<div class="col"><h4 style="color:${DIRCOL[d]}">${DIRNAME[d]} 줄</h4>`;
+    html+= rows.length ? rows.map(g=>`<div class="row"><i style="color:${DIRCOL[d]}">${CIRC[g.no]}</i>${g.n} × ${g.len} = <b>${g.pts}</b></div>`).join('')
+                       : '<div class="none">완성한 줄 없음</div>';
+    html+=`<div class="sum">합 <b>${sum}</b>점</div></div>`;
+  }
+  $('calc').innerHTML=html; $('total').textContent=total+'점';
+}
+function renderNav(){
+  const n=PATS.length;
+  $('navLab').innerHTML = n>1 ? `최고점 조합 <b>${n}</b>가지 · <b>${cur+1}</b>번째`
+                              : '최고점 조합은 <b>1</b>가지';
+  $('btnPrev').disabled = n<=1; $('btnNext').disabled = n<=1;
+  $('btnRot').textContent = rotated ? '↺ 원래대로' : '↻ 180°';
+}
+function renderChecklist(){
+  const on=new Set(IDS); let html='';
+  for(const v of VERT){
+    html+='<div><div class="ghd">세로 '+v+'</div><div class="ckgrid">';
+    for(const b of DIA1) for(const e of DIA2){
+      const id=TILES.findIndex(t=>t[0]===v&&t[1]===b&&t[2]===e), ok=on.has(id);
+      html+='<div class="ck1'+(ok?' on':'')+'"><span class="bx">'+(ok?'✓':'')+'</span>'+v+'-'+b+'-'+e+'</div>'; }
+    html+='</div></div>';
+  }
+  $('checklist').innerHTML=html;
+}
+
+function parseCode(raw){
+  const code=(raw||'').toLowerCase().replace(/[^0-9a-q]/g,'');
+  if(code.length!==19) return {err:'19자 코드가 아닙니다 (지금 '+code.length+'자)'};
+  const ids=code.split('').map(ch=>SEQ_ALPHA.indexOf(ch));
+  if(new Set(ids).size!==19) return {err:'같은 타일이 두 번 들어 있습니다. 코드를 다시 확인해 주세요.'};
+  return {code,ids};
+}
+function run(raw){
+  const r=parseCode(raw);
+  if(r.err){ $('err').textContent=r.err; return; }
+  $('err').textContent=''; $('best').textContent='…';
+  setTimeout(()=>{
+    const t0=performance.now();
+    const res=solveAll(r.ids);
+    IDS=r.ids; CODE=r.code; BEST=res.best; PATS=dedupe(res.patterns); cur=0; rotated=false;
+    $('best').textContent=BEST;
+    $('emptyMsg').classList.add('hidden'); $('board').classList.remove('hidden');
+    $('labLink').href='takeiteasy-lab.html#'+CODE;
+    renderNav(); renderBoard(); renderChecklist();
+    history.replaceState(null,'','#'+CODE);
+    toast('계산 완료 ('+Math.round(performance.now()-t0)+'ms)'+(res.capped?' · 조합이 많아 일부만 보여 줍니다':''));
+  },30);
+}
+$('btnGo').onclick=()=>run($('inCode').value);
+$('inCode').addEventListener('keydown',e=>{ if(e.key==='Enter') run($('inCode').value); });
+$('btnPaste').onclick=async()=>{
+  try{ const t=await navigator.clipboard.readText(); $('inCode').value=t.trim(); run(t); }
+  catch(_){ toast('붙여넣기가 막혀 있습니다. 직접 입력해 주세요.'); } };
+$('btnPrev').onclick=()=>{ if(PATS.length>1){ cur=(cur-1+PATS.length)%PATS.length; rotated=false; renderNav(); renderBoard(); } };
+$('btnNext').onclick=()=>{ if(PATS.length>1){ cur=(cur+1)%PATS.length; rotated=false; renderNav(); renderBoard(); } };
+$('btnRot').onclick=()=>{ if(!PATS.length) return; rotated=!rotated; renderNav(); renderBoard(); };
+
+renderChecklist();
+const h=location.hash.replace('#','').trim();
+if(h){ $('inCode').value=h; run(h); } else $('inCode').focus();
+</script>
+</body>
+</html>
