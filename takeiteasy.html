@@ -117,6 +117,10 @@
   .rkline .sid{color:var(--mute);font-variant-numeric:tabular-nums;min-width:5ch;font-size:14px}
   .rkline .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .rkline .sc{font-weight:800;font-variant-numeric:tabular-nums}
+  .rkline .pct{color:var(--mute);font-size:13px;font-variant-numeric:tabular-nums;min-width:3.4ch;text-align:right}
+  .rkline.top .pct{color:#c9b27a}
+  .ceiltag{margin-left:auto;font-size:15px;color:var(--mute)}
+  .ceiltag b{color:#ffd166;font-size:22px;font-variant-numeric:tabular-nums;margin-left:6px}
   .rkline.top{background:#3a3520;border:1px solid #6d5f2a}
   .rkline.top .no,.rkline.top .sc{color:#ffd166}
   .rkline.wait{opacity:.55}
@@ -284,7 +288,7 @@
        </div>
      </div>
      <div class="rankpanel" id="tRankView" style="display:none">
-       <div class="rankhead"><span class="t">순위</span><span class="m" id="tRankMeta"></span></div>
+       <div class="rankhead"><span class="t">순위</span><span class="m" id="tRankMeta"></span><span class="ceiltag hidden" id="tCeilTag">이 판의 최고점<b id="tCeilVal">—</b></span></div>
        <div class="rankcols" id="tRankList"></div>
      </div>
     </div>
@@ -348,11 +352,12 @@
       <div style="color:var(--mute);font-size:14px" id="rNote"></div>
       <div style="flex:1"></div>
       <div class="ceilbox">
-        <div class="lab">이 판에서 가능한 최고점 (탐색값)</div>
+        <div class="lab">이 판에서 가능한 최고점</div>
         <div class="val" id="rCeil">계산 중…</div>
         <div class="sub" id="rCeilSub">잠시만 기다려 주세요</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="btn primary hidden" id="btnLab">lab에서 다시 배치 ↗</button>
         <button class="btn" id="btnCopySeq">타일 순서 복사</button>
         <button class="btn" id="btnBackHome">처음으로</button>
       </div>
@@ -397,6 +402,10 @@ const TEACHER_EMAIL = "teacher@takeiteasy.local";
 
 // Authentication 을 쓰지 않을 때만 채우세요. 소스에 노출되니 시험용으로만.
 const TEACHER_PASSWORD = "";
+
+// 학생 결과 화면의 [lab에서 다시 배치] 버튼이 여는 주소입니다.
+// 예: "https://학교주소/takeiteasy-lab.html"  비워 두면 버튼이 나타나지 않습니다.
+const LAB_URL = "https://baek1203.github.io/takeiteasy-lab.html";
 
 const SECONDS_PER_TURN = 20;
 const TOTAL_ROUNDS = 19;
@@ -686,6 +695,15 @@ $('aiNext').onclick  = ()=>{ aiStep=Math.min(aiMaxStep(),aiStep+1); aiFollow=(ai
 $('aiFirst').onclick = ()=>{ aiFollow=false; aiStep=0; renderAIView(); };
 $('aiLastBtn').onclick = ()=>{ aiFollow=true; renderAIView(); };
 
+let tCeil=null, tCeilKey='';
+function updateTeacherCeil(drawn){
+  if (!drawn || drawn.length<TOTAL_ROUNDS){ tCeil=null; tCeilKey=''; renderRanking(); return; }
+  const key=drawn.slice(0,TOTAL_ROUNDS).join(',');
+  if (key===tCeilKey) return;                     // 같은 판은 한 번만 계산
+  tCeilKey=key;
+  setTimeout(()=>{ tCeil=exactMax(drawn.slice(0,TOTAL_ROUNDS)); renderRanking(); }, 40);
+}
+
 function renderRanking(){
   if (!rankOpen) return;
   const done = tList.filter(p=>p.done).sort((a,b)=>(b.score||0)-(a.score||0));
@@ -693,12 +711,13 @@ function renderRanking(){
   let html='', rank=0, prev=null;
   done.forEach((p,i)=>{
     const sc=p.score||0;
+    const pct = tCeil ? '<span class="pct">'+Math.round(sc/tCeil*100)+'%</span>' : '';
     if (sc!==prev){ rank=i+1; prev=sc; }          // 동점은 같은 등수
     html += '<div class="rkline '+(rank<=3?'top':'')+'">'
           + '<span class="no">'+rank+'</span>'
           + (p.ai ? '<span class="badge">AI</span>' : '<span class="sid">'+esc(p.sid)+'</span>')
           + '<span class="nm">'+esc(p.name)+'</span>'
-          + '<span class="sc">'+sc+'점</span></div>';
+          + pct + '<span class="sc">'+sc+'점</span></div>';
   });
   rest.forEach(p=>{
     html += '<div class="rkline wait">'
@@ -716,9 +735,12 @@ function renderRanking(){
     const avg=Math.round(sum/done.length);
     const mid=done[Math.floor((done.length-1)/2)].score||0;
     meta.textContent = tList.length+'명 중 '+done.length+'명 완료  ·  평균 '+avg+'점  ·  최고 '+(done[0].score||0)+'점  ·  중앙값 '+mid+'점';
+    if (tCeil) meta.textContent += '  ·  1등은 최고점의 '+Math.round((done[0].score||0)/tCeil*100)+'%';
   } else {
     meta.textContent = tList.length+'명 접속  ·  아직 완료한 학생이 없습니다';
   }
+  $('tCeilTag').classList.toggle('hidden', !tCeil);
+  if (tCeil) $('tCeilVal').textContent = tCeil+'점';
 }
 
 function renderProgress(){
@@ -756,6 +778,7 @@ function watchTeacher(){
     $('tLeft').textContent = (27-drawn.length)+'장';
     $('tRound').textContent = drawn.length;
     tRound = drawn.length;
+    updateTeacherCeil(drawn);
     renderProgress();
     const last = drawn.length?drawn[drawn.length-1]:null;
     if (last!==null && last!==undefined){
@@ -797,6 +820,7 @@ $('btnReset').onclick = async ()=>{
   aiBoards = { zero:{}, nova:{}, lumen:{} }; aiSeq = { zero:[], nova:[], lumen:[] };
   aiFollow = true; aiStep = 0;
   showRank(false);
+  tCeil=null; tCeilKey='';
   clearInterval(tTimerId); tTimerId=null; tRound=0;
   $('tClock').style.visibility='hidden';
   $('tProg').innerHTML='타일을 놓은 학생 <b>0</b> / 0'; $('tProg').classList.remove('all');
@@ -1307,33 +1331,60 @@ async function copySeq(ids){
   catch(_){ prompt('아래 코드를 복사하세요', code); }
 }
 
-/* ---------- 이 판에서 가능한 최고점 찾기 ---------- */
-function climbOnce(ids){
-  const ks = CELLS.map(c=>ck(c.q,c.r)).sort(()=>Math.random()-0.5);
-  const b = {};
-  ks.forEach((k,i)=>{ b[k] = ids[i]; });         // 빈 칸은 undefined 로 남고 채점에서 제외된다
-  let cur = scoreBoard(b).total, noImp = 0;
-  while (noImp < 1500){
-    const i = Math.floor(Math.random()*ks.length), j = Math.floor(Math.random()*ks.length);
-    if (i===j){ noImp++; continue; }
-    const ki=ks[i], kj=ks[j];
-    const t=b[ki]; b[ki]=b[kj]; b[kj]=t;
-    const sc = scoreBoard(b).total;
-    if (sc>=cur){ if(sc>cur) noImp=0; else noImp++; cur=sc; }
-    else { const t2=b[ki]; b[ki]=b[kj]; b[kj]=t2; noImp++; }
+/* ---------- 이 판에서 가능한 최고점 (정확한 값) ----------
+   15개 줄 하나하나를 '이 숫자로 완성' 또는 '포기'로 정해 나가면서,
+   그 조건대로 19장을 19칸에 겹치지 않게 놓을 수 있는지(이분 매칭)를 확인한다.
+   남은 줄로 아무리 잘해도 지금 최고점을 못 넘는 가지는 버린다.
+   모든 경우를 빠짐없이 따지므로 결과는 근사값이 아니라 정확한 최댓값이다. */
+function exactMax(ids){
+  const VAL=[VERT,DIA1,DIA2];
+  const T=ids.map(i=>TILES[i]), N=T.length, FULL=(1<<N)-1;
+  const cellIdx={}; CELLS.forEach((c,i)=>cellIdx[ck(c.q,c.r)]=i);
+  const LN=LINES.map(L=>({d:L.dir, n:L.cells.length, cells:L.cells.map(c=>cellIdx[ck(c.q,c.r)])}));
+  const cellLines=CELLS.map(()=>[]); LN.forEach((L,li)=>L.cells.forEach(ci=>cellLines[ci].push(li)));
+  const ORDER=[...LN.keys()].sort((a,b)=>LN[b].n-LN[a].n || a-b);
+  const cnt=[{},{},{}], mask=[{},{},{}];
+  T.forEach((t,k)=>{ for(let d=0;d<3;d++){ cnt[d][t[d]]=(cnt[d][t[d]]||0)+1; mask[d][t[d]]=(mask[d][t[d]]||0)|(1<<k); } });
+  const assign=new Array(15).fill(0), used=[{},{},{}];
+  const allow=new Array(19), matchT=new Array(N);
+  let best=0;
+  function ub(i){
+    let sum=0;
+    for(let j=i;j<15;j++){ const L=LN[ORDER[j]]; let m=0;
+      for(const v of VAL[L.d]) if((cnt[L.d][v]||0)-(used[L.d][v]||0)>=L.n && v*L.n>m) m=v*L.n;
+      sum+=m; }
+    return sum;
   }
-  return cur;
-}
-/** 화면이 멈추지 않도록 잘라서 계산한다 */
-function findCeiling(ids, budget, done){
-  const t0 = Date.now(); let best = 0;
-  (function chunk(){
-    const c0 = Date.now();
-    while (Date.now()-c0 < 70 && Date.now()-t0 < budget){
-      const v = climbOnce(ids); if (v>best) best = v;
+  function tryCell(c,seen){
+    let m=allow[c]&~seen.v;
+    while(m){ const b=m&-m, k=31-Math.clz32(b); m&=m-1; seen.v|=b;
+      if(matchT[k]<0 || tryCell(matchT[k],seen)){ matchT[k]=c; return true; } }
+    return false;
+  }
+  function feasible(){
+    for(let c=0;c<19;c++){ let m=FULL;
+      for(const li of cellLines[c]){ const v=assign[li]; if(v) m&=(mask[LN[li].d][v]||0); }
+      if(!m) return false; allow[c]=m; }
+    matchT.fill(-1);
+    for(let c=0;c<19;c++) if(!tryCell(c,{v:0})) return false;
+    return true;
+  }
+  function dfs(i,score){
+    if(score+ub(i)<=best) return;
+    if(i===15){ best=score; return; }
+    const li=ORDER[i], L=LN[li];
+    for(let x=2;x>=0;x--){ const v=VAL[L.d][x];
+      const need=(used[L.d][v]||0)+L.n;
+      if(need>(cnt[L.d][v]||0)) continue;
+      assign[li]=v; used[L.d][v]=need;
+      if(feasible()) dfs(i+1,score+v*L.n);
+      assign[li]=0; used[L.d][v]=need-L.n;
     }
-    if (Date.now()-t0 < budget) setTimeout(chunk, 0); else done(best);
-  })();
+    dfs(i+1,score);
+  }
+  if(N!==19) return 0;
+  dfs(0,0);
+  return best;
 }
 
 /* ---------- 결과 ---------- */
@@ -1358,10 +1409,11 @@ async function finish(){
 
   // 같은 타일 19장을 가장 잘 놓았다면 몇 점이었을까
   $('rCeil').textContent='계산 중…'; $('rCeilSub').textContent='잠시만 기다려 주세요';
-  findCeiling(Object.values(board), 1300, ceil=>{
-    $('rCeil').textContent = '약 '+ceil+'점';
-    $('rCeilSub').textContent = ceil ? ('당신은 그중 '+Math.round(total/ceil*100)+'%') : '';
-  });
+  setTimeout(()=>{
+    const ceil = exactMax(Object.values(board));
+    $('rCeil').textContent = ceil+'점';
+    $('rCeilSub').textContent = ceil ? ('나는 그중 '+Math.round(total/ceil*100)+'%') : '';
+  }, 60);
   bOn('rooms/'+roomCode+'/ranking', v=>{
     const list = Object.entries(v||{}).filter(([,x])=>x && typeof x==='object')
                        .map(([pid,x])=>Object.assign({pid},x));
@@ -1374,6 +1426,13 @@ async function finish(){
 }
 $('btnBackHome').onclick = ()=>{ location.reload(); };
 $('btnCopySeq').onclick = ()=>copySeq(drawnList);
+/* lab을 새 탭으로 열고, 주소 끝에 #순서코드를 붙여 그 19장이 바로 불러와지게 한다 */
+$('btnLab').classList.toggle('hidden', !LAB_URL);
+$('btnLab').onclick = ()=>{
+  const code = seqCode(drawnList);
+  if (!code){ toast('아직 뽑은 타일이 없습니다.'); return; }
+  window.open(LAB_URL.split('#')[0] + '#' + code, '_blank', 'noopener');
+};
 $('btnCopySeqT').onclick = async ()=>copySeq((await bGet('rooms/'+roomCode+'/drawn'))||[]);
 
 /* ---------- 연습 모드: 학생 화면에서 직접 뽑기 ---------- */
