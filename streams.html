@@ -1,0 +1,755 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>스트림스 교실</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 전자칠판 가로 화면 — 왼쪽은 크게 뽑히는 타일 무대, 오른쪽은 가방에 남은 타일, 아래로 뽑힌 순서 20칸 */
+:root{
+  --bg:#EDF2F1;
+  --surface:#FFFFFF;
+  --surface-2:#E3EBEA;
+  --ink:#12262B;
+  --muted:#55696D;
+  --line:#C6D4D4;
+  --accent:#126B79;
+  --accent-ink:#FFFFFF;
+  --accent-soft:#D3E8EA;
+  --low:#2F6BC9; --mid:#1C8457; --high:#C9581B; --star:#A77E00;
+  --s-a:#126B79; --s-b:#C9581B; --s-single:#A9B8B9;
+  --warn:#A9530A; --warn-soft:#FBE9D8;
+  /* 타일은 실물 베이클라이트 느낌의 상아색 — 두 테마에서 같은 값 */
+  --tile:#FBF8EE; --tile-2:#EFE8D2; --tile-edge:#CFC5A7; --tile-shadow:rgba(10,30,34,.22);
+  --t-low:#2257B5; --t-mid:#137149; --t-high:#B44A12; --t-star:#9A7300;
+  --font-display:"Bagel Fat One","Jua","Malgun Gothic",system-ui,sans-serif;
+  --font-body:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",system-ui,sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D191C; --surface:#152629; --surface-2:#1C3135; --ink:#E1EBEB; --muted:#93A8AB; --line:#2C4448;
+    --accent:#56B6C4; --accent-ink:#06252A; --accent-soft:#1D3D42;
+    --low:#86ABF2; --mid:#62C796; --high:#F29A62; --star:#E3C14E;
+    --s-a:#56B6C4; --s-b:#F29A62; --s-single:#4E6468;
+    --warn:#F2A55E; --warn-soft:#3A2A18;
+    --tile-shadow:rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D191C; --surface:#152629; --surface-2:#1C3135; --ink:#E1EBEB; --muted:#93A8AB; --line:#2C4448;
+  --accent:#56B6C4; --accent-ink:#06252A; --accent-soft:#1D3D42;
+  --low:#86ABF2; --mid:#62C796; --high:#F29A62; --star:#E3C14E;
+  --s-a:#56B6C4; --s-b:#F29A62; --s-single:#4E6468;
+  --warn:#F2A55E; --warn-soft:#3A2A18;
+  --tile-shadow:rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+#bagBands{display:flex;flex-direction:column;gap:14px}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.55;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 40px}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1600px;margin:0 auto}
+
+/* ---------- 머리 ---------- */
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;padding-block:16px 12px}
+.brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+.brand h1{font-family:var(--font-display);font-weight:400;font-size:34px;line-height:1;margin:0;letter-spacing:.01em;color:var(--accent)}
+.brand p{margin:0;color:var(--muted);font-size:14px}
+nav.tabs{display:flex;flex-wrap:wrap;gap:4px;background:var(--surface-2);padding:4px;border-radius:999px}
+nav.tabs button{border:0;background:transparent;padding:8px 16px;border-radius:999px;cursor:pointer;font-weight:500;color:var(--muted)}
+nav.tabs button[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.view[hidden]{display:none!important}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:10px 16px;border-radius:12px;cursor:pointer;font-weight:500;line-height:1.2}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
+.btn.ghost{background:transparent}
+.btn.small{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn.warn{border-color:var(--warn);color:var(--warn)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.label{font-size:13px;letter-spacing:.06em;color:var(--muted);font-weight:500}
+.tnum{font-variant-numeric:tabular-nums}
+
+/* ---------- 타일 ---------- */
+.tile{display:inline-grid;place-items:center;width:1.85em;height:1.85em;border-radius:.3em;
+  background:linear-gradient(165deg,var(--tile) 0%,var(--tile) 45%,var(--tile-2) 100%);
+  box-shadow:inset 0 -.07em 0 var(--tile-edge),inset 0 .03em 0 rgba(255,255,255,.8),0 .05em .14em var(--tile-shadow);
+  font-family:var(--font-display);font-weight:400;line-height:1;font-variant-numeric:tabular-nums;user-select:none}
+.tile>span{transform:translateY(.04em)}
+.b-low{color:var(--t-low)} .b-mid{color:var(--t-mid)} .b-high{color:var(--t-high)} .b-star{color:var(--t-star)}
+.tile.blank{color:var(--muted);background:var(--surface-2);box-shadow:inset 0 0 0 2px var(--line)}
+
+/* ---------- 수 뽑기 ---------- */
+.draw-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);grid-template-areas:"stage bag" "hist hist" "score score";gap:16px}
+.stage{grid-area:stage;display:flex;flex-direction:column;gap:14px}
+.stage-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;justify-content:space-between}
+.game-chip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);border-radius:999px;padding:4px 6px 4px 14px;font-weight:700}
+.game-chip strong{font-family:var(--font-display);font-weight:400;font-size:24px;color:var(--accent)}
+.game-chip button{border:0;background:var(--surface);width:30px;height:30px;border-radius:50%;cursor:pointer;font-weight:700}
+.settings{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.settings label{font-size:14px;color:var(--muted)}
+.settings select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:6px 8px}
+.stage-main{display:grid;grid-template-columns:auto minmax(0,1fr);gap:28px;align-items:center}
+.big-wrap{position:relative;font-size:clamp(96px,17vh,190px)}
+.big-wrap .tile{transition:transform .25s ease}
+.big-wrap .tile.pop{animation:pop .42s cubic-bezier(.2,1.4,.4,1)}
+.big-wrap .tile.spin>span{opacity:.55}
+@keyframes pop{0%{transform:scale(.82) rotate(-4deg)}100%{transform:scale(1) rotate(0)}}
+.stage-info{display:flex;flex-direction:column;gap:14px;min-width:0}
+.round{font-size:clamp(20px,2.6vw,32px);font-weight:700;line-height:1.2}
+.round .tnum{font-family:var(--font-display);font-weight:400;color:var(--accent);font-size:1.35em}
+.round small{display:block;font-size:15px;font-weight:400;color:var(--muted);margin-top:4px}
+.timer{height:14px;border-radius:999px;background:var(--surface-2);overflow:hidden;position:relative}
+.timer i{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:999px;width:100%}
+.timer.over i{background:var(--warn)}
+.timer-text{font-size:15px;color:var(--muted);min-height:1.5em}
+.timer-text.over{color:var(--warn);font-weight:700}
+.controls{display:flex;flex-wrap:wrap;gap:10px}
+.controls .btn.primary{font-size:clamp(18px,2vw,24px);padding:16px 28px;border-radius:16px}
+.kbd{font-size:12px;border:1px solid currentColor;border-radius:5px;padding:0 5px;margin-left:8px;opacity:.75;font-weight:500}
+.endbox{background:var(--accent-soft);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.endbox p{margin:0;font-weight:700}
+.code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:14px;background:var(--surface);border-radius:8px;padding:8px 10px;word-break:break-all;user-select:all}
+
+.bag{grid-area:bag;display:flex;flex-direction:column;gap:12px}
+.bag-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.bag-head h2{margin:0;font-size:18px}
+.bag-sum{color:var(--muted);font-size:15px;margin:0}
+.bag-sum b{color:var(--ink)}
+.band{display:flex;flex-direction:column;gap:6px}
+.band-name{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.band-name::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+.band-tiles{display:flex;flex-wrap:wrap;gap:6px;font-size:clamp(15px,1.25vw,20px)}
+.mini{display:flex;flex-direction:column;align-items:center;gap:3px}
+.mini .dots{display:flex;gap:3px;height:6px}
+.mini .dots i{width:6px;height:6px;border-radius:50%;background:var(--ink);opacity:.7}
+.mini .dots i.used{background:transparent;box-shadow:inset 0 0 0 1px var(--muted);opacity:.6}
+.mini.gone .tile{opacity:.28;filter:grayscale(1)}
+.bag.hidden-tiles .band{display:none}
+
+.hist{grid-area:hist}
+.hist-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.hist-head h2{margin:0;font-size:18px}
+
+/* 20칸 판 (뽑힌 순서·연습·계산 공용) */
+.board{display:grid;grid-template-columns:repeat(20,minmax(0,1fr));gap:6px}
+.slot{container-type:inline-size;display:flex;flex-direction:column;gap:4px;min-width:0;position:relative}
+.slot .idx{font-size:12px;color:var(--muted);text-align:center;line-height:1;font-variant-numeric:tabular-nums}
+.slot .cell{aspect-ratio:1;max-width:100%;display:grid;place-items:center;border-radius:20%;border:2px dashed var(--line);background:transparent}
+.slot .cell .tile{width:100%;height:100%;font-size:52cqw;border-radius:20%}
+.slot .cell.has{border:0}
+.slot.latest .cell{outline:3px solid var(--accent);outline-offset:2px;border-radius:20%}
+button.slot{border:0;background:transparent;padding:0;cursor:pointer}
+button.slot:disabled{cursor:default}
+button.slot:not(:disabled):hover .cell{border-color:var(--accent);background:var(--accent-soft)}
+button.slot:not(:disabled):hover .cell .ghost{opacity:.5}
+.cell .ghost{opacity:0;font-family:var(--font-display);font-size:44cqw;color:var(--accent)}
+.bar{height:8px;border-radius:0;background:transparent;position:relative}
+.bar.on{background:var(--c)}
+.bar.first{border-top-left-radius:6px;border-bottom-left-radius:6px;margin-left:2px}
+.bar.last{border-top-right-radius:6px;border-bottom-right-radius:6px;margin-right:2px}
+.bar-label{text-align:center;font-size:13px;font-weight:700;min-height:1.3em;line-height:1.3;font-variant-numeric:tabular-nums;white-space:nowrap}
+.slot .cell input{width:100%;height:100%;border:0;background:transparent;text-align:center;font-family:var(--font-display);font-size:46cqw;padding:0;border-radius:20%;color:var(--ink)}
+.slot .cell.inp{border-style:solid;background:var(--surface)}
+.slot .cell.inp.v-low input{color:var(--low)} .slot .cell.inp.v-mid input{color:var(--mid)} .slot .cell.inp.v-high input{color:var(--high)} .slot .cell.inp.v-star input{color:var(--star)}
+.slot .cell.inp.bad{border-color:var(--warn);background:var(--warn-soft)}
+
+.score-strip{grid-area:score;overflow-x:auto}
+table.pts{border-collapse:collapse;font-variant-numeric:tabular-nums;width:100%;min-width:640px}
+table.pts th,table.pts td{border:1px solid var(--line);text-align:center;padding:5px 2px;font-size:15px}
+table.pts th{background:var(--surface-2);font-weight:500;color:var(--muted);font-size:13px;white-space:nowrap;padding-inline:8px}
+table.pts td.big{font-weight:700;color:var(--accent)}
+
+/* ---------- 혼자 연습 ---------- */
+.pr-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:18px}
+.pr-now{font-size:clamp(56px,8vw,96px)}
+.pr-text h2{margin:0 0 4px;font-size:clamp(20px,2.2vw,28px)}
+.pr-text p{margin:0;color:var(--muted)}
+.pr-actions{display:flex;flex-direction:column;gap:8px;align-items:stretch}
+.codein{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.codein input{flex:1 1 260px;min-width:0;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--surface)}
+.msg{font-size:14px;margin:6px 0 0;min-height:1.4em}
+.msg.err{color:var(--warn);font-weight:500}
+.result{display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px 28px;align-items:start;margin-top:20px}
+.total{display:flex;flex-direction:column;align-items:flex-start}
+.total b{font-family:var(--font-display);font-weight:400;font-size:clamp(56px,7vw,88px);line-height:1;color:var(--accent)}
+.total span{color:var(--muted);font-size:14px}
+.stream-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.stream-list li{display:flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:4px 12px 4px 6px;font-size:14px;background:var(--surface)}
+.stream-list li i{width:14px;height:14px;border-radius:50%;background:var(--c)}
+.stream-list li b{font-variant-numeric:tabular-nums}
+.log{margin-top:18px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
+.log .chip{background:var(--surface-2);color:var(--ink);border-radius:999px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.log .chip.best{background:var(--accent);color:var(--accent-ink);font-weight:700}
+
+/* ---------- 계산기 ---------- */
+.calc-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+.calc-top p{margin:0;color:var(--muted);max-width:62ch}
+.badge{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.04em;background:var(--warn-soft);color:var(--warn);border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:middle}
+.warns{margin:12px 0 0;padding:0;list-style:none;color:var(--warn);font-size:14px}
+
+/* ---------- 규칙 ---------- */
+.rules{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.rules h2{font-size:20px;margin:0 0 10px}
+.rules h3{font-size:16px;margin:18px 0 6px}
+.rules p,.rules li{max-width:68ch}
+.rules ol,.rules ul{padding-left:1.3em;margin:0}
+.rules li{margin:4px 0}
+.pool-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:6px}
+.pool-row span{background:var(--surface-2);border-radius:8px;padding:4px 10px;font-size:14px}
+.example{margin-top:10px}
+.example .board{grid-template-columns:repeat(10,minmax(0,1fr));max-width:560px}
+.wide{grid-column:1/-1}
+details.teacher{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0}
+details.teacher summary{cursor:pointer;padding:16px 18px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.teacher summary::-webkit-details-marker{display:none}
+details.teacher summary::after{content:"펼치기";font-weight:400;color:var(--muted);font-size:14px}
+details.teacher[open] summary::after{content:"접기"}
+.teacher-body{padding:0 18px 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 28px}
+.levels{display:flex;flex-direction:column;gap:10px}
+.lv{border-left:4px solid var(--c);padding:6px 0 6px 12px}
+.lv h4{margin:0 0 4px;font-size:15px}
+.lv p{margin:0;font-size:15px}
+.lv .se{margin-top:6px;font-size:14px;color:var(--muted)}
+.note{font-size:14px;color:var(--muted)}
+
+@media (max-width:1000px){
+  .board{grid-template-columns:repeat(10,minmax(0,1fr))}
+  .draw-grid{grid-template-columns:minmax(0,1fr);grid-template-areas:"stage" "hist" "bag" "score"}
+  .rules,.teacher-body{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:640px){
+  .stage-main{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}
+  .controls{justify-content:center}
+  .pr-head{grid-template-columns:auto minmax(0,1fr)}
+  .pr-actions{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
+  .result{grid-template-columns:minmax(0,1fr)}
+  .brand p{display:none}
+}
+@media (max-width:480px){
+  .board{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .example .board{grid-template-columns:repeat(5,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+}
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="brand">
+    <h1>스트림스</h1>
+    <p>뽑힌 수를 20칸에 적어 오름차순 흐름을 길게 만드는 게임</p>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="화면 고르기">
+    <button role="tab" id="tab-draw" aria-controls="view-draw" data-view="draw">수 뽑기</button>
+    <button role="tab" id="tab-practice" aria-controls="view-practice" data-view="practice">혼자 연습</button>
+    <button role="tab" id="tab-calc" aria-controls="view-calc" data-view="calc">점수 계산</button>
+    <button role="tab" id="tab-rules" aria-controls="view-rules" data-view="rules">규칙과 안내</button>
+  </nav>
+</header>
+
+<!-- ======================= 수 뽑기 ======================= -->
+<section class="view" id="view-draw" role="tabpanel" aria-labelledby="tab-draw">
+  <div class="draw-grid">
+    <div class="stage panel">
+      <div class="stage-top">
+        <span class="game-chip" aria-label="활동지 판 번호">
+          <strong id="gameNo" class="tnum">1</strong>판
+          <button id="gameMinus" aria-label="판 번호 줄이기">−</button>
+          <button id="gamePlus" aria-label="판 번호 늘리기">+</button>
+        </span>
+        <div class="settings">
+          <label for="timerSel">적는 시간</label>
+          <select id="timerSel">
+            <option value="0">재지 않음</option>
+            <option value="10">10초</option>
+            <option value="15">15초</option>
+            <option value="20">20초</option>
+            <option value="30">30초</option>
+          </select>
+          <button class="btn small ghost" id="fsBtn">전체 화면</button>
+        </div>
+      </div>
+      <div class="stage-main">
+        <div class="big-wrap"><span class="tile blank" id="bigTile"><span>?</span></span></div>
+        <div class="stage-info">
+          <div class="round" id="roundText">0 / 20</div>
+          <div>
+            <div class="timer" id="timerBar" hidden><i id="timerFill"></i></div>
+            <div class="timer-text" id="timerText"></div>
+          </div>
+          <div class="controls" id="controls">
+            <button class="btn primary" id="drawBtn">다음 수 뽑기<span class="kbd">Space</span></button>
+            <button class="btn" id="undoBtn">방금 수 되돌리기</button>
+            <button class="btn" id="newBtn">새 판 시작</button>
+          </div>
+          <div class="endbox" id="endBox" hidden>
+            <p>20개를 모두 뽑았어요. 흐름을 나누고 점수를 더해 보세요.</p>
+            <div class="label">이번 판 순서 코드</div>
+            <div class="code" id="endCode"></div>
+            <div class="controls">
+              <button class="btn small" id="copyCode">순서 코드 복사</button>
+              <button class="btn small" id="toPractice">이 순서로 혼자 연습하기</button>
+              <button class="btn small primary" id="nextGame">다음 판 시작</button>
+            </div>
+            <div class="msg" id="copyMsg"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="bag panel" id="bagPanel">
+      <div class="bag-head">
+        <h2>가방에 남은 타일</h2>
+        <button class="btn small ghost" id="bagToggle" aria-pressed="false">타일 숨기기</button>
+      </div>
+      <p class="bag-sum" id="bagSum"></p>
+      <div id="bagBands"></div>
+    </aside>
+
+    <div class="hist panel">
+      <div class="hist-head">
+        <h2>뽑힌 순서</h2>
+        <span class="label">칸 번호가 아니라 뽑힌 차례예요</span>
+      </div>
+      <div class="board" id="histBoard"></div>
+    </div>
+
+    <div class="score-strip panel">
+      <table class="pts" id="ptsStrip"></table>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 혼자 연습 ======================= -->
+<section class="view" id="view-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+  <div class="panel">
+    <div class="pr-head">
+      <div class="pr-now"><span class="tile" id="prTile"><span>?</span></span></div>
+      <div class="pr-text">
+        <h2 id="prTitle">이 수를 놓을 칸을 누르세요</h2>
+        <p id="prSub">한 번 놓으면 바꿀 수 없어요.</p>
+      </div>
+      <div class="pr-actions">
+        <button class="btn primary" id="prNew">새 순서로 시작</button>
+        <button class="btn" id="prSame">같은 순서로 다시</button>
+      </div>
+    </div>
+    <div class="board" id="prBoard"></div>
+    <div class="result" id="prResult" hidden>
+      <div class="total"><b class="tnum" id="prTotal">0</b><span>점</span></div>
+      <div>
+        <div class="label" style="margin-bottom:8px">흐름별 점수</div>
+        <ul class="stream-list" id="prStreams"></ul>
+        <p class="msg" id="prCodeLine"></p>
+      </div>
+    </div>
+    <div class="codein">
+      <input id="codeInput" placeholder="선생님 순서 코드를 붙여 넣으세요  예: 17,4,★,28,…" aria-label="순서 코드">
+      <button class="btn" id="codeGo">이 순서로 시작</button>
+    </div>
+    <p class="msg" id="codeMsg"></p>
+    <div class="log" id="prLog"></div>
+  </div>
+</section>
+
+<!-- ======================= 점수 계산 ======================= -->
+<section class="view" id="view-calc" role="tabpanel" aria-labelledby="tab-calc" hidden>
+  <div class="panel">
+    <div class="calc-top">
+      <p>활동지에 적은 20개의 수를 칸 순서대로 넣으면 흐름을 나누고 점수를 계산해요. ★는 * 로 입력하세요. ★는 점수가 가장 높아지는 흐름에 넣어 계산해요.<span class="badge" id="exBadge">예시</span></p>
+      <div class="controls">
+        <button class="btn small" id="calcClear">모두 지우기</button>
+        <button class="btn small" id="calcEx">예시 넣기</button>
+      </div>
+    </div>
+    <div class="board" id="calcBoard"></div>
+    <div class="result" id="calcResult">
+      <div class="total"><b class="tnum" id="calcTotal">0</b><span id="calcTotalSub">점</span></div>
+      <div>
+        <div class="label" style="margin-bottom:8px">흐름별 점수</div>
+        <ul class="stream-list" id="calcStreams"></ul>
+        <ul class="warns" id="calcWarns"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= 규칙과 안내 ======================= -->
+<section class="view" id="view-rules" role="tabpanel" aria-labelledby="tab-rules" hidden>
+  <div class="rules">
+    <div class="panel">
+      <h2>게임 방법</h2>
+      <ol>
+        <li>선생님이 가방에서 타일을 한 장 뽑아 화면에 보여 줘요.</li>
+        <li>모두 그 수를 이번 판의 빈칸 아무 곳에나 적어요. 한 번 적은 수는 지우거나 옮길 수 없어요.</li>
+        <li>20장을 뽑으면 20칸이 모두 차고 판이 끝나요.</li>
+        <li>왼쪽에서 오른쪽으로 작아지지 않고 이어진 칸들이 하나의 <b>흐름</b>이에요. 흐름 사이에 선을 그어 나눠요.</li>
+        <li>흐름마다 길이에 맞는 점수를 적고 모두 더해요. 점수가 가장 높은 사람이 이겨요.</li>
+      </ol>
+      <h3>꼭 알아 둘 것</h3>
+      <ul>
+        <li>같은 수는 나란히 있어도 흐름이 이어져요. 7, 11, 11, 15 는 4칸짜리 흐름이에요.</li>
+        <li>바로 이어지는 수가 아니어도 돼요. 4, 6, 17, 23 도 흐름이에요.</li>
+        <li>한 칸짜리 흐름은 0점이에요.</li>
+        <li>★는 어떤 수로든 쓸 수 있지만, 두 흐름 사이에 있으면 한쪽 흐름에만 넣어 세요.</li>
+      </ul>
+      <h3>가방 속 타일 40장</h3>
+      <div class="pool-row">
+        <span>1~10 한 장씩</span><span>11~19 두 장씩</span><span>20~30 한 장씩</span><span>★ 한 장</span>
+      </div>
+      <p class="note" style="margin-top:8px">40장 가운데 20장만 뽑으니, 어떤 수는 끝까지 나오지 않아요.</p>
+    </div>
+    <div class="panel">
+      <h2>흐름 나누기 예시</h2>
+      <p class="note" style="margin:0">10칸으로 줄인 예시예요. 색 띠 하나가 흐름 하나예요.</p>
+      <div class="example"><div class="board" id="exBoard"></div></div>
+      <ul class="stream-list" id="exStreams" style="margin-top:12px"></ul>
+      <h3>점수표</h3>
+      <div style="overflow-x:auto"><table class="pts" id="ptsFull"></table></div>
+    </div>
+
+    <details class="teacher wide" id="teacherBox">
+      <summary>선생님용 — 수업 흐름 · 발문 · 수준 구분</summary>
+      <div class="teacher-body">
+        <div>
+          <h3 style="margin-top:0">수업 흐름 예시 (90분 블록)</h3>
+          <ol>
+            <li>규칙 익히기 — 활동지 1판을 함께 하며 흐름 나누기와 점수 더하기를 시범으로 보여 줘요.</li>
+            <li>2~3판 — 판마다 6~8분 정도. 점수 계산은 짝과 서로 확인해요.</li>
+            <li>전략 이야기 — 아래 발문으로 배치 방법을 나눠요.</li>
+            <li>4~5판 — 나눈 전략을 써 봐요.</li>
+            <li>혼자 연습 — 5판 순서 코드를 학생 화면에 넣고 같은 순서로 다시 해 봐요. 같은 순서에서 점수가 다른 친구와 배치를 비교해요.</li>
+            <li>활동지의 ‘나의 전략’ 칸을 써요.</li>
+          </ol>
+          <h3>발문</h3>
+          <ul>
+            <li>첫 수로 1이 나왔어요. 어디에 적을까요? 15라면요? 28이라면요?</li>
+            <li>11~19는 왜 두 장씩일까요? 가운데 칸을 얼마나 남겨 두면 좋을까요?</li>
+            <li>남은 칸 중 흐름에 맞는 자리가 없을 때, 어디를 ‘버리는 칸’으로 쓸까요?</li>
+            <li>남은 칸이 3개인데 가방에 큰 수가 많이 남았다면 어떻게 할까요?</li>
+          </ul>
+          <h3>점수 참고값</h3>
+          <p class="note">컴퓨터로 2만 판을 돌려 본 결과예요. 빈칸을 아무렇게나 고르면 평균 13점쯤이고 대부분 17점 이하예요. 수의 크기에 비례해 자리를 정하는 단순한 전략은 평균 28점쯤, 절반이 25점 이상, 상위 10%는 40점 이상이었어요. 한 판 점수는 운의 영향이 커서, 수준은 여러 판의 흐름과 전략 설명을 함께 보고 나눠요.</p>
+        </div>
+        <div>
+          <h3 style="margin-top:0">수업 후 수준 구분</h3>
+          <p class="note" style="margin-top:0">근거: 활동지 다섯 판의 점수 흐름, ‘나의 전략’ 칸, 전략 이야기 시간의 발언, 혼자 연습 기록</p>
+          <div class="levels">
+            <div class="lv" style="--c:var(--mid)">
+              <h4>상</h4>
+              <p>수의 크기와 칸의 위치를 비례로 대응시켜 배치하고(예: 15는 가운데쯤), 남은 타일과 남은 칸을 따져 자리를 조정해요. 판을 거듭하며 전략을 고치고 그 까닭을 말이나 글로 설명해요. 흐름 나누기와 점수 계산이 정확해요.</p>
+              <p class="se">세특 예시: 수 배치 게임 ‘스트림스’에서 수의 크기와 칸의 위치를 비례적으로 대응시키는 전략을 스스로 세우고, 남은 수의 개수를 따져 배치를 조정하는 과정을 논리적으로 설명함.</p>
+            </div>
+            <div class="lv" style="--c:var(--low)">
+              <h4>중</h4>
+              <p>작은 수는 앞, 큰 수는 뒤에 두는 큰 방향은 지키지만 가운데 수의 배치나 빈칸 남기기가 일관되지 않아요. 전략 설명이 ‘작은 수는 왼쪽’ 정도에 머물러요.</p>
+              <p class="se">세특 예시: 수 배치 게임 ‘스트림스’에서 수의 크기 순서를 고려해 배치하며, 활동을 거듭할수록 배치 방법을 다듬어 점수를 높여 감.</p>
+            </div>
+            <div class="lv" style="--c:var(--high)">
+              <h4>하</h4>
+              <p>규칙대로 수를 적고 점수를 셀 수 있지만 배치에 일관된 전략이 잘 드러나지 않거나, 흐름 나누기·점수 계산에 도움이 필요해요.</p>
+              <p class="se">세특 예시: 수 배치 게임 ‘스트림스’의 규칙을 이해하고 끝까지 성실하게 참여하며, 친구와 함께 흐름별 점수를 계산함.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
+</div>
+
+<script>
+(function(){
+const PTS=[0,0,1,3,5,7,9,11,15,20,25,30,35,40,50,60,70,85,100,150,300];
+const STAR='★';
+const POOL=(()=>{const a=[];for(let i=1;i<=10;i++)a.push(i);for(let i=11;i<=19;i++){a.push(i,i)}for(let i=20;i<=30;i++)a.push(i);a.push(STAR);return a})();
+const copies=v=>v===STAR?1:(v>=11&&v<=19?2:1);
+const band=v=>v===STAR?'star':(v<=10?'low':(v<=19?'mid':'high'));
+const $=id=>document.getElementById(id);
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function rnd(n){try{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n}catch(e){return Math.floor(Math.random()*n)}}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+function bagOf(drawn){const bag=POOL.slice();for(const v of drawn){const i=bag.indexOf(v);if(i>=0)bag.splice(i,1)}return bag}
+function tile(v,extra){return `<span class="tile b-${band(v)} ${extra||''}"><span>${v}</span></span>`}
+const enc=seq=>seq.map(v=>v===STAR?'*':v).join(',');
+const show=seq=>seq.map(v=>v).join(', ');
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function load(k){try{const s=localStorage.getItem(k);return s?JSON.parse(s):null}catch(e){return null}}
+
+/* ---------- 점수 계산 ---------- */
+function runsOf(a){
+  const streams=[];let i=0,total=0;
+  while(i<a.length){
+    if(a[i]==null){i++;continue}
+    const s=i;
+    while(i+1<a.length&&a[i+1]!=null&&a[i+1]>=a[i])i++;
+    const len=i-s+1;streams.push({start:s,end:i,len,pts:PTS[len]});total+=PTS[len];i++;
+  }
+  return {streams,total};
+}
+const CANDS=(()=>{const c=[];for(let x=0.5;x<=30.5;x+=0.5)c.push(x);return c})();
+function evaluate(vals){
+  const stars=[];vals.forEach((v,i)=>{if(v===STAR)stars.push(i)});
+  let best=null;
+  const tryA=a=>{const r=runsOf(a);if(!best||r.total>best.total)best=r};
+  if(!stars.length)tryA(vals);
+  else{
+    const base=vals.slice();stars.slice(2).forEach(i=>base[i]=null);
+    if(stars.length===1){for(const c of CANDS){const a=base.slice();a[stars[0]]=c;tryA(a)}}
+    else{for(const c1 of CANDS)for(const c2 of CANDS){const a=base.slice();a[stars[0]]=c1;a[stars[1]]=c2;tryA(a)}}
+  }
+  return best;
+}
+function barsFor(n,streams){
+  const info=Array(n).fill(null);
+  streams.forEach((s,k)=>{for(let i=s.start;i<=s.end;i++)info[i]={k,first:i===s.start,last:i===s.end,single:s.len===1,pts:s.pts,len:s.len}});
+  return info;
+}
+function barHTML(b){
+  if(!b)return `<div class="bar"></div><div class="bar-label"></div>`;
+  const c=b.single?'var(--s-single)':(b.k%2?'var(--s-b)':'var(--s-a)');
+  const cls=['bar','on',b.first?'first':'',b.last?'last':''].join(' ');
+  const lab=b.last?(b.single?'0':'+'+b.pts):'';
+  return `<div class="${cls}" style="--c:${c}"></div><div class="bar-label" style="color:${b.single?'var(--muted)':c}">${lab}</div>`;
+}
+function streamListHTML(streams){
+  return streams.map((s,k)=>{
+    const c=s.len===1?'var(--s-single)':(k%2?'var(--s-b)':'var(--s-a)');
+    const where=s.len===1?`${s.start+1}번 칸`:`${s.start+1}~${s.end+1}번 칸`;
+    return `<li style="--c:${c}"><i></i>${where} · ${s.len}칸 · <b>${s.pts}점</b></li>`;
+  }).join('');
+}
+
+/* ---------- 점수표 ---------- */
+function ptsTable(el,from){
+  let h='<tr><th scope="row">흐름 칸 수</th>';for(let i=from;i<=20;i++)h+=`<td>${i}</td>`;
+  h+='</tr><tr><th scope="row">점수</th>';for(let i=from;i<=20;i++)h+=`<td class="${i>=8?'big':''}">${PTS[i]}</td>`;
+  el.innerHTML=h+'</tr>';
+}
+ptsTable($('ptsStrip'),1);ptsTable($('ptsFull'),1);
+
+/* ---------- 화면 전환 ---------- */
+const VIEWS=['draw','practice','calc','rules'];
+function setView(v,push){
+  if(!VIEWS.includes(v))v='draw';
+  VIEWS.forEach(n=>{$('view-'+n).hidden=n!==v;$('tab-'+n).setAttribute('aria-selected',n===v?'true':'false')});
+  try{if(push)history.replaceState(null,'','#'+v)}catch(e){}
+  current=v;
+}
+let current='draw';
+document.querySelectorAll('nav.tabs button').forEach(b=>b.addEventListener('click',()=>setView(b.dataset.view,true)));
+
+/* =================== 수 뽑기 =================== */
+const D=Object.assign({game:1,drawn:[],timer:0,hideBag:false},load('streams-draw-v1')||{});
+let busy=false,timerId=null,timerEnd=0;
+const saveD=()=>store('streams-draw-v1',D);
+$('timerSel').value=String(D.timer);
+
+function renderDraw(){
+  const n=D.drawn.length,last=D.drawn[n-1];
+  $('gameNo').textContent=D.game;
+  const big=$('bigTile');
+  if(!busy){
+    if(n){big.className='tile b-'+band(last);big.innerHTML=`<span>${last}</span>`}
+    else{big.className='tile blank';big.innerHTML='<span>?</span>'}
+  }
+  $('roundText').innerHTML=n?`<span class="tnum">${n}</span> / 20번째 수<small>${n<20?'활동지 '+D.game+'판의 빈칸 하나에 적으세요':'이번 판 끝'}</small>`
+    :`<span class="tnum">0</span> / 20<small>‘다음 수 뽑기’를 누르면 ${D.game}판이 시작돼요</small>`;
+  $('drawBtn').disabled=n>=20||busy;
+  $('undoBtn').disabled=n===0||busy;
+  $('endBox').hidden=n<20;
+  $('drawBtn').hidden=n>=20;
+  if(n>=20){$('endCode').textContent=enc(D.drawn)}
+  // 뽑힌 순서
+  let h='';for(let i=0;i<20;i++){const v=D.drawn[i];
+    h+=`<div class="slot ${i===n-1?'latest':''}"><div class="idx">${i+1}</div><div class="cell ${v!=null?'has':''}">${v!=null?tile(v):''}</div></div>`}
+  $('histBoard').innerHTML=h;
+  // 가방
+  const bag=bagOf(D.drawn);
+  const left=20-n;
+  $('bagSum').innerHTML=`가방에 <b class="tnum">${bag.length}</b>장 남았고, 그중 <b class="tnum">${left}</b>장을 더 뽑아요.`;
+  const cnt={};bag.forEach(v=>cnt[v]=(cnt[v]||0)+1);
+  const mk=v=>{const c=copies(v),r=cnt[v]||0;let dots='';for(let i=0;i<c;i++)dots+=`<i class="${i<r?'':'used'}"></i>`;
+    return `<div class="mini ${r===0?'gone':''}" title="${v}: ${r}장 남음">${tile(v)}<div class="dots">${dots}</div></div>`};
+  const range=(a,b)=>{const r=[];for(let i=a;i<=b;i++)r.push(i);return r};
+  $('bagBands').innerHTML=[
+    ['1~10 · 한 장씩','var(--low)',range(1,10)],
+    ['11~19 · 두 장씩','var(--mid)',range(11,19)],
+    ['20~30 · 한 장씩','var(--high)',range(20,30)],
+    ['★ · 아무 수로나','var(--star)',[STAR]]
+  ].map(([t,c,arr])=>`<div class="band" style="--c:${c}"><div class="band-name">${t}</div><div class="band-tiles">${arr.map(mk).join('')}</div></div>`).join('');
+  $('bagPanel').classList.toggle('hidden-tiles',!!D.hideBag);
+  $('bagToggle').textContent=D.hideBag?'타일 보이기':'타일 숨기기';
+  $('bagToggle').setAttribute('aria-pressed',D.hideBag?'true':'false');
+}
+function stopTimer(){clearInterval(timerId);timerId=null;$('timerBar').hidden=true;$('timerBar').classList.remove('over');$('timerText').textContent='';$('timerText').classList.remove('over')}
+function startTimer(){
+  stopTimer();if(!D.timer)return;
+  $('timerBar').hidden=false;timerEnd=Date.now()+D.timer*1000;
+  const tick=()=>{const ms=timerEnd-Date.now();const p=Math.max(0,ms/(D.timer*1000));
+    $('timerFill').style.width=(p*100)+'%';
+    if(ms<=0){clearInterval(timerId);timerId=null;$('timerBar').classList.add('over');$('timerFill').style.width='100%';$('timerText').textContent='시간 끝! 아직 못 적었으면 지금 바로 적어요.';$('timerText').classList.add('over')}
+    else $('timerText').textContent=`적는 시간 ${Math.ceil(ms/1000)}초`};
+  tick();timerId=setInterval(tick,100);
+}
+function drawNext(){
+  if(busy||D.drawn.length>=20)return;
+  const bag=bagOf(D.drawn);const v=bag[rnd(bag.length)];
+  const big=$('bigTile');
+  const land=()=>{busy=false;D.drawn.push(v);saveD();big.className='tile b-'+band(v);big.innerHTML=`<span>${v}</span>`;
+    void big.offsetWidth;big.classList.add('pop');renderDraw();startTimer()};
+  if(reduce){land();return}
+  busy=true;stopTimer();renderDraw();
+  let k=0;const spin=setInterval(()=>{const f=bag[rnd(bag.length)];big.className='tile spin b-'+band(f);big.innerHTML=`<span>${f}</span>`;
+    if(++k>=9){clearInterval(spin);land()}},55);
+}
+$('drawBtn').addEventListener('click',drawNext);
+$('undoBtn').addEventListener('click',()=>{if(busy||!D.drawn.length)return;D.drawn.pop();saveD();stopTimer();renderDraw()});
+let armNew=null;
+function resetNew(){clearTimeout(armNew);armNew=null;$('newBtn').textContent='새 판 시작';$('newBtn').classList.remove('warn')}
+function startNewGame(){if(D.drawn.length)D.game=Math.min(99,D.game+1);D.drawn=[];saveD();stopTimer();resetNew();renderDraw()}
+$('newBtn').addEventListener('click',()=>{
+  const n=D.drawn.length;
+  if(n>0&&n<20&&!armNew){$('newBtn').textContent='한 번 더 누르면 지금 판을 끝내요';$('newBtn').classList.add('warn');armNew=setTimeout(resetNew,3500);return}
+  startNewGame();
+});
+$('nextGame').addEventListener('click',startNewGame);
+$('gameMinus').addEventListener('click',()=>{D.game=Math.max(1,D.game-1);saveD();renderDraw()});
+$('gamePlus').addEventListener('click',()=>{D.game=Math.min(99,D.game+1);saveD();renderDraw()});
+$('timerSel').addEventListener('change',e=>{D.timer=+e.target.value;saveD();if(!D.timer)stopTimer()});
+$('bagToggle').addEventListener('click',()=>{D.hideBag=!D.hideBag;saveD();renderDraw()});
+$('fsBtn').addEventListener('click',()=>{
+  try{if(document.fullscreenElement){document.exitFullscreen().catch(()=>{})}else{const p=document.documentElement.requestFullscreen();if(p&&p.catch)p.catch(()=>{$('fsBtn').textContent='전체 화면을 쓸 수 없어요'})}}catch(e){$('fsBtn').textContent='전체 화면을 쓸 수 없어요'}
+});
+document.addEventListener('fullscreenchange',()=>{$('fsBtn').textContent=document.fullscreenElement?'전체 화면 끝내기':'전체 화면'});
+function copyText(t,msgEl,okText){
+  const done=()=>{msgEl.textContent=okText;msgEl.classList.remove('err')};
+  const fail=()=>{msgEl.textContent='복사가 막혀 있어요. 위 코드를 길게 눌러 직접 복사하세요.';msgEl.classList.add('err')};
+  try{navigator.clipboard.writeText(t).then(done,fail)}catch(e){fail()}
+}
+$('copyCode').addEventListener('click',()=>copyText(enc(D.drawn),$('copyMsg'),'복사했어요. 학생 화면의 ‘혼자 연습’에 붙여 넣으면 같은 순서로 할 수 있어요.'));
+$('toPractice').addEventListener('click',()=>{newPractice(D.drawn.slice(),'선생님과 한 '+D.game+'판 순서');setView('practice',true)});
+
+document.addEventListener('keydown',e=>{
+  if(current!=='draw')return;
+  if(e.code!=='Space'&&e.key!==' ')return;
+  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'))return;
+  e.preventDefault();drawNext();
+});
+document.addEventListener('keyup',e=>{if(current==='draw'&&(e.code==='Space')&&e.target&&e.target.tagName==='BUTTON')e.preventDefault()});
+
+/* =================== 혼자 연습 =================== */
+const P={seq:[],idx:0,board:Array(20).fill(null),source:'',log:[]};
+function newPractice(seq,source){
+  P.seq=seq||shuffle(POOL).slice(0,20);P.idx=0;P.board=Array(20).fill(null);P.source=source||'';renderPractice();
+}
+function renderPractice(){
+  const done=P.idx>=20;
+  const t=$('prTile');
+  if(!done){const v=P.seq[P.idx];t.className='tile b-'+band(v);t.innerHTML=`<span>${v}</span>`;
+    $('prTitle').textContent=`${P.idx+1} / 20 — 이 수를 놓을 칸을 누르세요`;
+    $('prSub').textContent=(P.source?P.source+' · ':'')+'한 번 놓으면 바꿀 수 없어요.'}
+  else{t.className='tile blank';t.innerHTML='<span>✓</span>';$('prTitle').textContent='20칸을 모두 채웠어요';$('prSub').textContent=(P.source?P.source+' · ':'')+'아래에서 흐름과 점수를 확인하세요.'}
+  const ev=done?evaluate(P.board):null;const bars=ev?barsFor(20,ev.streams):[];
+  const nowV=done?null:P.seq[P.idx];
+  let h='';for(let i=0;i<20;i++){const v=P.board[i];
+    h+=`<button class="slot" data-i="${i}" ${v!=null||done?'disabled':''} aria-label="${i+1}번 칸${v!=null?', '+v:''}">
+      <div class="idx">${i+1}</div><div class="cell ${v!=null?'has':''}">${v!=null?tile(v):`<span class="ghost">${nowV??''}</span>`}</div>${done?barHTML(bars[i]):''}</button>`}
+  $('prBoard').innerHTML=h;
+  $('prResult').hidden=!done;
+  if(done){$('prTotal').textContent=ev.total;$('prStreams').innerHTML=streamListHTML(ev.streams);$('prCodeLine').textContent='이 판 순서 코드: '+enc(P.seq)}
+  const best=P.log.length?Math.max(...P.log):null;
+  $('prLog').innerHTML=P.log.length?'이번 연습 기록 '+P.log.map(s=>`<span class="chip ${s===best?'best':''}">${s}점</span>`).join(''):'';
+}
+$('prBoard').addEventListener('click',e=>{
+  const b=e.target.closest('button.slot');if(!b||b.disabled)return;
+  const i=+b.dataset.i;if(P.board[i]!=null||P.idx>=20)return;
+  P.board[i]=P.seq[P.idx];P.idx++;
+  if(P.idx>=20){P.log.push(evaluate(P.board).total)}
+  renderPractice();
+});
+$('prNew').addEventListener('click',()=>{newPractice(null,'');$('codeMsg').textContent=''});
+$('prSame').addEventListener('click',()=>newPractice(P.seq.slice(),P.source||'같은 순서로 다시'));
+function parseCode(s){
+  const toks=s.split(/[\s,·\/]+/).filter(Boolean);
+  const seq=[];
+  for(const t of toks){
+    if(t==='*'||t==='★'||t==='☆')seq.push(STAR);
+    else if(/^\d{1,2}$/.test(t)&&+t>=1&&+t<=30)seq.push(+t);
+    else return {err:`‘${t}’는 쓸 수 없는 값이에요. 1~30의 수와 *(★)만 넣어요.`};
+  }
+  if(seq.length!==20)return {err:`수가 ${seq.length}개예요. 20개를 넣어야 해요.`};
+  const c={};for(const v of seq){c[v]=(c[v]||0)+1;if(c[v]>copies(v))return {err:`${v}는 가방에 ${copies(v)}장뿐인데 ${c[v]}번 나왔어요.`}}
+  return {seq};
+}
+$('codeGo').addEventListener('click',()=>{
+  const r=parseCode($('codeInput').value.trim());
+  if(r.err){$('codeMsg').textContent=r.err;$('codeMsg').classList.add('err');return}
+  $('codeMsg').textContent='선생님 순서로 시작했어요.';$('codeMsg').classList.remove('err');
+  newPractice(r.seq,'순서 코드로 하는 판');
+});
+$('codeInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('codeGo').click()});
+
+/* =================== 점수 계산 =================== */
+const EXAMPLE=[3,6,9,12,13,17,15,18,21,STAR,26,11,14,16,19,22,25,27,29,30];
+(function buildCalc(){
+  let h='';for(let i=0;i<20;i++)h+=`<div class="slot"><div class="idx">${i+1}</div><div class="cell inp" id="cc-${i}"><input id="calc-${i}" inputmode="numeric" maxlength="2" autocomplete="off" aria-label="${i+1}번 칸"></div><div class="calc-bar" id="cb-${i}"></div></div>`;
+  $('calcBoard').innerHTML=h;
+})();
+function parseCell(s){s=s.trim();if(!s)return {v:null};if(s==='*'||s==='★')return {v:STAR};if(/^\d{1,2}$/.test(s)&&+s>=1&&+s<=30)return {v:+s};return {v:null,bad:true}}
+function runCalc(){
+  const vals=[],warns=[];let filled=0,bad=0;
+  for(let i=0;i<20;i++){const r=parseCell($('calc-'+i).value);vals.push(r.v);if(r.v!=null)filled++;if(r.bad)bad++;
+    const cell=$('cc-'+i);cell.className='cell inp'+(r.bad?' bad':'')+(r.v!=null?' v-'+band(r.v):'')}
+  const c={};vals.forEach(v=>{if(v!=null)c[v]=(c[v]||0)+1});
+  Object.keys(c).forEach(k=>{const v=k===STAR?STAR:+k;if(c[k]>copies(v))warns.push(`${k}가 ${c[k]}번 있어요. 가방에는 ${copies(v)}장뿐이에요.`)});
+  if(bad)warns.push('1~30의 수나 * 가 아닌 칸은 빈칸으로 보고 계산했어요.');
+  if(filled<20)warns.push(`빈칸이 ${20-filled}개 있어요. 빈칸은 흐름을 끊는 칸으로 보고 계산했어요.`);
+  if((c[STAR]||0)>2)warns.push('★가 셋 이상이면 앞의 두 개만 계산에 넣어요.');
+  const ev=evaluate(vals);const bars=barsFor(20,ev.streams);
+  for(let i=0;i<20;i++)$('cb-'+i).innerHTML=barHTML(bars[i]);
+  $('calcTotal').textContent=ev.total;
+  $('calcStreams').innerHTML=ev.streams.length?streamListHTML(ev.streams):'<li>수를 넣으면 흐름이 나타나요</li>';
+  $('calcWarns').innerHTML=warns.map(w=>`<li>${w}</li>`).join('');
+}
+function fillCalc(arr){for(let i=0;i<20;i++)$('calc-'+i).value=arr[i]==null?'':(arr[i]===STAR?'*':String(arr[i]));runCalc()}
+$('calcBoard').addEventListener('input',()=>{$('exBadge').hidden=true;runCalc()});
+$('calcBoard').addEventListener('keydown',e=>{
+  const m=e.target.id&&e.target.id.match(/^calc-(\d+)$/);if(!m)return;const i=+m[1];
+  if((e.key==='Enter'||e.key==='ArrowRight')&&i<19&&(e.key==='Enter'||e.target.selectionStart===e.target.value.length)){e.preventDefault();$('calc-'+(i+1)).focus();$('calc-'+(i+1)).select()}
+  if(e.key==='ArrowLeft'&&i>0&&e.target.selectionStart===0){e.preventDefault();$('calc-'+(i-1)).focus();$('calc-'+(i-1)).select()}
+});
+$('calcClear').addEventListener('click',()=>{fillCalc(Array(20).fill(null));$('exBadge').hidden=true;$('calc-0').focus()});
+$('calcEx').addEventListener('click',()=>{fillCalc(EXAMPLE);$('exBadge').hidden=false});
+
+/* =================== 규칙 예시 =================== */
+(function(){
+  const ex=[4,9,12,12,18,5,13,STAR,25,3];
+  const ev=evaluate(ex);const bars=barsFor(10,ev.streams);
+  $('exBoard').innerHTML=ex.map((v,i)=>`<div class="slot"><div class="idx">${i+1}</div><div class="cell has">${tile(v)}</div>${barHTML(bars[i])}</div>`).join('');
+  $('exStreams').innerHTML=streamListHTML(ev.streams)+`<li style="--c:var(--accent)"><i></i>합계 <b>${ev.total}점</b></li>`;
+})();
+
+/* =================== 시작 =================== */
+function start(data){
+  if(data&&data.P&&data.P.seq&&data.P.seq.length===20){Object.assign(P,data.P)}else{newPractice(null,'')}
+  renderDraw();renderPractice();fillCalc(EXAMPLE);
+  const h=(location.hash||'').replace('#','');setView(VIEWS.includes(h)?h:'draw',false);
+}
+try{window.claude?.hot?.snapshot?.(()=>({P:{seq:P.seq,idx:P.idx,board:P.board,source:P.source,log:P.log}}))}catch(e){}
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+})();
+</script>
+
+</body></html>
