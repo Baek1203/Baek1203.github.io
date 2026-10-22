@@ -148,20 +148,62 @@ label.sel{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-wei
 @media (prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important}}
 :focus-visible{outline:3px solid #1189c4;outline-offset:2px;border-radius:6px}
 
+/* ── 입장 화면 ── */
+#gate{position:fixed;inset:0;background:var(--paper);z-index:80;display:grid;place-items:center;padding:22px 16px}
+.gate{width:min(420px,100%);background:#fff;border:1px solid var(--rule);border-radius:20px;padding:28px 24px 22px;
+  box-shadow:0 18px 48px rgba(23,34,59,.10);text-align:center}
+.gate h1{margin:0;font-size:23px;font-weight:800;letter-spacing:-.02em}
+.gate .mi{font-size:24px;font-weight:600}
+.gate .say{margin:8px 0 20px;font-size:13.5px;color:var(--ink-soft)}
+.pin{position:relative;display:inline-block}
+.pin input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border:0;cursor:pointer}
+.cells{display:flex;gap:8px;justify-content:center}
+.cells span{width:46px;height:58px;border:2px solid var(--rule);border-radius:11px;background:#fbfcfe;
+  display:grid;place-items:center;font-size:26px;font-weight:800;color:var(--ink);transition:.14s}
+.cells span.on{border-color:var(--ink);background:#fff}
+.cells span.cur{border-color:var(--m);box-shadow:0 0 0 3px rgba(17,137,196,.14)}
+.who{margin:14px 0 2px;font-size:15px;font-weight:800;color:var(--seal);min-height:22px}
+.who.bad{color:#c2410c}
+.gate .go{margin-top:14px;width:100%;appearance:none;border:0;border-radius:12px;background:var(--ink);color:#fff;
+  font:inherit;font-weight:800;font-size:16px;padding:13px;cursor:pointer;transition:.15s}
+.gate .go[disabled]{background:#c3cad9;cursor:not-allowed}
+.gate .go:not([disabled]):hover{background:#0d1526}
+.gate .note{margin:14px 0 0;font-size:12px;color:var(--ink-soft);line-height:1.5}
+.gate .resume{margin-top:12px;border:1.5px solid var(--seal);background:rgba(18,133,90,.07);color:var(--seal);
+  border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:700}
+
+/* ── 헤더 배지 ── */
+.who-chip{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.who-chip b{font-size:15px;font-weight:800;letter-spacing:.02em}
+.who-chip .sub2{font-size:12px;color:var(--ink-soft);font-weight:700}
+.sv{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:99px;border:1.5px solid var(--rule);color:var(--ink-soft)}
+.sv.ok{border-color:var(--seal);color:var(--seal);background:rgba(18,133,90,.07)}
+.sv.saving{border-color:var(--m);color:var(--m)}
+.sv.err{border-color:#c2410c;color:#c2410c;background:rgba(194,65,12,.07)}
+.out{appearance:none;border:1.5px solid var(--rule);background:#fff;color:var(--ink-soft);border-radius:8px;
+  padding:4px 10px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+.out:hover{border-color:#b9c3d8;color:var(--ink)}
 
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap hidden" id="app">
 
 <header>
   <div>
     <h1>위치 관계 실험실 <span class="mi">P</span> · <span class="mi">l</span> · <span class="mi">m</span></h1>
     <p class="sub">직접 움직여 보고, 숨겨진 위치 관계를 하나씩 열어 도감을 완성해 보세요.</p>
   </div>
-  <div class="meter">
-    <div class="meter-top"><span>모은 위치 관계</span><span><b id="mNow">0</b> / <span id="mAll">23</span></span></div>
-    <div class="bar"><i id="mBar"></i></div>
+  <div>
+    <div class="who-chip" style="justify-content:flex-end;margin-bottom:7px">
+      <b id="hSid">—</b><span class="sub2" id="hWho"></span>
+      <span class="sv" id="hSave">기록 저장 꺼짐</span>
+      <button class="out" id="hOut">나가기</button>
+    </div>
+    <div class="meter">
+      <div class="meter-top"><span>모은 위치 관계</span><span><b id="mNow">0</b> / <span id="mAll">23</span></span></div>
+      <div class="bar"><i id="mBar"></i></div>
+    </div>
   </div>
 </header>
 
@@ -282,8 +324,118 @@ label.sel{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-wei
 </div>
 
 
+<div id="gate">
+  <div class="gate">
+    <h1>위치 관계 실험실</h1>
+    <p class="say">학번 <b>5자리</b>를 입력하고 들어가세요.</p>
+    <div class="pin" id="pin">
+      <div class="cells" id="cells"><span></span><span></span><span></span><span></span><span></span></div>
+      <input id="sid" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="5"
+             autocomplete="off" autocorrect="off" spellcheck="false" aria-label="학번 5자리">
+    </div>
+    <p class="who" id="who"></p>
+    <div class="resume hidden" id="resume"></div>
+    <button class="go" id="go" disabled>들어가기</button>
+    <p class="note" id="gnote"></p>
+  </div>
+</div>
+
 <div id="toast"><span class="s">✓</span><span id="toastText"></span></div>
 
+<script>
+/* ══════════════════════════════════════════════════════════
+   설정 — 아래 두 줄만 고치면 됩니다.
+   DB_URL : Firebase 실시간 데이터베이스 주소
+            (Firebase 콘솔 > 빌드 > Realtime Database 에서 복사)
+            예) "https://myclass-default-rtdb.asia-southeast1.firebasedatabase.app"
+            비워 두면 저장 없이 앱만 동작합니다.
+   ══════════════════════════════════════════════════════════ */
+var CONFIG = {
+  DB_URL: "https://math-teaching-7dc48-default-rtdb.asia-southeast1.firebasedatabase.app"
+};
+(function(){
+  var q = new URLSearchParams(location.search);
+  if(q.get("db")) CONFIG.DB_URL = q.get("db");
+})();
+
+var SYNC = {
+  base: (CONFIG.DB_URL || "").replace(/\/+$/, ""),
+  id: null,
+  pendU: {}, pendG: {}, timer: null, retry: 0, state: "off",
+  on: function(){ return !!this.base; },
+  path: function(p){ return this.base + p + ".json"; },
+  setState: function(st){
+    this.state = st;
+    var el = document.getElementById("hSave");
+    if(!el) return;
+    var t = { off:"기록 저장 꺼짐", ok:"저장됨", saving:"저장 중…", err:"저장 대기 중" };
+    el.textContent = t[st] || "";
+    el.className = "sv " + (st === "ok" ? "ok" : st === "saving" ? "saving" : st === "err" ? "err" : "");
+  },
+  load: function(id){
+    if(!this.on()) return Promise.resolve(null);
+    return fetch(this.path("/students/" + id), { cache:"no-store" })
+      .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); });
+  },
+  start: function(id, isNew){
+    this.id = id;
+    if(!this.on()){ this.setState("off"); return; }
+    this.setState("ok");
+    var self = this, body = { id:id, last:{".sv":"timestamp"} };
+    if(isNew) body.first = {".sv":"timestamp"};
+    fetch(this.path("/students/" + id + "/meta"), { method:"PATCH", body: JSON.stringify(body) })
+      .catch(function(){ self.setState("err"); });
+  },
+  mark: function(qid){
+    if(!this.on() || !this.id) return;
+    this.pendU[qid] = { ".sv":"timestamp" };
+    this.schedule();
+  },
+  markGot: function(qid, arr){
+    if(!this.on() || !this.id) return;
+    this.pendG[qid] = arr;
+    this.schedule();
+  },
+  schedule: function(){
+    var self = this;
+    this.setState("saving");
+    clearTimeout(this.timer);
+    this.timer = setTimeout(function(){ self.flush(); }, 700);
+  },
+  flush: function(){
+    if(!this.on() || !this.id) return;
+    var u = this.pendU, g = this.pendG, self = this;
+    if(!Object.keys(u).length && !Object.keys(g).length){ this.setState("ok"); return; }
+    this.pendU = {}; this.pendG = {};
+    var jobs = [];
+    if(Object.keys(u).length)
+      jobs.push(fetch(this.path("/students/" + this.id + "/unlocked"),
+                { method:"PATCH", keepalive:true, body: JSON.stringify(u) }));
+    if(Object.keys(g).length)
+      jobs.push(fetch(this.path("/students/" + this.id + "/got"),
+                { method:"PATCH", keepalive:true, body: JSON.stringify(g) }));
+    jobs.push(fetch(this.path("/students/" + this.id + "/meta"), {
+      method:"PATCH", keepalive:true,
+      body: JSON.stringify({ id:this.id, count: countDone(), last:{".sv":"timestamp"} })
+    }));
+    Promise.all(jobs).then(function(rs){
+      for(var i=0;i<rs.length;i++) if(!rs[i].ok) throw new Error(rs[i].status);
+      self.retry = 0; self.setState("ok");
+    }).catch(function(){
+      // 실패한 내용은 되돌려 놓고 잠시 뒤 다시 시도
+      Object.keys(u).forEach(function(k){ self.pendU[k] = u[k]; });
+      Object.keys(g).forEach(function(k){ self.pendG[k] = g[k]; });
+      self.setState("err");
+      self.retry = Math.min(self.retry + 1, 5);
+      clearTimeout(self.timer);
+      self.timer = setTimeout(function(){ self.flush(); }, 1500 * self.retry);
+    });
+  }
+};
+function countDone(){
+  try { return QUESTS.filter(function(q){ return ST[q.id].done; }).length; } catch(e){ return 0; }
+}
+</script>
 <script>
 "use strict";
 const LW = 820, LH = 520;
@@ -427,6 +579,7 @@ function unlock(id){
   const q = QUESTS.find(function(x){ return x.id === id; });
   if(!q || ST[id].done) return;
   ST[id].done = true; justId = id;
+  SYNC.mark(id);
   toast(q.title); renderQuests(); renderMeter(); combos();
 }
 function combos(){
@@ -539,18 +692,19 @@ function drawS1(){
   r2.innerHTML = on ? '직선 <span class="mi">l</span>이 점 <span class="mi">P</span>를 <b>지난다</b>'
                     : '직선 <span class="mi">l</span>이 점 <span class="mi">P</span>를 <b>지나지 않는다</b>';
   r2.className = "chip " + (on ? "hit" : "miss");
-  if(S1.touched) checkS1(on);
 }
-function checkS1(on){
+// 해금은 마우스(손가락)를 뗀 뒤에만 확인합니다. 끄는 도중에 우연히 지나친 위치는 세지 않아요.
+// how: 방금 끌던 것 ("P" 점, "line" 직선 이동, "rot" 직선 회전)
+function checkS1(on, how){
   if(on) unlock("s1-on"); else unlock("s1-off");
-  if(on && (S1.drag === "line" || S1.drag === "rot")) unlock("s1-pass");
+  if(on && (how === "line" || how === "rot")) unlock("s1-pass");
   if(on && !ST["s1-many"].done){
     let deg = S1.a*180/Math.PI % 180; if(deg < 0) deg += 180;
     const g = ST["s1-many"].got;
     let near = false;
     g.forEach(function(v){ let df = Math.abs(v-deg); if(df > 90) df = 180-df; if(df < 22) near = true; });
     if(!near){
-      g.add(Math.round(deg));
+      g.add(Math.round(deg)); SYNC.markGot("s1-many", Array.from(g));
       if(g.size >= 2) unlock("s1-many"); else renderQuests();
     }
   }
@@ -595,7 +749,10 @@ function s1Move(e){
 }
 cv1.addEventListener("pointerdown", s1Down);
 cv1.addEventListener("pointermove", s1Move);
-cv1.addEventListener("pointerup", function(){ S1.drag = null; });
+cv1.addEventListener("pointerup", function(){
+  const how = S1.drag; S1.drag = null;
+  if(how && S1.touched) checkS1(Math.abs(s1cross().c) < 0.9, how);
+});
 cv1.addEventListener("pointercancel", function(){ S1.drag = null; });
 document.getElementById("s1reset").onclick = function(){
   S1.cx = 410; S1.cy = 262; S1.a = -0.19; S1.P = { x:236, y:158 }; drawS1();
@@ -661,8 +818,8 @@ function drawS2(){
   const txt = { cross:'한 점에서 <b>만난다</b>', same:'<b>일치한다</b>', para:'<b>만나지 않는다</b> — 평행' };
   rc.innerHTML = txt[r.kind]; rc.className = "chip " + (r.kind === "cross" ? "key" : "hit");
   document.getElementById("s2a").innerHTML = "두 직선이 이루는 각 <b>" + r.ang.toFixed(1) + "°</b>";
-  if(S2.touched) checkS2(r);
 }
+// 해금은 손잡이를 놓은 뒤에만 확인합니다. 끄는 도중에 잠깐 평행·일치가 된 순간은 세지 않아요.
 function checkS2(r){
   if(r.kind === "same") unlock("s2-same");
   else if(r.kind === "para") unlock("s2-para");
@@ -713,7 +870,10 @@ cv2.addEventListener("pointermove", function(e){
   S2[k][i].x = x; S2[k][i].y = y;
   drawS2();
 });
-cv2.addEventListener("pointerup", function(){ S2.drag = null; });
+cv2.addEventListener("pointerup", function(){
+  const was = S2.drag; S2.drag = null;
+  if(was && S2.touched) checkS2(s2rel());
+});
 cv2.addEventListener("pointercancel", function(){ S2.drag = null; });
 document.getElementById("s2reset").onclick = function(){
   S2.l = [{x:150,y:150},{x:672,y:372}]; S2.m = [{x:168,y:404},{x:660,y:152}]; drawS2();
@@ -976,6 +1136,7 @@ function checkS3(){
   if(r.kind === "skew" && (S3.l === 0 || S3.m === 0) && !ST["s3-all"].done){
     const g = ST["s3-all"].got, before = g.size;
     g.add(edgeName(S3.l === 0 ? S3.m : S3.l));
+    if(g.size !== before) SYNC.markGot("s3-all", Array.from(g));
     if(g.size >= 4) unlock("s3-all");
     else if(g.size !== before) renderQuests();
   }
@@ -1052,6 +1213,7 @@ function checkS4(){
   if(r.kind === "cross" && r.perp && S4.f === "bottom" && !ST["s4-perp"].done){
     const g = ST["s4-perp"].got, before = g.size;
     g.add(edgeName(S4.l));
+    if(g.size !== before) SYNC.markGot("s4-perp", Array.from(g));
     if(g.size >= 4) unlock("s4-perp");
     else if(g.size !== before) renderQuests();
   }
@@ -1127,6 +1289,7 @@ function checkS5(){
   if(r.kind === "cross" && r.perp && (S5.p === "top" || S5.q === "top") && !ST["s5-perp"].done){
     const g = ST["s5-perp"].got, before = g.size;
     g.add(FNAME[S5.p === "top" ? S5.q : S5.p]);
+    if(g.size !== before) SYNC.markGot("s5-perp", Array.from(g));
     if(g.size >= 4) unlock("s5-perp");
     else if(g.size !== before) renderQuests();
   }
@@ -1280,7 +1443,110 @@ function drawAll(){
 }
 window.addEventListener("resize", drawAll);
 renderQuests(); renderMeter(); sync3(); sync4(); sync5(); syncSpin();
-requestAnimationFrame(drawAll);
+</script>
+<script>
+/* ══════════════ 입장 화면 ══════════════ */
+(function(){
+  var input = document.getElementById("sid"),
+      cells = document.getElementById("cells").children,
+      who = document.getElementById("who"),
+      go = document.getElementById("go"),
+      resume = document.getElementById("resume"),
+      gnote = document.getElementById("gnote");
+
+  gnote.textContent = SYNC.on()
+    ? "입력한 학번으로 진행 상황이 저장되어, 다음 시간에 이어서 할 수 있어요."
+    : "저장 서버가 연결되지 않아 이번 시간 기록은 저장되지 않습니다.";
+
+  document.getElementById("pin").addEventListener("click", function(){ input.focus(); });
+
+  function parseId(v){
+    if(!/^[0-9]{5}$/.test(v)) return null;
+    var g = +v[0], k = +v.slice(1,3), n = +v.slice(3,5);
+    if(k < 1 || n < 1) return { bad:"반과 번호는 01부터 시작해요. 다시 확인해 주세요." };
+    if(g < 1 || g > 6) return { bad:"맨 앞자리는 학년이에요. 다시 확인해 주세요." };
+    return { g:g, k:k, n:n, label:g + "학년 " + k + "반 " + n + "번" };
+  }
+  function paint(){
+    var v = input.value;
+    for(var i=0;i<5;i++){
+      cells[i].textContent = v[i] || "";
+      cells[i].className = v[i] ? "on" : (i === v.length ? "cur" : "");
+    }
+    var r = parseId(v);
+    resume.classList.add("hidden");
+    if(v.length < 5){ who.textContent = ""; who.className = "who"; go.disabled = true; return; }
+    if(r && r.bad){ who.textContent = r.bad; who.className = "who bad"; go.disabled = true; return; }
+    who.textContent = r ? r.label + " 맞나요?" : "";
+    who.className = "who";
+    go.disabled = !r;
+    if(r && SYNC.on()) peek(v);
+  }
+  var peekAt = null;
+  function peek(v){
+    peekAt = v;
+    SYNC.load(v).then(function(d){
+      if(peekAt !== v || !d || !d.unlocked) return;
+      var n = Object.keys(d.unlocked).length;
+      resume.textContent = "이미 " + n + "개를 모았어요. 이어서 계속합니다.";
+      resume.classList.remove("hidden");
+    }).catch(function(){});
+  }
+  input.addEventListener("input", function(){
+    input.value = input.value.replace(/[^0-9]/g, "").slice(0,5);
+    paint();
+  });
+  input.addEventListener("keydown", function(e){ if(e.key === "Enter" && !go.disabled) enter(); });
+  input.addEventListener("blur", paint);
+  go.addEventListener("click", enter);
+
+  function enter(){
+    var v = input.value, r = parseId(v);
+    if(!r || r.bad) return;
+    go.disabled = true;
+    go.textContent = SYNC.on() ? "불러오는 중…" : "들어가는 중…";
+    SYNC.load(v).then(function(d){ open(v, r, d); })
+                .catch(function(){ open(v, r, null); });
+  }
+  function open(v, r, data){
+    document.getElementById("hSid").textContent = v;
+    document.getElementById("hWho").textContent = r.label;
+    if(data) restore(data);
+    SYNC.start(v, !data);
+    document.getElementById("gate").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    renderQuests(); renderMeter();
+    requestAnimationFrame(drawAll);
+  }
+  window.__gateReset = function(){
+    input.value = ""; go.disabled = true; go.textContent = "들어가기";
+    resume.classList.add("hidden"); paint();
+  };
+  paint();
+  setTimeout(function(){ input.focus(); }, 120);
+})();
+
+function restore(data){
+  if(!data) return;
+  var u = data.unlocked || {}, g = data.got || {};
+  Object.keys(u).forEach(function(k){ if(ST[k]) ST[k].done = true; });
+  Object.keys(g).forEach(function(k){ if(ST[k]) ST[k].got = new Set(g[k] || []); });
+}
+
+document.getElementById("hOut").addEventListener("click", function(){
+  if(!confirm("나가면 다음 학생이 학번을 입력할 수 있어요. 나갈까요?")) return;
+  SYNC.flush();
+  QUESTS.forEach(function(q){ ST[q.id] = { done:false, got:new Set() }; });
+  SYNC.id = null; SYNC.pendU = {}; SYNC.pendG = {};
+  S3.l = S3.m = null; S4.l = null; S4.f = null; S5.p = S5.q = null;
+  sync3(); sync4(); sync5();
+  renderQuests(); renderMeter();
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("gate").classList.remove("hidden");
+  window.__gateReset();
+});
+window.addEventListener("beforeunload", function(){ SYNC.flush(); });
+document.addEventListener("visibilitychange", function(){ if(document.hidden) SYNC.flush(); });
 </script>
 </body>
 </html>
