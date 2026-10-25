@@ -1,0 +1,1781 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!--
+  회전체 수업 화면 (전자칠판용) — 안내/03_수업화면_기본틀.html을 복사해 장면만 바꿈
+  교과서: 비상교육 중학교 수학 1 (이진호) 210~213쪽, 14~15차시
+  흐름: 1 회전체(함께 탐구: 직사각형·직각삼각형·반원을 막대에 붙여 돌리기 → 회전체와 회전축의 뜻)
+        → 2 돌려 보기(문제 7 ⑴⑵⑶, 회전축에서 떨어진 직사각형과 원)
+        → 3 원뿔대(원뿔을 밑면에 평행하게 자르기 → 뜻 → 밑면·옆면·높이·모선 → 문제 9)
+        → 4 전개도(원기둥·원뿔·원뿔대를 펼치기)
+        → 5 회전체의 성질(회전축을 기준으로 자르는 두 방법 소개 → 케이크로 방법1·2 확인 → 네 회전체를 평면이 지나가며 자르기)
+        → 마무리(성질 총정리 → 문제 10, 문제 11 포함 다섯 문제)
+  이 화면의 색 (그림과 글에서 같은 대상은 같은 색)
+    밑면 = 파랑(--c-arc, 칠 --base), 옆면 = 초록(--c-center, 칠 --side), 높이 = 주황(--c-chord), 모선 = 보라(--c-secant)
+    회전축에 수직인 평면으로 자른 단면 = 분홍(--c-perp), 회전축을 포함하는 평면으로 자른 단면 = 청록(--c-incl)
+    전개도에서 길이가 같은 곳 = 노랑(--hi)
+  회전체는 SVG로 그린다: 곡면을 작은 조각으로 나누어 먼 조각부터 칠하고(유리처럼 반투명), 가려진 선은 교과서처럼 점선.
+  그림을 손으로 끌면 보는 방향이 바뀐다. 움직이는 시간은 아래 스크립트의 T에 모아 두었다.
+-->
+<title>회전체 수업 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap">
+<style>
+/* ---------- 색: 종이(밝은 화면) ---------- */
+:root{
+  --bg:#f4f6f9;--surface:#ffffff;--surface-2:#e8edf4;--ink:#15202b;--ink-2:#4b5664;--line:#c8d0da;--ghost:#b8c1cc;
+  --accent:#1c4f8c;--on-accent:#ffffff;
+  /* 수학 색: 그림과 글에서 같은 대상은 같은 색 */
+  --c-arc:#1f63c6;--c-arc2:#0a7f9f;--c-chord:#c9510f;--c-secant:#7442c0;--c-center:#12804f;
+  --hi:#f2b705;--hl:rgba(242,183,5,.17);
+  --ok:#12804f;--no:#c62828;
+  --pen1:#d62f2f;--pen2:#1f63c6;--pen3:#12804f;
+  /* 회전체 조각의 칠 (빛에 따라 밝기를 바꿔 칠한다) */
+  --sol:#a9cdf0;--sol-l:#2b5f99;
+  --neu:#dde4ec;--neu-l:#3d4a58;
+  --fig:#c3d1ec;
+  --flag1:#2fa7e0;--flag1-l:#136f9f;
+  --flag2:#f1c443;--flag2-l:#93700a;
+  --flag3:#ee5b30;--flag3-l:#b23a12;
+  --base:#93bff2;--side:#a6d99d;
+  --cut:#f3a6c4;--c-perp:#c2185b;--f-perp:rgba(194,24,91,.28);
+  --cut2:#9bd8e4;--c-incl:#0a7f9f;--f-incl:rgba(10,127,159,.26);--f-incl2:rgba(10,127,159,.5);
+  --cake:#f5d38a;--cake-l:#946510;
+  --plane:rgba(124,190,92,.36);--plane-l:#4f8f35;
+  --stick:#b8895c;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* ---------- 색: 칠판(어두운 화면) ---------- */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+    --accent:#ffd66b;--on-accent:#1b2a26;
+    --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+    --hi:#ffe27a;--hl:rgba(255,226,122,.13);
+    --ok:#86e3ab;--no:#ff8f8f;
+    --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+    --sol:#4a7fb2;--sol-l:#a9d0ff;
+    --neu:#5b706a;--neu-l:#d6e2db;
+    --fig:#5a729e;
+    --flag1:#3a92c4;--flag1-l:#a6dcf7;
+    --flag2:#c4a23e;--flag2-l:#f3dc8d;
+    --flag3:#c9643f;--flag3-l:#ffb89a;
+    --base:#4a7fc0;--side:#4f9a68;
+    --cut:#b0527e;--c-perp:#ff8fc0;--f-perp:rgba(255,143,192,.3);
+    --cut2:#368f9e;--c-incl:#6fdbe9;--f-incl:rgba(111,219,233,.24);--f-incl2:rgba(111,219,233,.46);
+    --cake:#b69442;--cake-l:#f3dc9d;
+    --plane:rgba(134,227,171,.24);--plane-l:#9be0b0;
+    --stick:#c9a27a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+  --accent:#ffd66b;--on-accent:#1b2a26;
+  --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+  --hi:#ffe27a;--hl:rgba(255,226,122,.13);
+  --ok:#86e3ab;--no:#ff8f8f;
+  --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+  --sol:#4a7fb2;--sol-l:#a9d0ff;
+  --neu:#5b706a;--neu-l:#d6e2db;
+  --fig:#5a729e;
+  --flag1:#3a92c4;--flag1-l:#a6dcf7;
+  --flag2:#c4a23e;--flag2-l:#f3dc8d;
+  --flag3:#c9643f;--flag3-l:#ffb89a;
+  --base:#4a7fc0;--side:#4f9a68;
+  --cut:#b0527e;--c-perp:#ff8fc0;--f-perp:rgba(255,143,192,.3);
+  --cut2:#368f9e;--c-incl:#6fdbe9;--f-incl:rgba(111,219,233,.24);--f-incl2:rgba(111,219,233,.46);
+  --cake:#b69442;--cake-l:#f3dc9d;
+  --plane:rgba(134,227,171,.24);--plane-l:#9be0b0;
+  --stick:#c9a27a;
+  color-scheme:dark;
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;font-size:clamp(15px,.95vw + .7vh,32px);line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden;word-break:keep-all;overflow-wrap:break-word}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+i{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+
+/* ---------- 틀: 위 띠 · 무대 · 아래 띠 ---------- */
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
+.top{display:flex;align-items:center;gap:.8em;padding:.4em 1em;background:var(--surface);border-bottom:1px solid var(--line);min-width:0}
+.brand{font-family:'Noto Serif KR',serif;font-weight:900;font-size:.95em;white-space:nowrap}
+.nav{display:flex;gap:.25em;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav>:first-child{margin-left:auto}
+.nav>:last-child{margin-right:auto}
+.nav button{display:inline-flex;align-items:center;gap:.35em;border:0;background:transparent;border-radius:.55em;padding:.3em .75em;min-height:44px;font-size:.78em;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.nav button .n{font-family:'Noto Serif KR',serif;font-weight:900}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="step"]{background:var(--accent);color:var(--on-accent)}
+.tools{display:flex;gap:.35em}
+.tool{display:inline-flex;align-items:center;gap:.35em;border:1px solid var(--line);background:var(--surface);border-radius:.55em;padding:.25em .65em;min-height:44px;font-size:.7em;font-weight:600;white-space:nowrap}
+.tool:hover{background:var(--surface-2)}
+.tool[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ico{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+.stage{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2.4vw;padding:2vh 2.8vw;min-height:0}
+.stage.wide{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}      /* 설명이 긴 장면 */
+.stage.figwide{grid-template-columns:minmax(0,1.6fr) minmax(0,.78fr)}  /* 그림이 주인공인 장면 */
+.fig{position:relative;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+.fig>svg{display:block;width:100%;height:100%;overflow:visible}
+.fig svg *{pointer-events:none}
+.fig svg .grab{pointer-events:auto;cursor:grab;touch-action:none}
+.panel{min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;gap:.65em;overflow-y:auto;padding:.2em}
+.stage.enter .fig,.stage.enter .panel{animation:enter .45s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.bottom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1em;padding:.45em 1em;background:var(--surface);border-top:1px solid var(--line)}
+.navbtn{display:inline-flex;align-items:center;gap:.35em;border:1.5px solid var(--line);background:var(--surface);border-radius:.7em;padding:.35em 1.1em;min-height:52px;font-size:.9em;font-weight:700}
+.navbtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.navbtn:disabled{opacity:.35;cursor:default}
+.progress{display:flex;justify-content:center;min-width:0}
+.dots{display:flex;gap:.45em;align-items:center;min-height:.9em;flex-wrap:wrap;justify-content:center}
+.dot{width:.55em;height:.55em;border-radius:50%;background:var(--line);transition:transform .25s,background .25s}
+.dot.on{background:var(--accent)}
+.dot.cur{transform:scale(1.4)}
+
+/* ---------- 단계 표시 ---------- */
+.is-off{opacity:0 !important;pointer-events:none !important}
+[data-show],[data-hide],[data-only],[data-ph]{transition:opacity .45s ease}
+[data-late]:not(.is-off){transition-delay:1.15s}
+[data-late2]:not(.is-off){transition-delay:2.7s}
+[data-late3]:not(.is-off){transition-delay:4.2s}
+[data-collapse].is-off{display:none}
+[data-collapse]:not(.is-off){animation:enter .4s ease both}
+[data-collapse][data-late]:not(.is-off){animation-delay:1.15s}
+.instant [data-late]:not(.is-off),.instant [data-late2]:not(.is-off),.instant [data-late3]:not(.is-off){transition-delay:0s !important;animation-delay:0s !important}
+.no-anim,.no-anim *{transition:none !important}
+
+/* ---------- 설명 칸의 글 ---------- */
+.q{margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.5em;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+.q.sm{font-size:1.2em;line-height:1.45}
+.sub{margin:0;color:var(--ink-2);font-size:.92em;text-wrap:pretty}
+.say{margin:0;font-size:1.05em;line-height:1.65;text-wrap:pretty}
+.ask{margin:0;font-size:1.12em;font-weight:700;line-height:1.6;text-wrap:pretty}
+.note{margin:0;font-size:.88em;line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+.stack{display:flex;flex-direction:column;gap:.55em}
+.nw{white-space:nowrap}
+.ca{color:var(--accent)}.cn{color:var(--c-center)}.cl{color:var(--c-arc)}.cr{color:var(--c-chord)}.cs{color:var(--c-secant)}.cp{color:var(--c-perp)}.ci{color:var(--c-incl)}
+/* 성질 상자, 답 상자, 핵심 깨달음(상자 없이 강조색 굵은 글) */
+.prop{border:2px solid var(--accent);border-radius:.8em;padding:.5em .9em;display:flex;flex-direction:column;gap:.2em}
+.prop .pl{font-weight:800;font-size:.85em;color:var(--accent)}
+.prop p{margin:0;font-size:1.05em;text-wrap:pretty}
+.prop p.hang:not(.is-off){display:flex;gap:.3em}        /* 번호 다음 줄도 글 첫머리에 맞춰 들여 쓰기 */
+.prop p.hang>b{flex-shrink:0}
+.answer{background:var(--surface-2);border-radius:.8em;padding:.6em .9em;display:flex;flex-direction:column;gap:.25em}
+.answer .big{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.6em;line-height:1.3;color:var(--accent)}
+.answer .big.kr{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:1.3em;font-weight:800}
+.answer .why{margin:0;font-size:1.02em;line-height:1.7;text-wrap:pretty}
+.kkt{margin:0;font-weight:800;font-size:1.12em;line-height:1.5;text-wrap:balance;color:var(--accent)}
+/* 표: 뒷자리에서도 읽히게 본문보다 크게 */
+.mt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:1.2em}
+.mt th,.mt td{border:1.5px solid var(--line);padding:.35em .4em;text-align:center}
+.mt thead th{background:var(--surface-2);font-weight:700}
+.mt tbody th{font-weight:700;background:var(--surface)}
+.mt .qm{color:var(--ink-2);font-weight:800}
+.mt td b{font-weight:800}
+.mt.sec col.sn{width:4.6em}
+.mt.sec thead th{font-size:.74em;line-height:1.35;padding:.45em .5em}
+.mt.sec td{font-size:1.06em;font-weight:600;padding-top:.22em;padding-bottom:.22em}
+.mt.parts th{width:4.2em}
+.mt.meth col.mh{width:4.4em}
+.mt.meth col.ms{width:7.4em}
+.mt.meth tbody th{font-weight:800}
+.mt tr.on th,.mt tr.on td,.mt th.on,.mt td.on{background:var(--hl)}
+.mt.parts td{text-align:left}
+.pop{display:inline-block;animation:pop .5s ease both}
+@keyframes pop{from{opacity:0;transform:translateY(.35em) scale(.8)}to{opacity:1;transform:none}}
+/* 복습 문제 */
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:1em;font-weight:700;color:var(--ink-2);font-size:.85em}
+.ox circle,.ox path{fill:none;stroke:var(--ghost);stroke-width:30;stroke-linecap:round;transition:stroke .4s,opacity .4s}
+.fig.rev .ox.ok circle,.fig.rev .ox.ok path{stroke:var(--accent)}
+.fig.rev .ox:not(.ok){opacity:.2}
+.fig .rv{opacity:0;transition:opacity .45s ease}
+.fig.rev .rv{opacity:1}
+.fig .hide-rev{transition:opacity .45s ease}
+.fig.rev .hide-rev{opacity:0}
+
+/* ---------- 그림 ---------- */
+.rd{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lbl{font-family:'Noto Serif KR',Georgia,serif;font-weight:700;fill:var(--ink)}
+.tag{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700;fill:var(--ink)}
+.num{font-family:'STIX Two Text','Times New Roman',serif;font-weight:600;fill:var(--ink)}
+.var{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic;font-weight:600;fill:var(--ink)}
+.drag3d{fill:transparent}
+.dm1,.dm2,.dm3{opacity:1}
+.draw-anim .dm1{animation:fadein .5s ease both}
+.draw-anim .dm2{animation:fadein .5s ease .8s both}
+.draw-anim .dm3{animation:fadein .6s ease 1.6s both}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* ---------- 그림 아래 단추 막대 ---------- */
+.fig.app3d{flex-direction:column;align-items:stretch;gap:.45em}
+.fig.app3d>svg{flex:1 1 0;min-height:0;height:auto;width:100%}
+.kbar{display:flex;align-items:center;justify-content:center;gap:.6em;flex-wrap:wrap;font-size:.8em}
+.pick{display:flex;gap:.35em;flex-wrap:wrap;justify-content:center}
+.kbtn{display:inline-flex;align-items:center;gap:.4em;min-height:50px;border:1.5px solid var(--line);border-radius:.75em;background:var(--surface);padding:0 .85em;font-weight:700}
+.kbtn:hover{background:var(--surface-2)}
+.kbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.kbtn:disabled{opacity:.4;cursor:default}
+.kbtn.pk{padding:0 .4em;min-width:54px;justify-content:center}
+.kbtn.pk svg{width:42px;height:42px;display:block;overflow:visible}
+.kl{font-weight:700;color:var(--ink-2)}
+.rng{display:inline-flex;align-items:center;gap:.6em;min-height:50px;padding:0 1em;border:1.5px solid var(--line);border-radius:.75em;background:var(--surface)}
+.rng input{width:min(220px,22vw);height:44px;accent-color:var(--accent);cursor:pointer;margin:0}
+
+/* ---------- 펜 ---------- */
+.ink{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.pen-on .ink{pointer-events:auto;cursor:crosshair;touch-action:none}
+.ink polyline{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.penbar{position:absolute;top:.6em;right:.8em;z-index:6;display:none;align-items:center;gap:.35em;background:var(--surface);border:1px solid var(--line);border-radius:.8em;padding:.3em .4em;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.pen-on .penbar{display:flex}
+.pen-sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 2px var(--line)}
+.pen-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.pbtn{min-height:44px;border:1px solid var(--line);border-radius:.55em;background:var(--surface);padding:0 .7em;font-size:.7em;font-weight:600;white-space:nowrap}
+
+@media (max-width:860px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%}
+  .brand,.tool span{display:none}
+  .stage,.stage.wide,.stage.figwide{grid-template-columns:minmax(0,1fr);padding:1.5vh 4vw}
+  .fig{height:46vh}
+  .fig.app3d{height:56vh}
+  .panel{overflow:visible;justify-content:flex-start}
+  .penbar{flex-wrap:wrap;max-width:calc(100% - 1.6em)}
+}
+</style>
+<div class="app">
+  <header class="top">
+    <div class="brand">회전체</div>
+    <nav class="nav" id="nav" aria-label="수업 흐름"></nav>
+    <div class="tools">
+      <button type="button" class="tool" id="penBtn" aria-pressed="false" aria-label="펜"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"></path><path d="M14 7l3 3"></path></svg><span>펜</span></button>
+      <button type="button" class="tool" id="themeBtn" aria-label="화면 색 바꾸기"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"></path></svg><span id="themeLbl">종이</span></button>
+      <button type="button" class="tool" id="fsBtn" aria-label="전체 화면"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><span>전체 화면</span></button>
+    </div>
+  </header>
+  <main class="stage" id="stage">
+    <div class="fig" id="fig"></div>
+    <div class="panel" id="panel"></div>
+    <svg class="ink" id="ink" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="penbar" role="toolbar" aria-label="펜 도구">
+      <button type="button" class="pen-sw" data-pen="--pen1" aria-pressed="true" aria-label="빨강 펜" style="--sw:var(--pen1)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen2" aria-pressed="false" aria-label="파랑 펜" style="--sw:var(--pen2)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen3" aria-pressed="false" aria-label="초록 펜" style="--sw:var(--pen3)"></button>
+      <button type="button" class="pbtn" id="penUndo">되돌리기</button>
+      <button type="button" class="pbtn" id="penClear">모두 지우기</button>
+      <button type="button" class="pbtn" id="penOff">펜 끄기</button>
+    </div>
+  </main>
+  <footer class="bottom">
+    <button type="button" class="navbtn" id="prevBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>이전</button>
+    <div class="progress"><div class="dots" id="dots"></div></div>
+    <button type="button" class="navbtn primary" id="nextBtn">다음<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+  </footer>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const mq = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
+  const RM = false;   // 수업용 움직임은 기기의 '동작 줄이기' 설정과 상관없이 항상 보여 준다
+  const NS = 'http://www.w3.org/2000/svg';
+  const FIG = $('#fig'), PANEL = $('#panel'), STAGE = $('#stage');
+  const state = { si: 0, step: 0 };
+
+  /* ---------- 움직이는 시간(밀리초): 속도를 바꾸려면 여기만 고친다 ---------- */
+  const T = {
+    sweep: 2400,    // 평면도형을 한 바퀴 돌리기
+    plane: 1100,    // 자르는 평면이 내려오기
+    lift: 900,      // 잘린 위쪽을 들어 올리기
+    center: 900,    // 원뿔대를 가운데로 옮기기
+    mosun: 1800,    // 모선이 돌며 옆면 만들기
+    open: 1200,     // 전개도: 밑면 펼치기
+    unroll: 1900,   // 전개도: 옆면 펼치기
+    slice: 1400,    // 네 회전체를 자르는 평면이 들어오기
+    fold: 1700      // 단면을 회전축을 따라 접어 보기
+  };
+
+  /* ---------- 기하 ---------- */
+  const TAU = Math.PI * 2;
+  const rad = d => d * Math.PI / 180;
+  const n2 = v => Math.round(v * 100) / 100;
+  const f1 = v => Math.round(v * 10) / 10;
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ease = u => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+  const O3 = [0, 0, 0];
+  const rotX = (p, c, w) => { const y = p[1] - c[1], z = p[2] - c[2], cs = Math.cos(w), sn = Math.sin(w); return [p[0], c[1] + y * cs - z * sn, c[2] + y * sn + z * cs]; };
+  const sub3 = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const cross3 = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const unit3 = v => { const l = Math.hypot(v[0], v[1], v[2]) || 1; return [v[0] / l, v[1] / l, v[2] / l]; };
+
+  /* ---------- SVG 조각 ---------- */
+  const txt = cls => (x, y, t, s, a = 'start', c = '', extra = '') =>
+    `<text x="${n2(x)}" y="${n2(y)}" class="${cls}" font-size="${s}" text-anchor="${a}"${c ? ` style="fill:var(${c})"` : ''} ${extra}>${t}</text>`;
+  const lbl = txt('lbl'), tag = txt('tag'), num = txt('num'), vr = txt('var');
+  const textW = (t, fs) => [...String(t).replace(/<[^>]+>/g, '')].reduce((s, ch) => s + (/[가-힣㉠-㉭❶-❿]/.test(ch) ? 1 : ch === ' ' ? 0.3 : 0.6), 0) * fs;
+  const ptsD = pts => 'M' + pts.map(p => f1(p[0]) + ' ' + f1(p[1])).join('L');
+  const I = ch => `<i>${ch}</i>`;
+  const L_ = I('l');
+
+  /* ---------- 단계 엔진 ---------- */
+  function drawIn(el, ms = 900) {
+    if (RM || !el || typeof el.getTotalLength !== 'function') return;
+    let len = 0;
+    try { len = el.getTotalLength(); } catch (e) { return; }
+    if (!(len > 0)) return;
+    clearTimeout(el._dt);
+    el.style.transition = 'none';
+    el.style.strokeDasharray = `${len} ${len}`;
+    el.style.strokeDashoffset = `${len}`;
+    el.getBoundingClientRect();
+    el.style.transition = `stroke-dashoffset ${ms}ms ease-in-out, opacity .45s ease`;
+    el.style.strokeDashoffset = '0';
+    el._dt = setTimeout(() => { el.style.transition = ''; el.style.strokeDasharray = ''; el.style.strokeDashoffset = ''; }, ms + 80);
+  }
+  const drawAll = root => {
+    if (!root) return;
+    if (root.hasAttribute('data-draw')) drawIn(root);
+    $$('[data-draw]', root).forEach(x => drawIn(x));
+  };
+  function applyStep(root, step, prev) {
+    $$('[data-show],[data-hide],[data-only]', root).forEach(el => {
+      const s = el.getAttribute('data-show'), h = el.getAttribute('data-hide'), o = el.getAttribute('data-only');
+      let vis = true;
+      if (s !== null && step < Number(s)) vis = false;
+      if (h !== null && step >= Number(h)) vis = false;
+      if (o !== null && !o.split(',').map(Number).includes(step)) vis = false;
+      const wasOff = el.classList.contains('is-off');
+      el.classList.toggle('is-off', !vis);
+      if (vis && wasOff && step > prev) drawAll(el);
+    });
+  }
+  function tween(ms, fn, done) {                   // 0→1로 움직이기. 돌려받은 함수를 부르면 멈춘다
+    if (RM || !(ms > 0)) { fn(1); if (done) done(); return () => {}; }
+    let alive = true, fin = false, wd = 0;
+    const t0 = performance.now();
+    const finish = () => { if (!alive || fin) return; fin = true; clearTimeout(wd); fn(1); if (done) done(); };
+    const tick = now => {
+      if (!alive || fin) return;
+      const u = Math.min(1, Math.max(0, (now - t0) / ms));
+      if (u >= 1) { finish(); return; }
+      fn(ease(u));
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    wd = setTimeout(finish, ms + 700);           // 화면이 잠시 멈춰도 끝 상태로 마무리
+    return () => { alive = false; clearTimeout(wd); };
+  }
+  // 한 장면 안의 움직임 하나: 움직이는 중에 '다음'을 누르면 finish()로 바로 끝낸다
+  function Anim() {
+    let cancel = null, fin = null;
+    return {
+      run(ms, frame, done) {
+        this.stop();
+        fin = () => { frame(1); if (done) done(); };
+        cancel = tween(ms, frame, () => { cancel = null; fin = null; if (done) done(); });
+      },
+      busy() { return !!cancel; },
+      finish() { if (!cancel) return false; const f = fin; cancel(); cancel = null; fin = null; if (f) f(); return true; },
+      stop() { if (cancel) cancel(); cancel = null; fin = null; }
+    };
+  }
+  function rafLoop(fn) {
+    let alive = true, last = performance.now();
+    const tick = now => { if (!alive) return; const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; fn(dt, now); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+    return () => { alive = false; };
+  }
+  const reqDraw = sc => {
+    if (sc._raf) return;
+    sc._raf = requestAnimationFrame(() => { sc._raf = 0; if (scenes[state.si] === sc && sc.draw) sc.draw(); });
+  };
+
+  /* =========================================================
+     색 읽기: 조각의 칠은 CSS 토큰에서 읽어 빛에 따라 밝기를 바꾼다
+     ========================================================= */
+  const rgbCache = new Map();
+  let themeVer = 0;
+  function RGB(tok) {
+    let c = rgbCache.get(tok);
+    if (c) return c;
+    let s = '';
+    try { s = getComputedStyle(document.documentElement).getPropertyValue(tok).trim(); } catch (e) { s = ''; }
+    c = [170, 190, 215];
+    let m = /^#([0-9a-f]{6})$/i.exec(s);
+    if (m) { const v = parseInt(m[1], 16); c = [(v >> 16) & 255, (v >> 8) & 255, v & 255]; }
+    else if ((m = /rgba?\(([^)]+)\)/i.exec(s))) { const p = m[1].split(',').map(x => parseFloat(x)); if (p.length >= 3) c = p.slice(0, 3); }
+    rgbCache.set(tok, c);
+    return c;
+  }
+  const hx = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0');
+  const LIT = unit3([-0.42, 0.6, 0.68]);            // 빛: 왼쪽 위 앞
+  function shade(c, n, back) {
+    const d = Math.max(0, n[0] * LIT[0] + n[1] * LIT[1] + n[2] * LIT[2]);
+    const k = back ? 0.54 + 0.2 * d : 0.7 + 0.34 * d;
+    let r = c[0] * k, g = c[1] * k, b = c[2] * k;
+    if (!back && d > 0.82) { const s = (d - 0.82) / 0.18 * 0.3; r += (255 - r) * s; g += (255 - g) * s; b += (255 - b) * s; }
+    return '#' + hx(r) + hx(g) + hx(b);
+  }
+
+  /* =========================================================
+     3차원: 보는 방향(좌우 yaw, 위아래 elev)과 화면 배율
+     세계 좌표: y가 위, 회전축은 y축. 평면도형은 처음에 회전축의 왼쪽(φ = 0)에 있고,
+     φ가 커지면 앞쪽(φ = 90°)을 지나 오른쪽으로 돈다.
+     ========================================================= */
+  function makeCam(o) {
+    const cyw = Math.cos(o.yaw), syw = Math.sin(o.yaw), ce = Math.cos(o.elev), se = Math.sin(o.elev);
+    const S = o.S, cx = o.cx, cy = o.cy, tx = o.tx || 0, ty = o.ty || 0;
+    const rotN = v => { const x = v[0] * cyw + v[2] * syw, z = -v[0] * syw + v[2] * cyw; return [x, v[1] * ce - z * se, v[1] * se + z * ce]; };
+    const pr = w => { const c = rotN(w); return [cx + S * (c[0] - tx), cy - S * (c[1] - ty), c[2]]; };
+    return { rotN, pr, yaw: o.yaw, elev: o.elev, S, cx, cy };
+  }
+  const Wp = (r, y, f, off = O3) => [-r * Math.cos(f) + off[0], y + off[1], r * Math.sin(f) + off[2]];
+
+  /* ---------- 평면도형(회전축 왼쪽의 반쪽 단면): 꼭짓점 [r, y]와 그 꼭짓점에서 나가는 변의 이름 ---------- */
+  const PV = (r, y, part = 'side', c = true) => ({ p: [r, y], part, c });
+  function arcPts(cr, cy, R, a1, a2, part, n, cornerFirst = true) {   // 호 위의 점들 (윤곽선을 정확히 그리려고 호의 정보도 남긴다)
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const ad = a1 + (a2 - a1) * i / n, a = rad(ad), v = PV(cr + R * Math.cos(a), cy + R * Math.sin(a), part, i === 0 && cornerFirst);
+      v.arc = { cr, cy, R, a: ad };
+      out.push(v);
+    }
+    out[n - 1].arcEnd = a2;
+    return out;
+  }
+  function mkShape(loops) {
+    let rmax = 0, ymin = Infinity, ymax = -Infinity;
+    const L = loops.map(vs => {
+      vs.forEach(v => { if (Math.abs(v.p[0]) < 1e-9) v.p[0] = 0; rmax = Math.max(rmax, v.p[0]); ymin = Math.min(ymin, v.p[1]); ymax = Math.max(ymax, v.p[1]); });
+      const n = vs.length;
+      let A = 0;
+      for (let i = 0; i < n; i++) { const a = vs[i].p, b = vs[(i + 1) % n].p; A += a[0] * b[1] - b[0] * a[1]; }
+      const sg = A >= 0 ? 1 : -1, nm = [], ax = [];
+      for (let i = 0; i < n; i++) {
+        const a = vs[i].p, b = vs[(i + 1) % n].p, dr = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dr, dy) || 1;
+        nm.push([sg * dy / l, -sg * dr / l]);          // 바깥쪽 법선
+        ax.push(a[0] < 1e-6 && b[0] < 1e-6);           // 회전축 위의 변
+      }
+      return { vs, nm, ax };
+    });
+    return { loops: L, rmax, ymin, ymax, size: Math.max(rmax, (ymax - ymin) / 2) };
+  }
+  const CYL = (R, y0, y1) => mkShape([[PV(0, y0, 'base'), PV(R, y0, 'side'), PV(R, y1, 'base'), PV(0, y1, 'axis')]]);
+  const CONE = (R, y0, y1) => mkShape([[PV(0, y0, 'base'), PV(R, y0, 'side'), PV(0, y1, 'axis')]]);
+  const FRUS = (R1, R2, y0, y1) => mkShape([[PV(0, y0, 'base'), PV(R1, y0, 'side'), PV(R2, y1, 'base'), PV(0, y1, 'axis')]]);
+  const BALL = (R, cy = 0, n = 16) => mkShape([[...arcPts(0, cy, R, 90, -90, 'side', n), PV(0, cy - R, 'axis')]]);
+  // y = yc로 자른 위쪽(above) 또는 아래쪽. 잘린 면은 'cut'
+  function clipShape(sh, yc, above) {                    // 호의 정보도 이어 받는다 (잘린 구의 윤곽선도 매끄럽게)
+    const loops = [];
+    const angOf = (arc, p, a, ae) => {
+      let t = Math.atan2(p[1] - arc.cy, p[0] - arc.cr) * 180 / Math.PI;
+      const lo = Math.min(a, ae), hi = Math.max(a, ae);
+      while (t < lo - 1e-6) t += 360;
+      while (t > hi + 1e-6) t -= 360;
+      return t;
+    };
+    sh.loops.forEach(L => {
+      const vs = L.vs, n = vs.length, out = [];
+      const inn = v => (above ? v.p[1] >= yc - 1e-9 : v.p[1] <= yc + 1e-9);
+      for (let i = 0; i < n; i++) {
+        const A = vs[i], B = vs[(i + 1) % n], ia = inn(A), ib = inn(B);
+        const ae = A.arc ? (A.arcEnd != null ? A.arcEnd : (B.arc ? B.arc.a : null)) : null;
+        const u = ia !== ib ? (yc - A.p[1]) / (B.p[1] - A.p[1]) : 0, I = [lerp(A.p[0], B.p[0], u), yc];
+        if (ia) {
+          const v = PV(A.p[0], A.p[1], A.part, A.c);
+          if (A.arc) { v.arc = A.arc; if (A.arcEnd != null) v.arcEnd = A.arcEnd; if (!ib && ae != null) v.arcEnd = angOf(A.arc, I, A.arc.a, ae); }
+          out.push(v);
+        }
+        if (ia !== ib) {
+          const w = PV(I[0], I[1], ia ? 'cut' : A.part, true);
+          if (!ia && A.arc && ae != null) { w.arc = Object.assign({}, A.arc, { a: angOf(A.arc, I, A.arc.a, ae) }); if (A.arcEnd != null) w.arcEnd = A.arcEnd; }
+          out.push(w);
+        }
+      }
+      const clean = out.filter((v, i) => { const w = out[(i + 1) % out.length]; return Math.hypot(v.p[0] - w.p[0], v.p[1] - w.p[1]) > 1e-7; });
+      if (clean.length >= 3) loops.push(clean);
+    });
+    return loops.length ? mkShape(loops) : null;
+  }
+
+  /* =========================================================
+     회전체 하나 → 조각(quads)과 선(lines). 돌린 범위는 a0 ~ a1(라디안)
+     선: 모서리 원(rim), 윤곽선(sil, 보는 방향에서 바로 계산), 회전축(axis)
+     ========================================================= */
+  // 윤곽선: 평면도형의 변 위 점 p(법선 m)에서 sin(φ + yaw) = k = −m_y·tan(elev)/m_r 를 만족하는 φ가 두 개(A, B) 있다.
+  // |k| > 1이 되는 곳(돌아 나가는 곳)에서는 두 갈래가 만나므로, 그 사이를 잘게 찾아 이어 붙인다.
+  function silPolys(rv, cyc, tanE, yaw) {
+    const kOf = m => (Math.abs(m[0]) < 1e-9 ? (-m[1] * tanE >= 0 ? 1e9 : -1e9) : -m[1] * tanE / m[0]);
+    const n = rv.length, K = rv.map(x => kOf(x.m)), ok = K.map(k => Math.abs(k) <= 1), out = [];
+    const A = i => [rv[i].p[0], rv[i].p[1], Math.asin(K[i]) - yaw], B = i => [rv[i].p[0], rv[i].p[1], Math.PI - Math.asin(K[i]) - yaw];
+    const turn = (i, j) => {                          // i(가능) → j(불가능) 사이에서 두 갈래가 만나는 곳까지
+      const kt = K[j] > 0 ? 1 : -1, ta = [], tb = [];
+      const at = t => { const mx = lerp(rv[i].m[0], rv[j].m[0], t), my = lerp(rv[i].m[1], rv[j].m[1], t), l = Math.hypot(mx, my) || 1; return kOf([mx / l, my / l]); };
+      const s0 = Math.asin(K[i]), s1 = kt * Math.PI / 2, ns = Math.max(4, Math.ceil(Math.abs(s1 - s0) / rad(2.5)));
+      for (let q = 1; q <= ns; q++) {                 // φ가 2.5°씩 바뀌도록 나누어 찾는다
+        const s = lerp(s0, s1, q / ns), target = Math.sin(s);
+        let lo = 0, hi = 1;
+        for (let it = 0; it < 24; it++) { const mid = (lo + hi) / 2; if ((at(mid) - target) * kt < 0) lo = mid; else hi = mid; }
+        const p = [lerp(rv[i].p[0], rv[j].p[0], hi), lerp(rv[i].p[1], rv[j].p[1], hi)];
+        ta.push([p[0], p[1], s - yaw]); tb.push([p[0], p[1], Math.PI - s - yaw]);
+      }
+      return [ta, tb];
+    };
+    let idx;
+    if (cyc) {
+      const st = ok.findIndex(v => !v);
+      if (st < 0) { const all = [...Array(n).keys()].concat([0]); out.push(all.map(A), all.map(B)); return out; }
+      idx = [...Array(n + 1).keys()].map(i => (st + i) % n);
+    } else idx = [...Array(n).keys()];
+    const m = idx.length;
+    let i = 0;
+    while (i < m) {
+      if (!ok[idx[i]]) { i++; continue; }
+      let j = i;
+      while (j + 1 < m && ok[idx[j + 1]]) j++;
+      const tA = i > 0, tB = j < m - 1, seg = idx.slice(i, j + 1);
+      let a = seg.map(A), b = seg.map(B);
+      if (tB) { const [ta, tb] = turn(idx[j], idx[j + 1]); a = a.concat(ta); b = b.concat(tb); }
+      if (tA) { const [sa, sb] = turn(idx[i], idx[i - 1]); a = sa.reverse().concat(a); b = sb.reverse().concat(b); }
+      if (!tA && !tB) out.push(a, b);
+      else if (tB && !tA) out.push(a.concat(b.reverse()));
+      else if (tA && !tB) out.push(b.reverse().concat(a));
+      else out.push(a.concat(b.reverse(), [a[0]]));
+      i = j + 1;
+    }
+    return out;
+  }
+  function revModel(sh, cam, o = {}) {
+    const a0 = o.a0 || 0, span = o.a1 == null ? TAU : o.a1 - a0, off = o.off || O3;
+    const M = { quads: [], lines: [], eps: sh.size * 0.02 };
+    if (o.axis) M.lines.push({ pts: [[off[0], o.axis[0] + off[1], off[2]], [off[0], o.axis[1] + off[1], off[2]]], tok: '--ink', w: 2.4, lay: 'axis' });
+    if (span < 1e-4) return M;
+    const full = span > TAU - 1e-6;
+    const NA = Math.max(1, Math.ceil(36 * span / TAU));
+    const lineTok = o.line || '--sol-l', lw = o.lw || 2.6, only = o.only || null;
+    const maxL = sh.size * 0.28;
+    const tokOf = part => (o.tok && o.tok[part]) || o.fill || '--sol';
+    sh.loops.forEach(L => {
+      const n = L.vs.length;
+      for (let i = 0; i < n; i++) {
+        if (L.ax[i]) continue;
+        const A = L.vs[i], B = L.vs[(i + 1) % n];
+        if (only && !only.has(A.part)) continue;
+        const m = L.nm[i], tok = tokOf(A.part);
+        const ns = Math.max(1, Math.ceil(Math.hypot(B.p[0] - A.p[0], B.p[1] - A.p[1]) / maxL));
+        for (let j = 0; j < ns; j++) {
+          const r0 = lerp(A.p[0], B.p[0], j / ns), y0 = lerp(A.p[1], B.p[1], j / ns), r1 = lerp(A.p[0], B.p[0], (j + 1) / ns), y1 = lerp(A.p[1], B.p[1], (j + 1) / ns);
+          for (let k = 0; k < NA; k++) {
+            const fa = a0 + span * k / NA, fb = a0 + span * (k + 1) / NA, fm = (fa + fb) / 2;
+            M.quads.push({ w: [Wp(r0, y0, fa, off), Wp(r1, y1, fa, off), Wp(r1, y1, fb, off), Wp(r0, y0, fb, off)], n: [-m[0] * Math.cos(fm), m[1], m[0] * Math.sin(fm)], tok });
+          }
+        }
+      }
+    });
+    // 모서리 원: 평면도형의 꼭짓점(회전축 위가 아닌 것)이 그리는 원
+    if (o.rims !== false) sh.loops.forEach(L => {
+      const n = L.vs.length;
+      L.vs.forEach((v, i) => {
+        if (!v.c || v.p[0] < 1e-6) return;
+        const pa = L.vs[(i - 1 + n) % n].part, pb = v.part;
+        if (only && !only.has(pa) && !only.has(pb)) return;
+        if (o.noRim && (o.noRim.has(pa) || o.noRim.has(pb))) return;
+        const tk = (o.rimTok && (o.rimTok[pb] || o.rimTok[pa])) || lineTok;
+        const w = (o.rimW && (o.rimW[pb] || o.rimW[pa])) || lw;
+        const N = Math.max(3, Math.ceil(96 * span / TAU)), pts = [];
+        for (let k = 0; k <= N; k++) pts.push(Wp(v.p[0], v.p[1], a0 + span * k / N, off));
+        M.lines.push({ pts, tok: tk, w, lay: 'rim' });
+      });
+    });
+    // 윤곽선: 곡면의 법선이 보는 방향과 수직인 곳 (sin(φ + yaw) = −m_y·tan(elev)/m_r)
+    if (o.sil !== false) {
+      const tanE = Math.tan(cam.elev), yaw = cam.yaw;
+      const inR = f => { let d = (f - a0) % TAU; if (d < 0) d += TAU; return d <= span + 1e-6; };
+      const push = pl => {
+        let cur = [];
+        const flush = () => { if (cur.length >= 2) M.lines.push({ pts: cur, tok: lineTok, w: lw, lay: 'sil' }); cur = []; };
+        pl.forEach(q => { if (full || inR(q[2])) cur.push(Wp(q[0], q[1], q[2], off)); else flush(); });
+        flush();
+      };
+      sh.loops.forEach(L => {
+        const n = L.vs.length, runs = [];
+        if (!L.vs.some(v => v.c)) runs.push({ e: [...Array(n).keys()], cyc: true });
+        else for (let i = 0; i < n; i++) {
+          if (!L.vs[i].c || L.ax[i]) continue;
+          const e = [i];
+          let j = (i + 1) % n;
+          while (!L.vs[j].c && !L.ax[j] && j !== i) { e.push(j); j = (j + 1) % n; }
+          runs.push({ e, cyc: false });
+        }
+        runs.forEach(R => {
+          if (only && !only.has(L.vs[R.e[0]].part)) return;
+          const rv = [], E = R.e;
+          E.forEach((ei, q) => {                        // 호는 호 위에서 잘게, 곧은 변은 두 끝점만
+            const A = L.vs[ei], B = L.vs[(ei + 1) % n], last = q === E.length - 1 && !R.cyc;
+            if (A.arc) {
+              const ac = A.arc, ae = A.arcEnd != null ? A.arcEnd : B.arc.a, am = rad((ac.a + ae) / 2);
+              const sg = L.nm[ei][0] * Math.cos(am) + L.nm[ei][1] * Math.sin(am) >= 0 ? 1 : -1, KS = 8;
+              for (let t = 0; t < KS + (last ? 1 : 0); t++) { const a = rad(lerp(ac.a, ae, t / KS)), c = Math.cos(a), s = Math.sin(a); rv.push({ p: [Math.max(0, ac.cr + ac.R * c), ac.cy + ac.R * s], m: [sg * c, sg * s] }); }
+            } else {
+              rv.push({ p: A.p, m: L.nm[ei] });
+              if (last) rv.push({ p: B.p, m: L.nm[ei] });
+            }
+          });
+          silPolys(rv, R.cyc, tanE, yaw).forEach(push);
+        });
+      });
+    }
+    return M;
+  }
+  const merge = (...Ms) => ({ quads: Ms.flatMap(m => m.quads), lines: Ms.flatMap(m => m.lines), eps: Math.max(...Ms.map(m => m.eps || 0.02)) });
+
+  /* =========================================================
+     조각과 선을 SVG로: 먼 조각부터 칠하고(묶음 전체를 반투명하게), 선은 앞 조각에 가려지면 점선
+     ========================================================= */
+  function compose(M, cam, o = {}) {
+    const alpha = o.alpha == null ? 0.6 : o.alpha, eps = M.eps || 0.02;
+    const items = M.quads.map(q => {
+      const P = q.w.map(cam.pr);
+      let z = 0;
+      for (const p of P) z += p[2];
+      return { P, z: z / P.length, n: cam.rotN(q.n), tok: q.tok };
+    }).sort((a, b) => a.z - b.z);
+    let fill = '';
+    if (alpha > 0) {
+      const parts = [];
+      for (const it of items) {
+        let n = it.n;
+        const back = n[2] < 0;
+        if (back) n = [-n[0], -n[1], -n[2]];
+        const h = shade(RGB(it.tok), n, back);
+        parts.push(`<path d="${ptsD(it.P)}Z" fill="${h}" stroke="${h}"/>`);
+      }
+      fill = `<g opacity="${n2(alpha)}" stroke-width="0.9" stroke-linejoin="round">${parts.join('')}</g>`;
+    }
+    // 가림 검사용 삼각형과 칸
+    const tris = [];
+    for (const it of items) for (let t = 1; t + 1 < it.P.length; t++) tris.push([it.P[0], it.P[t], it.P[t + 1]]);
+    if (o.occ) for (const q of o.occ) { const P = q.w.map(cam.pr); for (let t = 1; t + 1 < P.length; t++) tris.push([P[0], P[t], P[t + 1]]); }   // 칠하지 않고 가리기만 하는 조각
+    const CELL = 18, grid = new Map(), key = (gx, gy) => (gx + 2000) * 5000 + (gy + 2000);
+    tris.forEach((t, ti) => {
+      const x0 = Math.floor(Math.min(t[0][0], t[1][0], t[2][0]) / CELL), x1 = Math.floor(Math.max(t[0][0], t[1][0], t[2][0]) / CELL);
+      const y0 = Math.floor(Math.min(t[0][1], t[1][1], t[2][1]) / CELL), y1 = Math.floor(Math.max(t[0][1], t[1][1], t[2][1]) / CELL);
+      for (let gx = x0; gx <= x1; gx++) for (let gy = y0; gy <= y1; gy++) { const k = key(gx, gy); let L = grid.get(k); if (!L) grid.set(k, (L = [])); L.push(ti); }
+    });
+    const covered = (x, y, z) => {
+      const L = grid.get(key(Math.floor(x / CELL), Math.floor(y / CELL)));
+      if (!L) return false;
+      for (const ti of L) {
+        const [a, b, c] = tris[ti];
+        const d = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1]);
+        if (Math.abs(d) < 1e-6) continue;
+        const l1 = ((b[1] - c[1]) * (x - c[0]) + (c[0] - b[0]) * (y - c[1])) / d;
+        const l2 = ((c[1] - a[1]) * (x - c[0]) + (a[0] - c[0]) * (y - c[1])) / d;
+        const l3 = 1 - l1 - l2;
+        if (l1 < -1e-3 || l2 < -1e-3 || l3 < -1e-3) continue;
+        if (l1 * a[2] + l2 * b[2] + l3 * c[2] > z + eps) return true;
+      }
+      return false;
+    };
+    const out = {};
+    for (const ln of M.lines) {
+      const P = ln.pts.map(cam.pr), S = [];
+      for (let i = 0; i < P.length - 1; i++) {
+        const a = P[i], b = P[i + 1], n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 5));
+        for (let k = 0; k < n; k++) { const u = k / n; S.push([lerp(a[0], b[0], u), lerp(a[1], b[1], u), lerp(a[2], b[2], u)]); }
+      }
+      S.push(P[P.length - 1]);
+      const mode = ln.hid || o.hid || 'dash', ex = ln.lay === 'sil' ? eps * 2.5 : 0;   // 윤곽선은 곡면에 스치듯 닿으므로 조금 너그럽게
+      let vis = S.map(p => (mode === 'show' ? true : !covered(p[0], p[1], p[2] + ex)));
+      if (vis.length > 2) vis = vis.map((v, i) => (Number(vis[Math.max(0, i - 1)]) + Number(v) + Number(vis[Math.min(vis.length - 1, i + 1)])) >= 2);
+      const lay = ln.lay || 'main';
+      const g = out[lay] || (out[lay] = { vis: '', hid: '' });
+      let run = [S[0]], rv = vis[0];
+      const flush = () => {
+        if (run.length < 2) return;
+        if (rv) g.vis += `<path d="${ptsD(run)}" class="rd" style="stroke:var(${ln.tok});stroke-width:${ln.w}"/>`;
+        else if (mode === 'dash') g.hid += `<path d="${ptsD(run)}" class="rd" style="stroke:var(${ln.tok});stroke-width:${n2(ln.w * 0.72)};stroke-dasharray:7 6;stroke-linecap:butt;opacity:.85"/>`;
+      };
+      for (let i = 1; i < S.length; i++) {
+        run.push(S[i]);
+        if (vis[i] !== rv) { flush(); run = [S[i]]; rv = vis[i]; }
+      }
+      flush();
+    }
+    return { fill, L: out };
+  }
+  const hidOf = (C, lays) => lays.map(l => (C.L[l] ? C.L[l].hid : '')).join('');
+  const visOf = (C, lays) => lays.map(l => (C.L[l] ? C.L[l].vis : '')).join('');
+  const linesOf = (C, lays) => hidOf(C, lays) + visOf(C, lays);
+
+  /* ---------- 평면도형, 회전축, 자르는 평면, 단면 ---------- */
+  const figD = (sh, f, cam, off = O3) => sh.loops.map(L => ptsD(L.vs.map(v => cam.pr(Wp(v.p[0], v.p[1], f, off)))) + 'Z').join(' ');
+  function edgeD(sh, f, cam, off = O3) {                 // 회전축 위가 아닌 변만
+    let d = '';
+    sh.loops.forEach(L => {
+      const n = L.vs.length;
+      for (let i = 0; i < n; i++) {
+        if (L.ax[i]) continue;
+        const a = cam.pr(Wp(L.vs[i].p[0], L.vs[i].p[1], f, off)), b = cam.pr(Wp(L.vs[(i + 1) % n].p[0], L.vs[(i + 1) % n].p[1], f, off));
+        d += `M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}`;
+      }
+    });
+    return d;
+  }
+  function flagSVG(sh, f, cam, tok, o = {}) {            // 돌아가는 평면도형: 앞쪽에 올수록 조금 진하게
+    const L = sh.loops[0];
+    let cr = 0, cy = 0;
+    L.vs.forEach(v => { cr += v.p[0]; cy += v.p[1]; });
+    cr /= L.vs.length; cy /= L.vs.length;
+    const off = o.off || O3, za = cam.pr(Wp(cr, cy, f, off))[2], zb = cam.pr(Wp(0, cy, f, off))[2];
+    const t = clamp((za - zb) / Math.max(0.05, cr), -1, 1), op = (o.op || 0.86) + 0.1 * t;
+    return `<path d="${figD(sh, f, cam, off)}" fill="var(${tok})" fill-opacity="${n2(op)}" fill-rule="evenodd" stroke="var(--ink)" stroke-width="${o.w || 2.6}" stroke-linejoin="round"/>`;
+  }
+  const ghostSVG = (sh, cam, th, off = O3) => (th > 1e-3 && th < TAU - 1e-3 ? `<path d="${edgeD(sh, 0, cam, off)}" class="rd" style="stroke:var(--ink-2);stroke-width:1.8;stroke-dasharray:5 6"/>` : '');
+  function axisTop(cam, y, off = O3, lab = true) {       // 회전축 위의 돌아가는 화살표와 이름 l
+    const p = cam.pr([off[0], y + off[1], off[2]]), cx = p[0], cy = p[1] + 15, rx = 16, ry = 6.5;
+    const pts = [], a0 = rad(28), a1 = rad(330), N = 30;
+    for (let k = 0; k <= N; k++) { const a = a0 + (a1 - a0) * k / N; pts.push([cx - rx * Math.cos(a), cy + ry * Math.sin(a)]); }
+    const e = pts[N], d = pts[N - 3], dx = e[0] - d[0], dy = e[1] - d[1], l = Math.hypot(dx, dy) || 1, ux = dx / l, uy = dy / l;
+    const h1 = [e[0] - 8 * ux + 5 * uy, e[1] - 8 * uy - 5 * ux], h2 = [e[0] - 8 * ux - 5 * uy, e[1] - 8 * uy + 5 * ux];
+    let s = `<path d="${ptsD(pts)}" class="rd" style="stroke:var(--ink);stroke-width:2.2"/><path d="${ptsD([h1, e, h2])}" class="rd" style="stroke:var(--ink);stroke-width:2.2"/>`;
+    if (lab) s += vr(cx, p[1] - 8, 'l', 30, 'middle');
+    return s;
+  }
+  const stickSVG = (cam, y1, y2) => { const a = cam.pr([0, y1, 0]), b = cam.pr([0, y2, 0]); return `<path d="M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}" class="rd" style="stroke:var(--stick);stroke-width:9"/>`; };
+  function hPlane(cam, y, h, off = O3, alpha = 1) {      // 밑면에 평행한(회전축에 수직인) 평면
+    if (alpha <= 0.01) return '';
+    const P = [0, 1, 2, 3].map(k => { const a = rad(35 + 90 * k), r = h * Math.SQRT2; return cam.pr([r * Math.cos(a) + off[0], y + off[1], r * Math.sin(a) + off[2]]); });   // 비스듬히 놓아 평면처럼 보이게
+    return `<path d="${ptsD(P)}Z" style="fill:var(--plane);stroke:var(--plane-l);stroke-width:2;opacity:${n2(alpha)}"/>`;
+  }
+  function vPlane(cam, f, h, y0, y1, off = O3, alpha = 1) { // 회전축을 포함하는 평면
+    if (alpha <= 0.01) return '';
+    const P = [[-h, y0], [h, y0], [h, y1], [-h, y1]].map(q => cam.pr(Wp(q[0], q[1], f, off)));
+    return `<path d="${ptsD(P)}Z" style="fill:var(--plane);stroke:var(--plane-l);stroke-width:2;opacity:${n2(alpha)}"/>`;
+  }
+  function crossR(sh, y) {                              // 높이 y에서 평면도형이 차지하는 r 구간
+    const xs = [];
+    sh.loops.forEach(L => {
+      const n = L.vs.length;
+      for (let i = 0; i < n; i++) {
+        const a = L.vs[i].p, b = L.vs[(i + 1) % n].p;
+        if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) xs.push(a[0] + (y - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));
+      }
+    });
+    xs.sort((p, q) => p - q);
+    const out = [];
+    for (let i = 0; i + 1 < xs.length; i += 2) out.push([xs[i], xs[i + 1]]);
+    return out;
+  }
+  const ringPts = (cam, r, y, off = O3, N = 72) => Array.from({ length: N }, (_, k) => cam.pr(Wp(r, y, TAU * k / N, off)));
+  function perpSec(sh, cam, y, off = O3, o = {}) {      // 회전축에 수직인 평면으로 자른 단면
+    let d = '';
+    crossR(sh, y).forEach(([r1, r2]) => { d += ptsD(ringPts(cam, r2, y, off)) + 'Z'; if (r1 > 1e-4) d += ptsD(ringPts(cam, r1, y, off)) + 'Z'; });
+    return d ? `<path d="${d}" fill-rule="evenodd" style="fill:var(${o.fill || '--f-perp'});stroke:var(--c-perp);stroke-width:${o.w || 3.6};stroke-linejoin:round"/>` : '';
+  }
+  function axialSec(sh, cam, f, off = O3, o = {}) {      // 회전축을 포함하는 평면으로 자른 단면 (두 반쪽)
+    const f2 = o.f2 == null ? f + Math.PI : o.f2;
+    const half = (g, fl) => `<path d="${figD(sh, g, cam, off)}" fill-rule="evenodd" style="fill:var(${fl});stroke:none"/>`;
+    return half(f, o.fill1 || '--f-incl') + half(f2, o.fill2 || '--f-incl') +
+      `<path d="${edgeD(sh, f, cam, off)}${edgeD(sh, f2, cam, off)}" class="rd" style="stroke:var(--c-incl);stroke-width:${o.w || 3.6}"/>`;
+  }
+  function callout(anchor, at, text, tok, fs = 24) {    // 이름표와 가리키는 선
+    const w = textW(text, fs) + 26, h = fs + 16, bx = at[0] - w / 2, by = at[1] - h / 2;
+    const ex = clamp(anchor[0], bx, bx + w), ey = clamp(anchor[1], by, by + h);
+    return `<g><path d="M${f1(ex)} ${f1(ey)}L${f1(anchor[0])} ${f1(anchor[1])}" class="rd" style="stroke:var(${tok});stroke-width:2.2"/>` +
+      `<circle cx="${f1(anchor[0])}" cy="${f1(anchor[1])}" r="4.5" style="fill:var(${tok})"/>` +
+      `<rect x="${f1(bx)}" y="${f1(by)}" width="${f1(w)}" height="${f1(h)}" rx="${f1(h / 2)}" style="fill:var(--surface);stroke:var(${tok});stroke-width:2.5"/>` +
+      `${tag(at[0], at[1] + fs * 0.36, text, fs, 'middle', tok)}</g>`;
+  }
+  // 그림을 손으로 끌어 보는 방향 바꾸기 (손가락·전자펜·마우스)
+  function attachDrag(svg, onMove) {
+    const hit = svg && svg.querySelector('.drag3d');
+    if (!hit) return;
+    svg.style.touchAction = 'none';
+    let id = null, last = null, sc = 1;
+    const scale = () => { const r = svg.getBoundingClientRect(), vb = svg.viewBox && svg.viewBox.baseVal; return vb && r.width ? Math.max(vb.width / r.width, vb.height / r.height) : 1; };
+    hit.addEventListener('pointerdown', e => {
+      if (id !== null) return;
+      e.preventDefault(); id = e.pointerId; last = [e.clientX, e.clientY]; sc = scale();
+      try { svg.setPointerCapture(id); } catch (err) { /* 무시 */ }
+    });
+    svg.addEventListener('pointermove', e => {
+      if (e.pointerId !== id || !last) return;
+      e.preventDefault();
+      const dx = (e.clientX - last[0]) * sc, dy = (e.clientY - last[1]) * sc;
+      last = [e.clientX, e.clientY];
+      if (dx || dy) onMove(dx, dy);
+    });
+    const end = e => { if (e.pointerId !== id) return; id = null; last = null; };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => svg.addEventListener(t, end));
+    ['touchstart', 'touchmove'].forEach(t => svg.addEventListener(t, e => { if (e.cancelable) e.preventDefault(); }, { passive: false }));
+  }
+  function wireDrag(sc) {
+    $$('svg', FIG).forEach(svg => attachDrag(svg, (dx, dy) => {
+      if (sc.canDrag && !sc.canDrag()) return;
+      const c = sc.camRef ? sc.camRef() : sc.cam;
+      c.yaw += dx * 0.011;
+      c.elev = clamp(c.elev + dy * 0.008, -0.2, 1.3);
+      reqDraw(sc);
+    }));
+  }
+  const ELEV = rad(16);
+  const ICO_SPIN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"></path><path d="M20 4v4h-4"></path></svg>';
+  const ICO_PEN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"></path><path d="M14 7l3 3"></path></svg>';
+  const ICO_UD = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"></path><path d="M8 7l4-4 4 4"></path><path d="M8 17l4 4 4-4"></path></svg>';
+  const ICO_FOLD = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18"></path><path d="M12 6H5v12h7"></path><path d="M15 9c3 0 4 1.5 4 3s-1 3-4 3"></path><path d="M16.5 13.2 15 15l1.8 1.4"></path></svg>';
+  const qmH = '<span class="qm">?</span>';
+  function setCell(el, html, on) {                      // 표의 '?' 칸을 답으로 바꾸기
+    if (!el) return;
+    const want = on ? 'a' : 'q';
+    if (el.dataset.st === want) return;
+    el.dataset.st = want;
+    el.innerHTML = on ? `<span class="pop">${html}</span>` : qmH;
+  }
+
+  /* =========================================================
+     장면 1. 회전체: 직사각형, 직각삼각형, 반원을 막대에 붙여 돌리기 → 뜻
+     ========================================================= */
+  const FLAGS = [
+    { name: '직사각형', solid: '원기둥', fill: '--flag1', line: '--flag1-l', sh: CYL(0.78, -0.86, 0.86) },
+    { name: '직각삼각형', solid: '원뿔', fill: '--flag2', line: '--flag2-l', sh: CONE(0.8, -0.86, 0.86) },
+    { name: '반원', solid: '구', fill: '--flag3', line: '--flag3-l', sh: BALL(0.86, 0, 18) }
+  ];
+  const COLS = [102, 300, 498];
+  const scRot = {
+    title: '회전체', nav: 0, steps: () => 5, cam: null, th: [0, 0, 0], an: Anim(), cache: [],
+    build() {
+      this.cam = { yaw: 0, elev: ELEV };
+      this.th = [0, 0, 0]; this.cache = [];
+      FIG.innerHTML = `<svg viewBox="0 0 600 460" role="img" aria-label="막대에 붙인 직사각형, 직각삼각형, 반원과 그것을 돌려 생긴 입체도형">
+        <g id="g1st" data-hide="4"></g><g id="g1"></g><g id="g1ax" data-show="4"></g><g id="g1lab"></g>
+        <rect class="grab drag3d" x="0" y="0" width="600" height="460"></rect></svg>`;
+      wireDrag(this);
+      PANEL.innerHTML = `
+        <h2 class="q">회전체는 무엇일까?</h2>
+        <p class="ask" data-hide="4" data-collapse>직사각형, 직각삼각형, 반원 모양의 종이를 막대에 붙이고 막대를 축으로 하여 1회전 시키면 어떤 입체도형이 생길까?</p>
+        <table class="mt"><thead><tr><th>종이</th>${FLAGS.map(F => `<th>${F.name}</th>`).join('')}</tr></thead>
+          <tbody><tr><th>입체도형</th>${FLAGS.map((F, k) => `<td id="r1c${k}">${qmH}</td>`).join('')}</tr></tbody></table>
+        <div class="prop" data-show="4" data-collapse><span class="pl">회전체와 회전축</span>
+          <p>평면도형을 한 직선 ${L_}을 축으로 하여 1회전 시킬 때 생기는 입체도형을 <b class="ca">회전체</b>라 하고, 직선 ${L_}을 <b class="ca">회전축</b>이라고 한다.</p></div>`;
+    },
+    solidHTML(k) {
+      const F = FLAGS[k], th = this.th[k], key = `${th}|${this.cam.yaw}|${this.cam.elev}|${themeVer}`;
+      if (this.cache[k] && this.cache[k].key === key) return this.cache[k];
+      const cam = makeCam({ yaw: this.cam.yaw, elev: this.cam.elev, S: 86, cx: COLS[k], cy: 214 });
+      const C = compose(revModel(F.sh, cam, { a1: th, fill: F.fill, line: F.line, axis: [-1.3, 1.24] }), cam, { alpha: 0.55 });
+      const v = {
+        key,
+        st: stickSVG(cam, -1.78, 0.98),
+        main: C.fill + hidOf(C, ['rim', 'sil']) + ghostSVG(F.sh, cam, th) + flagSVG(F.sh, th, cam, F.fill) + visOf(C, ['rim', 'sil']),
+        ax: linesOf(C, ['axis']) + axisTop(cam, 1.24)
+      };
+      this.cache[k] = v;
+      return v;
+    },
+    draw() {
+      const g = $('#g1', FIG);
+      if (!g) return;
+      let st = '', main = '', ax = '', lab = '';
+      FLAGS.forEach((F, k) => { const v = this.solidHTML(k); st += v.st; main += v.main; ax += v.ax; lab += tag(COLS[k], 424, F.name, 26, 'middle'); });
+      $('#g1st', FIG).innerHTML = st; g.innerHTML = main; $('#g1ax', FIG).innerHTML = ax; $('#g1lab', FIG).innerHTML = lab;
+    },
+    redraw() { this.cache = []; this.draw(); },
+    paint() { FLAGS.forEach((F, k) => setCell($(`#r1c${k}`, PANEL), F.solid, this.th[k] >= TAU - 1e-6)); },
+    advance() { return this.an.finish(); },
+    leave() { this.an.stop(); },
+    update(step, prev) {
+      applyStep(FIG, step, prev); applyStep(PANEL, step, prev);
+      this.an.stop();
+      const n = Math.min(step, 3);
+      for (let k = 0; k < 3; k++) this.th[k] = k < n ? TAU : 0;
+      if (step >= 1 && step <= 3 && prev === step - 1) {
+        const k = step - 1;
+        this.th[k] = 0;
+        this.an.run(T.sweep, u => { this.th[k] = TAU * u; this.draw(); }, () => { this.th[k] = TAU; this.paint(); this.draw(); });
+      }
+      this.paint(); this.draw();
+    }
+  };
+
+  /* =========================================================
+     장면 2. 돌려 보기: 문제 7 ⑴⑵⑶ + 회전축에서 떨어진 도형 (도형마다 '질문 → 돌리기' 두 단계)
+     ========================================================= */
+  const TRY = [
+    { tag: '문제 7 ⑴', sh: mkShape([[PV(0, 1.1, 'side'), PV(0.92, 0.22, 'side'), PV(0, -1.1, 'axis')]]), name: '원뿔 2개를 붙인 모양', why: '두 원뿔의 밑면이 서로 맞닿아 있어요.' },
+    { tag: '문제 7 ⑵', sh: mkShape([[PV(0, -0.92, 'base'), PV(0.86, -0.92, 'side'), PV(0.86, 0.4, 'side'), PV(0, 1.04, 'axis')]]), name: '원기둥 위에 원뿔을 붙인 모양', why: '직사각형 부분은 원기둥이, 삼각형 부분은 원뿔이 돼요.' },
+    { tag: '문제 7 ⑶', sh: mkShape([[PV(0, -0.5, 'base'), ...arcPts(0, -0.5, 1.05, 0, 90, 'side', 12), PV(0, 0.55, 'axis')]]), name: '반구', why: '구를 반으로 자른 모양이에요.' },
+    { tag: '더 돌려 보기', sh: mkShape([[PV(0.36, -0.72, 'base'), PV(0.96, -0.72, 'side'), PV(0.96, 0.72, 'base'), PV(0.36, 0.72, 'side')]]), name: '가운데가 빈 원기둥 모양', why: '두루마리 휴지 모양이에요. 평면도형이 회전축에서 떨어져 있으면 가운데가 비어요.' },
+    { tag: '더 돌려 보기', sh: mkShape([arcPts(0.62, 0, 0.36, 0, 360, 'side', 36, false)]), name: '도넛 모양', why: '원이 회전축에서 떨어져 있어서 가운데에 구멍이 생겨요.' }
+  ];
+  function thumb(sh) {                                   // 고르기 단추 속 작은 평면도형 그림
+    let x0 = 0, x1 = 0, y0 = Infinity, y1 = -Infinity;
+    sh.loops.forEach(L => L.vs.forEach(v => { x0 = Math.min(x0, -v.p[0]); y0 = Math.min(y0, v.p[1]); y1 = Math.max(y1, v.p[1]); }));
+    const s = 30 / Math.max(x1 - x0, y1 - y0), cx = 21 - ((x0 + x1) / 2) * s + 4, cy = 21 + ((y0 + y1) / 2) * s;
+    const P = (r, y) => [cx - r * s, cy - y * s];
+    const d = sh.loops.map(L => ptsD(L.vs.map(v => P(v.p[0], v.p[1]))) + 'Z').join(' ');
+    const a = P(0, y1 + 0.25), b = P(0, y0 - 0.25);
+    return `<svg viewBox="0 0 42 42" aria-hidden="true"><path d="${d}" fill-rule="evenodd" style="fill:currentColor;fill-opacity:.28;stroke:currentColor;stroke-width:1.6;stroke-linejoin:round"/><path d="M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}" style="stroke:currentColor;stroke-width:1.6"/></svg>`;
+  }
+  const scTry = {
+    title: '돌려 보기', nav: 1, k: -1, th: 0, an: Anim(), drawMode: false, cam: null,
+    steps: () => TRY.length * 2,
+    dots: step => ({ n: TRY.length, cur: Math.floor(step / 2) }),
+    build() {
+      this.k = -1; this.cam = { yaw: 0, elev: ELEV }; this.drawMode = false;
+      FIG.classList.add('app3d');
+      FIG.innerHTML = `<svg viewBox="0 0 600 440" role="img" aria-label="평면도형을 직선 l을 회전축으로 하여 돌리는 그림"><g id="g2"></g><rect class="grab drag3d" x="0" y="0" width="600" height="440"></rect></svg>
+        <div class="kbar"><div class="pick" role="group" aria-label="평면도형 고르기">${TRY.map((t, i) => `<button type="button" class="kbtn pk" data-k="${i}" aria-label="${t.tag} ${i + 1}">${thumb(t.sh)}</button>`).join('')}</div>
+          <button type="button" class="kbtn" data-act="again">${ICO_SPIN}<span>다시 돌리기</span></button>
+          <button type="button" class="kbtn" data-act="draw" aria-pressed="false">${ICO_PEN}<span>그리는 방법</span></button></div>`;
+      wireDrag(this);
+      $$('.pk', FIG).forEach(b => b.addEventListener('click', () => go(state.si, Number(b.getAttribute('data-k')) * 2)));
+      $('[data-act="again"]', FIG).addEventListener('click', () => {
+        if (state.step % 2 === 0) { go(state.si, state.step + 1); return; }
+        this.drawMode = false; this.play();
+      });
+      $('[data-act="draw"]', FIG).addEventListener('click', () => {
+        if (state.step % 2 === 0 || this.an.busy()) return;
+        this.drawMode = !this.drawMode;
+        if (this.drawMode) {
+          this.cam.yaw = 0;
+          FIG.classList.add('draw-anim');
+          clearTimeout(this._dt);
+          this._dt = setTimeout(() => FIG.classList.remove('draw-anim'), 2400);
+        }
+        this.paint(); this.draw();
+      });
+      PANEL.innerHTML = `
+        <div class="qhead"><span id="tq"></span><span id="tc"></span></div>
+        <h2 class="q">어떤 회전체가 생길까?</h2>
+        <p class="sub">직선 ${L_}을 회전축으로 하여 1회전 시킬 때</p>
+        <div class="answer is-off" id="ta"><div class="big kr" id="tab"></div><p class="why" id="taw"></p></div>
+        <p class="note" id="tdn" hidden>회전축을 대칭축으로 하는 선대칭도형을 그린 뒤, 대응하는 두 점을 이은 선분을 지름으로 하는 원을 그려요.</p>`;
+    },
+    play() {
+      this.th = 0; this.paint();
+      this.an.run(T.sweep, u => { this.th = TAU * u; this.draw(); }, () => { this.th = TAU; this.paint(); this.draw(); });
+    },
+    draw() {
+      const g = $('#g2', FIG);
+      if (!g) return;
+      const it = TRY[this.k], th = this.th, dm = this.drawMode;
+      const cam = makeCam({ yaw: this.cam.yaw, elev: this.cam.elev, S: 128, cx: 300, cy: 224 });
+      const C = compose(revModel(it.sh, cam, { a1: th, fill: '--sol', line: '--sol-l', axis: [-1.42, 1.36] }), cam, { alpha: dm ? 0 : 0.6 });
+      let s = C.fill + hidOf(C, ['rim', 'sil']) + ghostSVG(it.sh, cam, th) + flagSVG(it.sh, th, cam, '--fig');
+      if (dm) {
+        let dd = '';
+        it.sh.loops.forEach(L => L.vs.forEach(v => { if (!v.c || v.p[0] < 1e-6) return; const a = cam.pr(Wp(v.p[0], v.p[1], 0)), b = cam.pr(Wp(v.p[0], v.p[1], Math.PI)); dd += `M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}`; }));
+        s += `<path class="dm1" d="${figD(it.sh, Math.PI, cam)}" fill="none" fill-rule="evenodd" style="stroke:var(--accent);stroke-width:2.8;stroke-dasharray:10 6;stroke-linejoin:round"/>`;
+        if (dd) s += `<path class="dm2 rd" d="${dd}" style="stroke:var(--ink-2);stroke-width:2.2;stroke-dasharray:4 5"/>`;
+        s += `<g class="dm3">${visOf(C, ['rim', 'sil'])}</g>`;
+      } else s += visOf(C, ['rim', 'sil']);
+      s += linesOf(C, ['axis']) + axisTop(cam, 1.36);
+      g.innerHTML = s;
+    },
+    redraw() { this.draw(); },
+    paint() {
+      const rev = state.step % 2 === 1, done = rev && this.th >= TAU - 1e-6;
+      const qa = $('#ta', PANEL);
+      if (qa) qa.classList.toggle('is-off', !done);
+      const dn = $('#tdn', PANEL);
+      if (dn) dn.hidden = !this.drawMode;
+      $$('.pk', FIG).forEach(b => b.setAttribute('aria-pressed', Number(b.getAttribute('data-k')) === this.k ? 'true' : 'false'));
+      const db = $('[data-act="draw"]', FIG);
+      if (db) { db.disabled = !done; db.setAttribute('aria-pressed', this.drawMode ? 'true' : 'false'); }
+    },
+    advance() { return this.an.finish(); },
+    leave() { this.an.stop(); clearTimeout(this._dt); },
+    update(step, prev) {
+      const k = Math.floor(step / 2), rev = step % 2 === 1, it = TRY[k];
+      this.an.stop();
+      if (k !== this.k) {
+        this.k = k; this.drawMode = false; this.cam = { yaw: 0, elev: ELEV };
+        const qa = $('#ta', PANEL);
+        qa.classList.add('no-anim'); qa.classList.add('is-off'); void qa.offsetWidth; qa.classList.remove('no-anim');
+        $('#tq', PANEL).textContent = it.tag;
+        $('#tc', PANEL).textContent = `${k + 1} / ${TRY.length}`;
+        $('#tab', PANEL).textContent = it.name;
+        $('#taw', PANEL).textContent = it.why;
+        const svg = $('svg', FIG);
+        if (svg) { svg.style.animation = 'none'; void svg.getBoundingClientRect(); svg.style.animation = 'enter .4s ease both'; }
+      }
+      if (!rev) this.drawMode = false;
+      if (rev && prev === step - 1) this.play();
+      else this.th = rev ? TAU : 0;
+      this.paint(); this.draw();
+    }
+  };
+
+  /* =========================================================
+     장면 3. 원뿔대: 원뿔 자르기 → 뜻 → 밑면 · 옆면 · 높이 · 모선 → 문제 9
+     ========================================================= */
+  const CN3 = CONE(1, -1, 1), LOW3 = clipShape(CN3, 0, false), TOP3 = clipShape(CN3, 0, true);
+  const PROB9 = mkShape([[PV(0, 0, 'base'), PV(5, 0, 'side'), PV(2, 4, 'base'), PV(0, 4, 'axis')]]);
+  const PHM = 2.3;                                      // 모선을 그릴 자리(앞 오른쪽)
+  const scFrus = {
+    title: '원뿔대', nav: 2, steps: () => 10, an: Anim(),
+    cutP: 0, lift: 0, cen: 0, msw: 1, th9: 0, cam: null, cam9: null,
+    camRef() { return state.step >= 8 ? this.cam9 : this.cam; },
+    build() {
+      this.cam = { yaw: 0, elev: ELEV }; this.cam9 = { yaw: 0, elev: ELEV };
+      FIG.innerHTML = `<svg viewBox="0 0 600 460" role="img" aria-label="원뿔을 밑면에 평행한 평면으로 잘라 생기는 원뿔대"><g id="g3"></g><rect class="grab drag3d" x="0" y="0" width="600" height="460"></rect></svg>`;
+      wireDrag(this);
+      PANEL.innerHTML = `
+        <h2 class="q" data-hide="8" data-collapse>원뿔대는 무엇일까?</h2>
+        <div class="qhead" data-show="8" data-collapse><span>문제 9</span></div>
+        <h2 class="q sm" data-show="8" data-collapse>사다리꼴 ABCD를 직선 ${L_}을 회전축으로 하여 1회전 시킬 때 생기는 회전체는 무엇이고, 그 높이는 얼마일까?</h2>
+        <p class="ask" data-hide="3" data-collapse>원뿔을 밑면에 평행한 평면으로 자르면 어떤 두 입체도형이 생길까?</p>
+        <div class="prop" data-show="3" data-hide="8" data-collapse><span class="pl">원뿔대</span>
+          <p>원뿔을 밑면에 평행한 평면으로 잘라서 생기는 두 입체도형 중에서 원뿔이 아닌 쪽의 입체도형을 <b class="ca">원뿔대</b>라고 한다.</p></div>
+        <table class="mt parts" data-show="4" data-hide="8" data-collapse><tbody>
+          <tr data-show="4" data-collapse><th class="cl">밑면</th><td>서로 평행한 두 면</td></tr>
+          <tr data-show="5" data-collapse><th class="cn">옆면</th><td>밑면이 아닌 면</td></tr>
+          <tr data-show="6" data-collapse><th class="cr">높이</th><td>두 밑면에 수직인 선분의 길이</td></tr>
+          <tr data-show="7" data-collapse><th class="cs">모선</th><td>회전하여 옆면을 만드는 선분</td></tr>
+        </tbody></table>
+        <p class="kkt" data-show="4" data-hide="8" data-late data-collapse>원뿔대의 두 밑면은 크기가 다른 원이다.</p>
+        <div class="answer is-off" id="a9" data-ph="1" data-collapse><div class="big kr">원뿔대, 높이 4 cm</div><p class="why">선분 CD의 길이가 원뿔대의 높이예요.</p></div>`;
+    },
+    run(key, ms, to = 1) {
+      this[key] = 0;
+      this.an.run(ms, u => { this[key] = to * u; this.draw(); }, () => { this[key] = to; this.paint(); this.draw(); });
+    },
+    paint() {
+      const a = $('#a9', PANEL);
+      if (a) a.classList.toggle('is-off', !(state.step === 9 && this.th9 >= TAU - 1e-6));
+    },
+    draw() {
+      const g = $('#g3', FIG);
+      if (!g) return;
+      g.innerHTML = state.step >= 8 ? this.draw9() : this.drawCone();
+    },
+    drawCone() {
+      const st = state.step, e = this.cen;
+      const cam = makeCam({ yaw: this.cam.yaw, elev: this.cam.elev, S: lerp(106, 128, e), cx: 300, cy: 238, ty: lerp(0, -0.5, e) });
+      const hiB = st >= 4, hiS = st >= 5;
+      const tok = { base: hiB ? '--base' : '--neu', cut: hiB ? '--base' : '--neu', side: hiS ? '--side' : '--neu' };
+      const O = { fill: '--neu', line: '--neu-l', tok };
+      let s = '';
+      const planeA = Math.min(1, this.cutP * 3) * (1 - e);
+      if (this.lift <= 0) {                             // 평면이 내려와 원뿔을 자르는 중
+        const py = 1.7 * (1 - this.cutP);
+        const low = py >= 1 ? CN3 : clipShape(CN3, py, false), top = py >= 1 ? null : clipShape(CN3, py, true);
+        const CL = compose(revModel(low, cam, O), cam, { alpha: 0.6 });
+        s += CL.fill + linesOf(CL, ['rim', 'sil']) + hPlane(cam, py, 1.55, O3, planeA);
+        if (top) { const CT = compose(revModel(top, cam, O), cam, { alpha: 0.6 }); s += CT.fill + linesOf(CT, ['rim', 'sil']); }
+      } else {
+        let ML;
+        if (st === 7 && this.msw < 1) {                 // 모선이 돌며 옆면을 만든다
+          ML = merge(revModel(LOW3, cam, Object.assign({ only: new Set(['base', 'cut']), sil: false }, O)),
+            revModel(LOW3, cam, Object.assign({ only: new Set(['side']), a0: PHM, a1: PHM + TAU * this.msw, rims: false }, O)));
+        } else ML = revModel(LOW3, cam, O);
+        const CL = compose(ML, cam, { alpha: 0.6 });
+        s += CL.fill + linesOf(CL, ['rim', 'sil']) + hPlane(cam, 0, 1.55, O3, planeA);
+        if (e < 1) {
+          const off = [0, 0.62 * this.lift, 0], CT = compose(revModel(TOP3, cam, Object.assign({ off }, O)), cam, { alpha: 0.6 * (1 - e) });
+          s += CT.fill + `<g style="opacity:${n2(1 - e)}">${linesOf(CT, ['rim', 'sil'])}</g>`;
+          if (st === 2) s += callout(cam.pr(Wp(0.22, 0.62 * this.lift + 0.4, 2.1)), [500, cam.pr([0, 0.62 * this.lift + 0.5, 0])[1]], '원뿔', '--ink-2');
+        }
+        if (st === 2) s += callout(cam.pr(Wp(0.8, -0.55, 2.0)), [500, cam.pr([0, -0.5, 0])[1]], '?', '--accent', 26);
+        if (st === 3) s += `<g style="opacity:${n2(e)}">${callout(cam.pr(Wp(0.78, -0.5, 2.0)), [505, cam.pr([0, -0.5, 0])[1]], '원뿔대', '--accent', 26)}</g>`;
+      }
+      if (st >= 6) {                                    // 높이: 두 밑면에 수직인 선분
+        const a = cam.pr([0, 0, 0]), b = cam.pr([0, -1, 0]), q = 0.13;
+        s += `<path d="M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}" class="rd" style="stroke:var(--c-chord);stroke-width:4.5"/>`;
+        s += `<path d="${ptsD([cam.pr([q, -1, 0]), cam.pr([q, -1 + q, 0]), cam.pr([0, -1 + q, 0])])}" class="rd" style="stroke:var(--c-chord);stroke-width:2.2"/>`;
+      }
+      if (st >= 7) {                                    // 모선
+        const f = PHM + TAU * this.msw, a = cam.pr(Wp(0.5, 0, f)), b = cam.pr(Wp(1, -1, f));
+        s += `<path d="M${f1(a[0])} ${f1(a[1])}L${f1(b[0])} ${f1(b[1])}" class="rd" style="stroke:var(--c-secant);stroke-width:5.5"/>`;
+      }
+      if (st >= 4) {                                    // 이름표: 왼쪽 줄은 밑면·높이, 오른쪽 줄은 옆면·모선
+        const LX = 84, RX = 516;
+        const at = (p, dy) => [p[0], p[1] + dy];
+        const pT = cam.pr(Wp(0.26, 0, 0.5)), pB = cam.pr(Wp(0.45, -1, 1.25));
+        s += callout(pT, [LX, pT[1] - 52], '밑면', '--c-arc');
+        s += callout(pB, [LX, pB[1] + 58], '밑면', '--c-arc');
+        if (st >= 5) { const p = cam.pr(Wp(0.62, -0.25, 1.75)); s += callout(p, at([RX, 0], p[1] - 70), '옆면', '--c-center'); }
+        if (st >= 6) { const p = cam.pr([0, -0.55, 0]); s += callout(p, [LX, p[1]], '높이', '--c-chord'); }
+        if (st >= 7) { const p = cam.pr(Wp(0.8, -0.6, PHM)); s += callout(p, [RX, p[1] + 40], '모선', '--c-secant'); }
+      }
+      return s;
+    },
+    draw9() {
+      const cam = makeCam({ yaw: this.cam9.yaw, elev: this.cam9.elev, S: 38, cx: 300, cy: 322 });
+      const th = this.th9, sh = PROB9;
+      const C = compose(revModel(sh, cam, { a1: th, fill: '--sol', line: '--sol-l', axis: [-1.0, 5.3] }), cam, { alpha: 0.6 });
+      let s = C.fill + hidOf(C, ['rim', 'sil']) + ghostSVG(sh, cam, th) + flagSVG(sh, th, cam, '--fig') + visOf(C, ['rim', 'sil']) + linesOf(C, ['axis']) + axisTop(cam, 5.3);
+      const P = (r, y) => cam.pr(Wp(r, y, th)), q = 0.42;
+      s += `<path d="${ptsD([P(q, 0), P(q, q), P(0, q)])}${ptsD([P(q, 4), P(q, 4 - q), P(0, 4 - q)])}" class="rd" style="stroke:var(--ink);stroke-width:2"/>`;
+      const A = P(2, 4), B = P(5, 0), Cc = P(0, 0), D = P(0, 4);
+      s += lbl(A[0] - 16, A[1] - 12, 'A', 30, 'middle') + lbl(B[0] - 22, B[1] + 12, 'B', 30, 'middle') + lbl(Cc[0] + 18, Cc[1] + 30, 'C', 30, 'middle') + lbl(D[0] + 30, D[1] - 6, 'D', 30, 'middle');
+      const m = P(2.5, 0), h = P(0, 2);
+      s += num(m[0], m[1] + 34, '5 cm', 28, 'middle') + num(h[0] + 12, h[1] + 9, '4 cm', 28, 'start');
+      return s;
+    },
+    redraw() { this.draw(); },
+    advance() { return this.an.finish(); },
+    leave() { this.an.stop(); },
+    update(step, prev) {
+      applyStep(PANEL, step, prev);
+      this.an.stop();
+      const fwd = prev === step - 1, set = (c, l, e, m) => { this.cutP = c; this.lift = l; this.cen = e; this.msw = m; };
+      if (step === 0) set(0, 0, 0, 1);
+      else if (step === 1) { set(1, 0, 0, 1); if (fwd) this.run('cutP', T.plane); }
+      else if (step === 2) { set(1, 1, 0, 1); if (fwd) this.run('lift', T.lift); }
+      else if (step === 3) { set(1, 1, 1, 1); if (fwd) this.run('cen', T.center); }
+      else if (step <= 6) set(1, 1, 1, 1);
+      else if (step === 7) { set(1, 1, 1, 1); if (fwd) this.run('msw', T.mosun); }
+      if (step === 8) this.th9 = 0;
+      if (step === 9) { this.th9 = TAU; if (fwd) this.run('th9', T.sweep, TAU); }
+      this.paint(); this.draw();
+    }
+  };
+
+  /* =========================================================
+     장면 4. 전개도: 원기둥, 원뿔, 원뿔대 펼치기
+     밑면은 앞쪽 한 점에서 경첩처럼 펼치고, 옆면은 앞쪽 모선을 그대로 둔 채 말린 것을 편다
+     ========================================================= */
+  const NETS = [
+    { key: 'cyl', name: '원기둥', R: 0.72, H: 1.45, side: '직사각형', base: '합동인 원 2개', kkt: '옆면인 직사각형의 가로의 길이는 밑면인 원의 둘레의 길이와 같다.' },
+    { key: 'cone', name: '원뿔', R: 0.8, H: 1.55, side: '부채꼴', base: '원 1개', kkt: '옆면인 부채꼴의 호의 길이는 밑면인 원의 둘레의 길이와 같다.' },
+    { key: 'frus', name: '원뿔대', R1: 0.92, R2: 0.46, h: 1.0, side: '큰 부채꼴에서 작은 부채꼴을 잘라 낸 모양', base: '크기가 다른 원 2개', kkt: '옆면의 두 곡선의 길이는 각각 두 밑면인 원의 둘레의 길이와 같다.' }
+  ];
+  function netModel(N, u1, u2, cam) {
+    const M = { quads: [], lines: [], eps: 0.02, lab: {} };
+    const NSg = 40, NJ = 4, NR = 3, NT = 36;
+    let g0 = 0, yb, yt, Rb, Rt, ya = 0, sMin = 0, sMax = 0, al = 0;
+    if (N.key === 'cyl') { Rb = Rt = N.R; yb = -N.H / 2; yt = N.H / 2; }
+    else if (N.key === 'cone') { Rb = N.R; Rt = 0; yb = -N.H / 2; yt = N.H / 2; ya = yt; sMax = Math.hypot(N.R, N.H); g0 = Math.atan2(N.R, N.H); al = TAU * N.R / sMax; }
+    else { Rb = N.R1; Rt = N.R2; yb = -N.h / 2; yt = N.h / 2; const Ha = N.h * N.R1 / (N.R1 - N.R2); ya = yb + Ha; sMax = Math.hypot(N.R1, Ha); sMin = sMax * N.R2 / N.R1; g0 = Math.atan2(N.R1, Ha); al = TAU * N.R1 / sMax; }
+    const Bp = [0, yb, Rb], wG = g0 * u2;
+    const G = p => rotX(p, Bp, wG), Gv = v => rotX(v, O3, wG);
+    const lat = (i, j) => {
+      if (N.key === 'cyl') {
+        const s = -Math.PI * Rb + TAU * Rb * i / NSg, y = yb + (yt - yb) * j / NJ;
+        if (u2 > 0.9995) return [s, y, Rb];
+        const rho = Rb / (1 - u2), a = s / rho;
+        return [rho * Math.sin(a), y, Rb - rho + rho * Math.cos(a)];
+      }
+      const psi = -al / 2 + al * i / NSg, s = sMax - (sMax - sMin) * j / NJ;
+      const be = al + (TAU - al) * u2, sg = Math.min(1, be / TAU), ga = Math.asin(sg), ph = TAU * psi / be;
+      const r = rotX([s * sg * Math.sin(ph), -s * Math.cos(ga), s * sg * Math.cos(ph)], O3, ga - g0);
+      return [r[0], r[1] + ya, r[2]];
+    };
+    const P = [];
+    for (let i = 0; i <= NSg; i++) { P.push([]); for (let j = 0; j <= NJ; j++) P[i].push(G(lat(i, j))); }
+    const face = [];
+    for (let i = 0; i < NSg; i++) for (let j = 0; j < NJ; j++) {
+      const a = P[i][j], b = P[i + 1][j], c = P[i + 1][j + 1], d = P[i][j + 1];
+      const n = unit3(cross3(sub3(b, a), sub3(d, a)));
+      M.quads.push({ w: [a, b, c, d], n, tok: '--side' });
+      if (j === 0) face.push(n);
+    }
+    const line = (pts, lay = 'net', tok = '--neu-l', w = 2.4) => M.lines.push({ pts, tok, w, lay });
+    const row = j => P.map(c => c[j]), col = i => P[i];
+    line(row(0)); line(row(0), 'hl', '--hi', 8);
+    if (Rt > 0) { line(row(NJ)); line(row(NJ), 'hl', '--hi', 8); }
+    if (u2 > 0.004) { line(col(0)); line(col(NSg)); }
+    if (cam) for (let i = 1; i < NSg; i++) if ((cam.rotN(face[i - 1])[2] > 0) !== (cam.rotN(face[i])[2] > 0)) line(col(i));
+    M.lab.side = P[NSg / 2][NJ / 2];
+    // 밑면: 경첩(앞쪽 한 점)을 중심으로 펼친다
+    const disk = (c, R, hinge, w, ny, nm) => {
+      const pt = (rr, t) => G(rotX([c[0] + rr * Math.cos(t), c[1], c[2] + rr * Math.sin(t)], hinge, w));
+      const n = Gv(rotX([0, ny, 0], O3, w));
+      for (let k = 0; k < NR; k++) for (let t = 0; t < NT; t++) {
+        const r0 = R * k / NR, r1 = R * (k + 1) / NR, t0 = TAU * t / NT, t1 = TAU * (t + 1) / NT;
+        M.quads.push({ w: [pt(r0, t0), pt(r1, t0), pt(r1, t1), pt(r0, t1)], n, tok: '--base' });
+      }
+      const ring = Array.from({ length: NT + 1 }, (_, t) => pt(R, TAU * t / NT));
+      line(ring); line(ring, 'hl', '--hi', 8);
+      M.lab[nm] = G(rotX(c, hinge, w));
+    };
+    disk([0, yb, 0], Rb, Bp, -(Math.PI / 2 + g0) * u1, -1, 'b1');
+    if (Rt > 0) disk([0, yt, 0], Rt, [0, yt, Rt], (Math.PI / 2 - g0) * u1, 1, 'b2');
+    return M;
+  }
+  function netFit(N, u1, u2, yaw, elev) {               // 그 모양이 그림 칸에 알맞게 들어가는 배율과 가운데
+    const M = netModel(N, u1, u2, null), cam = makeCam({ yaw, elev, S: 1, cx: 0, cy: 0 });
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    M.quads.forEach(q => q.w.forEach(w => { const c = cam.rotN(w); x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]); y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]); }));
+    return { S: Math.min(520 / (x1 - x0), 360 / (y1 - y0), 128), tx: (x0 + x1) / 2, ty: (y0 + y1) / 2 };
+  }
+  const scNet = {
+    title: '전개도', nav: 3, k: -1, u1: 0, u2: 0, ph: 0, an: Anim(), cam: null, fits: null,
+    steps: () => NETS.length * 3,
+    dots: step => ({ n: NETS.length, cur: Math.floor(step / 3) }),
+    canDrag() { return state.step % 3 === 0; },
+    build() {
+      this.k = -1; this.cam = { yaw: 0, elev: ELEV };
+      FIG.classList.add('app3d');
+      FIG.innerHTML = `<svg viewBox="0 0 600 430" role="img" aria-label="입체도형을 펼쳐 전개도를 만드는 그림"><g id="g4"></g><rect class="grab drag3d" x="0" y="0" width="600" height="430"></rect></svg>
+        <div class="kbar"><div class="pick" role="group" aria-label="입체도형 고르기">${NETS.map((N, i) => `<button type="button" class="kbtn" data-k="${i}">${N.name}</button>`).join('')}</div></div>`;
+      wireDrag(this);
+      $$('.pick .kbtn', FIG).forEach(b => b.addEventListener('click', () => go(state.si, Number(b.getAttribute('data-k')) * 3)));
+      PANEL.innerHTML = `
+        <div class="qhead"><span id="nq"></span><span id="nc"></span></div>
+        <h2 class="q" id="nt"></h2>
+        <table class="mt parts is-off" id="ntab" data-ph="1" data-collapse><tbody>
+          <tr><th class="cn">옆면</th><td id="ns"></td></tr>
+          <tr><th class="cl">밑면</th><td id="nb"></td></tr></tbody></table>
+        <p class="kkt is-off" id="nk" data-ph="1" data-collapse></p>`;
+    },
+    ensureFits() {
+      if (this.fits) return;
+      const N = NETS[this.k], y = this.cam.yaw, e = this.cam.elev;
+      this.fits = { yaw: y, elev: e, A: netFit(N, 0, 0, y, e), B: netFit(N, 1, 0, y, e), C: netFit(N, 1, 1, 0, 0) };
+    },
+    camNow() {
+      const base = { cx: 300, cy: 212 };
+      if (this.u1 <= 0 && this.u2 <= 0) {
+        const A = netFit(NETS[this.k], 0, 0, this.cam.yaw, this.cam.elev);
+        return makeCam(Object.assign({ yaw: this.cam.yaw, elev: this.cam.elev }, A, base));
+      }
+      this.ensureFits();
+      const F = this.fits;
+      if (this.u2 <= 0) { const u = this.u1; return makeCam(Object.assign({ yaw: F.yaw, elev: F.elev, S: lerp(F.A.S, F.B.S, u), tx: lerp(F.A.tx, F.B.tx, u), ty: lerp(F.A.ty, F.B.ty, u) }, base)); }
+      const u = this.u2;
+      return makeCam(Object.assign({ yaw: lerp(F.yaw, 0, u), elev: lerp(F.elev, 0, u), S: lerp(F.B.S, F.C.S, u), tx: lerp(F.B.tx, F.C.tx, u), ty: lerp(F.B.ty, F.C.ty, u) }, base));
+    },
+    draw() {
+      const g = $('#g4', FIG);
+      if (!g) return;
+      const N = NETS[this.k], cam = this.camNow(), M = netModel(N, this.u1, this.u2, cam);
+      const C = compose(M, cam, { alpha: 0.82 });
+      let s = C.fill;
+      if (state.step % 3 === 2) s += visOf(C, ['hl']);
+      s += linesOf(C, ['net']);
+      if (this.u2 >= 1 - 1e-6) {
+        const t = (p, label) => { const q = cam.pr(p); return tag(q[0], q[1] + 9, label, 26, 'middle'); };
+        s += t(M.lab.side, '옆면') + t(M.lab.b1, '밑면') + (M.lab.b2 ? t(M.lab.b2, '밑면') : '');
+      }
+      g.innerHTML = s;
+    },
+    redraw() { this.draw(); },
+    paint() {
+      const s = state.step % 3, show = s === 2 || (s === 1 && this.ph === 2);
+      const tb = $('#ntab', PANEL), kk = $('#nk', PANEL);
+      if (tb) tb.classList.toggle('is-off', !show);
+      if (kk) kk.classList.toggle('is-off', s !== 2);
+      $$('.pick .kbtn', FIG).forEach(b => b.setAttribute('aria-pressed', Number(b.getAttribute('data-k')) === this.k ? 'true' : 'false'));
+    },
+    play(ph) {
+      this.ensureFits();
+      if (ph === 1) this.an.run(T.open, u => { this.u1 = u; this.draw(); }, () => { this.u1 = 1; this.ph = 1; this.paint(); this.draw(); });
+      else this.an.run(T.unroll, u => { this.u2 = u; this.draw(); }, () => { this.u2 = 1; this.ph = 2; this.paint(); this.draw(); });
+    },
+    advance() {
+      if (this.an.finish()) return true;
+      if (state.step % 3 === 1 && this.ph < 2) { this.play(this.ph + 1); return true; }
+      return false;
+    },
+    retreat() {
+      if (state.step % 3 !== 1) return false;
+      const busy = this.an.busy();
+      this.an.stop();
+      if (this.ph === 2 || (busy && this.ph === 1)) { this.u1 = 1; this.u2 = 0; this.ph = 1; this.paint(); this.draw(); return true; }
+      return false;                                  // 밑면만 펼친 모습에서의 '이전'은 앞 단계로
+    },
+    leave() { this.an.stop(); },
+    update(step, prev) {
+      const k = Math.floor(step / 3), s = step % 3, N = NETS[k];
+      this.an.stop();
+      if (k !== this.k) {
+        this.k = k; this.cam = { yaw: 0, elev: ELEV };
+        $('#nq', PANEL).textContent = N.name;
+        $('#nc', PANEL).textContent = `${k + 1} / ${NETS.length}`;
+        $('#nt', PANEL).textContent = `${N.name}${N.eul} 펼치면 어떤 모양일까?`;
+        $('#ns', PANEL).textContent = N.side;
+        $('#nb', PANEL).textContent = N.base;
+        $('#nk', PANEL).textContent = N.kkt;
+      }
+      if (s === 0) { this.u1 = 0; this.u2 = 0; this.ph = 0; this.fits = null; }
+      else if (s === 1 && prev === step - 1) { this.u1 = 0; this.u2 = 0; this.ph = 0; this.fits = null; this.play(1); }
+      else { this.u1 = 1; this.u2 = 1; this.ph = 2; this.ensureFits(); }
+      this.paint(); this.draw();
+    }
+  };
+  // '원뿔대을'이 되지 않도록 받침에 따라 을/를 고르기
+  NETS.forEach(N => { const ch = N.name.charCodeAt(N.name.length - 1) - 0xac00; N.eul = ch >= 0 && ch % 28 ? '을' : '를'; });
+
+  /* =========================================================
+     장면 5. 회전체의 성질: 회전축을 기준으로 자르는 두 방법을 먼저 소개하고 케이크로 확인
+     → 네 회전체를 회전축에 수직인 평면으로 자르기 → 회전축을 포함하는 평면으로 자르기
+     평면은 자르기 전에 들어와 입체도형을 지나가고(앞쪽 부분이 평면 위에 겹쳐 보이게 나누어 그린다),
+     다 들어오면 단면이 드러난다.
+     ========================================================= */
+  const CAKE = CYL(1.0, -0.5, 0.5), CAKE_LO = clipShape(CAKE, 0, false), CAKE_UP = clipShape(CAKE, 0, true);
+  const PHC = rad(60);                                   // 케이크를 세로로 자르는 평면의 자리
+  const SOL4 = [
+    { name: '원기둥', sh: CYL(0.7, -0.62, 0.62), secA: '직사각형' },
+    { name: '원뿔', sh: CONE(0.76, -0.66, 0.66), secA: '이등변삼각형' },
+    { name: '원뿔대', sh: FRUS(0.8, 0.4, -0.58, 0.58), secA: '사다리꼴' },
+    { name: '구', sh: BALL(0.7, 0, 16), secA: '원' }
+  ];
+  const CELLS = [[150, 110], [450, 110], [150, 322], [450, 322]];
+  const SIDES = new Set(['base', 'side']), NOCUT = new Set(['cut']);
+  const CAKE_W = { fill: '--cake', line: '--cake-l', only: SIDES, noRim: NOCUT };                       // 자르기 전: 한 덩어리로 보이게
+  const CAKE_P = { fill: '--cake', line: '--cake-l', only: SIDES, rimTok: { cut: '--plane-l' }, rimW: { cut: 3 } };   // 평면이 다 들어옴: 만나는 선만
+  const CAKE_S = { fill: '--cake', line: '--cake-l', tok: { cut: '--cut' }, rimTok: { cut: '--c-perp' }, rimW: { cut: 4 } };   // 잘라 냄: 단면
+  const npOf = f => [Math.sin(f), 0, Math.cos(f)];       // 회전축을 포함하는 평면(자리 f)의 법선. 반쪽 [f, f+π]가 이쪽에 있다
+  const scProp = {
+    title: '회전체의 성질', nav: 4, wide: true, steps: () => 10, an: Anim(), an2: Anim(),
+    cam: null, camG: null, p1: 0, l1: 0, p2: 0, l2: 0, pin: 1, t: 0.55, phc: rad(24), fold: 0, stopBob: null, stopTurn: null,
+    camRef() { return state.step >= 5 ? this.camG : this.cam; },
+    build() {
+      this.cam = { yaw: 0, elev: rad(22) }; this.camG = { yaw: 0, elev: ELEV }; this.t = 0.55; this.phc = rad(24); this.fold = 0;
+      FIG.classList.add('app3d');
+      FIG.innerHTML = `<svg viewBox="0 0 600 450" role="img" aria-label="회전체를 평면으로 자른 단면"><g id="g5"></g><rect class="grab drag3d" x="0" y="0" width="600" height="450"></rect></svg>
+        <div class="kbar">
+          <button type="button" class="kbtn" data-act="again" data-only="1,2,3,4,5,7" data-collapse>${ICO_SPIN}<span>다시 자르기</span></button>
+          <label class="rng" data-show="5" data-hide="7" data-collapse><span class="kl">자르는 높이</span><input type="range" id="cutY" min="6" max="94" value="55" aria-label="자르는 높이"></label>
+          <button type="button" class="kbtn" data-act="bob" data-show="5" data-hide="7" data-collapse aria-pressed="false">${ICO_UD}<span>위아래로 움직이기</span></button>
+          <button type="button" class="kbtn" data-act="turn" data-show="7" data-collapse aria-pressed="false">${ICO_SPIN}<span>평면 돌리기</span></button>
+          <button type="button" class="kbtn" data-act="fold" data-show="9" data-collapse>${ICO_FOLD}<span>접어 보기</span></button>
+        </div>`;
+      wireDrag(this);
+      const rng = $('#cutY', FIG);
+      rng.addEventListener('input', () => { this.setBob(false); this.t = Number(rng.value) / 100; reqDraw(this); });
+      $('[data-act="again"]', FIG).addEventListener('click', () => this.replay());
+      $('[data-act="bob"]', FIG).addEventListener('click', () => this.setBob(!this.stopBob));
+      $('[data-act="turn"]', FIG).addEventListener('click', () => this.setTurn(!this.stopTurn));
+      $('[data-act="fold"]', FIG).addEventListener('click', () => this.foldPlay());
+      PANEL.innerHTML = `
+        <h2 class="q">회전체에는 어떤 성질이 있을까?</h2>
+        <div class="prop" data-hide="5" data-collapse><span class="pl">단면</span><p>입체도형을 평면으로 자를 때 생기는 면을 <b class="ca">단면</b>이라고 한다.</p></div>
+        <p class="say" data-hide="5" data-collapse>회전체는 <b>회전축</b>을 기준으로 두 가지 방법으로 잘라 봐요.</p>
+        <table class="mt meth" data-hide="5" data-collapse><colgroup><col class="mh"><col><col class="ms"></colgroup>
+          <thead><tr><th></th><th>자르는 평면</th><th>단면의 모양</th></tr></thead>
+          <tbody><tr id="mr1"><th>방법1</th><td><b class="cp">회전축에 수직인 평면</b></td><td id="ck1">${qmH}</td></tr>
+            <tr id="mr2"><th>방법2</th><td><b class="ci">회전축을 포함하는 평면</b></td><td id="ck2">${qmH}</td></tr></tbody></table>
+        <p class="ask" data-only="1" data-collapse>원기둥 모양의 케이크를 방법1로 자르면 단면은 어떤 모양일까?</p>
+        <p class="ask" data-only="3" data-collapse>이번에는 방법2로 자르면 단면은 어떤 모양일까?</p>
+        <p class="ask" data-only="5" data-collapse>다른 회전체도 <span class="cp">회전축에 수직인 평면</span>으로 자르면 단면의 경계는 어떤 모양일까?</p>
+        <p class="ask" data-only="7" data-collapse><span class="ci">회전축을 포함하는 평면</span>으로 자르면 단면은 어떤 모양일까?</p>
+        <p class="ask" data-only="8" data-collapse>평면을 돌려 가며 자르면 단면은 어떻게 될까?</p>
+        <table class="mt sec" data-show="5" data-collapse><colgroup><col class="sn"><col><col></colgroup>
+          <thead><tr><th></th><th class="sc1"><span class="cp">회전축에 수직인 평면</span>으로 자른 단면의 경계</th><th class="sc2"><span class="ci">회전축을 포함하는 평면</span>으로 자른 단면의 모양</th></tr></thead>
+          <tbody>${SOL4.map((s, i) => `<tr><th>${s.name}</th><td id="sp${i}" class="sc1">${qmH}</td><td id="sa${i}" class="sc2">${qmH}</td></tr>`).join('')}</tbody></table>
+        <div class="prop" data-show="6" data-collapse><span class="pl">회전체의 성질</span>
+          <p class="hang"><b class="cp">❶</b><span>회전체를 회전축에 수직인 평면으로 자른 단면의 경계는 항상 원이다.</span></p>
+          <p class="hang" data-show="9" data-collapse><b class="ci">❷</b><span>회전체를 회전축을 포함하는 평면으로 자른 단면은 모두 합동이고, 회전축에 대한 선대칭도형이다.</span></p></div>
+        <p class="note" data-show="9" data-collapse>선대칭도형: 한 직선을 따라 접었을 때 완전히 겹치는 도형 (초등학교 5~6학년)</p>`;
+    },
+    setBob(on) {
+      if (this.stopBob) { this.stopBob(); this.stopBob = null; }
+      if (on) {
+        const rng = $('#cutY', FIG);
+        let tt = Math.asin(clamp((this.t - 0.5) / 0.42, -1, 1));
+        this.stopBob = rafLoop(dt => { tt += dt * 1.1; this.t = 0.5 + 0.42 * Math.sin(tt); if (rng) rng.value = String(Math.round(this.t * 100)); this.draw(); });
+      }
+      const b = $('[data-act="bob"]', FIG);
+      if (b) b.setAttribute('aria-pressed', this.stopBob ? 'true' : 'false');
+    },
+    setTurn(on) {
+      if (this.stopTurn) { this.stopTurn(); this.stopTurn = null; }
+      if (on) { this.an2.finish(); this.stopTurn = rafLoop(dt => { this.phc += dt * 0.7; this.draw(); }); }
+      const b = $('[data-act="turn"]', FIG);
+      if (b) b.setAttribute('aria-pressed', this.stopTurn ? 'true' : 'false');
+    },
+    foldPlay() {
+      this.setTurn(false);
+      this.an2.run(T.fold, u => { this.fold = Math.sin(Math.PI * u); this.draw(); }, () => { this.fold = 0; this.draw(); });
+    },
+    run(key, ms) {
+      this[key] = 0; this.paint();
+      this.an.run(ms, u => { this[key] = u; this.draw(); }, () => { this[key] = 1; this.paint(); this.draw(); });
+    },
+    replay() {
+      const st = state.step, key = { 1: 'p1', 2: 'l1', 3: 'p2', 4: 'l2', 5: 'pin', 7: 'pin' }[st];
+      if (!key) return;
+      this.setBob(false); this.setTurn(false);
+      this.run(key, { p1: T.plane, l1: T.lift, p2: T.plane, l2: T.lift, pin: T.slice }[key]);
+    },
+    paint() {
+      const st = state.step;
+      setCell($('#ck1', PANEL), '원', st > 2 || (st === 2 && this.l1 >= 1));
+      setCell($('#ck2', PANEL), '직사각형', st > 4 || (st === 4 && this.l2 >= 1));
+      const r1 = $('#mr1', PANEL), r2 = $('#mr2', PANEL);
+      if (r1) r1.classList.toggle('on', st === 1 || st === 2);
+      if (r2) r2.classList.toggle('on', st === 3 || st === 4);
+      SOL4.forEach((s, i) => { setCell($(`#sp${i}`, PANEL), '원', st >= 6); setCell($(`#sa${i}`, PANEL), s.secA, st >= 8); });
+      $$('.mt.sec .sc1', PANEL).forEach(c => c.classList.toggle('on', st === 5 || st === 6));   // 지금 자르는 방법의 칸을 밝게
+      $$('.mt.sec .sc2', PANEL).forEach(c => c.classList.toggle('on', st === 7 || st === 8));
+    },
+    draw() {
+      const g = $('#g5', FIG);
+      if (!g) return;
+      g.innerHTML = state.step >= 5 ? this.drawGrid() : this.drawCake();
+    },
+    drawCake() {
+      const st = state.step, cam = makeCam({ yaw: this.cam.yaw, elev: this.cam.elev, S: 122, cx: 300, cy: 252 });
+      const AX = [-0.86, 0.98], deco = axisTop(cam, AX[1]);
+      const whole = () => { const C = compose(revModel(CAKE, cam, Object.assign({ axis: AX }, CAKE_W)), cam, { alpha: 0.62 }); return C.fill + linesOf(C, ['rim', 'sil', 'axis']) + deco; };
+      if (st === 0) return whole();
+      if (st <= 2) {                                    // 방법1: 회전축에 수직인 평면
+        const p = st === 1 ? this.p1 : 1, l = st === 2 ? this.l1 : 0;
+        if (p <= 0) return whole();
+        const O = st === 2 ? CAKE_S : p >= 1 ? CAKE_P : CAKE_W;
+        const MU = revModel(CAKE_UP, cam, Object.assign({ off: [0, 0.55 * l, 0] }, O)), ML = revModel(CAKE_LO, cam, Object.assign({ axis: AX }, O));
+        const CL = compose(ML, cam, { alpha: 0.62, occ: MU.quads }), CU = compose(MU, cam, { alpha: 0.62 });
+        return CL.fill + linesOf(CL, ['rim', 'sil']) + hPlane(cam, 0, 1.6, [2.8 * (1 - p), 0, 0], Math.min(1, p * 2) * (1 - l)) +
+          CU.fill + linesOf(CU, ['rim', 'sil']) + linesOf(CL, ['axis']) + deco;
+      }
+      const p = st === 3 ? this.p2 : 1, l = st === 4 ? this.l2 : 0;   // 방법2: 회전축을 포함하는 평면
+      if (p <= 0) return whole();
+      const n1 = npOf(PHC), near1 = cam.rotN(n1)[2] >= 0, aN = near1 ? PHC : PHC + Math.PI, aF = near1 ? PHC + Math.PI : PHC, sg = near1 ? 1 : -1;
+      const off = [n1[0] * sg * 0.8 * l, 0, n1[2] * sg * 0.8 * l];
+      const base = { fill: '--cake', line: '--cake-l' };
+      const MF = revModel(CAKE, cam, Object.assign({ a0: aF, a1: aF + Math.PI }, base, l > 0 ? { axis: AX } : {}));
+      const MN = revModel(CAKE, cam, Object.assign({ a0: aN, a1: aN + Math.PI, off }, base, l > 0 ? {} : { axis: AX }));
+      const CF = compose(MF, cam, { alpha: 0.62 }), CN = compose(MN, cam, { alpha: 0.62 * (1 - 0.7 * l) });
+      const sec = l > 0 ? `<path d="${figD(CAKE, PHC, cam)} ${figD(CAKE, PHC + Math.PI, cam)}" style="fill:var(--cut2);fill-opacity:.92;stroke:none"/>` +
+        `<path d="${edgeD(CAKE, PHC, cam)}${edgeD(CAKE, PHC + Math.PI, cam)}" class="rd" style="stroke:var(--c-incl);stroke-width:4"/>` : '';
+      return CF.fill + linesOf(CF, ['rim', 'sil']) + sec + vPlane(cam, PHC, 1.6, -0.95, 0.95, [0, 2.4 * (1 - p), 0], Math.min(1, p * 2) * (1 - l)) +
+        CN.fill + `<g style="opacity:${n2(1 - 0.7 * l)}">${linesOf(CN, ['rim', 'sil'])}</g>` + linesOf(CF, ['axis']) + linesOf(CN, ['axis']) + deco;
+    },
+    drawGrid() {
+      const st = state.step, perp = st <= 6, pin = this.pin, sec = clamp((pin - 0.72) / 0.28, 0, 1), pa = Math.min(1, pin * 2.5);
+      let s = '';
+      SOL4.forEach((S, i) => {
+        const cam = makeCam({ yaw: this.camG.yaw, elev: this.camG.elev, S: 98, cx: CELLS[i][0], cy: CELLS[i][1] });
+        const sh = S.sh, AX = [sh.ymin - 0.24, sh.ymax + 0.26], top = cam.pr([0, AX[1], 0]);
+        const O = { fill: '--sol', line: '--sol-l', only: SIDES, noRim: NOCUT };
+        if (perp) {                                     // 회전축에 수직인 평면이 옆에서 들어와 자른다
+          const y = lerp(sh.ymin, sh.ymax, this.t), lo = clipShape(sh, y, false), up = clipShape(sh, y, true);
+          const MU = revModel(up, cam, Object.assign({ off: [0, 0.14 * sec, 0] }, O)), ML = revModel(lo, cam, Object.assign({ axis: AX }, O));
+          const CL = compose(ML, cam, { alpha: 0.5, occ: MU.quads }), CU = compose(MU, cam, { alpha: 0.5 - 0.14 * sec });
+          // 위 조각도 잘린 면의 테두리를 입체도형의 선 색으로 그려 닫힌 모양이 되게 한다(잘리면서 나타남)
+          const upRim = sec > 0 ? linesOf(compose(revModel(up, cam, { off: [0, 0.14 * sec, 0], line: '--sol-l', only: NOCUT, sil: false }), cam, { alpha: 0, occ: MU.quads }), ['rim']) : '';
+          s += CL.fill + linesOf(CL, ['rim', 'sil']) + hPlane(cam, y, 0.98, [1.6 * (1 - pin), 0, 0], pa) +
+            (sec > 0 ? `<g style="opacity:${n2(sec)}">${perpSec(sh, cam, y)}</g>` : '') + CU.fill + linesOf(CU, ['rim', 'sil']) +
+            (upRim ? `<g style="opacity:${n2(sec)}">${upRim}</g>` : '') + linesOf(CL, ['axis']);
+        } else {                                        // 회전축을 포함하는 평면이 위에서 내려와 자른다
+          const f = this.phc, d1 = cam.rotN(npOf(f))[2], w1 = clamp(0.5 + 1.5 * d1, 0, 1), near1 = d1 >= 0;
+          const M1 = revModel(sh, cam, Object.assign({ a0: f, a1: f + Math.PI }, O, near1 ? { axis: AX } : {}));
+          const M2 = revModel(sh, cam, Object.assign({ a0: f + Math.PI, a1: f + TAU }, O, near1 ? {} : { axis: AX }));
+          const al1 = 0.5 - 0.3 * sec * w1, al2 = 0.5 - 0.3 * sec * (1 - w1);
+          const C1 = compose(M1, cam, { alpha: al1 }), C2 = compose(M2, cam, { alpha: al2 });
+          const [CF, CN, aN] = near1 ? [C2, C1, al1] : [C1, C2, al2];
+          const so = st >= 9 ? { fill1: '--f-incl2', fill2: '--f-incl', f2: f + Math.PI * (1 - this.fold) } : {};
+          s += CF.fill + linesOf(CF, ['rim', 'sil']) + vPlane(cam, f, 1.0, sh.ymin - 0.18, sh.ymax + 0.18, [0, 2.0 * (1 - pin), 0], pa) +
+            (sec > 0 ? `<g style="opacity:${n2(sec)}">${axialSec(sh, cam, f, O3, so)}</g>` : '') +
+            CN.fill + `<g style="opacity:${n2(0.4 + aN * 1.2)}">${linesOf(CN, ['rim', 'sil'])}</g>` + linesOf(C1, ['axis']) + linesOf(C2, ['axis']);
+        }
+        s += vr(top[0] + 13, top[1] + 14, 'l', 24, 'middle') + tag(CELLS[i][0], CELLS[i][1] + 112, S.name, 24, 'middle');
+      });
+      return s;
+    },
+    redraw() { this.draw(); },
+    advance() { return this.an.finish(); },
+    leave() { this.an.stop(); this.an2.stop(); this.setBob(false); this.setTurn(false); },
+    update(step, prev) {
+      applyStep(FIG, step, prev); applyStep(PANEL, step, prev);
+      this.an.stop(); this.an2.stop(); this.fold = 0;
+      if (step !== 5 && step !== 6) this.setBob(false);
+      if (step < 7) this.setTurn(false);
+      this.p1 = step >= 1 ? 1 : 0; this.l1 = step >= 2 ? 1 : 0; this.p2 = step >= 3 ? 1 : 0; this.l2 = step >= 4 ? 1 : 0; this.pin = 1;
+      if (prev === step - 1) {
+        if (step === 1) this.run('p1', T.plane);
+        else if (step === 2) this.run('l1', T.lift);
+        else if (step === 3) this.run('p2', T.plane);
+        else if (step === 4) this.run('l2', T.lift);
+        else if (step === 5 || step === 7) this.run('pin', T.slice);
+        else if (step === 9) this.foldPlay();
+      }
+      this.paint(); this.draw();
+    }
+  };
+
+  /* =========================================================
+     마무리: 오늘 배운 성질 총정리 → 문제 (문제마다 '문제 → 답' 두 단계)
+     ========================================================= */
+  const oxFig = key => `<svg viewBox="0 0 600 460" role="img" aria-label="O와 X">` +
+    `<g class="ox${key === 'O' ? ' ok' : ''}"><circle cx="165" cy="230" r="118"></circle></g>` +
+    `<g class="ox${key === 'X' ? ' ok' : ''}"><path d="M 340 112 L 576 348 M 576 112 L 340 348"></path></g></svg>`;
+  const solidSVG = (sh, cam, o = {}) => { const C = compose(revModel(sh, cam, Object.assign({ fill: '--sol', line: '--sol-l' }, o)), cam, { alpha: o.alpha || 0.55 }); return C.fill + linesOf(C, ['rim', 'sil', 'axis']); };
+  const arrowR = (x0, x1, y) => `<path d="M${x0} ${y}L${x1} ${y}M${x1 - 12} ${y - 9}L${x1} ${y}L${x1 - 12} ${y + 9}" class="rd" style="stroke:var(--ink-2);stroke-width:3"/>`;
+  const SUM_SH = FRUS(0.95, 0.5, -0.78, 0.78);
+  function sumFig() {
+    const cam = makeCam({ yaw: 0, elev: ELEV, S: 150, cx: 300, cy: 236 });
+    const C = compose(revModel(SUM_SH, cam, { fill: '--sol', line: '--sol-l', axis: [-1.02, 1.05] }), cam, { alpha: 0.48 });
+    const top = cam.pr([0, 1.05, 0]);
+    const pR = cam.pr(Wp(crossR(SUM_SH, 0.22)[0][1], 0.22, 2.3)), pA = cam.pr(Wp(0.62, -0.4, rad(30)));
+    return `<svg viewBox="0 0 600 460" role="img" aria-label="원뿔대를 두 평면으로 자른 단면">` + C.fill + hidOf(C, ['rim', 'sil']) +
+      axialSec(SUM_SH, cam, rad(30)) + perpSec(SUM_SH, cam, 0.22) + visOf(C, ['rim', 'sil']) + linesOf(C, ['axis']) + vr(top[0] + 14, top[1] + 16, 'l', 30, 'middle') +
+      callout(pR, [528, pR[1] - 40], '❶', '--c-perp', 26) + callout(pA, [72, pA[1] + 40], '❷', '--c-incl', 26) + '</svg>';
+  }
+  const QUIZ = [
+    {
+      tag: '문제 10', q: '회전축에 수직인 평면과 회전축을 포함하는 평면으로 자른 단면이 다음과 같은 회전체는? 밑면의 반지름의 길이와 높이는?',
+      fig() {
+        const cam = makeCam({ yaw: 0, elev: ELEV, S: 11.5, cx: 498, cy: 236 });
+        const sh = CYL(4, -5, 5), top = cam.pr([0, 5, 0]), rr = cam.pr(Wp(4, 5, Math.PI));
+        let s = `<circle cx="96" cy="236" r="48" style="fill:var(--f-perp);stroke:var(--c-perp);stroke-width:3.4"/><circle cx="96" cy="236" r="4" class="f-ink" style="fill:var(--ink)"/>` +
+          `<path d="M96 236L144 236" class="rd" style="stroke:var(--ink);stroke-width:2.4"/>${num(120, 226, '4 cm', 24, 'middle')}` +
+          `<rect x="202" y="178" width="92" height="115" style="fill:var(--f-incl);stroke:var(--c-incl);stroke-width:3.4"/>` +
+          `<path d="M202 190h12v-12M282 178v12h12M202 281h12v12M294 281h-12v12" class="rd" style="stroke:var(--ink);stroke-width:1.8"/>` +
+          num(248, 166, '8 cm', 24, 'middle') + num(302, 244, '10 cm', 24, 'start');
+        s += `<g class="rv">${arrowR(384, 418, 236)}${solidSVG(sh, cam)}<path d="M${f1(top[0])} ${f1(top[1])}L${f1(rr[0])} ${f1(rr[1])}" class="rd" style="stroke:var(--ink);stroke-width:2.2"/>` +
+          `${num((top[0] + rr[0]) / 2, top[1] - 22, '4 cm', 22, 'middle')}${num(554, 244, '10 cm', 22, 'start')}</g>`;
+        return `<svg viewBox="0 0 600 460" role="img" aria-label="원과 직사각형 모양의 단면">${s}</svg>`;
+      },
+      ans: '원기둥 · 반지름 4 cm, 높이 10 cm', why: '단면이 원과 직사각형이므로 원기둥이에요. 직사각형의 가로 8 cm는 밑면의 지름이에요.'
+    },
+    {
+      tag: '문제 11', q: '구를 한 평면으로 자를 때 생기는 단면의 모양은? 단면의 넓이가 가장 크려면 어떻게 잘라야 할까?',
+      fig() {
+        const cam = makeCam({ yaw: 0, elev: ELEV, S: 150, cx: 300, cy: 232 }), sh = BALL(1, 0, 18);
+        const ring = (y, w) => { const r = Math.sqrt(1 - y * y); return `<path d="${ptsD(ringPts(cam, r, y))}Z" style="fill:var(--f-perp);stroke:var(--c-perp);stroke-width:${w}"/>`; };
+        const o = cam.pr([0, 0, 0]);
+        return `<svg viewBox="0 0 600 460" role="img" aria-label="평면으로 자른 구">${solidSVG(sh, cam, { alpha: 0.5 })}` +
+          `<g class="hide-rev">${hPlane(cam, 0.52, 1.42, O3, 0.9)}${ring(0.52, 3.4)}</g>` +
+          `<g class="rv">${hPlane(cam, 0, 1.42, O3, 0.9)}${ring(0, 4.4)}<circle cx="${f1(o[0])}" cy="${f1(o[1])}" r="6" style="fill:var(--ink)"/>${callout(o, [522, o[1] - 120], '구의 중심', '--ink-2')}</g></svg>`;
+      },
+      ans: '원 · 구의 중심을 지나는 평면', why: '구를 어떤 평면으로 잘라도 단면은 원이고, 구의 중심을 지나는 평면으로 자를 때 넓이가 가장 커요.'
+    },
+    { tag: 'O, X', sub: '맞으면 O, 틀리면 X!', q: '원뿔대의 두 밑면은 합동이다.', fig: () => oxFig('X'), ans: 'X', why: '원뿔대의 두 밑면은 서로 평행하지만 크기가 다른 원이에요.' },
+    { tag: 'O, X', sub: '맞으면 O, 틀리면 X!', q: '회전체를 회전축을 포함하는 평면으로 자른 단면은 모두 합동이다.', fig: () => oxFig('O'), ans: 'O', why: '회전축을 포함하는 평면으로 자른 단면은 모두 합동이고, 회전축에 대한 선대칭도형이에요.' },
+    {
+      tag: '이름 맞히기', q: '어떤 회전체를 회전축을 포함하는 평면으로 자른 단면이 다음과 같을 때, 이 회전체의 이름은?',
+      fig() {
+        const cam = makeCam({ yaw: 0, elev: ELEV, S: 104, cx: 462, cy: 236 }), sh = FRUS(1.05, 0.5, -0.76, 0.76);
+        return `<svg viewBox="0 0 600 460" role="img" aria-label="사다리꼴 모양의 단면">` +
+          `<path d="M120 158L220 158L276 314L64 314Z" style="fill:var(--f-incl);stroke:var(--c-incl);stroke-width:3.4;stroke-linejoin:round"/>` +
+          `<path d="M170 124L170 348" class="rd" style="stroke:var(--ink);stroke-width:2.2;stroke-dasharray:8 6"/>${vr(184, 132, 'l', 28, 'middle')}` +
+          `<g class="rv">${arrowR(300, 340, 236)}${solidSVG(sh, cam)}</g></svg>`;
+      },
+      ans: '원뿔대', why: '사다리꼴의 반쪽을 회전축을 중심으로 1회전 시키면 원뿔대가 생겨요.'
+    }
+  ];
+  const scEnd = {
+    title: '마무리', nav: 5, k: -2,
+    steps: () => 1 + QUIZ.length * 2,
+    dots: step => ({ n: 1 + QUIZ.length, cur: step === 0 ? 0 : 1 + Math.floor((step - 1) / 2) }),
+    build() {
+      this.k = -2;
+      PANEL.innerHTML = `
+        <div class="stack" data-only="0" data-collapse>
+          <h2 class="q">오늘 배운 회전체의 성질</h2>
+          <div class="prop"><span class="pl">회전체의 성질</span>
+            <p class="hang"><b class="cp">❶</b><span>회전체를 회전축에 수직인 평면으로 자른 단면의 경계는 항상 원이다.</span></p>
+            <p class="hang"><b class="ci">❷</b><span>회전체를 회전축을 포함하는 평면으로 자른 단면은 모두 합동이고, 회전축에 대한 선대칭도형이다.</span></p></div>
+        </div>
+        <div class="stack" data-show="1" data-collapse>
+          <div class="qhead"><span id="qtag"></span><span id="qc"></span></div>
+          <p class="sub" id="qs"></p>
+          <h2 class="q sm" id="qt"></h2>
+          <div class="answer is-off" id="qa"><div class="big" id="qab"></div><p class="why" id="qaw"></p></div>
+        </div>`;
+    },
+    figFor(k) { return k < 0 ? sumFig() : QUIZ[k].fig(); },
+    redraw() { const rev = FIG.classList.contains('rev'); FIG.innerHTML = this.figFor(this.k); FIG.classList.toggle('rev', rev); },
+    update(step, prev) {
+      applyStep(PANEL, step, prev);
+      const k = step === 0 ? -1 : Math.floor((step - 1) / 2), rev = step > 0 && (step - 1) % 2 === 1;
+      const qa = $('#qa', PANEL);
+      if (k !== this.k) {
+        this.k = k;
+        qa.classList.add('no-anim'); qa.classList.add('is-off'); void qa.offsetWidth; qa.classList.remove('no-anim');
+        FIG.classList.remove('rev');
+        FIG.innerHTML = this.figFor(k);
+        const svg = $('svg', FIG);
+        if (svg) svg.style.animation = 'enter .4s ease both';
+        if (k >= 0) {
+          const it = QUIZ[k];
+          $('#qtag', PANEL).textContent = it.tag;
+          $('#qc', PANEL).textContent = `${k + 1} / ${QUIZ.length}`;
+          $('#qs', PANEL).textContent = it.sub || '';
+          $('#qs', PANEL).hidden = !it.sub;
+          $('#qt', PANEL).textContent = it.q;
+          $('#qab', PANEL).textContent = it.ans;
+          $('#qab', PANEL).classList.toggle('kr', /[가-힣]/.test(it.ans));
+          $('#qaw', PANEL).textContent = it.why;
+        }
+      }
+      qa.classList.toggle('is-off', !rev);
+      FIG.classList.toggle('rev', rev);
+    }
+  };
+
+  /* ---------- 장면 목록과 위 띠 (번호, 이름, 장면 순서) ---------- */
+  const scenes = [scRot, scTry, scFrus, scNet, scProp, scEnd];
+  const NAVS = [['1', '회전체', 0], ['2', '돌려 보기', 1], ['3', '원뿔대', 2], ['4', '전개도', 3], ['5', '회전체의 성질', 4], ['', '마무리', 5]];
+
+  /* ---------- 진행 ---------- */
+  let curSi = -1;
+  function go(si, step) {
+    si = Math.max(0, Math.min(scenes.length - 1, si));
+    const sc = scenes[si];
+    step = Math.max(0, Math.min(sc.steps() - 1, step));
+    if (si !== curSi) {
+      if (curSi >= 0 && scenes[curSi].leave) scenes[curSi].leave();
+      curSi = si; state.si = si; state.step = step;
+      FIG.className = 'fig'; FIG.innerHTML = ''; PANEL.innerHTML = '';
+      STAGE.classList.toggle('wide', !!sc.wide);
+      STAGE.classList.toggle('figwide', !!sc.figwide);
+      STAGE.classList.add('instant');
+      sc.build();
+      FIG.classList.add('no-anim'); PANEL.classList.add('no-anim');
+      sc.update(step, step);
+      void FIG.offsetWidth;
+      FIG.classList.remove('no-anim'); PANEL.classList.remove('no-anim');
+      STAGE.classList.remove('enter'); void STAGE.offsetWidth; STAGE.classList.add('enter');
+      renderInk();
+    } else {
+      const prev = state.step;
+      state.step = step;
+      STAGE.classList.toggle('instant', step < prev);   // 뒤로 갈 때는 늦게 나타나기 없이 바로
+      if (prev !== step) sc.update(step, prev);
+    }
+    updateChrome();
+  }
+  const next = () => {
+    const sc = scenes[state.si];
+    if (sc.advance && sc.advance()) return;
+    if (state.step < sc.steps() - 1) go(state.si, state.step + 1);
+    else if (state.si < scenes.length - 1) go(state.si + 1, 0);
+  };
+  const prev = () => {
+    const sc = scenes[state.si];
+    if (sc.retreat && sc.retreat()) return;
+    if (state.step > 0) go(state.si, state.step - 1);
+    else if (state.si > 0) go(state.si - 1, scenes[state.si - 1].steps() - 1);
+  };
+
+  const navEl = $('#nav');
+  navEl.innerHTML = NAVS.map((n, i) => `<button type="button" data-nav="${i}" data-si="${n[2]}">${n[0] ? `<span class="n">${n[0]}</span>` : ''}${n[1]}</button>`).join('');
+  $$('button', navEl).forEach(b => b.addEventListener('click', () => go(Number(b.getAttribute('data-si')), 0)));
+
+  function updateChrome() {
+    const sc = scenes[state.si], n = sc.steps();
+    $$('button', navEl).forEach(b => {
+      if (Number(b.getAttribute('data-nav')) === sc.nav) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
+    });
+    const di = sc.dots ? sc.dots(state.step) : { n, cur: state.step };
+    $('#dots').innerHTML = Array.from({ length: di.n }, (_, i) => `<span class="dot${i <= di.cur ? ' on' : ''}${i === di.cur ? ' cur' : ''}"></span>`).join('');
+    $('#prevBtn').disabled = state.si === 0 && state.step === 0;
+    $('#nextBtn').disabled = state.si === scenes.length - 1 && state.step === n - 1;
+  }
+  $('#nextBtn').addEventListener('click', next);
+  $('#prevBtn').addEventListener('click', prev);
+
+  /* ---------- 펜 (장면마다 따로 남는다) ---------- */
+  const INK = $('#ink');
+  const inkStore = new Map();
+  let penOn = false, penVar = '--pen1', cur = null;
+  const inkKey = () => String(state.si);
+  const ptsStr = pts => pts.map(p => p.join(',')).join(' ');
+  function renderInk() {
+    const arr = inkStore.get(inkKey()) || [];
+    INK.innerHTML = arr.map(s => `<polyline points="${ptsStr(s.pts)}" style="stroke:var(${s.c})"></polyline>`).join('');
+  }
+  function undoInk() { const arr = inkStore.get(inkKey()); if (arr && arr.length) { arr.pop(); renderInk(); } }
+  const toInk = e => {
+    const r = INK.getBoundingClientRect();
+    return [Math.round((e.clientX - r.left) / (r.width || 1) * 1000), Math.round((e.clientY - r.top) / (r.height || 1) * 1000)];
+  };
+  INK.addEventListener('pointerdown', e => {
+    if (!penOn) return;
+    e.preventDefault();
+    try { INK.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+    const p = toInk(e);
+    cur = { c: penVar, pts: [p], el: document.createElementNS(NS, 'polyline') };
+    cur.el.setAttribute('points', p.join(','));
+    cur.el.style.stroke = `var(${penVar})`;
+    INK.appendChild(cur.el);
+    const arr = inkStore.get(inkKey()) || [];
+    arr.push(cur);
+    inkStore.set(inkKey(), arr);
+  });
+  INK.addEventListener('pointermove', e => {
+    if (!cur) return;
+    const p = toInk(e), last = cur.pts[cur.pts.length - 1];
+    if (Math.abs(p[0] - last[0]) + Math.abs(p[1] - last[1]) < 3) return;
+    cur.pts.push(p);
+    cur.el.setAttribute('points', ptsStr(cur.pts));
+  });
+  const endStroke = () => {
+    if (!cur) return;
+    if (cur.pts.length === 1) { cur.pts.push([cur.pts[0][0] + 1, cur.pts[0][1] + 1]); cur.el.setAttribute('points', ptsStr(cur.pts)); }
+    delete cur.el;
+    cur = null;
+  };
+  INK.addEventListener('pointerup', endStroke);
+  INK.addEventListener('pointercancel', endStroke);
+  function setPen(on) {
+    penOn = on;
+    document.body.classList.toggle('pen-on', on);
+    $('#penBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (!on) endStroke();
+  }
+  $('#penBtn').addEventListener('click', () => setPen(!penOn));
+  $('#penOff').addEventListener('click', () => setPen(false));
+  $('#penUndo').addEventListener('click', undoInk);
+  $('#penClear').addEventListener('click', () => { inkStore.set(inkKey(), []); renderInk(); });
+  $$('.pen-sw').forEach(b => b.addEventListener('click', () => {
+    penVar = b.getAttribute('data-pen');
+    $$('.pen-sw').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+
+  /* ---------- 화면 색: 종이 ↔ 칠판 (회전체 조각의 칠도 다시 읽는다) ---------- */
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('lesson-theme'); if (t === 'dark' || t === 'light') root.setAttribute('data-theme', t); } catch (err) { /* 무시 */ }
+  const themeNow = () => root.getAttribute('data-theme') || (mq('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const repaint3d = () => { rgbCache.clear(); themeVer += 1; const sc = scenes[state.si]; if (sc && sc.redraw) sc.redraw(); };
+  const paintTheme = () => {
+    const dark = themeNow() === 'dark';
+    $('#themeLbl').textContent = dark ? '칠판' : '종이';
+    $('#themeBtn').setAttribute('aria-label', `화면 색 바꾸기, 지금은 ${dark ? '칠판' : '종이'}`);
+  };
+  $('#themeBtn').addEventListener('click', () => {
+    const t = themeNow() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('lesson-theme', t); } catch (err) { /* 무시 */ }
+    paintTheme(); repaint3d();
+  });
+  paintTheme();
+  const schemeMq = mq('(prefers-color-scheme: dark)');
+  if (schemeMq.addEventListener) schemeMq.addEventListener('change', () => { paintTheme(); repaint3d(); });
+
+  /* ---------- 전체 화면 ---------- */
+  const fsBtn = $('#fsBtn');
+  if (!document.fullscreenEnabled) fsBtn.hidden = true;
+  const toggleFs = () => {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else root.requestFullscreen().catch(() => {});
+  };
+  fsBtn.addEventListener('click', toggleFs);
+
+  /* ---------- 키보드 (방향키, 발표용 리모컨) ---------- */
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.defaultPrevented) return;
+    const tn = e.target && e.target.tagName ? e.target.tagName : '';
+    const k = e.key;
+    if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'Z')) { if (penOn) { e.preventDefault(); undoInk(); } return; }
+    if (e.ctrlKey || e.metaKey) return;
+    if (tn === 'TEXTAREA' || tn === 'INPUT') return;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || ((k === ' ' || k === 'Enter') && tn !== 'BUTTON')) { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); prev(); }
+    else if (k === 'p' || k === 'P' || k === 'ㅔ') setPen(!penOn);
+    else if (k === 'f' || k === 'F' || k === 'ㄹ') toggleFs();
+    else if (k === 'Escape') { if (penOn) setPen(false); }
+    else if (/^[1-9]$/.test(k) && NAVS[Number(k) - 1]) go(NAVS[Number(k) - 1][2], 0);
+  });
+
+  go(0, 0);
+})();
+</script>
+
+</body></html>

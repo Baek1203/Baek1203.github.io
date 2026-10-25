@@ -1,0 +1,341 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>작도 몽타주 모아보기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* 작도 실습실 교사용 화면의 종이·잉크 색을 그대로 잇는다. 모눈 깔린 판 위에서 학생 몽타주 카드를 펼치고, 포개고, 유형별로 모은다.
+   위: 이름 + 과제(조사 2 · 조사 3) / 가운데 줄: 주어진 조건 + 보기 방식 / 아래: 판(남은 높이 전부) */
+:root{
+  --desk:#E4DCC6; --paper:#FCFAF3; --card:#FFFCF6; --chip:#F4EFE3; --rule:#DCD3BE; --grid:rgba(28,26,22,.055);
+  --ink:#1C1A16; --ink-soft:#6A6355; --gold:#C98A10; --on-gold:#231B06;
+  --t1:#1F3F94; --t2:#C0342A; --t3:#2A7148; --t4:#B07A0C; --t5:#6A4CA8; --t6:#8A6A0E;
+  --stack-op:.7;
+  --sans:"Pretendard","Pretendard Variable","IBM Plex Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#14120E; --paper:#1D1B16; --card:#25221C; --chip:#2C2922; --rule:#3B362C; --grid:rgba(242,237,225,.05);
+    --ink:#F2EDE1; --ink-soft:#B3AA97; --gold:#E2AE45; --on-gold:#1D1606;
+    --t1:#8FA8F0; --t2:#F08A7E; --t3:#7CC79C; --t4:#E8B84E; --t5:#B9A2F0; --t6:#D9BF6A;
+    --stack-op:.8; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#14120E; --paper:#1D1B16; --card:#25221C; --chip:#2C2922; --rule:#3B362C; --grid:rgba(242,237,225,.05);
+  --ink:#F2EDE1; --ink-soft:#B3AA97; --gold:#E2AE45; --on-gold:#1D1606;
+  --t1:#8FA8F0; --t2:#F08A7E; --t3:#7CC79C; --t4:#E8B84E; --t5:#B9A2F0; --t6:#D9BF6A;
+  --stack-op:.8; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--desk);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+.app{min-height:100%;height:100%;display:flex;flex-direction:column;gap:10px;
+  padding-block:12px 14px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+.top{display:flex;align-items:flex-end;gap:12px 28px;flex-wrap:wrap}
+.brand{min-width:0}
+.brand h1{margin:0;font:700 clamp(19px,1.6vw,24px)/1.2 var(--sans);letter-spacing:-.02em;text-wrap:balance}
+.brand p{margin:4px 0 0;font:500 13px/1.4 var(--sans);color:var(--ink-soft)}
+.tasks{display:flex;gap:10px 18px;flex-wrap:wrap;margin-left:auto}
+.tg{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tg-l{font:700 11.5px/1 var(--sans);letter-spacing:.06em;color:var(--ink-soft);margin-right:2px}
+.tk{display:inline-flex;align-items:baseline;gap:6px;padding:9px 13px;border-radius:999px;cursor:pointer;
+  border:1.5px solid var(--rule);background:var(--card);font:600 13px/1 var(--sans);white-space:nowrap}
+.tk b{font-weight:700}
+.tk:hover{border-color:var(--ink-soft)}
+.tk[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+.bar{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding:10px 14px;border-radius:12px;
+  background:var(--card);border:1px solid var(--rule)}
+.cond{margin:0;flex:1 1 320px;min-width:0;font:500 15px/1.5 var(--sans)}
+.cond small{display:block;font:700 11.5px/1.2 var(--sans);letter-spacing:.06em;color:var(--ink-soft);margin-bottom:3px}
+.cond b{font-weight:700;font-variant-numeric:tabular-nums}
+.modes{display:flex;gap:4px;padding:4px;border-radius:11px;background:var(--chip);border:1px solid var(--rule)}
+.modes button{border:0;background:transparent;padding:10px 14px;border-radius:8px;cursor:pointer;
+  font:600 13.5px/1 var(--sans);color:var(--ink-soft);white-space:nowrap}
+.modes button:hover{color:var(--ink)}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.count{font:700 13px/1 var(--sans);color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.stage{position:relative;flex:1 1 auto;min-height:360px;border-radius:14px;overflow-x:hidden;overflow-y:auto;
+  overscroll-behavior:contain;scrollbar-gutter:stable;background-color:var(--paper);border:1px solid var(--rule);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;background-attachment:local}
+.stage.locked{overflow-y:hidden}
+.canvas{position:relative;width:100%}
+.board{position:absolute;left:0;top:0;width:100%;display:block;overflow:visible}
+/* 카드 한 장 = 종이(rect) + 몽타주(polygon) + 임시 이름(text). 포갤 때 카드째로 돌고 뒤집힌다 */
+.card{transform-box:view-box;transform:translate(0px,0px) rotate(0deg) scale(1,1);
+  transition:transform .85s cubic-bezier(.3,1.16,.42,1)}
+.card rect{fill:var(--card);stroke:var(--rule);stroke-width:1.5;
+  transition:fill-opacity .5s,stroke .5s,stroke-opacity .5s}
+.card text{font:700 14px var(--sans);fill:var(--ink-soft);text-anchor:middle;transition:fill-opacity .5s}
+.card polygon{fill-opacity:.12;stroke-width:2.4;stroke-linejoin:round;transition:stroke-opacity .5s,fill-opacity .5s}
+.card.on rect{fill-opacity:var(--ra,.08);stroke:var(--ink-soft);stroke-opacity:.42}
+.card.on text{fill-opacity:.62}
+.card.turn rect{fill-opacity:.9;stroke:var(--ink-soft);stroke-opacity:.45}
+.card.on polygon{stroke-opacity:var(--stack-op);fill-opacity:var(--fo,.03)}
+.stage.instant .card{transition:none!important}
+.tlab{position:absolute;top:14px;transform:translateX(-50%);display:flex;align-items:center;gap:7px;
+  padding:7px 12px;border-radius:999px;background:var(--card);border:1.5px solid var(--rule);
+  font:700 13px/1 var(--sans);white-space:nowrap;font-variant-numeric:tabular-nums;
+  opacity:0;transition:opacity .4s .5s;pointer-events:none}
+.tlab i{width:10px;height:10px;border-radius:99px;background:var(--c)}
+.tlab em{font-style:normal;font-weight:600;color:var(--ink-soft)}
+.stage.typed .tlab{opacity:1}
+.empty{position:absolute;inset:0;display:grid;place-items:center;font:600 15px/1.5 var(--sans);color:var(--ink-soft);text-align:center;padding:24px}
+@media (prefers-reduced-motion:reduce){.card{transition-duration:.35s}.tlab{transition-delay:0s}}
+@media (max-width:640px){
+  .tasks{margin-left:0}
+  .modes{width:100%;flex-wrap:wrap}.modes button{flex:1 1 40%;padding-inline:6px}
+  .stage{min-height:62vh}
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>작도 몽타주 모아보기</h1>
+      <p>작도 실습실 · 여러 반이 조사 2와 조사 3에서 작도한 삼각형</p>
+    </div>
+    <nav class="tasks" id="tasks" aria-label="과제"></nav>
+  </header>
+  <section class="bar" aria-label="보기 방식">
+    <p class="cond" id="cond"></p>
+    <div class="modes" id="modes" role="group" aria-label="보기 방식">
+      <button type="button" id="m-spread" data-mode="spread" aria-pressed="true">펼쳐 놓기</button>
+      <button type="button" id="m-align" data-mode="align" aria-pressed="false">방향 맞추기</button>
+      <button type="button" id="m-stack" data-mode="stack" aria-pressed="false">한데 포개기</button>
+      <button type="button" id="m-type" data-mode="type" aria-pressed="false">유형별로 포개기</button>
+    </div>
+    <span class="count" id="count"></span>
+  </section>
+  <main class="stage" id="stage" aria-label="몽타주 판"><div class="canvas" id="canvas"></div></main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var DATA = {"colors":["#5FCBB0","#2A63D8","#C0342A","#2A7148","#C98A10","#7A3FBF","#0E7C8A"],"tasks":{"t5":{"n":1,"items":[[0,0,284.0,415.6,117.0,397.4,223.2,341.4,-3.0328,-1,78.9,-22.4],[1,0,337.5,427.5,169.6,435.2,265.9,363.5,3.0958,-1,78.9,-22.4],[1,0,293.3,422.4,126.1,406.3,231.5,348.9,-3.0456,-1,78.9,-22.4],[0,0,328.9,426.0,160.9,423.5,261.4,357.8,-3.1265,-1,78.9,-22.4],[0,0,319.7,429.2,151.7,426.9,252.0,361.0,-3.1281,-1,78.9,-22.4],[4,0,319.0,442.2,151.0,443.5,250.0,375.6,3.1341,-1,78.9,-22.4],[1,0,319.6,434.4,151.6,432.8,251.7,366.6,-3.132,-1,78.9,-22.4],[1,0,293.3,340.6,162.9,446.5,282.4,436.0,-2.4596,1,78.9,-22.4],[1,0,301.3,417.0,134.0,401.7,239.1,343.8,-3.0505,-1,78.9,-22.4],[0,0,151.2,444.2,318.8,432.4,214.8,372.3,0.0705,1,78.9,-22.4],[1,0,315.6,427.7,148.0,438.6,242.9,365.1,3.0768,-1,78.9,-22.4],[1,0,325.5,429.0,157.6,424.2,258.9,359.9,-3.113,-1,78.9,-22.4],[1,0,349.1,437.7,181.6,450.7,275.5,376.0,3.064,-1,78.9,-22.4],[0,0,326.4,425.8,158.4,423.4,258.8,357.7,-3.1272,-1,78.9,-22.4],[1,0,146.2,447.8,313.9,437.1,210.4,376.4,0.0637,1,78.9,-22.4],[1,0,324.2,423.3,156.2,423.4,255.6,356.1,3.141,-1,78.9,-22.4],[2,0,320.4,443.8,153.4,461.4,245.2,384.2,3.0366,-1,78.9,-22.4],[0,0,211.7,423.2,104.7,293.7,116.2,413.2,2.2614,1,78.9,-22.4],[1,0,178.8,446.7,346.4,435.0,242.5,374.9,0.0698,1,78.9,-22.4],[1,0,293.6,436.3,125.8,428.1,228.4,365.9,-3.0927,-1,78.9,-22.4],[0,0,342.4,440.4,174.6,449.1,270.4,376.9,3.0897,-1,78.9,-22.4],[1,0,322.0,429.2,154.0,431.3,252.6,362.8,3.1291,-1,78.9,-22.4],[1,0,320.5,436.8,152.6,439.7,250.8,370.8,3.1243,-1,78.9,-22.4],[1,0,309.6,433.9,141.6,433.8,241.1,366.7,-3.1409,-1,78.9,-22.4],[2,0,317.3,422.3,149.5,413.0,252.5,351.4,-3.0863,-1,78.9,-22.4],[1,0,140.2,422.5,308.2,424.3,209.5,356.1,-0.0107,1,78.9,-22.4],[1,0,333.6,434.0,165.6,432.8,265.6,366.3,-3.1342,-1,78.9,-22.4],[2,0,324.7,444.6,157.4,460.7,250.0,384.3,3.0457,-1,78.9,-22.4],[1,0,318.5,431.1,150.6,426.1,252.0,361.9,-3.1118,-1,78.9,-22.4],[3,0,335.2,433.6,167.2,436.6,265.5,367.7,3.124,-1,78.9,-22.4],[4,0,121.2,399.1,288.3,416.0,196.2,339.1,-0.1009,1,78.9,-22.4],[1,0,288.6,418.3,121.0,407.6,224.5,346.9,-3.0778,-1,78.9,-22.4],[0,0,308.8,428.9,140.8,427.7,240.7,361.2,-3.1345,-1,78.9,-22.4],[4,0,352.2,448.4,184.9,463.8,277.7,387.8,3.0497,-1,78.9,-22.4],[3,0,314.4,444.2,146.5,449.5,243.7,379.2,3.1099,-1,78.9,-22.4],[2,0,288.0,452.0,120.0,452.0,219.4,384.8,3.1415,-1,78.9,-22.4],[1,0,293.6,436.3,125.8,428.1,228.4,365.9,-3.0927,-1,78.9,-22.4],[1,0,339.7,428.4,171.9,436.7,267.9,364.7,3.0922,-1,78.9,-22.4],[4,0,337.6,444.5,170.6,462.8,262.1,385.2,3.0324,-1,78.9,-22.4],[4,0,344.3,433.0,177.0,448.0,270.0,372.2,3.0521,-1,78.9,-22.4],[0,0,143.2,441.5,311.0,434.0,208.7,371.4,0.0447,1,78.9,-22.4],[1,0,120.6,422.4,288.3,433.6,193.5,359.9,-0.0666,1,78.9,-22.4],[1,0,126.6,412.0,294.2,423.0,199.4,349.4,-0.0655,1,78.9,-22.4],[0,0,323.0,427.7,155.0,427.0,254.7,360.2,-3.1375,-1,78.9,-22.4],[0,0,320.8,427.1,153.2,415.8,256.9,355.4,-3.0743,-1,78.9,-22.4],[1,0,145.6,408.7,312.7,426.3,220.9,349.1,-0.1051,1,78.9,-22.4],[3,0,151.6,436.1,319.4,427.6,216.7,365.5,0.0506,1,78.9,-22.4],[2,0,318.9,420.3,151.1,412.5,253.5,350.0,-3.0952,-1,78.9,-22.4],[1,0,352.3,432.1,185.0,448.1,277.6,371.8,3.0462,-1,78.9,-22.4],[4,0,323.6,424.0,156.0,413.5,259.4,352.7,-3.079,-1,78.9,-22.4],[2,0,262.3,450.5,95.0,435.1,200.2,377.3,-3.0497,-1,78.9,-22.4],[0,0,129.3,462.0,297.0,452.8,194.0,391.2,0.055,1,78.9,-22.4],[0,0,239.9,466.2,113.9,355.1,144.0,471.3,2.4189,1,78.9,-22.4],[2,0,127.9,479.5,295.3,465.1,190.4,406.7,0.086,1,78.9,-22.4],[4,0,275.8,455.2,107.9,451.4,208.8,386.5,-3.1189,-1,78.9,-22.4],[0,0,307.9,459.6,140.1,468.7,235.8,396.2,3.0875,-1,78.9,-22.4],[0,0,137.2,458.9,305.0,449.6,202.0,388.0,0.0553,1,78.9,-22.4],[1,0,239.9,466.2,113.9,355.1,144.0,471.3,2.4189,1,78.9,-22.4],[2,0,273.2,451.6,105.2,451.9,204.5,384.5,3.1398,-1,78.9,-22.4],[1,0,294.0,455.0,126.3,445.3,229.4,384.0,-3.0839,-1,78.9,-22.4],[1,0,274.9,441.6,107.2,430.6,210.8,370.1,-3.0762,-1,78.9,-22.4],[2,0,141.5,482.4,308.9,467.6,203.9,409.4,0.0882,1,78.9,-22.4],[0,0,294.0,438.5,126.3,428.5,229.6,367.3,-3.0819,-1,78.9,-22.4],[0,0,292.8,447.9,125.1,437.0,228.7,376.4,-3.0767,-1,78.9,-22.4],[0,0,284.9,455.4,116.9,451.1,218.0,386.5,-3.1161,-1,78.9,-22.4],[1,0,120.0,452.0,288.0,452.0,188.6,384.8,-0.0001,1,78.9,-22.4],[2,0,279.8,449.0,112.5,433.1,217.9,375.7,-3.0467,-1,78.9,-22.4],[0,0,293.4,455.5,125.4,459.2,223.4,389.9,3.1197,-1,78.9,-22.4],[1,0,295.7,467.1,128.0,475.9,223.7,403.6,3.0891,-1,78.9,-22.4],[0,0,303.2,448.7,135.3,455.6,231.9,384.4,3.1005,-1,78.9,-22.4],[0,0,142.3,460.7,310.2,454.7,208.5,391.1,0.0355,1,78.9,-22.4],[1,0,296.2,454.4,128.9,469.8,221.8,393.8,3.0499,-1,78.9,-22.4],[2,0,292.7,466.8,125.6,484.4,217.5,407.2,3.0368,-1,78.9,-22.4],[1,0,300.9,451.9,132.9,456.9,230.3,386.8,3.1118,-1,78.9,-22.4],[1,0,300.9,451.9,132.9,456.9,230.3,386.8,3.1118,-1,78.9,-22.4],[3,0,234.2,464.1,102.6,359.6,138.7,474.1,2.4705,1,78.9,-22.4]]},"t6":{"n":1,"items":[[0,0,149.7,412.0,293.4,421.7,216.2,342.8,-0.0673,1,68.6,-24.5],[0,0,154.6,409.4,252.9,304.2,250.5,414.6,-0.8193,-1,68.6,-24.5],[0,0,156.3,451.4,299.8,440.2,212.0,373.3,0.0781,1,68.6,-24.5],[4,0,138.5,430.8,282.5,432.8,201.2,358.1,-0.0138,1,68.6,-24.5],[0,0,158.0,438.9,301.9,436.3,218.4,364.3,0.0178,1,68.6,-24.5],[1,0,175.4,460.7,318.9,449.2,231.0,382.5,0.08,1,68.6,-24.5],[0,0,154.2,440.9,298.1,434.9,212.8,364.8,0.0416,1,68.6,-24.5],[1,0,125.1,424.4,222.2,318.0,221.1,428.4,-0.8312,-1,68.6,-24.5],[1,0,176.8,440.7,320.6,432.0,234.0,363.6,0.0604,1,68.6,-24.5],[2,0,133.4,413.2,277.1,421.6,199.2,343.4,-0.0582,1,68.6,-24.5],[1,0,140.4,430.7,284.3,433.6,203.5,358.4,-0.02,1,68.6,-24.5],[4,0,108.4,436.4,251.9,448.0,175.8,368.1,-0.0806,1,68.6,-24.5],[2,0,109.5,461.2,253.5,459.3,170.3,386.9,0.013,1,68.6,-24.5],[1,0,120.0,452.0,264.0,452.0,181.7,378.5,0.0,1,68.6,-24.5],[2,0,133.2,443.8,277.2,444.7,195.4,370.7,-0.0063,1,68.6,-24.5],[0,0,110.2,432.9,253.7,444.8,177.7,364.7,-0.0825,1,68.6,-24.5],[0,0,117.4,440.6,261.1,448.8,183.2,370.7,-0.0571,1,68.6,-24.5],[0,0,129.8,462.7,273.6,453.8,186.9,385.5,0.0618,1,68.6,-24.5],[0,0,118.2,469.0,262.0,461.4,175.9,392.3,0.0529,1,68.6,-24.5],[0,0,108.3,429.8,251.9,440.4,175.3,361.0,-0.0739,1,68.6,-24.5]]},"t7":{"n":1,"items":[[0,0,328.1,418.7,160.6,406.9,288.1,314.3,-3.0714,-1,71.7,-33.8],[2,0,372.1,441.5,204.3,448.8,320.5,342.3,3.098,-1,71.7,-33.8],[1,0,336.4,428.5,168.9,416.2,296.7,324.0,-3.0684,-1,71.7,-33.8],[4,0,217.4,443.8,384.8,430.3,256.3,339.0,0.0805,1,71.7,-33.8],[4,0,356.9,432.7,188.9,432.0,310.1,331.2,-3.1373,-1,71.7,-33.8],[1,0,348.7,432.0,180.7,430.8,302.2,330.3,-3.1344,-1,71.7,-33.8],[4,0,309.0,451.5,141.0,451.6,261.7,350.2,3.141,-1,71.7,-33.8],[1,0,309.8,447.7,141.9,453.4,259.2,348.0,3.1078,-1,71.7,-33.8],[1,0,292.8,443.7,124.9,437.3,249.4,340.6,-3.1037,-1,71.7,-33.8],[0,0,308.0,452.0,140.0,452.0,260.8,350.7,-3.1414,-1,71.7,-33.8],[0,0,302.4,442.9,134.5,440.5,256.6,340.9,-3.1275,-1,71.7,-33.8],[0,0,304.7,459.5,136.7,456.4,259.3,357.4,-3.1231,-1,71.7,-33.8],[1,0,309.0,466.8,141.6,479.9,254.1,369.5,3.0637,-1,71.7,-33.8],[1,0,317.6,456.9,149.8,463.3,266.5,357.5,3.1033,-1,71.7,-33.8],[1,0,325.9,460.4,158.0,467.0,274.7,361.0,3.1023,-1,71.7,-33.8],[0,0,304.4,453.3,136.5,446.6,261.2,350.2,-3.1017,-1,71.7,-33.8],[2,0,282.9,443.0,115.3,430.7,243.2,338.5,-3.0682,-1,71.7,-33.8],[1,0,288.9,447.1,121.1,438.9,246.7,343.6,-3.0926,-1,71.7,-33.8],[1,0,296.3,442.7,128.3,442.0,249.5,341.2,-3.1373,-1,71.7,-33.8],[0,0,300.0,459.9,132.1,462.7,251.1,359.4,3.1249,-1,71.7,-33.8],[1,0,302.6,436.4,135.2,421.6,264.4,331.3,-3.0535,-1,71.7,-33.8],[1,0,310.6,465.1,143.0,476.7,256.4,367.3,3.0723,-1,71.7,-33.8],[0,0,140.1,453.2,308.1,451.5,186.3,351.4,0.0102,1,71.7,-33.8],[0,0,314.8,466.5,147.3,479.4,259.9,369.1,3.0647,-1,71.7,-33.8],[1,0,308.0,452.0,140.0,452.0,260.8,350.7,-3.1414,-1,71.7,-33.8]]},"t8":{"n":2,"items":[[0,0,677.1,454.0,509.1,449.9,541.2,334.3,-3.1175,-1,102.2,-38.8],[1,0,98.4,436.2,265.9,449.1,245.6,330.8,-0.0768,1,102.2,-38.8],[2,0,121.0,477.1,288.7,467.1,252.4,352.7,0.0599,1,102.2,-38.8],[2,1,120.0,452.0,288.0,452.0,178.5,402.9,-0.0,1,75.5,-16.4],[1,1,261.3,447.8,94.1,430.9,208.0,393.1,-3.0408,-1,75.5,-16.4],[3,1,691.9,439.1,524.1,446.6,631.3,392.7,3.097,-1,75.5,-16.4],[1,1,679.9,467.0,512.0,461.1,623.1,415.9,-3.1066,-1,75.5,-16.4],[4,1,486.3,471.4,653.5,487.5,549.2,428.2,-0.0959,1,75.5,-16.4],[1,0,672.2,450.9,504.2,451.3,533.2,334.9,3.139,-1,102.2,-38.8],[2,0,688.6,451.6,520.6,447.9,552.5,332.2,-3.1196,-1,102.2,-38.8],[1,0,503.2,449.0,671.2,447.1,640.6,331.1,0.0111,1,102.2,-38.8],[1,0,120.0,452.0,288.0,452.0,258.7,335.6,-0.0,1,102.2,-38.8],[1,0,120.0,452.0,288.0,452.0,258.7,335.6,-0.0,1,102.2,-38.8],[3,0,305.1,464.1,137.3,472.7,160.6,355.0,3.0902,-1,102.2,-38.8],[4,0,671.9,491.4,504.9,473.0,546.8,360.5,-3.0318,-1,102.2,-38.8],[1,0,307.3,447.1,139.3,449.7,166.8,332.9,3.126,-1,102.2,-38.8],[1,0,118.7,431.5,286.4,441.2,263.9,323.4,-0.058,1,102.2,-38.8],[2,0,655.7,470.5,487.8,463.3,522.2,348.3,-3.0985,-1,102.2,-38.8],[2,0,653.0,485.5,485.8,469.9,525.7,356.8,-3.0488,-1,102.2,-38.8],[1,0,134.5,443.5,302.5,445.5,274.5,328.8,-0.0117,1,102.2,-38.8],[4,1,104.9,442.8,272.8,448.3,164.9,395.7,-0.0326,1,75.5,-16.4],[4,1,104.9,442.8,272.8,448.3,164.9,395.7,-0.0326,1,75.5,-16.4],[0,1,691.3,439.6,523.4,442.6,632.0,391.6,3.1238,-1,75.5,-16.4],[0,0,130.5,452.4,298.4,447.8,265.9,332.3,0.0274,1,102.2,-38.8],[1,0,120.0,452.0,288.0,452.0,258.7,335.6,-0.0,1,102.2,-38.8],[4,1,290.1,449.5,122.4,459.2,228.9,403.9,3.0839,-1,75.5,-16.4],[1,0,682.5,455.0,514.5,451.6,546.2,335.9,-3.1214,-1,102.2,-38.8],[4,0,129.9,458.0,297.9,457.9,268.5,341.6,0.0005,1,102.2,-38.8],[1,0,682.5,455.0,514.5,451.6,546.2,335.9,-3.1214,-1,102.2,-38.8],[0,1,102.1,450.4,270.1,453.2,161.4,402.3,-0.0166,1,75.5,-16.4],[1,0,114.1,432.1,281.6,444.8,261.2,326.6,-0.0759,1,102.2,-38.8],[1,0,120.0,452.0,288.0,452.0,258.7,335.6,-0.0,1,102.2,-38.8],[2,0,512.7,447.6,680.5,439.3,645.4,324.6,0.0495,1,102.2,-38.8],[2,0,512.7,447.6,680.5,439.3,645.4,324.6,0.0495,1,102.2,-38.8],[1,0,126.9,472.1,294.6,462.4,258.6,347.9,0.0579,1,102.2,-38.8],[0,1,660.8,468.4,493.4,455.2,606.4,414.8,-3.063,-1,75.5,-16.4],[1,1,651.4,470.8,484.1,454.7,597.8,416.3,-3.0458,-1,75.5,-16.4],[5,1,111.6,445.3,279.5,450.7,171.7,398.1,-0.0323,1,75.5,-16.4],[1,1,655.7,487.4,488.6,470.0,602.6,432.5,-3.0379,-1,75.5,-16.4],[0,0,705.4,428.2,537.9,440.2,558.8,322.1,3.07,-1,102.2,-38.8],[0,0,103.5,445.0,271.5,444.8,242.0,328.5,0.0013,1,102.2,-38.8],[1,0,680.4,468.4,512.6,459.1,548.3,344.6,-3.0865,-1,102.2,-38.8],[3,0,685.3,439.5,517.4,445.6,542.5,328.2,3.1054,-1,102.2,-38.8]]},"t9":{"n":17,"items":[[0,4,161.2,466.6,282.6,350.5,308.6,457.0,-0.7631,-1,93.7,-31.6],[4,6,347.6,452.0,166.8,300.3,140.0,452.0,2.4434,1,131.7,-44.5],[1,13,420.0,460.3,175.4,216.3,117.3,434.2,2.3574,1,192.7,-65.1],[1,8,143.3,472.6,391.8,455.0,300.8,320.3,0.0706,1,139.0,-46.9],[1,7,157.1,462.7,397.7,461.9,318.7,326.2,0.0034,1,134.2,-45.3],[1,13,420.0,460.3,175.4,216.3,117.3,434.2,2.3574,1,192.7,-65.1],[1,7,141.3,442.2,381.4,458.5,312.3,317.5,-0.0679,1,134.2,-45.3],[0,13,140.4,473.4,384.7,229.6,442.8,447.3,-0.7843,-1,192.6,-65.0],[4,6,140.0,452.0,371.2,452.0,295.8,321.3,-0.0001,1,129.0,-43.6],[1,14,140.0,452.0,419.0,217.9,460.3,452.0,-0.6981,-1,203.2,-68.6],[2,5,137.0,453.1,366.4,452.3,291.1,322.9,0.0034,1,128.0,-43.2],[1,3,153.8,466.7,309.5,460.6,255.1,374.5,0.0397,1,87.0,-29.4],[1,2,120.5,434.7,228.1,444.1,198.3,380.2,-0.0871,1,60.3,-20.4],[0,10,160.8,470.9,427.9,454.2,331.3,308.7,0.0624,1,149.3,-50.4],[5,15,138.7,463.5,421.9,203.7,476.3,448.5,-0.7424,-1,214.4,-72.4],[1,12,122.5,437.7,427.5,447.0,333.2,271.5,-0.0304,1,170.3,-57.5],[1,1,162.1,474.6,245.9,469.0,215.3,423.4,0.0674,1,46.9,-15.8],[2,0,141.3,470.0,221.9,465.9,193.3,421.7,0.0507,1,45.0,-15.2],[1,11,140.0,452.0,371.8,257.5,406.0,452.0,-0.698,-1,168.8,-57.0],[1,16,124.6,435.1,432.7,198.5,465.8,449.8,-0.6549,-1,216.7,-73.2],[3,9,185.4,217.8,307.6,444.3,139.7,439.4,1.0761,-1,143.6,-48.5]]},"t11":{"n":1,"items":[[1,0,237.5,440.9,93.5,441.4,196.7,354.2,3.1381,-1,61.5,-28.9],[1,0,240.0,448.0,96.0,448.0,199.5,361.2,-3.1415,-1,61.5,-28.9],[1,0,254.5,447.7,110.6,453.0,210.9,362.4,3.105,-1,61.5,-28.9],[4,0,238.0,439.4,94.2,431.1,202.6,350.4,-3.0837,-1,61.5,-28.9],[4,0,224.0,453.6,80.0,453.1,183.8,366.6,-3.1381,-1,61.5,-28.9],[1,0,257.7,448.1,113.7,452.6,214.5,362.6,3.1105,-1,61.5,-28.9],[1,0,254.6,460.8,111.2,473.8,206.4,378.0,3.0511,-1,61.5,-28.9],[1,0,240.0,448.0,96.0,448.0,199.5,361.2,-3.1415,-1,61.5,-28.9],[1,0,240.0,448.0,96.0,448.0,199.5,361.2,-3.1415,-1,61.5,-28.9],[2,0,247.0,444.2,103.2,437.0,210.9,355.4,-3.0916,-1,61.5,-28.9],[3,0,256.2,443.5,112.2,445.9,214.3,357.4,3.1252,-1,61.5,-28.9],[6,0,252.7,457.5,109.2,469.3,205.3,374.3,3.0599,-1,61.5,-28.9],[1,0,226.5,432.2,83.0,420.4,193.2,342.3,-3.0598,-1,61.5,-28.9],[1,0,255.0,445.2,111.0,444.5,215.0,358.2,-3.1364,-1,61.5,-28.9],[0,0,240.0,448.0,96.0,448.0,199.5,361.2,-3.1415,-1,61.5,-28.9],[1,0,96.0,448.0,240.0,448.0,136.5,361.2,0.0001,1,61.5,-28.9]]}}};
+  var INFO = {
+    t5:  { grp: "조사 2", k: "가", n: "세 변", cond: "세 변의 길이가 <b>7</b>, <b>5</b>, <b>4</b>인 삼각형" },
+    t6:  { grp: "조사 2", k: "나", n: "두 변과 사이 각", cond: "두 변의 길이가 <b>6</b>, <b>4</b>이고 그 사이 각이 <b>50°</b>인 삼각형" },
+    t7:  { grp: "조사 2", k: "다", n: "한 변과 양 끝 각", cond: "한 변의 길이가 <b>7</b>이고 그 양 끝 각이 <b>40°</b>, <b>65°</b>인 삼각형" },
+    t8:  { grp: "조사 3", k: "①", n: "두 변과 한 각", cond: "두 변의 길이가 <b>7</b>, <b>5</b>이고, 길이 7인 변의 한쪽 끝 각이 <b>40°</b>인 삼각형" },
+    t9:  { grp: "조사 3", k: "②", n: "세 각만", cond: "세 각의 크기가 <b>40°</b>, <b>60°</b>, <b>80°</b>인 삼각형 · 첫 변의 길이는 스스로 정함" },
+    t11: { grp: "조사 3", k: "③", n: "한 변과 양 끝이 아닌 두 각", cond: "한 변이 <b>6</b>이고, 그 변의 양 끝이 아닌 두 각이 <b>40°</b>, <b>75°</b>인 삼각형" }
+  };
+  var ORDER = ["t5", "t6", "t7", "t8", "t9", "t11"];
+  var TCOL = ["--t1", "--t2", "--t3", "--t4", "--t5", "--t6"];
+  var $ = function (id) { return document.getElementById(id); };
+  var stage = $("stage");
+  var store = { get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+                set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  var task = store.get("montage.task");
+  if (ORDER.indexOf(task) < 0) task = "t5";
+  var mode = "spread";
+  var items = [], cards = [], labels = [], grid = null;
+
+  /* ---------- 과제 고르기 ---------- */
+  var groups = {};
+  ORDER.forEach(function (t) { (groups[INFO[t].grp] = groups[INFO[t].grp] || []).push(t); });
+  $("tasks").innerHTML = Object.keys(groups).map(function (g) {
+    return '<div class="tg"><span class="tg-l">' + g + '</span>' + groups[g].map(function (t) {
+      return '<button type="button" class="tk" id="tk-' + t + '" data-task="' + t + '" aria-pressed="false"><b>' +
+        INFO[t].k + '</b>' + INFO[t].n + '</button>';
+    }).join("") + '</div>';
+  }).join("");
+  $("tasks").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-task]"); if (!b || b.dataset.task === task) return;
+    task = b.dataset.task; store.set("montage.task", task); mode = "spread"; load();
+  });
+  $("modes").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-mode]"); if (!b || b.dataset.mode === mode) return;
+    mode = b.dataset.mode; paintModes(); apply(true);
+  });
+  function paintModes() {
+    [].forEach.call($("modes").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.mode === mode)); });
+  }
+
+  /* ---------- 자료 ----------
+     한 장 = [색, 유형, O, X, Z(학생이 그린 좌표), α, f, 기준 무게중심]
+     α·f: 정답 삼각형(기준)에 가장 잘 겹치도록 돌릴 각(라디안)과 뒤집기(1/-1) — 미리 계산해 둔 값 */
+  var canvas = $("canvas");
+  function load() {
+    [].forEach.call($("tasks").querySelectorAll("[data-task]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.task === task)); });
+    var info = INFO[task], d = (DATA && DATA.tasks[task]) || { n: 0, items: [] };
+    $("cond").innerHTML = "<small>" + info.grp + " · " + info.k + " " + info.n + "</small>" + info.cond;
+    $("count").textContent = "모두 " + d.items.length + "장";
+    items = d.items.map(function (r, i) {
+      var P = [{ x: r[2], y: r[3] }, { x: r[4], y: r[5] }, { x: r[6], y: r[7] }];
+      var g = { x: (P[0].x + P[1].x + P[2].x) / 3, y: (P[0].y + P[1].y + P[2].y) / 3 };
+      var al = r[8], f = r[9], gr = { x: r[10], y: r[11] }, c = Math.cos(al), s = Math.sin(al);
+      var A = P.map(function (q) { var dx = q.x - g.x, dy = f * (q.y - g.y); return { x: c * dx - s * dy + gr.x, y: s * dx + c * dy + gr.y }; });
+      return { col: DATA.colors[r[0]] || "#1C1A16", kind: r[1], P: P, g: g, al: al, f: f, gr: gr, A: A,
+               name: "탐정 " + (i + 1 < 10 ? "0" : "") + (i + 1),
+               span: Math.max(dist(P[0], P[1]), dist(P[1], P[2]), dist(P[2], P[0])) };
+    });
+    canvas.innerHTML = '<svg class="board" id="board" aria-hidden="true">' + items.map(function (it) {
+      return '<g class="card"><rect rx="10"></rect><polygon fill="' + it.col + '" stroke="' + it.col + '"></polygon><text>' + it.name + '</text></g>';
+    }).join("") + "</svg>";
+    cards = [].slice.call(canvas.querySelectorAll(".card"));
+    labels = [];
+    for (var k = 0; k < d.n; k++) {
+      var lab = document.createElement("div");
+      var cnt = items.filter(function (it) { return it.kind === k; }).length;
+      lab.className = "tlab";
+      lab.style.setProperty("--c", "var(" + TCOL[k % TCOL.length] + ")");
+      lab.innerHTML = "<i></i>" + (k + 1) + "형<em>" + cnt + "장</em>";
+      canvas.appendChild(lab); labels.push(lab);
+    }
+    if (!items.length) {
+      var em = document.createElement("div"); em.className = "empty";
+      em.textContent = "이 과제에는 아직 보여 줄 몽타주가 없습니다.";
+      canvas.appendChild(em);
+    }
+    var n = Math.max(1, items.length);
+    /* 다 겹친 곳이 반쯤 진해지도록, 장수가 많을수록 한 장의 채움을 옅게 */
+    stage.style.setProperty("--fo", (1 - Math.pow(0.5, 1 / n)).toFixed(4));
+    stage.style.setProperty("--ra", Math.min(0.45, Math.max(0.03, 1 - Math.pow(0.45, 1 / n))).toFixed(3));
+    paintModes();
+    stage.scrollTop = 0;
+    layout(false);
+  }
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+  /* ---------- 펼쳐 놓기: 큰 카드를 줄지어 깔고, 넘치면 판을 내려 본다 ---------- */
+  function layout(animate) {
+    var W = stage.clientWidth, H = stage.clientHeight, n = items.length;
+    if (!n || !W || !H) { grid = null; return; }
+    var gap = 12, pad = 16;
+    var want = W < 560 ? (W - pad * 2 - gap) / 2 : 300;
+    var cols = Math.max(1, Math.round((W - pad * 2 + gap) / (want + gap)));
+    var cw = Math.min(340, (W - pad * 2 - gap * (cols - 1)) / cols), ch = cw * 0.75;
+    var rows = Math.ceil(n / cols);
+    var gw = cols * cw + (cols - 1) * gap, gh = rows * ch + (rows - 1) * gap;
+    var x0 = (W - gw) / 2, y0 = pad;
+    var maxSpan = items.reduce(function (m, it) { return Math.max(m, it.span); }, 1);
+    var k = Math.min(1.6, (ch * 0.76) / maxSpan);
+    grid = { cw: cw, ch: ch, k: k, W: W, H: H, spreadH: Math.max(H, gh + pad * 2), cols: cols };
+    var board = $("board");
+    items.forEach(function (it, i) {
+      var el = cards[i], col = i % cols, row = Math.floor(i / cols);
+      it.left = x0 + col * (cw + gap); it.top = y0 + row * (ch + gap);
+      var cx = it.left + cw / 2, cy = it.top + ch / 2;
+      it.cx = cx; it.cy = cy;
+      el.style.transformOrigin = cx.toFixed(1) + "px " + cy.toFixed(1) + "px";
+      var r = el.firstChild, t = el.lastChild;
+      r.setAttribute("x", it.left.toFixed(1)); r.setAttribute("y", it.top.toFixed(1));
+      r.setAttribute("width", cw.toFixed(1)); r.setAttribute("height", ch.toFixed(1));
+      /* 몽타주는 카드 위쪽에, 이름은 아래쪽에 */
+      var my = cy - ch * 0.06;
+      el.childNodes[1].setAttribute("points", it.P.map(function (p) {
+        return ((p.x - it.g.x) * k + cx).toFixed(2) + "," + ((p.y - it.g.y) * k + my).toFixed(2);
+      }).join(" "));
+      it.my = my;
+      t.setAttribute("x", cx.toFixed(1)); t.setAttribute("y", (it.top + ch - 12).toFixed(1));
+    });
+    apply(animate);
+  }
+
+  /* ---------- 움직이기 ----------
+     펼쳐 놓기: 제자리 · 방향 맞추기: 제자리에서 카드째 돌려 몽타주 방향만 맞춤
+     한데 포개기 / 유형별로 포개기: 카드 크기 그대로, 카드째 돌리고 뒤집어 정답 모양에 겹침 */
+  var HOME = "translate(0px,0px) rotate(0deg) scale(1,1)";
+  function turnOf(it) {                        /* 카드 중심을 축으로 돌릴 때, 몽타주 무게중심이 옮겨 가는 만큼 */
+    var oy = it.my - it.cy, c = Math.cos(it.al), s = Math.sin(it.al);
+    var th = it.al * 180 / Math.PI;
+    return { rx: -s * (it.f * oy), ry: c * (it.f * oy), oy: oy, th: ((th % 360) + 540) % 360 - 180 };
+  }
+  function tf(dx, dy, it, t) {
+    return "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px) rotate(" + t.th.toFixed(2) + "deg) scale(1," + it.f + ")";
+  }
+  function apply(animate) {
+    if (!grid) return;
+    var W = grid.W, H = grid.H, n = items.length;
+    if (!animate) stage.classList.add("instant");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* 앞의 몇 장은 착, 착 하나씩 보이게 천천히, 뒤로 갈수록 빨라져 전체는 4초 남짓 */
+    var span = reduce ? 0 : Math.min(3.6, 0.25 * n);
+    var pw = n > 1 ? Math.min(1, Math.max(0.5, Math.log(span / 0.13) / Math.log(n))) : 1;
+    var arrive = function (i) { return animate && n > 1 ? (span * Math.pow(i / n, pw)).toFixed(3) + "s" : "0s"; };
+    var back = function (i) { return animate ? (reduce ? 0 : (n - 1 - i) * Math.min(0.02, 0.9 / Math.max(1, n))).toFixed(3) + "s" : "0s"; };
+    stage.classList.toggle("typed", mode === "type");
+    var canvasH = grid.spreadH, scrollable = true;
+    if (mode === "spread") {
+      cards.forEach(function (el, i) {
+        el.style.transitionDelay = back(i);
+        el.classList.remove("on", "turn");
+        el.style.transform = HOME;
+      });
+    } else if (mode === "align") {
+      items.forEach(function (it, i) {
+        var el = cards[i], t = turnOf(it);
+        el.style.transitionDelay = arrive(i);
+        el.classList.remove("on"); el.classList.add("turn");
+        el.style.transform = tf(-t.rx, t.oy - t.ry, it, t);   /* 몽타주 무게중심은 제자리에 */
+      });
+    } else {
+      var nk = mode === "type" ? Math.max(1, labels.length) : 1;
+      var sets = [];
+      for (var j = 0; j < nk; j++) sets.push([]);
+      items.forEach(function (it, i) { sets[mode === "type" ? it.kind : 0].push(i); });
+      /* 자리: 한 줄에 들어가면 판 가운데 높이에, 많으면(조사 3 ②) 여러 줄로 */
+      var per = Math.max(1, Math.floor(W / (grid.cw * 1.3)));
+      var slots = [], slotH = grid.ch * 1.5 + 40, top0 = mode === "type" ? 40 : 0;
+      if (nk <= per) {
+        for (j = 0; j < nk; j++) slots.push({ x: W * (j + 0.5) / nk, y: top0 + (H - top0) / 2, ly: 14 });
+        scrollable = false;
+      } else {
+        var sw = W / per;
+        for (j = 0; j < nk; j++) {
+          var cj = j % per, rj = Math.floor(j / per);
+          slots.push({ x: sw * (cj + 0.5), y: rj * slotH + 40 + (slotH - 40) / 2, ly: rj * slotH + 14 });
+        }
+        var typeH = Math.ceil(nk / per) * slotH + 16;
+        scrollable = typeH > H;
+        canvasH = Math.max(canvasH, typeH);
+      }
+      sets.forEach(function (ids, j) {
+        if (!ids.length) return;
+        var b = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+        ids.forEach(function (i) { items[i].A.forEach(function (p) {
+          b.x0 = Math.min(b.x0, p.x); b.y0 = Math.min(b.y0, p.y); b.x1 = Math.max(b.x1, p.x); b.y1 = Math.max(b.y1, p.y); }); });
+        var Tx = slots[j].x - grid.k * (b.x0 + b.x1) / 2, Ty = slots[j].y - grid.k * (b.y0 + b.y1) / 2;
+        ids.forEach(function (i) {
+          var it = items[i], el = cards[i], t = turnOf(it);
+          /* 몽타주 무게중심이 가야 할 곳 */
+          var gx = Tx + grid.k * it.gr.x, gy = Ty + grid.k * it.gr.y;
+          el.style.transitionDelay = arrive(i);
+          el.classList.remove("turn"); el.classList.add("on");
+          el.style.transform = tf(gx - t.rx - it.cx, gy - t.ry - it.cy, it, t);
+        });
+        if (labels[j]) { labels[j].style.left = slots[j].x + "px"; labels[j].style.top = slots[j].ly + "px"; }
+      });
+      if (animate && stage.scrollTop) stage.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    }
+    canvas.style.height = canvasH + "px";
+    $("board").setAttribute("viewBox", "0 0 " + W + " " + canvasH);
+    $("board").style.height = canvasH + "px";
+    stage.classList.toggle("locked", (mode === "stack" || mode === "type") && !scrollable);
+    if (!animate) { void stage.offsetWidth; stage.classList.remove("instant"); }
+  }
+
+  var rt = 0;
+  function resized() {
+    if (grid && Math.abs(stage.clientWidth - grid.W) < 2 && Math.abs(stage.clientHeight - grid.H) < 2) return;
+    layout(false);
+  }
+  if (window.ResizeObserver) new ResizeObserver(function () { clearTimeout(rt); rt = setTimeout(resized, 80); }).observe(stage);
+  else window.addEventListener("resize", function () { layout(false); });
+  load();
+})();
+</script>
+
+</body></html>

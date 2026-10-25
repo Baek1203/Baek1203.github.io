@@ -1,0 +1,1826 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!--
+  정다면체 깎기 (전자칠판용) — 안내/03_수업화면_기본틀.html을 바탕으로 한 '정다면체 짓기'·'준정다면체 모아 보기'의 틀을 그대로 씀
+  정다면체를 칼(평면)로 조금씩 잘라 내어 준정다면체가 되는 모습을 실제로 계산해 보여 준다.
+  장면 0 모아 보기: 깎는 방법 5가지 × 정다면체 5가지 표(계열별). 짝인 두 정다면체에서 같은 모양이 나오는 칸은 하나로 합쳤다.
+  장면 1~3 계열마다: 짝인 두 정다면체를 나란히 놓고 같은 방법으로 함께 깎는다. '무엇이 될까?' → '다음'으로 깎으면 이름이 나오고 오른쪽 계통도가 채워진다.
+  끝까지 깎기는 꼭짓점 깎기 모양에서 멈췄다가 더 깎는다. 비틀기는 면을 떼어 밀어내고 비튼 뒤 틈을 채운다.
+  깎는 동안 새로 생긴 면은 다 깎았을 때의 모양 색, 원래 면은 회색. 점선은 원래 정다면체. 면·모서리·꼭짓점의 개수는 깎는 동안 계속 바뀐다.
+  움직임은 기기 설정과 상관없이 항상 보여 준다.
+-->
+<title>정다면체 깎기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap">
+<style>
+/* ---------- 색: 종이(밝은 화면) ---------- */
+:root{
+  --bg:#f4f6f9;--surface:#ffffff;--surface-2:#e8edf4;--ink:#15202b;--ink-2:#4b5664;--line:#c8d0da;--ghost:#b8c1cc;
+  --accent:#1c4f8c;--on-accent:#ffffff;
+  /* 수학 색: 그림과 글에서 같은 대상은 같은 색 */
+  --c-arc:#1f63c6;--c-arc2:#0a7f9f;--c-chord:#c9510f;--c-secant:#7442c0;--c-center:#12804f;
+  --hi:#f2b705;--hl:rgba(242,183,5,.17);--hl2:rgba(242,183,5,.42);
+  --fill-sec:rgba(31,99,198,.16);--fill-sec2:rgba(31,99,198,.30);--fill-mov:rgba(10,127,159,.24);--fill-tri:rgba(201,81,15,.16);
+  --ok:#12804f;--no:#c62828;
+  --pen1:#d62f2f;--pen2:#1f63c6;--pen3:#12804f;
+  /* 다면체의 면과 꼭짓점 */
+  --pf-n:#dde6f0;--pf-or:#f6c39a;--pf-tri:#f4d47c;--pf-sq:#a8caf0;--pf-pen:#cdb9ee;--pf-hex:#97d6cd;--pf-etc:#e3c4cf;
+  --shd:#0d1b2a;--lit:#ffffff;
+  --vc3:#12804f;--vc4:#7442c0;--vc5:#c9510f;
+  /* 짓는 면: 관찰(무채), 밑면, 벽, 2층 벽, 지붕 */
+  --t-solid:#c3d0e1;--t-base:#8fb4e8;--t-side:#93d0da;--t-side2:#f0cf72;--t-top:#bea8e8;--c-gold:#a87a00;--cut:#d62f2f;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* ---------- 색: 칠판(어두운 화면) ---------- */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+    --accent:#ffd66b;--on-accent:#1b2a26;
+    --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+    --hi:#ffe27a;--hl:rgba(255,226,122,.13);--hl2:rgba(255,226,122,.34);
+    --fill-sec:rgba(130,188,255,.18);--fill-sec2:rgba(130,188,255,.34);--fill-mov:rgba(111,219,233,.24);--fill-tri:rgba(255,173,107,.2);
+    --ok:#86e3ab;--no:#ff8f8f;
+    --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+    --pf-n:#46625c;--pf-or:#a5663a;--pf-tri:#97802f;--pf-sq:#3d6c9f;--pf-pen:#6b56a3;--pf-hex:#2c8279;--pf-etc:#8a5b6b;
+    --shd:#000000;--lit:#ffffff;
+    --vc3:#86e3ab;--vc4:#caa6ff;--vc5:#ffad6b;
+    --t-solid:#4f6a77;--t-base:#3e6ca6;--t-side:#2d7b84;--t-side2:#9a7f2e;--t-top:#65539b;--c-gold:#f2cf5b;--cut:#ff7b7b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+  --accent:#ffd66b;--on-accent:#1b2a26;
+  --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+  --hi:#ffe27a;--hl:rgba(255,226,122,.13);--hl2:rgba(255,226,122,.34);
+  --fill-sec:rgba(130,188,255,.18);--fill-sec2:rgba(130,188,255,.34);--fill-mov:rgba(111,219,233,.24);--fill-tri:rgba(255,173,107,.2);
+  --ok:#86e3ab;--no:#ff8f8f;
+  --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+  --pf-n:#46625c;--pf-or:#a5663a;--pf-tri:#97802f;--pf-sq:#3d6c9f;--pf-pen:#6b56a3;--pf-hex:#2c8279;--pf-etc:#8a5b6b;
+  --shd:#000000;--lit:#ffffff;
+  --vc3:#86e3ab;--vc4:#caa6ff;--vc5:#ffad6b;
+  --t-solid:#4f6a77;--t-base:#3e6ca6;--t-side:#2d7b84;--t-side2:#9a7f2e;--t-top:#65539b;--c-gold:#f2cf5b;--cut:#ff7b7b;
+  color-scheme:dark;
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;font-size:clamp(15px,.95vw + .7vh,32px);line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden;word-break:keep-all;overflow-wrap:break-word}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+i{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+
+/* ---------- 틀: 위 띠 · 무대 · 아래 띠 ---------- */
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
+.top{display:flex;align-items:center;gap:.8em;padding:.4em 1em;background:var(--surface);border-bottom:1px solid var(--line);min-width:0}
+.brand{font-family:'Noto Serif KR',serif;font-weight:900;font-size:.95em;white-space:nowrap}
+.nav{display:flex;gap:.25em;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav>:first-child{margin-left:auto}
+.nav>:last-child{margin-right:auto}
+.nav button{display:inline-flex;align-items:center;gap:.35em;border:0;background:transparent;border-radius:.55em;padding:.3em .75em;min-height:44px;font-size:.78em;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.nav button .n{font-family:'Noto Serif KR',serif;font-weight:900}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="step"]{background:var(--accent);color:var(--on-accent)}
+.tools{display:flex;gap:.35em}
+.tool{display:inline-flex;align-items:center;gap:.35em;border:1px solid var(--line);background:var(--surface);border-radius:.55em;padding:.25em .65em;min-height:44px;font-size:.7em;font-weight:600;white-space:nowrap}
+.tool:hover{background:var(--surface-2)}
+.tool[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ico{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+.stage{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2.4vw;padding:2vh 2.8vw;min-height:0}
+.stage.wide{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}      /* 설명이 긴 장면 */
+.stage.figwide{grid-template-columns:minmax(0,1.6fr) minmax(0,.78fr)}  /* 그림이 주인공인 장면 */
+.fig{position:relative;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+.fig>svg{display:block;width:100%;height:100%;overflow:visible}
+.fig svg *{pointer-events:none}
+.fig svg .grab{pointer-events:auto;cursor:grab;touch-action:none}
+.panel{min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;gap:.65em;overflow-y:auto;padding:.2em}
+.stage.enter .fig,.stage.enter .panel{animation:enter .45s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.bottom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1em;padding:.45em 1em;background:var(--surface);border-top:1px solid var(--line)}
+.navbtn{display:inline-flex;align-items:center;gap:.35em;border:1.5px solid var(--line);background:var(--surface);border-radius:.7em;padding:.35em 1.1em;min-height:52px;font-size:.9em;font-weight:700}
+.navbtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.navbtn:disabled{opacity:.35;cursor:default}
+.progress{display:flex;justify-content:center;min-width:0}
+.dots{display:flex;gap:.45em;align-items:center;min-height:.9em;flex-wrap:wrap;justify-content:center}
+.dot{width:.55em;height:.55em;border-radius:50%;background:var(--line);transition:transform .25s,background .25s}
+.dot.on{background:var(--accent)}
+.dot.cur{transform:scale(1.4)}
+
+/* ---------- 단계 표시 ---------- */
+.is-off{opacity:0 !important;pointer-events:none !important}
+[data-show],[data-hide],[data-only],[data-ph]{transition:opacity .45s ease}
+[data-late]:not(.is-off){transition-delay:1.15s}
+[data-late2]:not(.is-off){transition-delay:2.7s}
+[data-late3]:not(.is-off){transition-delay:4.2s}
+[data-collapse].is-off{display:none}
+[data-collapse]:not(.is-off){animation:enter .4s ease both}
+[data-collapse][data-late]:not(.is-off){animation-delay:1.15s}
+.instant [data-late]:not(.is-off),.instant [data-late2]:not(.is-off),.instant [data-late3]:not(.is-off){transition-delay:0s !important;animation-delay:0s !important}
+.no-anim,.no-anim *{transition:none !important}
+
+/* ---------- 설명 칸의 글 ---------- */
+.q{margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.5em;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:0;color:var(--ink-2);font-size:.92em;text-wrap:pretty}
+.say{margin:0;font-size:1.05em;line-height:1.65;text-wrap:pretty}
+.ask{margin:0;font-size:1.12em;font-weight:700;line-height:1.6;text-wrap:pretty}
+.eq2{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.25em;line-height:1.5}
+.note{margin:0;font-size:.88em;line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+.stack{display:flex;flex-direction:column;gap:.5em}
+.nw{white-space:nowrap}
+.given{display:inline-block;background:var(--surface-2);border-radius:.45em;padding:.12em .6em;font-weight:600}
+/* 분수, 색 글자 */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-size:.88em;line-height:1.12;margin:0 .12em}
+.fr>span{padding:0 .2em}
+.fr>span:first-child{border-bottom:.09em solid currentColor}
+.ca{color:var(--accent)}.cn{color:var(--c-center)}.cw{color:var(--c-arc2)}.cl{color:var(--c-arc)}.cr{color:var(--c-chord)}
+/* 식 상자, 성질 상자, 답 상자, 핵심 깨달음(상자 없이 강조색 굵은 글) */
+.fbox{border:2px solid var(--accent);border-radius:.8em;padding:.45em .9em;display:flex;flex-direction:column;gap:.05em}
+.fbox .pl,.prop .pl,.prob .pl{font-weight:800;font-size:.85em;color:var(--accent)}
+.fm{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.32em;line-height:1.65}
+.prop{border:2px solid var(--accent);border-radius:.8em;padding:.5em .9em;display:flex;flex-direction:column;gap:.15em}
+.prop p{margin:0;font-size:1.05em;text-wrap:pretty}
+.prob{border:1.5px solid var(--line);border-radius:.8em;padding:.45em .9em;display:flex;flex-direction:column;gap:.1em}
+.prob p{margin:0;font-size:1em;text-wrap:pretty}
+.answer{background:var(--surface-2);border-radius:.8em;padding:.6em .9em;display:flex;flex-direction:column;gap:.25em}
+.answer .big{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.45em;line-height:1.3;color:var(--accent)}
+.answer .big .nm{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:.68em;font-weight:700;color:var(--ink);margin-left:.4em}
+.answer .why{margin:0;font-size:1.02em;line-height:1.7;text-wrap:pretty}
+.kkt{margin:0;font-weight:800;font-size:1.12em;line-height:1.5;text-wrap:balance;color:var(--accent)}
+/* 표 */
+.mt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:1.05em}   /* 표 글자는 뒷자리에서도 읽히게 본문보다 크게 */
+.mt th,.mt td{border:1.5px solid var(--line);padding:.35em .4em;text-align:center}
+.mt thead th{background:var(--surface-2);font-weight:700}
+.mt tbody th{text-align:left;font-weight:700;background:var(--surface)}
+/* 복습 문제 */
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:1em;font-weight:700;color:var(--ink-2);font-size:.85em}
+.ox circle,.ox path{fill:none;stroke:var(--ghost);stroke-width:30;stroke-linecap:round;transition:stroke .4s,opacity .4s}
+.fig.rev .ox.ok circle,.fig.rev .ox.ok path{stroke:var(--accent)}
+.fig.rev .ox:not(.ok){opacity:.2}
+
+/* ---------- 그림 ---------- */
+.base{fill:none;stroke:var(--ink);stroke-width:3.5}
+.f-ink{fill:var(--ink)}
+.rd{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lbl{font-family:'Noto Serif KR',Georgia,serif;font-weight:700;fill:var(--ink)}
+.tag{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700;fill:var(--ink)}
+.num{font-family:'STIX Two Text','Times New Roman',serif;font-weight:600;fill:var(--ink)}
+.var{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic;font-weight:600;fill:var(--ink)}
+.vi{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+
+/* ---------- 준정다면체 모아 보기 ---------- */
+.fig.gal{display:block}
+.gallery{width:100%;height:100%;display:grid;grid-template-rows:repeat(2,minmax(0,1fr));gap:.9em}
+.grow{display:grid;grid-template-columns:minmax(5em,9vw) minmax(0,1fr);gap:.9em;min-height:0}
+.gpar{display:flex;align-items:center;justify-content:center;gap:.15em;border-radius:.8em;background:var(--surface-2);padding:.3em;min-height:0}
+.psv{flex:1 1 0;min-width:0;max-width:7.5em;height:100%;max-height:100%}
+.gcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9em;min-height:0}
+.gcard{display:flex;flex-direction:column;align-items:center;gap:.3em;min-height:0;min-width:0;border:1.5px solid var(--line);border-radius:.8em;background:var(--surface);padding:.3em .25em .45em;color:var(--ink)}
+.gcard:hover{border-color:var(--accent);background:var(--surface-2)}
+.gsv{flex:1 1 0;min-height:0;width:100%;height:100%}
+.gn{font-weight:800;font-size:1.15em;line-height:1.2;text-align:center;word-break:keep-all}
+.gp{display:flex;justify-content:center;gap:.9em;flex-wrap:wrap;font-size:1.05em;font-weight:700;color:var(--ink-2)}
+.pc{display:inline-flex;align-items:center;gap:.25em;white-space:nowrap}
+.pc b{font-family:'STIX Two Text','Times New Roman',serif;font-size:1.2em;color:var(--ink)}
+.pshp{width:1.35em;height:1.35em;flex-shrink:0}
+.q.big{font-size:2.1em}
+.sub.fam{font-size:1.02em;font-weight:600}
+.chips{display:flex;flex-direction:column;gap:.45em}
+.chip{display:inline-flex;align-items:center;gap:.45em;font-size:1.2em;font-weight:700}
+.chip b{font-family:'STIX Two Text','Times New Roman',serif;font-size:1.3em;margin-left:.2em}
+.chip .u{font-weight:600;color:var(--ink-2)}
+.shp{width:1.5em;height:1.5em;flex-shrink:0}
+.vconf{display:flex;flex-direction:column;gap:.4em;margin-top:.5em;padding-top:.7em;border-top:1.5px solid var(--line)}
+.vl{font-weight:700;color:var(--ink-2)}
+.vic{display:flex;gap:.3em;flex-wrap:wrap}
+.vshp{width:2.5em;height:2.5em}
+.kbtn.pri[aria-pressed="true"]{color:var(--on-accent)}
+/* ---------- 정다면체 짓기에서 더한 것 ---------- */
+.drag3d{fill:transparent}
+.fig.app3d{flex-direction:column;align-items:stretch;gap:.45em}
+.fig.app3d>svg{flex:1 1 0;min-height:0;height:auto;width:100%}
+.kbar{display:flex;align-items:center;justify-content:center;gap:.6em 1.4em;flex-wrap:wrap;font-size:.8em}
+.kgrp{display:inline-flex;align-items:center;gap:.5em;flex-wrap:wrap;justify-content:center}
+.kbtn{display:inline-flex;align-items:center;gap:.4em;min-height:50px;border:1.5px solid var(--line);border-radius:.75em;background:var(--surface);padding:0 .85em;font-weight:700}
+.kbtn:hover{background:var(--surface-2)}
+.kbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.kbtn.pri{border:2.5px solid var(--accent);color:var(--accent);min-width:9.5em;justify-content:center}
+.kbtn:disabled{opacity:.4;cursor:default}
+.kbtn.pri:disabled{border-color:var(--line);color:var(--ink-2)}
+.kl{font-weight:700;color:var(--ink-2)}
+.rng{display:inline-flex;align-items:center;gap:.6em;min-height:50px;padding:0 1em;border:1.5px solid var(--line);border-radius:.75em;background:var(--surface)}
+.rng input{width:min(240px,24vw);height:44px;accent-color:var(--accent);cursor:pointer;margin:0}
+@keyframes pop{from{opacity:0;transform:translateY(.35em) scale(.8)}to{opacity:1;transform:none}}
+.stage.solo{grid-template-columns:minmax(0,1fr)}     /* 그림만 크게 */
+.pips{display:inline-flex;align-items:center;gap:.4em;padding:0 .35em}   /* 쌓은 층 */
+.pip{width:1.05em;height:1.05em;border-radius:50%;box-sizing:border-box;border:2.5px solid var(--accent);transition:background .3s ease}
+.pip.on{background:var(--accent)}
+.stage.solo .panel{display:none}
+/* 펼치기: 여러 가지 전개도 고르기 */
+.netstrip{display:flex;justify-content:center;gap:.4em;flex-wrap:wrap}
+.nt{position:relative;display:block;width:clamp(64px,6.4vw,124px);padding:.15em;border:2px solid var(--line);border-radius:.55em;background:var(--surface);min-height:44px}
+.nt svg{display:block;width:100%;height:auto;aspect-ratio:150/96}
+.nt:hover{background:var(--surface-2)}
+.nt[aria-pressed="true"]{border:3px solid var(--accent);background:var(--hl)}
+.nn{position:absolute;left:.3em;top:.1em;font-family:'Noto Serif KR',serif;font-weight:900;font-size:.7em;color:var(--ink-2)}
+.nt[aria-pressed="true"] .nn{color:var(--accent)}
+
+/* ---------- 정다면체 깎기 ---------- */
+/* 모아 보기 표 */
+.fig.tbl{display:block}
+.ctab{width:100%;height:100%;display:grid;grid-template-columns:auto minmax(0,1fr) .9vw minmax(0,1fr) minmax(0,1fr) .9vw minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,.9fr) repeat(5,minmax(0,1fr));gap:.38em .45em}
+.fh{grid-row:1;text-align:center;font-weight:800;font-size:.9em;color:var(--ink-2);border-bottom:2.5px solid var(--line);padding-bottom:.15em}
+.ch{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1em;min-height:0;min-width:0;border:0;border-radius:.8em;background:var(--surface-2);padding:.25em .3em .35em;color:var(--ink)}
+.ch:hover{outline:2.5px solid var(--accent)}
+.ch svg{flex:1 1 0;min-height:0;width:100%;height:100%}
+.ch .n{font-weight:800;font-size:.98em;line-height:1.2}
+.rl{display:flex;align-items:center;gap:.45em;grid-column:1;font-weight:800;font-size:1.02em;padding-right:.35em;white-space:nowrap}
+.rl .on,.ll .on,.q.opt .on{font-family:'Noto Serif KR',serif;font-weight:900;color:var(--ink-2)}
+.tc{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.05em;min-height:0;min-width:0;border:1.5px solid var(--line);border-radius:.8em;background:var(--surface);padding:.2em .3em .3em;color:var(--ink)}
+.tc:hover{border-color:var(--accent);background:var(--surface-2)}
+.tc svg{flex:1 1 0;min-height:0;width:100%;height:100%}
+.tc .n{font-weight:700;font-size:.86em;line-height:1.2;text-align:center;word-break:keep-all}
+.tc.span2{border-color:var(--accent);border-width:2px}
+
+/* 계열 장면: 그림 아래 이름표 */
+.caps{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:.4em}
+.caps.one{grid-template-columns:minmax(0,1fr)}
+.cap{display:flex;flex-direction:column;align-items:center;gap:.2em;text-align:center;min-width:0}
+.capn{margin:0;font-weight:800;font-size:1.45em;line-height:1.2;color:var(--ink);transition:opacity .3s,color .3s}
+.capn.fin{color:var(--accent)}
+.capn.dim{opacity:.4}
+.cc{margin:0;display:flex;gap:.25em 1em;flex-wrap:wrap;justify-content:center;color:var(--ink-2);font-weight:700;font-size:.92em}
+.cc b{font-family:'STIX Two Text','Times New Roman',serif;font-size:1.3em;color:var(--ink);margin-left:.2em;font-variant-numeric:tabular-nums;display:inline-block;min-width:1.4em;text-align:left}
+.pill{min-height:44px;border:2px solid var(--accent);color:var(--accent);background:var(--surface);border-radius:999px;padding:.1em 1em;font-weight:800;font-size:.95em;animation:enter .4s ease both}
+.pill:hover{background:var(--hl)}
+.eqb{display:flex;flex-direction:column;align-items:center;color:var(--accent);font-weight:800;padding-top:.05em;transition:opacity .35s ease}
+.eqb.off{opacity:0}
+.eqb b{font-family:'STIX Two Text','Times New Roman',serif;font-size:2.3em;line-height:.9}
+.eqb span{font-size:.9em;white-space:nowrap}
+
+/* 계열 장면: 오른쪽 계통도 */
+.q.opt{font-size:1.75em}
+.q.opt .on{margin-right:.35em}
+.ask.big{font-size:1.3em;color:var(--ink-2);margin-top:-.2em}
+.ladder{display:grid;grid-template-rows:auto repeat(5,auto);gap:.4em .5em;margin-top:.3em}
+.ladder.two{grid-template-columns:auto minmax(0,1fr) minmax(0,1fr)}
+.ladder.one{grid-template-columns:auto minmax(0,1fr)}
+.rail{grid-row:1 / span 6;background:linear-gradient(var(--ghost),var(--ghost)) center / 3px 100% no-repeat;pointer-events:none}
+.lh{grid-row:1;position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:0;border-radius:.7em;background:var(--surface-2);padding:.15em .3em .25em;font-weight:800;font-size:.9em}
+.lh svg{width:100%;max-width:6em;height:2.6em}
+.ll{grid-column:1;display:flex;align-items:center;gap:.4em;min-height:48px;border:0;background:transparent;padding:0 .2em;font-weight:700;font-size:.95em;color:var(--ink-2);white-space:nowrap;text-align:left}
+.ll.cur{color:var(--accent)}
+.ll.cur .on{color:var(--accent)}
+.lc{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:.35em;min-height:3em;min-width:0;border:2px dashed var(--line);border-radius:.7em;background:var(--surface);padding:.1em .45em;color:var(--ink);font-weight:700;font-size:.84em;line-height:1.2;text-align:left;word-break:keep-all}
+.lc:hover{background:var(--surface-2)}
+.lc.open{border-style:solid;border-width:1.5px}
+.lc.cur{border:3px solid var(--accent);background:linear-gradient(var(--hl),var(--hl)),var(--surface)}
+.lc svg{flex:0 0 auto;width:3.4em;height:2.6em}
+.qm{font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.5em;color:var(--ghost)}
+.lc.cur .qm{color:var(--accent)}
+@media (max-width:860px){
+  .fig.tbl{height:auto;overflow-x:auto}
+  .ctab{height:auto;min-width:820px;grid-template-rows:auto 110px repeat(5,124px)}
+  .fig.app3d{height:auto}
+  .fig.app3d>svg{height:auto;flex:none;aspect-ratio:2/1}
+}
+
+/* 세어 보기 */
+:root{--mark:var(--c-chord);--card:var(--surface);--pf-7:#d9b8c9}
+.cchips{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:.15em .9em;font-weight:700;font-size:.95em;color:var(--ink-2);min-height:1.5em}
+.cchips li{display:inline-flex;align-items:center;gap:.3em;white-space:nowrap}
+.cchips li b{font-family:'STIX Two Text','Times New Roman',serif;font-size:1.2em;color:var(--ink)}
+.cchips li.tot{opacity:.75}
+.cchips .shp{width:1.15em;height:1.15em}
+.cc b.mk{color:var(--mark)}
+.cc .ok b{color:var(--ok)}
+.cbar{margin-top:-.15em}
+.cbar[hidden]{display:none !important}
+.cc:empty{display:none}
+
+/* ---------- 펜 ---------- */
+.ink{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.pen-on .ink{pointer-events:auto;cursor:crosshair;touch-action:none}
+.ink polyline{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.penbar{position:absolute;top:.6em;right:.8em;z-index:6;display:none;align-items:center;gap:.35em;background:var(--surface);border:1px solid var(--line);border-radius:.8em;padding:.3em .4em;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.pen-on .penbar{display:flex}
+.pen-sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 2px var(--line)}
+.pen-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.pbtn{min-height:44px;border:1px solid var(--line);border-radius:.55em;background:var(--surface);padding:0 .7em;font-size:.7em;font-weight:600;white-space:nowrap}
+
+@media (max-width:860px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%}
+  .brand,.tool span{display:none}
+  .stage,.stage.wide,.stage.figwide,.stage.solo{grid-template-columns:minmax(0,1fr);padding:1.5vh 4vw}
+  .fig{height:56vh}
+  .panel{overflow:visible;justify-content:flex-start}
+  .penbar{flex-wrap:wrap;max-width:calc(100% - 1.6em)}
+}
+</style>
+<div class="app">
+  <header class="top">
+    <div class="brand">정다면체 깎기</div>
+    <nav class="nav" id="nav" aria-label="수업 흐름"></nav>
+    <div class="tools">
+      <button type="button" class="tool" id="penBtn" aria-pressed="false" aria-label="펜"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"></path><path d="M14 7l3 3"></path></svg><span>펜</span></button>
+      <button type="button" class="tool" id="themeBtn" aria-label="화면 색 바꾸기"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"></path></svg><span id="themeLbl">종이</span></button>
+      <button type="button" class="tool" id="fsBtn" aria-label="전체 화면"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><span>전체 화면</span></button>
+    </div>
+  </header>
+  <main class="stage" id="stage">
+    <div class="fig" id="fig"></div>
+    <div class="panel" id="panel"></div>
+    <svg class="ink" id="ink" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="penbar" role="toolbar" aria-label="펜 도구">
+      <button type="button" class="pen-sw" data-pen="--pen1" aria-pressed="true" aria-label="빨강 펜" style="--sw:var(--pen1)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen2" aria-pressed="false" aria-label="파랑 펜" style="--sw:var(--pen2)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen3" aria-pressed="false" aria-label="초록 펜" style="--sw:var(--pen3)"></button>
+      <button type="button" class="pbtn" id="penUndo">되돌리기</button>
+      <button type="button" class="pbtn" id="penClear">모두 지우기</button>
+      <button type="button" class="pbtn" id="penOff">펜 끄기</button>
+    </div>
+  </main>
+  <footer class="bottom">
+    <button type="button" class="navbtn" id="prevBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>이전</button>
+    <div class="progress"><div class="dots" id="dots"></div></div>
+    <button type="button" class="navbtn primary" id="nextBtn">다음<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+  </footer>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const mq = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
+  const RM = false;   // 수업용 움직임은 기기의 '동작 줄이기' 설정과 상관없이 항상 보여 준다
+  const NS = 'http://www.w3.org/2000/svg';
+  const FIG = $('#fig'), PANEL = $('#panel'), STAGE = $('#stage');
+  const state = { si: 0, step: 0 };
+
+  /* ---------- 기하 (각은 도, 시계 반대 방향, 0°는 오른쪽) ---------- */
+  const rad = d => d * Math.PI / 180;
+  const n2 = v => Math.round(v * 100) / 100;
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const P = (cx, cy, r, d) => [n2(cx + r * Math.cos(rad(d))), n2(cy - r * Math.sin(rad(d)))];
+  const spanOf = (a1, a2, ccw) => { const s = ccw ? a2 - a1 : a1 - a2; return ((s % 360) + 360) % 360; };
+  const arcD = (cx, cy, r, a1, a2, ccw = true) => {
+    const p = P(cx, cy, r, a1), q = P(cx, cy, r, a2);
+    return `M ${p[0]} ${p[1]} A ${n2(r)} ${n2(r)} 0 ${spanOf(a1, a2, ccw) > 180 ? 1 : 0} ${ccw ? 0 : 1} ${q[0]} ${q[1]}`;
+  };
+  const seg = (p, q) => `M ${n2(p[0])} ${n2(p[1])} L ${n2(q[0])} ${n2(q[1])}`;
+  const ease = u => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+
+  /* ---------- SVG 조각 ---------- */
+  const svgWrap = (body, label, w = 600, h = 460) => `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
+  const stroke = (d, c, w, extra = '') => `<path d="${d}" class="rd" style="stroke:var(${c});stroke-width:${w}" ${extra}></path>`;
+  const txt = cls => (x, y, t, s, a = 'start', c = '', extra = '') =>
+    `<text x="${n2(x)}" y="${n2(y)}" class="${cls}" font-size="${s}" text-anchor="${a}"${c ? ` style="fill:var(${c})"` : ''} ${extra}>${t}</text>`;
+  const lbl = txt('lbl'), tag = txt('tag'), num = txt('num'), vr = txt('var');
+
+  /* ---------- 설명 칸의 수식 조각 ---------- */
+  const I = ch => `<i>${ch}</i>`;
+  const FR = (a, b, cls = '') => `<span class="fr${cls ? ' ' + cls : ''}"><span>${a}</span><span>${b}</span></span>`;
+
+  /* ---------- 단계 엔진 ---------- */
+  function drawIn(el, ms = 900) {                  // 선이 그려지며 나타나기
+    if (RM || !el || typeof el.getTotalLength !== 'function') return;
+    let len = 0;
+    try { len = el.getTotalLength(); } catch (e) { return; }
+    if (!(len > 0)) return;
+    clearTimeout(el._dt);
+    el.style.transition = 'none';
+    el.style.strokeDasharray = `${len} ${len}`;
+    el.style.strokeDashoffset = `${len}`;
+    el.getBoundingClientRect();
+    el.style.transition = `stroke-dashoffset ${ms}ms ease-in-out, opacity .45s ease`;
+    el.style.strokeDashoffset = '0';
+    el._dt = setTimeout(() => { el.style.transition = ''; el.style.strokeDasharray = ''; el.style.strokeDashoffset = ''; }, ms + 80);
+  }
+  const drawAll = root => {
+    if (!root) return;
+    if (root.hasAttribute('data-draw')) drawIn(root);
+    $$('[data-draw]', root).forEach(x => drawIn(x));
+  };
+  function applyStep(root, step, prev) {
+    $$('[data-show],[data-hide],[data-only]', root).forEach(el => {
+      const s = el.getAttribute('data-show'), h = el.getAttribute('data-hide'), o = el.getAttribute('data-only');
+      let vis = true;
+      if (s !== null && step < Number(s)) vis = false;
+      if (h !== null && step >= Number(h)) vis = false;
+      if (o !== null && !o.split(',').map(Number).includes(step)) vis = false;
+      const wasOff = el.classList.contains('is-off');
+      el.classList.toggle('is-off', !vis);
+      if (vis && wasOff && step > prev) drawAll(el);
+    });
+  }
+  function tween(ms, fn, done) {                   // 0→1로 움직이기. 돌려받은 함수를 부르면 멈춘다
+    if (RM || !(ms > 0)) { fn(1); if (done) done(); return () => {}; }
+    let alive = true, fin = false, wd = 0;
+    const t0 = performance.now();
+    const finish = () => { if (!alive || fin) return; fin = true; clearTimeout(wd); fn(1); if (done) done(); };
+    const tick = now => {
+      if (!alive || fin) return;
+      const u = Math.min(1, Math.max(0, (now - t0) / ms));
+      if (u >= 1) { finish(); return; }
+      fn(ease(u));
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    wd = setTimeout(finish, ms + 700);           // 화면이 잠시 멈춰도 끝 상태로 마무리
+    return () => { alive = false; clearTimeout(wd); };
+  }
+
+  const V3 = {
+    add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+    sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+    mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+    dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+    cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+    len: a => Math.hypot(a[0], a[1], a[2]),
+    unit: a => { const L = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / L, a[1] / L, a[2] / L]; },
+    lerp: (a, b, u) => [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u],
+    avg: ps => { const s = [0, 0, 0]; ps.forEach(p => { s[0] += p[0]; s[1] += p[1]; s[2] += p[2]; }); return [s[0] / ps.length, s[1] / ps.length, s[2] / ps.length]; }
+  };
+  const QT = {
+    id: () => [1, 0, 0, 0],
+    mul: (a, b) => [
+      a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3],
+      a[0] * b[1] + a[1] * b[0] + a[2] * b[3] - a[3] * b[2],
+      a[0] * b[2] - a[1] * b[3] + a[2] * b[0] + a[3] * b[1],
+      a[0] * b[3] + a[1] * b[2] - a[2] * b[1] + a[3] * b[0]],
+    norm: q => { const L = Math.hypot(q[0], q[1], q[2], q[3]) || 1; return [q[0] / L, q[1] / L, q[2] / L, q[3] / L]; },
+    axis: (ax, ang) => { const u = V3.unit(ax), s = Math.sin(ang / 2); return [Math.cos(ang / 2), u[0] * s, u[1] * s, u[2] * s]; },
+    rot: (q, v) => {
+      const [w, x, y, z] = q, tx = 2 * (y * v[2] - z * v[1]), ty = 2 * (z * v[0] - x * v[2]), tz = 2 * (x * v[1] - y * v[0]);
+      return [v[0] + w * tx + (y * tz - z * ty), v[1] + w * ty + (z * tx - x * tz), v[2] + w * tz + (x * ty - y * tx)];
+    },
+    mat: q => {
+      const [w, x, y, z] = q;
+      return [[1 - 2 * (y * y + z * z), 2 * (x * y - w * z), 2 * (x * z + w * y)],
+        [2 * (x * y + w * z), 1 - 2 * (x * x + z * z), 2 * (y * z - w * x)],
+        [2 * (x * z - w * y), 2 * (y * z + w * x), 1 - 2 * (x * x + y * y)]];
+    },
+    slerp: (a, b, t) => {
+      let d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3], bb = b;
+      if (d < 0) { d = -d; bb = b.map(x => -x); }
+      if (d > 0.9995) return QT.norm(a.map((x, i) => x + (bb[i] - x) * t));
+      const th = Math.acos(Math.min(1, d)), s = Math.sin(th), wa = Math.sin((1 - t) * th) / s, wb = Math.sin(t * th) / s;
+      return a.map((x, i) => x * wa + bb[i] * wb);
+    },
+    fromTo: (u, v) => {
+      const a = V3.unit(u), b = V3.unit(v), c = V3.dot(a, b);
+      if (c < -0.99999) { const p = Math.abs(a[0]) < 0.9 ? [1, 0, 0] : [0, 1, 0]; return QT.axis(V3.cross(a, p), Math.PI); }
+      const x = V3.cross(a, b);
+      return QT.norm([1 + c, x[0], x[1], x[2]]);
+    }
+  };
+  // 점 p를 점 o를 지나고 방향이 u(단위)인 축 둘레로 th만큼 돌리기
+  const rotAxis = (p, o, u, th) => {
+    const d = V3.sub(p, o), c = Math.cos(th), s = Math.sin(th), k = V3.dot(u, d) * (1 - c), x = V3.cross(u, d);
+    return [o[0] + d[0] * c + x[0] * s + u[0] * k, o[1] + d[1] * c + x[1] * s + u[1] * k, o[2] + d[2] * c + x[2] * s + u[2] * k];
+  };
+  const rotVec = (v, u, th) => rotAxis(v, [0, 0, 0], u, th);
+
+  /* ---------- 볼록 다면체: 꼭짓점 좌표로 면 찾기 (면은 바깥에서 보아 시계 반대 방향) ---------- */
+  function hull(V) {
+    const n = V.length, faces = [], keys = new Set(), eps = 1e-6;
+    for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) for (let k = j + 1; k < n; k++) {
+      let nr = V3.cross(V3.sub(V[j], V[i]), V3.sub(V[k], V[i]));
+      const L = V3.len(nr);
+      if (L < 1e-9) continue;
+      nr = V3.mul(nr, 1 / L);
+      let d = V3.dot(nr, V[i]), pos = false, neg = false;
+      const on = [];
+      for (let p = 0; p < n; p++) {
+        const s = V3.dot(nr, V[p]) - d;
+        if (s > eps) pos = true; else if (s < -eps) neg = true; else on.push(p);
+        if (pos && neg) break;
+      }
+      if (pos && neg) continue;
+      if (pos) { nr = V3.mul(nr, -1); d = -d; }
+      const key = on.join(',');
+      if (keys.has(key)) continue;
+      keys.add(key);
+      const c = V3.avg(on.map(p => V[p])), a = V3.unit(V3.sub(V[on[0]], c)), b = V3.cross(nr, a);
+      on.sort((p, q) => {
+        const dp = V3.sub(V[p], c), dq = V3.sub(V[q], c);
+        return Math.atan2(V3.dot(dp, b), V3.dot(dp, a)) - Math.atan2(V3.dot(dq, b), V3.dot(dq, a));
+      });
+      faces.push({ v: on, n: nr });
+    }
+    return faces;
+  }
+
+  /* ---------- 다면체 꼭짓점 좌표 ---------- */
+  const PHI = (1 + Math.sqrt(5)) / 2;
+  const sgn = v => { let out = [v.slice()]; for (let i = 0; i < 3; i++) if (v[i] !== 0) out = out.flatMap(p => [p, p.map((x, j) => (j === i ? -x : x))]); return out; };
+  const cyc = ps => ps.flatMap(p => [p, [p[1], p[2], p[0]], [p[2], p[0], p[1]]]);
+  const uniqP = ps => { const seen = new Set(); return ps.filter(p => { const k = p.map(x => x.toFixed(5)).join(','); if (seen.has(k)) return false; seen.add(k); return true; }); };
+  const ring3 = (R, y, angs) => angs.map(a => [R * Math.cos(rad(a)), y, R * Math.sin(rad(a))]);
+  const RAW = {
+    tetra: () => [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]],
+    cube: () => sgn([1, 1, 1]),
+    octa: () => [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
+    icosa: () => cyc(sgn([0, 1, PHI])),
+    dodeca: () => sgn([1, 1, 1]).concat(cyc(sgn([0, 1 / PHI, PHI]))),
+    cubocta: () => cyc(sgn([1, 1, 0])),
+    tico: () => cyc(sgn([0, 1, 3 * PHI])).concat(cyc(sgn([1, 2 + PHI, 2 * PHI])), cyc(sgn([PHI, 2, 2 * PHI + 1]))),
+    prism3: () => { const R = 2 / Math.sqrt(3), A = [-90, 30, 150]; return ring3(R, 1, A).concat(ring3(R, -1, A)); },
+    bipy3: () => { const R = 2 / Math.sqrt(3), h = Math.sqrt(4 - R * R); return ring3(R, 0, [-90, 30, 150]).concat([[0, h, 0], [0, -h, 0]]); },
+    bipy5: () => { const R = 1 / Math.sin(rad(36)), h = Math.sqrt(4 - R * R); return ring3(R, 0, [90, 162, 234, 306, 18]).concat([[0, h, 0], [0, -h, 0]]); },
+    pyr4: () => [[1, 0, 1], [1, 0, -1], [-1, 0, 1], [-1, 0, -1], [0, Math.SQRT2, 0]]
+  };
+  /* =========================================================
+     정다면체 짓기: 바닥에 놓는 방향 → 층 나누기 → 짓는 단계 → 전개도
+     모서리의 길이는 1. y축이 위쪽, 바닥은 y = 0.
+     ========================================================= */
+  const SOLIDS = {
+    tetra: { name: '정사면체', down: 'face', groups: [[0], [1]], like: '삼각뿔', yaw: 12 },
+    cube: { name: '정육면체', down: 'face', groups: [[0], [1]], like: '사각기둥', yaw: 30 },
+    octa: { name: '정팔면체', down: 'vertex', groups: [[0], [1], [2]], like: '사각뿔 2개', yaw: 22 },
+    dodeca: { name: '정십이면체', down: 'face', groups: [[0], [1, 2], [3]], like: '그릇 2개', yaw: 0 },
+    icosa: { name: '정이십면체', down: 'vertex', groups: [[0], [1], [2], [3]], like: '오각뿔 2개와 띠', yaw: 0 }
+  };
+  const ORDER = ['tetra', 'cube', 'octa', 'dodeca', 'icosa'];
+  const FACE_OF = { tetra: '정삼각형', cube: '정사각형', octa: '정삼각형', dodeca: '정오각형', icosa: '정삼각형' };
+  const AT_VERTEX = { tetra: 3, cube: 3, octa: 4, dodeca: 3, icosa: 5 };
+
+  // 볼록 다면체의 모서리, 꼭짓점마다 모인 면
+  function edgesOf(V, F) {
+    const map = new Map();
+    F.forEach((f, fi) => f.v.forEach((a, t) => {
+      const b = f.v[(t + 1) % f.v.length], k = a < b ? `${a}-${b}` : `${b}-${a}`;
+      if (!map.has(k)) map.set(k, { a: Math.min(a, b), b: Math.max(a, b), f: [] });
+      map.get(k).f.push(fi);
+    }));
+    return Array.from(map.values());
+  }
+
+  function solidOf(key) {
+    const sd = SOLIDS[key];
+    let V = uniqP(RAW[key]());
+    const c0 = V3.avg(V);
+    V = V.map(p => V3.sub(p, c0));
+    let F = hull(V);
+    let E = edgesOf(V, F);
+    const s = 1 / V3.len(V3.sub(V[E[0].a], V[E[0].b]));
+    V = V.map(p => V3.mul(p, s));
+    // 바닥에 놓기: 면을 바닥에(face) 또는 꼭짓점을 바닥에(vertex)
+    const dir = sd.down === 'face' ? F[0].n : V3.unit(V[0]);
+    let q = QT.fromTo(dir, [0, -1, 0]);
+    V = V.map(p => QT.rot(q, p));
+    // 바닥 둘레의 한 변(또는 첫 기둥)이 앞을 향하도록 돌려 놓기
+    const ymin = Math.min(...V.map(p => p[1]));
+    const low = V.map((p, i) => i).filter(i => V[i][1] < ymin + 1e-6);
+    const up2 = V.map((p, i) => i).filter(i => V[i][1] > ymin + 1e-6).sort((a, b) => V[a][1] - V[b][1]);
+    let ref = low.length > 1 ? V3.avg(low.slice(0, 2).map(i => V[i])) : V[up2[0]];
+    if (low.length > 1) {                           // 바닥 면의 한 변의 가운데
+      const ring = low.slice().sort((a, b) => Math.atan2(V[a][2], V[a][0]) - Math.atan2(V[b][2], V[b][0]));
+      ref = V3.avg([V[ring[0]], V[ring[1]]]);
+    }
+    const a0 = Math.atan2(ref[0], ref[2]);           // ref를 +z(앞) 쪽으로
+    q = QT.axis([0, 1, 0], -a0 + rad(sd.yaw));
+    V = V.map(p => QT.rot(q, p));
+    const ym = Math.min(...V.map(p => p[1]));
+    V = V.map(p => [p[0], p[1] - ym, p[2]]);
+    F = hull(V);
+    F.forEach(f => { f.c = V3.avg(f.v.map(i => V[i])); });
+    E = edgesOf(V, F);
+    const vf = V.map(() => []);
+    F.forEach((f, fi) => f.v.forEach(i => vf[i].push(fi)));
+    return { key, V, F, E, vf };
+  }
+
+  /* ---------- 짓는 단계 ----------
+     층(그룹)마다: 0층은 밑면(면) 또는 바닥 꼭짓점(점). 그다음 층마다 기둥 → 테두리/지붕/꼭대기 → 벽.
+     단계 = { kind, floor, label, tok(색), verts, edges, faces, cnt: {v, e, f} } */
+  const KIND_TOK = { base: '--c-arc', pt0: '--c-arc', pil: '--c-chord', ring: '--c-secant', roof: '--c-secant', top: '--c-secant', wall: '--c-arc2' };
+  const WALL_TOK = n => (n === 1 ? ['--t-side'] : n === 2 ? ['--t-side', '--t-side2'] : ['--t-side', '--t-side2', '--t-side']);
+  const WALL_INK = n => (n === 1 ? ['--c-arc2'] : n === 2 ? ['--c-arc2', '--c-gold'] : ['--c-arc2', '--c-gold', '--c-arc2']);
+  function planOf(key) {
+    const sd = SOLIDS[key], S = solidOf(key), { V, F, E } = S;
+    const ys = [];
+    V.forEach(p => { if (!ys.some(y => Math.abs(y - p[1]) < 1e-6)) ys.push(p[1]); });
+    ys.sort((a, b) => a - b);
+    const lev = V.map(p => ys.findIndex(y => Math.abs(y - p[1]) < 1e-6));
+    const layer = V.map((_, i) => sd.groups.findIndex(g => g.includes(lev[i])));
+    const G = sd.groups.map((_, gi) => V.map((_, i) => i).filter(i => layer[i] === gi));
+    const nF = G.length - 1;
+    const faceOn = g => F.findIndex(f => f.v.length === g.length && f.v.every(i => g.includes(i)));
+    const rings = G.slice(1, -1).length;
+    const stages = [];
+    const used = new Set();
+    const push = (st) => { st.cnt = { v: st.verts.length, e: st.edges.length, f: st.faces.length }; stages.push(st); };
+    // 0층
+    const b0 = faceOn(G[0]);
+    if (G[0].length === 1) push({ kind: 'pt0', floor: 0, label: '바닥 꼭짓점', verts: G[0], edges: [], faces: [] });
+    else { used.add(b0); push({ kind: 'base', floor: 0, label: '밑면', verts: G[0], edges: E.map((e, i) => i).filter(i => layer[E[i].a] === 0 && layer[E[i].b] === 0), faces: [b0] }); }
+    for (let k = 1; k <= nF; k++) {
+      const fl = nF > 1 ? `${k}층 ` : '';
+      push({ kind: 'pil', floor: k, label: `${fl}기둥`, verts: [], edges: E.map((e, i) => i).filter(i => { const la = layer[E[i].a], lb = layer[E[i].b]; return Math.min(la, lb) === k - 1 && Math.max(la, lb) === k; }), faces: [] });
+      const ringE = E.map((e, i) => i).filter(i => layer[E[i].a] === k && layer[E[i].b] === k);
+      if (k < nF) push({ kind: 'ring', floor: k, label: rings > 1 ? `${k}층 테두리` : '테두리', verts: G[k], edges: ringE, faces: [] });
+      else if (G[k].length === 1) push({ kind: 'top', floor: k, label: nF === 1 ? '지붕 (점)' : '꼭대기', verts: G[k], edges: [], faces: [] });
+      else { const tf = faceOn(G[k]); used.add(tf); push({ kind: 'roof', floor: k, label: '지붕', verts: G[k], edges: ringE, faces: [tf] }); }
+      const walls = F.map((f, i) => i).filter(i => !used.has(i) && F[i].v.every(j => layer[j] <= k));
+      walls.forEach(i => used.add(i));
+      // 벽은 앞에서부터 둘레를 따라 차례로
+      walls.sort((a, b) => Math.atan2(F[a].c[0], F[a].c[2]) - Math.atan2(F[b].c[0], F[b].c[2]));
+      push({ kind: 'wall', floor: k, label: `${fl}벽`, verts: [], edges: [], faces: walls });
+    }
+    const wt = WALL_TOK(nF), wi = WALL_INK(nF);
+    stages.forEach(st => {
+      st.tok = st.kind === 'wall' ? wi[st.floor - 1] : KIND_TOK[st.kind];
+      st.ftok = st.kind === 'wall' ? wt[st.floor - 1] : st.kind === 'base' ? '--t-base' : '--t-top';
+    });
+    // 면·모서리·꼭짓점이 몇 번째 단계에서 생기는지
+    const fStage = F.map(() => -1), eStage = E.map(() => -1), vStage = V.map(() => -1);
+    stages.forEach((st, si) => { st.faces.forEach(i => { fStage[i] = si; }); st.edges.forEach(i => { eStage[i] = si; }); st.verts.forEach(i => { vStage[i] = si; }); });
+    const tot = stages.reduce((a, st) => ({ v: a.v + st.cnt.v, e: a.e + st.cnt.e, f: a.f + st.cnt.f }), { v: 0, e: 0, f: 0 });
+    // 보여 주는 단계(층): 밑면 하나, 그 위로 한 층씩. 점에서 시작하면 그 점과 첫 층을 한 단계로 묶는다.
+    // 층 = { base, pil, ring: 모서리, faces: 면, pt: 시작하는 점, cover: 앞에서 쌓은 것과 같은 모양을 뒤집어 덮는 층 }
+    const mk = sis => {
+      const o = { base: [], pil: [], ring: [], faces: [], pt: -1, cover: false };
+      sis.forEach(si => {
+        const st = stages[si];
+        if (st.kind === 'pil') o.pil.push(...st.edges);
+        else if (st.kind === 'base') o.base.push(...st.edges);
+        else if (st.kind === 'ring' || st.kind === 'roof') o.ring.push(...st.edges);
+        else if (st.kind === 'pt0') o.pt = st.verts[0];
+        o.faces.push(...st.faces);
+      });
+      return o;
+    };
+    const layers = stages[0].kind === 'pt0' ? [mk([0, 1, 2, 3])] : [mk([0]), mk([1, 2, 3])];
+    for (let si = stages[0].kind === 'pt0' ? 4 : 4; si < stages.length; si += 3) layers.push(mk([si, si + 1, si + 2]));
+    if (key === 'octa') layers[1].cover = true;      // 꼭짓점 둘레 4개(뚜껑 없는 사각뿔) 위에 같은 모양을 뒤집어 덮는다
+    if (key === 'dodeca') layers[2].cover = true;    // 그릇(밑면 + 둘레 5개) 위에 같은 그릇을 뒤집어 덮는다
+    if (key === 'icosa') {                           // 꼭짓점 둘레 5개 + 그것과 맞닿은 5개, 그 위에 같은 모양을 뒤집어 덮는다
+      const L0 = layers[0], L1 = layers[1], L2 = layers[2];
+      const up = L1.faces.filter(fi => L0.faces.some(g => shareEdge(F, fi, g)));
+      layers[1] = { base: [], pil: L1.pil, ring: [], faces: up, pt: -1, cover: false };
+      layers[2] = { base: [], pil: L2.pil, ring: L1.ring, faces: [...L1.faces.filter(fi => !up.includes(fi)), ...L2.faces], pt: -1, cover: true };
+    }
+    // 그 층 안에서 모서리가 그려지는 때 [t0, t1]과 방향(s → e), 면이 다 둘러싸이는 때 tc (0~1)
+    const ang = p => Math.atan2(p[0], p[2]);
+    const around = a => (((a + 0.8) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);   // 왼쪽 앞에서부터 한 바퀴
+    const eT = E.map(() => null);
+    const seq = (list, L, w0, w1) => list.map(ei => {
+      const e = E[ei], aa = ang(V[e.a]), ab = ang(V[e.b]), d = (((ab - aa) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const [s0, s1] = d < Math.PI ? [e.a, e.b] : [e.b, e.a];
+      return { ei, s0, s1, k: around(ang(V[s0])) };
+    }).sort((x, y) => x.k - y.k).forEach((it, j, arr) => { eT[it.ei] = { L, t0: w0 + (w1 - w0) * j / arr.length, t1: w0 + (w1 - w0) * (j + 1) / arr.length, s: it.s0, e: it.s1 }; });
+    layers.forEach((l, L) => {
+      if (l.cover) { [...l.pil, ...l.ring].forEach(ei => { eT[ei] = { L, t0: 0, t1: 0.001, s: E[ei].a, e: E[ei].b }; }); return; }
+      const pe = l.pt >= 0 ? 0.42 : 0.38;
+      l.pil.forEach(ei => { const e = E[ei], lo = V[e.a][1] < V[e.b][1] ? e.a : e.b; eT[ei] = { L, t0: l.pt >= 0 ? 0.1 : 0, t1: pe, s: lo, e: lo === e.a ? e.b : e.a }; });
+      seq(l.base, L, 0.04, 0.66);
+      seq(l.ring, L, pe, 0.86);
+    });
+    const fL = F.map((f, fi) => layers.findIndex(l => l.faces.includes(fi)));
+    const fT = F.map((f, fi) => {
+      const L = fL[fi];
+      let tc = 0;
+      E.forEach((e, ei) => { if (e.f.includes(fi) && eT[ei].L === L) tc = Math.max(tc, eT[ei].t1); });
+      return { L, tc };
+    });
+    // 같은 때 둘러싸이는 면들은 둘레를 따라 조금씩 늦게 채워 차례로 놓이는 것이 보이게
+    const grp = new Map();
+    fT.forEach((t, fi) => { if (layers[t.L].cover) return; const k = `${t.L}:${t.tc.toFixed(3)}`; if (!grp.has(k)) grp.set(k, []); grp.get(k).push(fi); });
+    grp.forEach(list => { if (list.length > 1) list.sort((a, b) => around(ang(F[a].c)) - around(ang(F[b].c))).forEach((fi, j) => { fT[fi].tc += 0.075 * j; }); });
+    const pt0 = stages[0].kind === 'pt0' ? stages[0].verts[0] : -1;
+    // 덮는 층: 다면체의 가운데를 지나는 가로 축으로 180° 돌리면 앞에서 쌓은 것과 겹친다. 그 축과, 들어 올릴 높이
+    let cover = null;
+    const cL = layers.findIndex(l => l.cover);
+    if (cL >= 0) {
+      const C = V3.avg(V), R = Math.max(...V.map(p => V3.len(V3.sub(p, C))));
+      const below = F.map((f, fi) => fi).filter(fi => fL[fi] < cL), Bf = layers[cL].faces;
+      const Av = [...new Set(below.flatMap(fi => F[fi].v))], Bv = [...new Set(Bf.flatMap(fi => F[fi].v))];
+      const cand = [];
+      V.forEach(p => { const d = V3.sub(p, C); if (Math.hypot(d[0], d[2]) > 1e-6) { cand.push(Math.atan2(d[2], d[0])); cand.push(Math.atan2(d[2], d[0]) + Math.PI / 2); } });
+      E.forEach(e => { const d = V3.sub(V3.lerp(V[e.a], V[e.b], 0.5), C); if (Math.hypot(d[0], d[2]) > 1e-6) { cand.push(Math.atan2(d[2], d[0])); cand.push(Math.atan2(d[2], d[0]) + Math.PI / 2); } });
+      let axis = null;
+      cand.forEach(phi => {
+        const a = [Math.cos(phi), 0, Math.sin(phi)];
+        const ok = Bv.every(j => { const q = rotAxis(V[j], C, a, Math.PI); return Av.some(i => V3.len(V3.sub(V[i], q)) < 1e-6); });
+        if (ok && (!axis || Math.abs(a[0]) > Math.abs(axis[0]) + 1e-9)) axis = a;   // 처음 보는 방향에서 가로에 가까운 축
+      });
+      const top = Math.max(...Av.map(i => V[i][1]));
+      cover = { L: cL, C, axis, h: (top - C[1]) + R * 1.05, faces: Bf };
+    }
+    return Object.assign(S, { sd, layer, G, nF, stages, fStage, eStage, vStage, tot, layers, eT, fT, pt0, cover, net: netTree(S, stages, F) });
+  }
+
+  /* ---------- 전개도: 면마다 부모 면과 붙어 있는 모서리(경첩) ----------
+     짓는 순서를 따라 붙인다. 밑면이 있으면 밑면이 뿌리, 없으면 앞쪽의 벽이 뿌리. */
+  function shareEdge(F, a, b) {
+    const A = F[a].v, B = F[b].v;
+    for (let t = 0; t < A.length; t++) {
+      const p = A[t], q = A[(t + 1) % A.length];
+      if (B.includes(p) && B.includes(q)) return [p, q];
+    }
+    return null;
+  }
+  function netTree(S, stages, F) {
+    const parent = F.map(() => -1), byKind = (k, fl) => stages.find(st => st.kind === k && (fl == null || st.floor === fl));
+    const front = list => list.slice().sort((a, b) => F[b].c[2] - F[a].c[2])[0];
+    const near = (list, f) => list.filter(g => g !== f && shareEdge(F, g, f));
+    const chain = (list, start) => {                 // 이웃한 면을 따라 한 방향으로 잇기
+      const done = new Set([start]);
+      let cur = start;
+      while (done.size < list.length) {
+        const nb = near(list, cur).filter(g => !done.has(g));
+        if (!nb.length) break;
+        const ang = f => Math.atan2(F[f].c[0], F[f].c[2]), d = f => (((ang(f) - ang(cur)) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const nx = nb.sort((a, b) => d(a) - d(b))[0];   // 늘 같은 방향(위에서 보아 시계 반대 방향)으로
+        parent[nx] = cur; done.add(nx); cur = nx;
+      }
+    };
+    const base = byKind('base'), roof = byKind('roof'), W = k => (byKind('wall', k) || { faces: [] }).faces;
+    let root;
+    if (S.key === 'tetra' || S.key === 'cube') {
+      root = base.faces[0];
+      W(1).forEach(f => { parent[f] = root; });
+      if (roof) parent[roof.faces[0]] = front(W(1).filter(f => shareEdge(F, f, roof.faces[0])));   // 지붕은 앞쪽 벽에
+    } else if (S.key === 'dodeca') {
+      root = base.faces[0];
+      W(1).forEach(f => { parent[f] = root; });
+      const wf = front(W(1)), u0 = front(near(W(2), wf)), rf = roof.faces[0];
+      parent[u0] = wf; parent[rf] = u0;
+      W(2).forEach(f => { if (f !== u0) parent[f] = rf; });
+    } else if (S.key === 'octa') {
+      root = front(W(1));
+      chain(W(1), root);
+      const u0 = W(2).find(f => shareEdge(F, f, root));
+      parent[u0] = root;
+      chain(W(2), u0);
+    } else if (S.key === 'icosa') {
+      root = front(W(2));
+      chain(W(2), root);
+      [...W(1), ...W(3)].forEach(f => { parent[f] = W(2).find(g => shareEdge(F, g, f)); });
+    }
+    return makeNet(S, root, parent);
+  }
+  // 전개도 하나 = 뿌리 면 + 면마다 부모 면(붙어 있는 이웃). 경첩(붙어 있는 모서리)과 펼칠 때 돌릴 각, 떼어 낼 모서리
+  function makeNet(S, root, parent) {
+    const F = S.F;
+    const hinge = F.map((f, i) => {
+      if (parent[i] < 0) return null;
+      const [a, b] = shareEdge(F, i, parent[i]), u = V3.unit(V3.sub(S.V[b], S.V[a])), nF = F[i].n, nG = F[parent[i]].n;
+      return { a, b, u, th: Math.atan2(V3.dot(u, V3.cross(nF, nG)), V3.dot(nF, nG)) };
+    });
+    const kept = new Set(hinge.filter(Boolean).map(h => `${Math.min(h.a, h.b)}-${Math.max(h.a, h.b)}`));
+    const cut = S.E.map(e => !kept.has(`${e.a}-${e.b}`));     // 모서리마다: 떼어 내면 true
+    return { root, parent, hinge, cut };
+  }
+  // u = 0(접힌 입체) ~ 1(다 펼친 전개도). 다 펼치면 뿌리 면이 바닥(y가 가장 작은 쪽)에 눕는다.
+  function netPose(P, u, net = P.net) {
+    const { V, F } = P, { root, parent, hinge } = net;
+    const nr = F[root].n, qg = QT.slerp(QT.id(), QT.fromTo(nr, [0, -1, 0]), u), cr = F[root].c;
+    return F.map((f, i) => {
+      let pts = f.v.map(j => V[j]), nn = f.n;
+      for (let k = i; parent[k] >= 0; k = parent[k]) {
+        const h = hinge[k], o = V[h.a];
+        pts = pts.map(p => rotAxis(p, o, h.u, u * h.th));
+        nn = rotVec(nn, h.u, u * h.th);
+      }
+      pts = pts.map(p => V3.add(QT.rot(qg, V3.sub(p, cr)), cr));
+      return { i, pts, n: QT.rot(qg, nn) };
+    });
+  }
+
+  /* ---------- 여러 가지 전개도 (gen_nets.js로 미리 찾아 둔 것: 뿌리 면과 면마다 부모 면) ----------
+     정사면체 2가지, 정육면체 11가지, 정팔면체 11가지는 모두. 정십이면체·정이십면체는 길게 뻗은 것부터 둥글게 모인 것까지 고른 8가지.
+     맨 앞은 쌓은 순서대로 펼친 전개도. */
+  const NET_LIB = {"tetra":[{"root":0,"parent":[-1,0,0,0]},{"root":2,"parent":[2,3,-1,2]}],"cube":[{"root":0,"parent":[-1,0,0,0,0,3]},{"root":0,"parent":[-1,0,0,0,3,3]},{"root":1,"parent":[2,-1,1,1,3,1]},{"root":3,"parent":[3,3,0,-1,0,1]},{"root":4,"parent":[3,5,4,4,-1,4]},{"root":5,"parent":[3,2,5,5,2,-1]},{"root":5,"parent":[1,5,1,4,5,-1]},{"root":3,"parent":[1,3,4,-1,5,3]},{"root":1,"parent":[2,-1,1,1,5,3]},{"root":0,"parent":[-1,2,0,1,0,4]},{"root":2,"parent":[2,0,-1,5,3,2]}],"octa":[{"root":3,"parent":[2,0,3,-1,6,4,7,3]},{"root":4,"parent":[4,5,6,2,-1,4,4,5]},{"root":0,"parent":[-1,0,0,1,6,1,2,6]},{"root":0,"parent":[-1,3,0,2,0,4,2,6]},{"root":0,"parent":[-1,0,0,2,0,1,2,6]},{"root":0,"parent":[-1,0,0,2,0,1,2,3]},{"root":7,"parent":[2,5,6,1,6,7,7,-1]},{"root":6,"parent":[4,5,3,7,6,4,-1,6]},{"root":6,"parent":[4,3,0,7,6,4,-1,6]},{"root":4,"parent":[4,0,3,7,-1,1,4,6]},{"root":1,"parent":[4,-1,0,1,5,1,7,3]}],"dodeca":[{"root":0,"parent":[-1,0,0,0,0,0,11,11,11,11,3,10]},{"root":6,"parent":[3,6,9,7,10,6,-1,6,10,6,7,7]},{"root":1,"parent":[2,-1,1,4,2,1,11,11,2,1,8,9]},{"root":5,"parent":[5,0,8,4,0,-1,5,5,9,6,4,6]},{"root":11,"parent":[4,2,9,4,2,7,9,10,11,11,8,-1]},{"root":2,"parent":[4,2,-1,7,10,7,1,6,2,1,11,8]},{"root":4,"parent":[3,6,0,7,-1,3,9,10,4,11,4,8]},{"root":7,"parent":[5,6,4,7,0,3,9,-1,10,8,11,7]}],"icosa":[{"root":7,"parent":[5,6,8,16,17,7,10,-1,9,5,17,7,10,8,9,13,13,18,16,18]},{"root":7,"parent":[5,6,8,4,1,7,7,-1,9,5,6,7,11,8,11,14,18,10,19,12]},{"root":0,"parent":[-1,0,0,2,1,0,1,6,13,5,6,12,10,16,9,13,3,4,16,18]},{"root":10,"parent":[1,4,0,4,17,0,10,11,9,14,-1,12,10,16,11,14,18,10,17,12]},{"root":10,"parent":[1,4,3,4,17,9,10,11,13,14,-1,12,10,16,15,19,3,10,17,12]},{"root":9,"parent":[2,0,8,2,1,0,7,5,9,-1,12,14,11,8,9,14,18,10,17,15]},{"root":19,"parent":[5,0,8,2,3,9,7,5,13,14,12,12,19,16,11,19,18,18,19,-1]},{"root":3,"parent":[2,0,8,-1,3,0,1,6,13,8,12,14,11,16,15,19,3,4,17,18]}]};
+  const netsOf = P => (P._nets || (P._nets = NET_LIB[P.key].map(x => makeNet(P, x.root, x.parent))));
+
+  /* ---------- 준정다면체 (관찰하고 세기만 한다) ----------
+     두 가지 이상의 정다각형으로 둘러싸이고, 모든 꼭짓점의 모양이 같은 다면체. 꼭짓점 좌표로 면을 찾는다. */
+  const SQ2 = Math.SQRT2;
+  const perm3 = p => [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]].map(o => o.map(i => p[i]));
+  const SEMI = {
+    ttet: { name: '깎은 정사면체', down: 6, raw: () => perm3([3, 1, 1]).flatMap(p => sgn(p)).filter(p => p.filter(x => x < 0).length % 2 === 0) },
+    cocta: { name: '육팔면체', down: 4, raw: () => cyc(sgn([1, 1, 0])) },
+    tcube: { name: '깎은 정육면체', down: 8, raw: () => cyc(sgn([SQ2 - 1, 1, 1])) },
+    tocta: { name: '깎은 정팔면체', down: 4, raw: () => perm3([0, 1, 2]).flatMap(p => sgn(p)) },
+    rcocta: { name: '마름모육팔면체', down: 4, raw: () => cyc(sgn([1, 1, 1 + SQ2])) },
+    idod: { name: '십이이십면체', down: 5, raw: () => cyc(sgn([0, 0, PHI])).concat(cyc(sgn([0.5, PHI / 2, PHI * PHI / 2]))) },
+    tico: { name: '깎은 정이십면체', down: 5, raw: () => RAW.tico() }
+  };
+  const SEMI_ORDER = ['ttet', 'cocta', 'tcube', 'tocta', 'rcocta', 'idod', 'tico'];
+  const SHAPE_OF_N = { 3: '정삼각형', 4: '정사각형', 5: '정오각형', 6: '정육각형', 8: '정팔각형', 10: '정십각형' };
+  function semiOf(key) {
+    const sd = SEMI[key];
+    let V = uniqP(sd.raw());
+    const c0 = V3.avg(V);
+    V = V.map(p => V3.sub(p, c0));
+    let F = hull(V), E = edgesOf(V, F);
+    const s = 1 / V3.len(V3.sub(V[E[0].a], V[E[0].b]));
+    V = V.map(p => V3.mul(p, s));
+    const f0 = F.find(f => f.v.length === sd.down) || F[0];
+    let q = QT.fromTo(f0.n, [0, -1, 0]);              // 고른 모양의 면을 바닥에
+    V = V.map(p => QT.rot(q, p));
+    const ymin = Math.min(...V.map(p => p[1]));
+    const low = V.map((p, i) => i).filter(i => V[i][1] < ymin + 1e-6).sort((a, b) => Math.atan2(V[a][2], V[a][0]) - Math.atan2(V[b][2], V[b][0]));
+    const ref = V3.avg([V[low[0]], V[low[1]]]);
+    q = QT.axis([0, 1, 0], -Math.atan2(ref[0], ref[2]));   // 바닥 면의 한 변이 앞을 향하게
+    V = V.map(p => QT.rot(q, p));
+    const ym = Math.min(...V.map(p => p[1]));
+    V = V.map(p => [p[0], p[1] - ym, p[2]]);
+    F = hull(V);
+    F.forEach(f => { f.c = V3.avg(f.v.map(i => V[i])); f.name = SHAPE_OF_N[f.v.length]; });
+    E = edgesOf(V, F);
+    const vf = V.map(() => []);
+    F.forEach((f, fi) => f.v.forEach(i => vf[i].push(fi)));
+    return Object.assign({ key, semi: true, sd: { name: sd.name }, V, F, E, vf }, shapeInfo(F, vf));
+  }
+  // 면의 모양별 개수, 한 꼭짓점에 모인 면의 모양별 개수
+  function shapeInfo(F, vf, name) {
+    const nm = i => F[i].name || name;
+    const classes = [];
+    F.forEach((f, i) => { const c = classes.find(x => x.name === nm(i)); if (c) c.count++; else classes.push({ name: nm(i), count: 1 }); });
+    classes.sort((a, b) => F.find((f, i) => nm(i) === a.name).v.length - F.find((f, i) => nm(i) === b.name).v.length);
+    const vconf = classes.map(c => ({ name: c.name, count: vf[0].filter(i => nm(i) === c.name).length })).filter(c => c.count > 0);
+    return { classes, vconf };
+  }
+  /* =========================================================
+     그림: 정사영 카메라, 짓는 그림, 전개도
+     면은 앞면·뒷면을 가려 칠하고(뒤쪽 안쪽 면은 어둡게), 앞면에 가려진 모서리와 꼭짓점은 점선·빈 동그라미로 그린다.
+     ========================================================= */
+  const LIGHT = V3.unit([-0.38, 0.8, 0.5]);
+  const Q_VIEW = QT.mul(QT.axis([1, 0, 0], rad(20)), QT.axis([0, 1, 0], rad(-18)));   // 처음 보는 방향: 조금 위, 조금 옆
+  function camera(q, S, cx, cy, tg) {
+    const M = QT.mat(q);
+    const rot = v => [M[0][0] * v[0] + M[0][1] * v[1] + M[0][2] * v[2], M[1][0] * v[0] + M[1][1] * v[1] + M[1][2] * v[2], M[2][0] * v[0] + M[2][1] * v[1] + M[2][2] * v[2]];
+    const scr = p => { const v = rot(V3.sub(p, tg)); return [cx + v[0] * S, cy - v[1] * S, v[2]]; };
+    return { q, rot, scr, S };
+  }
+  const pathOf = pts => 'M ' + pts.map(p => `${n2(p[0])} ${n2(p[1])}`).join(' L ') + ' Z';
+  const inPoly = (q, pp) => {                       // 점 q가 다각형 pp 안에 있는가
+    let c = false;
+    for (let i = 0, j = pp.length - 1; i < pp.length; j = i++) {
+      const a = pp[i], b = pp[j];
+      if ((a[1] > q[1]) !== (b[1] > q[1]) && q[0] < (b[0] - a[0]) * (q[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c;
+    }
+    return c;
+  };
+  function faceSVG(d, tok, nv, front, op = 1) {     // 바탕색 + 빛을 덜 받는 만큼 어둡게 (안쪽이 보이는 면은 더 어둡게)
+    const l = V3.dot(front ? nv : V3.mul(nv, -1), LIGHT);
+    const a = Math.max(0, Math.min(0.6, (0.95 - l) * 0.24 + (front ? 0 : 0.22)));
+    const s = `<path d="${d}" style="fill:var(${tok})"></path>` + (a > 0.01 ? `<path d="${d}" style="fill:var(--shd);opacity:${n2(a)}"></path>` : '');
+    return op < 0.999 ? `<g opacity="${n2(op)}">${s}</g>` : s;
+  }
+
+  /* ---------- 짓는 그림 ----------
+     lp[층] = 0~1. 층마다 모서리가 아래에서 자라 오르고 둘레를 따라 이어지며, 모서리로 다 둘러싸인 면은 저절로 채워진다.
+     꼭짓점은 찍지 않는다(점에서 시작하는 정팔면체·정이십면체만 처음 점을 잠깐 보여 준다).
+     o.fill(단계, 면) → 면 색 */
+  function buildSVG(P, cm, lp, o = {}) {
+    const { V, F, E } = P, ew = o.ew || 3;
+    const faces = [];
+    F.forEach((f, i) => {
+      const T = P.fT[i], g = lp[T.L];
+      if (!(g > 0)) return;
+      const op = g >= 1 ? 1 : Math.max(0, Math.min(1, (g - T.tc) / 0.1));
+      if (op <= 0.001) return;
+      const pp = f.v.map(j => cm.scr(V[j])), nv = cm.rot(f.n), st = P.stages[P.fStage[i]];
+      faces.push({ i, pp, nv, fr: nv[2] > 1e-6, op, z: cm.rot(f.c)[2], tok: o.fill ? o.fill(st, i) : st.ftok });
+    });
+    faces.sort((a, b) => a.z - b.z);
+    const occ = faces.filter(f => f.fr && f.op >= 0.5);
+    const hidden = (s, skip) => occ.some(f => !skip.includes(f.i) && inPoly(s, f.pp));
+    let bf = '', ff = '';
+    faces.forEach(f => { const s = faceSVG(pathOf(f.pp), f.tok, f.nv, f.fr, f.op); if (f.fr) ff += s; else bf += s; });
+    let he = '', ve = '';
+    const drawEdge = (p, q, w, adj) => {                // 잘게 나누어 앞면에 가려진 부분은 점선으로
+      const N = 14, sp = cm.scr(p), sq = cm.scr(q);
+      let runs = [], cur = null;
+      for (let k = 0; k < N; k++) {
+        const t0 = k / N, t1 = (k + 1) / N, m = cm.scr(V3.lerp(p, q, (t0 + t1) / 2)), h = hidden(m, adj);
+        if (!cur || cur.h !== h) { cur = { h, t0, t1 }; runs.push(cur); } else cur.t1 = t1;
+      }
+      runs.forEach(r => {
+        const a = [lerp(sp[0], sq[0], r.t0), lerp(sp[1], sq[1], r.t0)], b = [lerp(sp[0], sq[0], r.t1), lerp(sp[1], sq[1], r.t1)];
+        if (r.h) he += seg(a, b) + ' '; else ve += seg(a, b) + ' ';
+      });
+    };
+    E.forEach((e, ei) => {
+      const T = P.eT[ei], g = lp[T.L];
+      if (!(g > 0)) return;
+      const pr = g >= 1 ? 1 : Math.max(0, Math.min(1, (g - T.t0) / (T.t1 - T.t0)));
+      if (pr <= 0) return;
+      drawEdge(V[T.s], V3.lerp(V[T.s], V[T.e], ease(pr)), ew, e.f);
+    });
+    let dot = '';
+    if (P.pt0 >= 0 && lp[0] > 0 && lp[0] < 1) {          // 시작하는 점
+      const g = lp[0], s = cm.scr(V[P.pt0]), r = 8 * Math.min(1, g / 0.08), op = g > 0.8 ? (1 - g) / 0.2 : 1;
+      dot = `<circle cx="${n2(s[0])}" cy="${n2(s[1])}" r="${n2(r)}" style="fill:var(--ink)" opacity="${n2(op)}"></circle>`;
+    }
+    he = he ? stroke(he, '--ink', n2(ew * 0.55), 'stroke-dasharray="7 7" opacity="0.7"') : '';   // 가려진 모서리는 점선 하나로, 보이는 모서리는 선 하나로
+    ve = ve ? stroke(ve, '--ink', ew) : '';
+    return bf + ff + he + ve + dot;
+  }
+  const FULL = P => P.layers.map(() => 1);
+
+  /* ---------- 덮는 층: 앞에서 쌓은 것과 같은 모양이 하나 더 떠올라 뒤집히고 내려앉는다 ----------
+     g = 0~1. 0~0.22 쌓아 둔 모양 그대로 하나가 위로 떠오름 → 0.22~0.6 가로 축으로 뒤집힘 → 0.6~1 내려앉아 덮음 */
+  const c01 = x => Math.max(0, Math.min(1, x));
+  function coverPose(P, g) {
+    const cv = P.cover, th = Math.PI * ease(c01((g - 0.22) / 0.38));
+    const up = [0, cv.h * (g < 0.6 ? ease(c01(g / 0.22)) : 1 - ease(c01((g - 0.6) / 0.4))), 0];
+    return cv.faces.map(fi => {
+      const f = P.F[fi];
+      return { i: fi, pts: f.v.map(j => V3.add(rotAxis(P.V[j], cv.C, cv.axis, Math.PI + th), up)), n: rotVec(f.n, cv.axis, Math.PI + th), op: c01(g / 0.06) };
+    });
+  }
+  function coverSVG(P, cm, moving) {                // 움직이는 동안은 면을 뒤에서부터 칠하고 테두리를 두른다
+    const below = P.F.map((f, i) => i).filter(i => P.fT[i].L < P.cover.L).map(i => ({ i, pts: P.F[i].v.map(j => P.V[j]), n: P.F[i].n, op: 1 }));
+    return below.concat(moving).map(f => { const pp = f.pts.map(cm.scr), nv = cm.rot(f.n); return Object.assign({}, f, { pp, nv, z: pp.reduce((a, p) => a + p[2], 0) / pp.length }); })
+      .sort((a, b) => a.z - b.z)
+      .map(f => {
+        const st = P.stages[P.fStage[f.i]], d = pathOf(f.pp);
+        const s = faceSVG(d, st.ftok, f.nv, f.nv[2] > 0, 1) + `<path d="${d}" style="fill:none;stroke:var(--ink);stroke-width:3;stroke-linejoin:round"></path>`;
+        return f.op < 0.999 ? `<g opacity="${n2(f.op)}">${s}</g>` : s;
+      }).join('');
+  }
+
+  /* ---------- 전개도: 면을 뒤에서부터 칠하고 테두리를 두른다 ---------- */
+  function netSVG(P, cm, u, o = {}) {
+    if (u < 0.004) return buildSVG(P, cm, FULL(P));
+    const N = netPose(P, u).map(f => { const pp = f.pts.map(cm.scr), nv = cm.rot(f.n); return { f, pp, nv, z: pp.reduce((a, p) => a + p[2], 0) / pp.length }; });
+    N.sort((a, b) => a.z - b.z);
+    return N.map(({ f, pp, nv }) => {
+      const st = P.stages[P.fStage[f.i]], fr = nv[2] > 0, d = pathOf(pp);
+      return faceSVG(d, o.fill ? o.fill(st, f.i) : st.ftok, fr ? nv : V3.mul(nv, -1), true, 1) + `<path d="${d}" style="fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linejoin:round"></path>`;   // 펼치는 동안 뒤집혀 보이는 면도 같은 색으로
+    }).join('');
+  }
+
+  /* ---------- 세어 보기: 누른 면·모서리·꼭짓점에 표시 ----------
+     mode 'f' 면, 'e' 모서리, 'v' 꼭짓점. mk = 표시한 것(Set), hov = 가리키는 것, flash = 아직 안 센 것을 잠깐 밝히기 */
+  const eKeyOf = P => (P._ek || (P._ek = new Map(P.E.map((e, i) => [`${e.a}-${e.b}`, i]))));
+  function countSVG(P, cm, o = {}) {
+    const mode = o.mode || '', mk = o.mk || new Set(), hov = o.hov, flash = o.flash, ew = o.ew || 3;
+    const { V, F, E } = P, fr = F.map(f => cm.rot(f.n)[2] > 1e-6), pp = V.map(p => cm.scr(p));
+    let s = '';
+    F.forEach((f, i) => {
+      if (!fr[i]) return;
+      const d = pathOf(f.v.map(j => pp[j]));
+      s += faceSVG(d, mode === 'f' && mk.has(i) ? '--mk-f' : o.fill ? o.fill(i) : '--t-solid', cm.rot(f.n), true, 1);
+      if (mode === 'f' && (hov === i || (flash && !mk.has(i)))) s += `<path d="${d}" style="fill:var(--hi);opacity:${flash && !mk.has(i) ? 0.75 : 0.4}"></path>`;
+    });
+    let hid = '', vis = '', mv = '', mh = '', hv = '';
+    E.forEach((e, i) => {
+      const v = fr[e.f[0]] || fr[e.f[1]], d = seg(pp[e.a], pp[e.b]) + ' ';
+      if (mode === 'e' && mk.has(i)) { if (v) mv += d; else mh += d; } else if (v) vis += d; else hid += d;
+      if (mode === 'e' && v && (hov === i || (flash && !mk.has(i)))) hv += d;
+    });
+    if (hid && o.hidden !== false) s += stroke(hid, '--ink', n2(ew * 0.53), 'stroke-dasharray="7 7" opacity="0.5"');
+    if (vis) s += stroke(vis, '--ink', ew);
+    if (hv) s += stroke(hv, '--hi', 14, 'opacity="0.8"');
+    if (mh) s += stroke(mh, '--mk-e', 4, 'stroke-dasharray="9 7" opacity="0.85"');
+    if (mv) s += stroke(mv, '--mk-e', 8);
+    if (mode === 'v') {
+      V.forEach((p, j) => {
+        const [x, y] = pp[j], seen = P.vf[j].some(fi => fr[fi]), c = (r, st) => `<circle cx="${n2(x)}" cy="${n2(y)}" r="${r}" style="${st}"></circle>`;
+        if (seen) {
+          if (hov === j || (flash && !mk.has(j))) s += c(18, 'fill:var(--hi);opacity:.75');
+          s += mk.has(j) ? c(11, 'fill:var(--mk-v);stroke:var(--surface);stroke-width:2.5') : c(8.5, 'fill:var(--surface);stroke:var(--ink);stroke-width:2.5');
+        } else if (mk.has(j)) s += c(8, 'fill:none;stroke:var(--mk-v);stroke-width:2.5;stroke-dasharray:4 3');
+      });
+    }
+    return s;
+  }
+  function hitTest(P, cm, mode, pt) {                // 누른 곳에 있는 (보이는) 면·모서리·꼭짓점
+    const { V, F, E } = P, fr = F.map(f => cm.rot(f.n)[2] > 1e-6), pp = V.map(p => cm.scr(p));
+    if (mode === 'f') return F.findIndex((f, i) => fr[i] && inPoly(pt, f.v.map(j => pp[j])));
+    let best = -1, bd = mode === 'e' ? 18 : 24;
+    if (mode === 'e') E.forEach((e, i) => {
+      if (!(fr[e.f[0]] || fr[e.f[1]])) return;
+      const a = pp[e.a], b = pp[e.b], vx = b[0] - a[0], vy = b[1] - a[1], t = Math.max(0, Math.min(1, ((pt[0] - a[0]) * vx + (pt[1] - a[1]) * vy) / (vx * vx + vy * vy || 1)));
+      const d = Math.hypot(pt[0] - (a[0] + vx * t), pt[1] - (a[1] + vy * t));
+      if (d < bd) { bd = d; best = i; }
+    });
+    else V.forEach((p, j) => {
+      if (!P.vf[j].some(fi => fr[fi])) return;
+      const d = Math.hypot(pt[0] - pp[j][0], pt[1] - pp[j][1]);
+      if (d < bd) { bd = d; best = j; }
+    });
+    return best;
+  }
+  /* ---------- 펼쳐 보기: 떼어 낼 모서리(빨강)가 보이는 전개도 ---------- */
+  function cutNetSVG(P, net, cm, u, o = {}) {
+    const ek = eKeyOf(P), ew = o.ew || 2.6;
+    const N = netPose(P, u, net).map(f => { const pp = f.pts.map(cm.scr), nv = cm.rot(f.n); return { f, pp, nv, z: pp.reduce((a, p) => a + p[2], 0) / pp.length }; });
+    N.sort((a, b) => a.z - b.z);
+    return N.map(({ f, pp, nv }) => {
+      const st = P.stages[P.fStage[f.i]], fv = P.F[f.i].v, d = pathOf(pp);
+      let ink = '', red = '';
+      fv.forEach((a, t) => {
+        const b = fv[(t + 1) % fv.length], ei = ek.get(`${Math.min(a, b)}-${Math.max(a, b)}`), sg = seg(pp[t], pp[(t + 1) % pp.length]) + ' ';
+        if (net.cut[ei] && o.cut !== false) red += sg; else ink += sg;
+      });
+      return faceSVG(d, st.ftok, nv[2] > 0 ? nv : V3.mul(nv, -1), true, 1) + (ink ? stroke(ink, '--ink', ew) : '') + (red ? stroke(red, '--cut', ew * 2) : '');
+    }).join('');
+  }
+
+  /* ---------- 돌려 보는 방향 (사원수). spin: 'spin' 좌우로, 'tilt' 위아래로 ---------- */
+  function makeView(q0 = Q_VIEW) {
+    return {
+      q0, q: q0, spin: 'none',
+      tick(dt) {
+        if (this.spin === 'spin') { this.q = QT.norm(QT.mul(this.q, QT.axis([0, 1, 0], dt * 0.42))); return true; }   // 돌림판처럼 다면체 자신의 세로축 둘레로
+        if (this.spin === 'tilt') { this.q = QT.norm(QT.mul(QT.axis([1, 0, 0], dt * 0.42), this.q)); return true; }  // 화면의 가로축 둘레로 앞뒤로 구른다
+        return false;
+      },
+      drag(dx, dy) { this.spin = 'none'; this.q = QT.norm(QT.mul(QT.axis([1, 0, 0], dy * 0.011), QT.mul(QT.axis([0, 1, 0], dx * 0.011), this.q))); },
+      reset() { this.q = this.q0; }
+    };
+  }
+  function rafLoop(fn) {
+    let alive = true, last = performance.now();
+    const tick = now => { if (!alive) return; const dt = Math.min(0.05, Math.max(0, (now - last) / 1000)); last = now; fn(dt, now); requestAnimationFrame(tick); };
+    requestAnimationFrame(tick);
+    return () => { alive = false; };
+  }
+  // 그림을 끌어 돌리기(move), 살짝 누르기(tap), 가리키기(hover). tap·hover에는 그림 좌표(viewBox)를 준다
+  function attachDrag(svg, h) {
+    const hit = svg && svg.querySelector('.drag3d');
+    if (!hit) return;
+    svg.style.touchAction = 'none';                      // 손가락으로 끄는 동안 화면이 밀리거나 확대되면서 끊기지 않게
+    let id = null, last = null, sc = 1, moved = 0, dragging = false;
+    const scale = () => { const r = svg.getBoundingClientRect(), vb = svg.viewBox && svg.viewBox.baseVal; return vb && r.width ? Math.max(vb.width / r.width, vb.height / r.height) : 1; };
+    const toVB = e => { const m = svg.getScreenCTM(); if (!m) return null; const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse()); return [p.x, p.y]; };
+    hit.addEventListener('pointerdown', e => {
+      if (id !== null) return;
+      e.preventDefault(); id = e.pointerId; last = [e.clientX, e.clientY]; sc = scale(); moved = 0; dragging = false;
+      try { svg.setPointerCapture(id); } catch (err) { /* 무시 */ }
+    });
+    svg.addEventListener('pointermove', e => {
+      if (id === null) { if (h.hover && e.pointerType === 'mouse') { const p = toVB(e); if (p) h.hover(p); } return; }
+      if (e.pointerId !== id || !last) return;
+      e.preventDefault();
+      const dx = e.clientX - last[0], dy = e.clientY - last[1];
+      last = [e.clientX, e.clientY];
+      moved += Math.abs(dx) + Math.abs(dy);
+      if (!dragging && moved > 5) dragging = true;
+      if (dragging && (dx || dy) && h.move) h.move(dx * sc, dy * sc);
+    });
+    const end = e => {
+      if (e.pointerId !== id) return;
+      const tap = !dragging && e.type === 'pointerup';
+      id = null; last = null;
+      if (tap && h.tap) { const p = toVB(e); if (p) h.tap(p); }
+    };
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => svg.addEventListener(t, end));
+    svg.addEventListener('pointerleave', () => { if (id === null && h.hover) h.hover(null); });
+    ['touchstart', 'touchmove'].forEach(t => svg.addEventListener(t, e => { if (e.cancelable) e.preventDefault(); }, { passive: false }));
+  }
+  // 어느 방향으로 돌려도 그림 칸에 들어가는 크기와 가운데 (외접구)
+  const sphereFit = (pts, box, k = 0.9) => {
+    const c = [0, 1, 2].map(i => (Math.min(...pts.map(p => p[i])) + Math.max(...pts.map(p => p[i]))) / 2);
+    const R = Math.max(...pts.map(p => V3.len(V3.sub(p, c))));
+    return { c, S: k * Math.min(box[2], box[3]) / (2 * R), cx: box[0] + box[2] / 2, cy: box[1] + box[3] / 2 };
+  };
+  const camFit = (q, fit) => camera(q, fit.S, fit.cx, fit.cy, fit.c);
+  /* =========================================================
+     깎기 계산: 원래 정다면체를 칼(평면)로 차례로 잘라 낸다.
+     칼마다 시작 위치 h0(원래 도형에 닿기만 하는 곳)에서 끝 위치 h1(다 깎은 모양의 면)까지 움직인다.
+     role: 'o' 원래 면, 'v' 꼭짓점 쪽 칼, 'e' 모서리 쪽 칼, 't' 비틀린 방향 칼. k: 다 깎았을 때 그 면의 변의 개수
+     ========================================================= */
+  const CUT = {"src":{"tetra":{"V":[[0.557678,-0.204124,0.149429],[-0.408248,-0.204124,0.408248],[-0.149429,-0.204124,-0.557678],[0.0,0.612372,-0.0]],"F":[[2,0,1],[3,0,2],[2,1,3],[1,0,3]]},"cube":{"V":[[0.5,0.5,0.5],[0.5,0.5,-0.5],[0.5,-0.5,0.5],[0.5,-0.5,-0.5],[-0.5,0.5,0.5],[-0.5,0.5,-0.5],[-0.5,-0.5,0.5],[-0.5,-0.5,-0.5]],"F":[[2,0,4,6],[4,0,1,5],[6,4,5,7],[1,0,2,3],[3,2,6,7],[5,1,3,7]]},"octa":{"V":[[0.707107,0.0,0.0],[0.0,0.0,0.707107],[0.0,0.707107,0.0],[0.0,0.0,-0.707107],[-0.707107,0.0,0.0],[0.0,-0.707107,0.0]],"F":[[4,3,5],[3,0,5],[5,1,4],[5,0,1],[2,0,3],[4,2,3],[1,0,2],[4,1,2]]},"dodeca":{"V":[[0.809017,1.113516,0.262866],[0.809017,0.262866,-1.113516],[0.809017,-0.262866,1.113516],[0.809017,-1.113516,-0.262866],[-0.809017,1.113516,0.262866],[-0.809017,0.262866,-1.113516],[-0.809017,-0.262866,1.113516],[-0.809017,-1.113516,-0.262866],[0.0,1.113516,0.850651],[0.5,1.113516,-0.688191],[1.309017,0.262866,0.425325],[0.0,-0.262866,-1.376382],[0.5,-1.113516,0.688191],[-1.309017,0.262866,0.425325],[0.0,0.262866,1.376382],[-0.5,1.113516,-0.688191],[1.309017,-0.262866,-0.425325],[0.0,-1.113516,-0.850651],[-0.5,-1.113516,0.688191],[-1.309017,-0.262866,-0.425325]],"F":[[7,17,3,12,18],[16,10,2,12,3],[7,19,5,11,17],[19,13,4,15,5],[18,12,2,14,6],[7,18,6,13,19],[14,8,4,13,6],[17,11,1,16,3],[15,9,1,11,5],[2,10,0,8,14],[4,8,0,9,15],[1,9,0,10,16]]},"icosa":{"V":[[0.0,0.425325,-0.850651],[0.5,-0.425325,-0.688191],[0.809017,0.425325,-0.262866],[0.0,-0.951057,0.0],[0.5,0.425325,0.688191],[-0.809017,0.425325,-0.262866],[0.0,0.951057,-0.0],[-0.5,-0.425325,-0.688191],[0.809017,-0.425325,0.262866],[0.0,-0.425325,0.850651],[-0.5,0.425325,0.688191],[-0.809017,-0.425325,0.262866]],"F":[[4,2,6],[7,1,3],[8,1,2],[8,2,4],[3,1,8],[9,3,8],[8,4,9],[6,5,10],[9,4,10],[10,4,6],[1,0,2],[6,0,5],[2,0,6],[7,0,1],[5,0,7],[11,3,9],[7,3,11],[11,5,7],[11,9,10],[10,5,11]]}},"cut":{"tetra":{"t":{"to":"ttet","P":[[-0.666667,-0.333333,0.666667,0.612372,0.340207,"v",3],[-0.244017,-0.333333,-0.910684,0.612372,0.340207,"v",3],[0.0,1.0,-0.0,0.612372,0.340207,"v",3],[0.910684,-0.333333,0.244017,0.612372,0.340207,"v",3]]},"r":{"to":"octa","P":[[-0.666667,-0.333333,0.666667,0.612372,0.204124,"v",3],[0.0,1.0,-0.0,0.612372,0.204124,"v",3],[-0.244017,-0.333333,-0.910684,0.612372,0.204124,"v",3],[0.910684,-0.333333,0.244017,0.612372,0.204124,"v",3]],"mark":0.666666},"c":{"to":"cocta","P":[[0.0,1.0,-0.0,0.612372,0.204124,"v",3],[0.910684,-0.333333,0.244017,0.612372,0.204124,"v",3],[-0.666667,-0.333333,0.666667,0.612372,0.204124,"v",3],[-0.244017,-0.333333,-0.910684,0.612372,0.204124,"v",3],[0.211325,-0.57735,0.788675,0.353553,0.176777,"e",4],[0.788675,0.57735,0.211325,0.353553,0.176777,"e",4],[0.57735,-0.57735,-0.57735,0.353553,0.176777,"e",4],[-0.57735,0.57735,0.57735,0.353553,0.176777,"e",4],[-0.211325,0.57735,-0.788675,0.353553,0.176777,"e",4],[-0.788675,-0.57735,-0.211325,0.353553,0.176777,"e",4]]},"o":{"to":"tocta","P":[[-0.211325,0.57735,-0.788675,0.353553,0.235702,"e",4],[0.211325,-0.57735,0.788675,0.353553,0.235702,"e",4],[-0.244017,-0.333333,-0.910684,0.612372,0.204124,"v",6],[-0.788675,-0.57735,-0.211325,0.353553,0.235702,"e",4],[0.0,1.0,-0.0,0.612372,0.204124,"v",6],[-0.666667,-0.333333,0.666667,0.612372,0.204124,"v",6],[-0.57735,0.57735,0.57735,0.353553,0.235702,"e",4],[0.788675,0.57735,0.211325,0.353553,0.235702,"e",4],[0.910684,-0.333333,0.244017,0.612372,0.204124,"v",6],[0.57735,-0.57735,-0.57735,0.353553,0.235702,"e",4]]},"s":{"to":"icosa","P":[[0.910684,-0.333333,0.244017,0.612372,0.204124,"v",3],[-0.94277,-0.333333,0.008597,0.456435,0.204124,"t",3],[-0.084003,-0.745356,0.661353,0.456435,0.204124,"t",3],[0.478831,-0.333333,0.812164,0.456435,0.204124,"t",3],[-0.666667,-0.333333,0.666667,0.612372,0.204124,"v",3],[-0.463939,0.333333,0.820761,0.456435,0.204124,"t",3],[0.530747,0.745356,0.403425,0.456435,0.204124,"t",3],[0.94277,0.333333,-0.008597,0.456435,0.204124,"t",3],[0.463939,-0.333333,-0.820761,0.456435,0.204124,"t",3],[0.61475,-0.745356,-0.257928,0.456435,0.204124,"t",3],[-0.530747,-0.745356,-0.403425,0.456435,0.204124,"t",3],[-0.244017,-0.333333,-0.910684,0.612372,0.204124,"v",3],[-0.61475,0.745356,0.257928,0.456435,0.204124,"t",3],[-0.478831,0.333333,-0.812164,0.456435,0.204124,"t",3],[0.0,1.0,-0.0,0.612372,0.204124,"v",3],[0.084003,0.745356,-0.661353,0.456435,0.204124,"t",3]]}},"cube":{"t":{"to":"tcube","P":[[0.57735,0.57735,0.57735,0.866025,0.696923,"v",3],[0.57735,0.57735,-0.57735,0.866025,0.696923,"v",3],[-0.57735,0.57735,0.57735,0.866025,0.696923,"v",3],[0.57735,-0.57735,0.57735,0.866025,0.696923,"v",3],[-0.57735,0.57735,-0.57735,0.866025,0.696923,"v",3],[0.57735,-0.57735,-0.57735,0.866025,0.696923,"v",3],[-0.57735,-0.57735,0.57735,0.866025,0.696923,"v",3],[-0.57735,-0.57735,-0.57735,0.866025,0.696923,"v",3]]},"r":{"to":"cocta","P":[[0.57735,0.57735,-0.57735,0.866025,0.57735,"v",3],[-0.57735,-0.57735,0.57735,0.866025,0.57735,"v",3],[0.57735,-0.57735,0.57735,0.866025,0.57735,"v",3],[0.57735,0.57735,0.57735,0.866025,0.57735,"v",3],[-0.57735,0.57735,0.57735,0.866025,0.57735,"v",3],[0.57735,-0.57735,-0.57735,0.866025,0.57735,"v",3],[-0.57735,0.57735,-0.57735,0.866025,0.57735,"v",3],[-0.57735,-0.57735,-0.57735,0.866025,0.57735,"v",3]],"mark":0.585787},"c":{"to":"rcocta","P":[[0.57735,-0.57735,0.57735,0.866025,0.527821,"v",3],[0.57735,-0.57735,-0.57735,0.866025,0.527821,"v",3],[0.57735,0.57735,0.57735,0.866025,0.527821,"v",3],[-0.57735,-0.57735,0.57735,0.866025,0.527821,"v",3],[-0.57735,0.57735,-0.57735,0.866025,0.527821,"v",3],[-0.57735,-0.57735,-0.57735,0.866025,0.527821,"v",3],[-0.57735,0.57735,0.57735,0.866025,0.527821,"v",3],[0.57735,0.57735,-0.57735,0.866025,0.527821,"v",3],[0.707107,-0.707107,0.0,0.707107,0.5,"e",4],[0.707107,0.0,0.707107,0.707107,0.5,"e",4],[0.707107,0.0,-0.707107,0.707107,0.5,"e",4],[0.0,-0.707107,-0.707107,0.707107,0.5,"e",4],[-0.707107,0.0,0.707107,0.707107,0.5,"e",4],[0.0,-0.707107,0.707107,0.707107,0.5,"e",4],[-0.707107,0.0,-0.707107,0.707107,0.5,"e",4],[-0.707107,-0.707107,0.0,0.707107,0.5,"e",4],[0.0,0.707107,0.707107,0.707107,0.5,"e",4],[-0.707107,0.707107,0.0,0.707107,0.5,"e",4],[0.707107,0.707107,0.0,0.707107,0.5,"e",4],[0.0,0.707107,-0.707107,0.707107,0.5,"e",4]]},"o":{"to":"tcocta","P":[[0.707107,0.0,0.707107,0.707107,0.576505,"e",4],[0.707107,-0.707107,0.0,0.707107,0.576505,"e",4],[-0.707107,0.0,0.707107,0.707107,0.576505,"e",4],[-0.57735,-0.57735,0.57735,0.866025,0.546117,"v",6],[-0.707107,-0.707107,0.0,0.707107,0.576505,"e",4],[-0.57735,-0.57735,-0.57735,0.866025,0.546117,"v",6],[-0.707107,0.0,-0.707107,0.707107,0.576505,"e",4],[0.57735,0.57735,0.57735,0.866025,0.546117,"v",6],[0.707107,0.707107,0.0,0.707107,0.576505,"e",4],[0.0,-0.707107,-0.707107,0.707107,0.576505,"e",4],[0.57735,-0.57735,0.57735,0.866025,0.546117,"v",6],[0.0,-0.707107,0.707107,0.707107,0.576505,"e",4],[0.57735,-0.57735,-0.57735,0.866025,0.546117,"v",6],[0.0,0.707107,-0.707107,0.707107,0.576505,"e",4],[-0.57735,0.57735,0.57735,0.866025,0.546117,"v",6],[0.0,0.707107,0.707107,0.707107,0.576505,"e",4],[-0.57735,0.57735,-0.57735,0.866025,0.546117,"v",6],[-0.707107,0.707107,0.0,0.707107,0.576505,"e",4],[0.57735,0.57735,-0.57735,0.866025,0.546117,"v",6],[0.707107,0.0,-0.707107,0.707107,0.576505,"e",4]]},"s":{"to":"scube","P":[[0.57735,0.57735,-0.57735,0.866025,0.530956,"v",3],[0.798461,0.170663,-0.57735,0.773238,0.530956,"t",3],[0.798461,0.57735,0.170663,0.773238,0.530956,"t",3],[0.57735,0.798461,-0.170663,0.773238,0.530956,"t",3],[0.57735,-0.170663,-0.798461,0.773238,0.530956,"t",3],[0.57735,-0.57735,-0.57735,0.866025,0.530956,"v",3],[0.57735,0.170663,0.798461,0.773238,0.530956,"t",3],[0.57735,0.57735,0.57735,0.866025,0.530956,"v",3],[0.57735,-0.57735,0.57735,0.866025,0.530956,"v",3],[0.57735,-0.798461,0.170663,0.773238,0.530956,"t",3],[0.798461,-0.57735,-0.170663,0.773238,0.530956,"t",3],[0.798461,-0.170663,0.57735,0.773238,0.530956,"t",3],[-0.170663,-0.798461,0.57735,0.773238,0.530956,"t",3],[0.170663,-0.57735,0.798461,0.773238,0.530956,"t",3],[0.170663,0.57735,-0.798461,0.773238,0.530956,"t",3],[-0.170663,0.798461,-0.57735,0.773238,0.530956,"t",3],[-0.57735,0.57735,0.57735,0.866025,0.530956,"v",3],[-0.57735,0.798461,0.170663,0.773238,0.530956,"t",3],[-0.170663,0.57735,0.798461,0.773238,0.530956,"t",3],[0.170663,0.798461,0.57735,0.773238,0.530956,"t",3],[-0.798461,0.57735,-0.170663,0.773238,0.530956,"t",3],[-0.57735,0.57735,-0.57735,0.866025,0.530956,"v",3],[-0.57735,0.170663,-0.798461,0.773238,0.530956,"t",3],[-0.798461,-0.170663,-0.57735,0.773238,0.530956,"t",3],[-0.57735,-0.798461,-0.170663,0.773238,0.530956,"t",3],[-0.57735,-0.57735,-0.57735,0.866025,0.530956,"v",3],[-0.170663,-0.57735,-0.798461,0.773238,0.530956,"t",3],[0.170663,-0.798461,-0.57735,0.773238,0.530956,"t",3],[-0.57735,-0.170663,0.798461,0.773238,0.530956,"t",3],[-0.798461,0.170663,0.57735,0.773238,0.530956,"t",3],[-0.57735,-0.57735,0.57735,0.866025,0.530956,"v",3],[-0.798461,-0.57735,0.170663,0.773238,0.530956,"t",3]]}},"octa":{"t":{"to":"tocta","P":[[-1.0,0.0,0.0,0.707107,0.471405,"v",4],[1.0,0.0,0.0,0.707107,0.471405,"v",4],[0.0,0.0,-1.0,0.707107,0.471405,"v",4],[0.0,-1.0,0.0,0.707107,0.471405,"v",4],[0.0,0.0,1.0,0.707107,0.471405,"v",4],[0.0,1.0,0.0,0.707107,0.471405,"v",4]]},"r":{"to":"cocta","P":[[1.0,0.0,0.0,0.707107,0.353553,"v",4],[0.0,0.0,1.0,0.707107,0.353553,"v",4],[0.0,1.0,0.0,0.707107,0.353553,"v",4],[0.0,-1.0,0.0,0.707107,0.353553,"v",4],[-1.0,0.0,0.0,0.707107,0.353553,"v",4],[0.0,0.0,-1.0,0.707107,0.353553,"v",4]],"mark":0.666665},"c":{"to":"rcocta","P":[[0.707107,-0.707107,0.0,0.5,0.38673,"e",4],[1.0,0.0,0.0,0.707107,0.38673,"v",4],[0.707107,0.0,0.707107,0.5,0.38673,"e",4],[0.707107,0.0,-0.707107,0.5,0.38673,"e",4],[0.0,0.0,-1.0,0.707107,0.38673,"v",4],[0.0,-0.707107,-0.707107,0.5,0.38673,"e",4],[0.0,-1.0,0.0,0.707107,0.38673,"v",4],[0.0,0.0,1.0,0.707107,0.38673,"v",4],[-0.707107,0.0,0.707107,0.5,0.38673,"e",4],[0.0,-0.707107,0.707107,0.5,0.38673,"e",4],[-0.707107,0.0,-0.707107,0.5,0.38673,"e",4],[-1.0,0.0,0.0,0.707107,0.38673,"v",4],[-0.707107,-0.707107,0.0,0.5,0.38673,"e",4],[0.0,0.707107,0.707107,0.5,0.38673,"e",4],[-0.707107,0.707107,0.0,0.5,0.38673,"e",4],[0.0,1.0,0.0,0.707107,0.38673,"v",4],[0.707107,0.707107,0.0,0.5,0.38673,"e",4],[0.0,0.707107,-0.707107,0.5,0.38673,"e",4]]},"o":{"to":"tcocta","P":[[0.707107,0.0,0.707107,0.5,0.430964,"e",4],[0.707107,-0.707107,0.0,0.5,0.430964,"e",4],[0.0,-1.0,0.0,0.707107,0.373773,"v",8],[-0.707107,0.0,0.707107,0.5,0.430964,"e",4],[-0.707107,-0.707107,0.0,0.5,0.430964,"e",4],[-0.707107,0.0,-0.707107,0.5,0.430964,"e",4],[0.707107,0.707107,0.0,0.5,0.430964,"e",4],[0.0,0.0,-1.0,0.707107,0.373773,"v",8],[0.0,-0.707107,-0.707107,0.5,0.430964,"e",4],[0.0,0.0,1.0,0.707107,0.373773,"v",8],[0.0,-0.707107,0.707107,0.5,0.430964,"e",4],[0.0,0.707107,-0.707107,0.5,0.430964,"e",4],[-1.0,0.0,0.0,0.707107,0.373773,"v",8],[0.0,0.707107,0.707107,0.5,0.430964,"e",4],[0.0,1.0,0.0,0.707107,0.373773,"v",8],[-0.707107,0.707107,0.0,0.5,0.430964,"e",4],[1.0,0.0,0.0,0.707107,0.373773,"v",8],[0.707107,0.0,-0.707107,0.5,0.430964,"e",4]]},"s":{"to":"scube","P":[[0.798461,0.170663,-0.57735,0.564597,0.408248,"t",3],[0.798461,0.57735,0.170663,0.564597,0.408248,"t",3],[0.57735,0.798461,-0.170663,0.564597,0.408248,"t",3],[0.57735,-0.170663,-0.798461,0.564597,0.408248,"t",3],[0.57735,0.170663,0.798461,0.564597,0.408248,"t",3],[0.57735,-0.798461,0.170663,0.564597,0.408248,"t",3],[0.798461,-0.57735,-0.170663,0.564597,0.408248,"t",3],[0.798461,-0.170663,0.57735,0.564597,0.408248,"t",3],[-0.170663,-0.798461,0.57735,0.564597,0.408248,"t",3],[0.170663,-0.57735,0.798461,0.564597,0.408248,"t",3],[0.170663,0.57735,-0.798461,0.564597,0.408248,"t",3],[-0.170663,0.798461,-0.57735,0.564597,0.408248,"t",3],[-0.57735,0.798461,0.170663,0.564597,0.408248,"t",3],[-0.170663,0.57735,0.798461,0.564597,0.408248,"t",3],[0.170663,0.798461,0.57735,0.564597,0.408248,"t",3],[-0.798461,0.57735,-0.170663,0.564597,0.408248,"t",3],[-0.57735,0.170663,-0.798461,0.564597,0.408248,"t",3],[-0.798461,-0.170663,-0.57735,0.564597,0.408248,"t",3],[-0.57735,-0.798461,-0.170663,0.564597,0.408248,"t",3],[-0.170663,-0.57735,-0.798461,0.564597,0.408248,"t",3],[0.170663,-0.798461,-0.57735,0.564597,0.408248,"t",3],[-0.57735,-0.170663,0.798461,0.564597,0.408248,"t",3],[-0.798461,0.170663,0.57735,0.564597,0.408248,"t",3],[-0.798461,-0.57735,0.170663,0.564597,0.408248,"t",3],[1.0,0.0,0.0,0.707107,0.384446,"v",4],[0.0,0.0,1.0,0.707107,0.384446,"v",4],[0.0,0.0,-1.0,0.707107,0.384446,"v",4],[0.0,1.0,0.0,0.707107,0.384446,"v",4],[0.0,-1.0,0.0,0.707107,0.384446,"v",4],[-1.0,0.0,0.0,0.707107,0.384446,"v",4]]}},"dodeca":{"t":{"to":"tdod","P":[[0.57735,0.187592,-0.794654,1.401259,1.302635,"v",3],[0.356822,-0.794654,0.491123,1.401259,1.302635,"v",3],[0.57735,-0.794654,-0.187592,1.401259,1.302635,"v",3],[0.0,0.187592,0.982247,1.401259,1.302635,"v",3],[0.57735,-0.187592,0.794654,1.401259,1.302635,"v",3],[0.0,-0.794654,-0.607062,1.401259,1.302635,"v",3],[0.934172,-0.187592,-0.303531,1.401259,1.302635,"v",3],[0.0,-0.187592,-0.982247,1.401259,1.302635,"v",3],[-0.57735,0.187592,-0.794654,1.401259,1.302635,"v",3],[-0.57735,-0.794654,-0.187592,1.401259,1.302635,"v",3],[-0.356822,-0.794654,0.491123,1.401259,1.302635,"v",3],[-0.356822,0.794654,-0.491123,1.401259,1.302635,"v",3],[-0.57735,0.794654,0.187592,1.401259,1.302635,"v",3],[0.0,0.794654,0.607062,1.401259,1.302635,"v",3],[0.934172,0.187592,0.303531,1.401259,1.302635,"v",3],[0.57735,0.794654,0.187592,1.401259,1.302635,"v",3],[0.356822,0.794654,-0.491123,1.401259,1.302635,"v",3],[-0.934172,-0.187592,-0.303531,1.401259,1.302635,"v",3],[-0.934172,0.187592,0.303531,1.401259,1.302635,"v",3],[-0.57735,-0.187592,0.794654,1.401259,1.302635,"v",3]]},"r":{"to":"idod","P":[[0.0,-0.794654,-0.607062,1.401259,1.222847,"v",3],[0.0,0.187592,0.982247,1.401259,1.222847,"v",3],[-0.57735,-0.794654,-0.187592,1.401259,1.222847,"v",3],[0.0,-0.187592,-0.982247,1.401259,1.222847,"v",3],[0.0,0.794654,0.607062,1.401259,1.222847,"v",3],[-0.356822,-0.794654,0.491123,1.401259,1.222847,"v",3],[-0.57735,-0.187592,0.794654,1.401259,1.222847,"v",3],[0.57735,-0.794654,-0.187592,1.401259,1.222847,"v",3],[0.356822,0.794654,-0.491123,1.401259,1.222847,"v",3],[-0.934172,-0.187592,-0.303531,1.401259,1.222847,"v",3],[0.57735,0.187592,-0.794654,1.401259,1.222847,"v",3],[0.934172,-0.187592,-0.303531,1.401259,1.222847,"v",3],[0.356822,-0.794654,0.491123,1.401259,1.222847,"v",3],[0.57735,-0.187592,0.794654,1.401259,1.222847,"v",3],[0.934172,0.187592,0.303531,1.401259,1.222847,"v",3],[0.57735,0.794654,0.187592,1.401259,1.222847,"v",3],[-0.57735,0.187592,-0.794654,1.401259,1.222847,"v",3],[-0.356822,0.794654,-0.491123,1.401259,1.222847,"v",3],[-0.934172,0.187592,0.303531,1.401259,1.222847,"v",3],[-0.57735,0.794654,0.187592,1.401259,1.222847,"v",3]],"mark":0.552788},"c":{"to":"rid","P":[[0.809017,-0.525731,-0.262866,1.309017,1.14235,"e",4],[0.309017,0.0,0.951057,1.309017,1.14235,"e",4],[0.309017,-0.850651,-0.425325,1.309017,1.14235,"e",4],[-0.309017,-0.850651,-0.425325,1.309017,1.14235,"e",4],[0.0,-0.794654,-0.607062,1.401259,1.163377,"v",3],[-0.809017,-0.525731,-0.262866,1.309017,1.14235,"e",4],[-0.5,-0.850651,0.16246,1.309017,1.14235,"e",4],[-0.57735,-0.794654,-0.187592,1.401259,1.163377,"v",3],[0.809017,-0.0,0.587785,1.309017,1.14235,"e",4],[0.57735,-0.187592,0.794654,1.401259,1.163377,"v",3],[0.809017,0.0,-0.587785,1.309017,1.14235,"e",4],[0.934172,-0.187592,-0.303531,1.401259,1.163377,"v",3],[0.57735,-0.794654,-0.187592,1.401259,1.163377,"v",3],[0.0,0.794654,0.607062,1.401259,1.163377,"v",3],[0.309017,0.850651,0.425325,1.309017,1.14235,"e",4],[0.809017,0.525731,0.262866,1.309017,1.14235,"e",4],[-0.309017,0.0,0.951057,1.309017,1.14235,"e",4],[-0.356822,-0.794654,0.491123,1.401259,1.163377,"v",3],[-0.5,-0.525731,0.688191,1.309017,1.14235,"e",4],[0.934172,0.187592,0.303531,1.401259,1.163377,"v",3],[-0.934172,-0.187592,-0.303531,1.401259,1.163377,"v",3],[-0.5,0.850651,-0.16246,1.309017,1.14235,"e",4],[0.57735,0.794654,0.187592,1.401259,1.163377,"v",3],[0.0,0.187592,0.982247,1.401259,1.163377,"v",3],[-0.934172,0.187592,0.303531,1.401259,1.163377,"v",3],[0.356822,-0.794654,0.491123,1.401259,1.163377,"v",3],[0.5,-0.850651,0.16246,1.309017,1.14235,"e",4],[0.5,-0.525731,0.688191,1.309017,1.14235,"e",4],[0.0,-0.187592,-0.982247,1.401259,1.163377,"v",3],[0.309017,-0.0,-0.951057,1.309017,1.14235,"e",4],[-0.309017,-0.0,-0.951057,1.309017,1.14235,"e",4],[-0.356822,0.794654,-0.491123,1.401259,1.163377,"v",3],[-0.5,0.525731,-0.688191,1.309017,1.14235,"e",4],[-0.809017,0.525731,0.262866,1.309017,1.14235,"e",4],[-0.57735,-0.187592,0.794654,1.401259,1.163377,"v",3],[-0.809017,-0.0,0.587785,1.309017,1.14235,"e",4],[-0.57735,0.187592,-0.794654,1.401259,1.163377,"v",3],[-0.809017,0.0,-0.587785,1.309017,1.14235,"e",4],[0.57735,0.187592,-0.794654,1.401259,1.163377,"v",3],[-0.57735,0.794654,0.187592,1.401259,1.163377,"v",3],[-0.309017,0.850651,0.425325,1.309017,1.14235,"e",4],[0.356822,0.794654,-0.491123,1.401259,1.163377,"v",3],[0.5,0.850651,-0.16246,1.309017,1.14235,"e",4],[0.5,0.525731,-0.688191,1.309017,1.14235,"e",4],[0.0,-0.525731,-0.850651,1.309017,1.14235,"e",4],[0.0,-0.850651,0.525731,1.309017,1.14235,"e",4],[1.0,0.0,0.0,1.309017,1.14235,"e",4],[0.0,0.525731,0.850651,1.309017,1.14235,"e",4],[-1.0,0.0,0.0,1.309017,1.14235,"e",4],[0.0,0.850651,-0.525731,1.309017,1.14235,"e",4]]},"o":{"to":"tid","P":[[0.934172,0.187592,0.303531,1.401259,1.187165,"v",6],[0.934172,-0.187592,-0.303531,1.401259,1.187165,"v",6],[-0.809017,-0.0,-0.587785,1.309017,1.209017,"e",4],[0.5,-0.850651,0.16246,1.309017,1.209017,"e",4],[-0.309017,0.0,0.951057,1.309017,1.209017,"e",4],[0.309017,0.0,0.951057,1.309017,1.209017,"e",4],[0.0,0.187592,0.982247,1.401259,1.187165,"v",6],[-0.309017,-0.850651,-0.425325,1.309017,1.209017,"e",4],[0.0,-0.794654,-0.607062,1.401259,1.187165,"v",6],[0.809017,-0.525731,-0.262866,1.309017,1.209017,"e",4],[0.809017,-0.0,-0.587785,1.309017,1.209017,"e",4],[0.356822,-0.794654,0.491123,1.401259,1.187165,"v",6],[0.0,-0.187592,-0.982247,1.401259,1.187165,"v",6],[-0.934172,-0.187592,-0.303531,1.401259,1.187165,"v",6],[-0.809017,-0.525731,-0.262866,1.309017,1.209017,"e",4],[-0.5,-0.850651,0.16246,1.309017,1.209017,"e",4],[-0.356822,-0.794654,0.491123,1.401259,1.187165,"v",6],[-0.809017,-0.0,0.587785,1.309017,1.209017,"e",4],[0.356822,0.794654,-0.491123,1.401259,1.187165,"v",6],[0.5,0.850651,-0.16246,1.309017,1.209017,"e",4],[0.809017,0.525731,0.262866,1.309017,1.209017,"e",4],[0.309017,-0.850651,-0.425325,1.309017,1.209017,"e",4],[0.0,0.794654,0.607062,1.401259,1.187165,"v",6],[0.309017,0.850651,0.425325,1.309017,1.209017,"e",4],[-0.309017,0.850651,0.425325,1.309017,1.209017,"e",4],[-0.309017,0.0,-0.951057,1.309017,1.209017,"e",4],[0.309017,0.0,-0.951057,1.309017,1.209017,"e",4],[-0.5,0.525731,-0.688191,1.309017,1.209017,"e",4],[-0.934172,0.187592,0.303531,1.401259,1.187165,"v",6],[-0.5,-0.525731,0.688191,1.309017,1.209017,"e",4],[0.809017,-0.0,0.587785,1.309017,1.209017,"e",4],[0.5,-0.525731,0.688191,1.309017,1.209017,"e",4],[-0.809017,0.525731,0.262866,1.309017,1.209017,"e",4],[-0.356822,0.794654,-0.491123,1.401259,1.187165,"v",6],[-0.5,0.850651,-0.16246,1.309017,1.209017,"e",4],[0.5,0.525731,-0.688191,1.309017,1.209017,"e",4],[1.0,0.0,0.0,1.309017,1.209017,"e",4],[0.0,0.525731,0.850651,1.309017,1.209017,"e",4],[0.0,-0.850651,0.525731,1.309017,1.209017,"e",4],[0.57735,-0.794654,-0.187592,1.401259,1.187165,"v",6],[0.0,-0.525731,-0.850651,1.309017,1.209017,"e",4],[-0.57735,-0.794654,-0.187592,1.401259,1.187165,"v",6],[-1.0,0.0,0.0,1.309017,1.209017,"e",4],[0.57735,0.794654,0.187592,1.401259,1.187165,"v",6],[0.57735,-0.187592,0.794654,1.401259,1.187165,"v",6],[-0.57735,0.794654,0.187592,1.401259,1.187165,"v",6],[-0.57735,0.187592,-0.794654,1.401259,1.187165,"v",6],[0.0,0.850651,-0.525731,1.309017,1.209017,"e",4],[-0.57735,-0.187592,0.794654,1.401259,1.187165,"v",6],[0.57735,0.187592,-0.794654,1.401259,1.187165,"v",6]]},"s":{"to":"sdod","P":[[0.389644,0.890451,-0.235108,1.348152,1.167578,"t",3],[-0.57735,0.187592,-0.794654,1.401259,1.167578,"v",3],[0.934172,0.187592,0.303531,1.401259,1.167578,"v",3],[0.356822,-0.794654,0.491123,1.401259,1.167578,"v",3],[0.537059,-0.608508,0.584197,1.348152,1.167578,"t",3],[-0.57735,-0.187592,0.794654,1.401259,1.167578,"v",3],[-0.344007,-0.131753,0.929678,1.348152,1.167578,"t",3],[0.777872,-0.131753,0.614456,1.348152,1.167578,"t",3],[0.824758,0.131753,0.549923,1.348152,1.167578,"t",3],[-0.57735,-0.794654,-0.187592,1.401259,1.167578,"v",3],[-0.99048,0.131753,0.039884,1.348152,1.167578,"t",3],[0.600836,0.794654,-0.086719,1.348152,1.167578,"t",3],[0.881066,0.432944,0.19048,1.348152,1.167578,"t",3],[-0.0,0.794654,0.607062,1.401259,1.167578,"v",3],[-0.103194,0.890451,-0.443225,1.348152,1.167578,"t",3],[-0.600836,0.432944,-0.671979,1.348152,1.167578,"t",3],[-0.389644,0.608508,-0.6913,1.348152,1.167578,"t",3],[-0.356822,0.794654,-0.491123,1.401259,1.167578,"v",3],[-0.344007,0.131753,-0.929678,1.348152,1.167578,"t",3],[-0.268143,-0.131753,-0.954327,1.348152,1.167578,"t",3],[-0.721564,-0.023248,-0.691957,1.348152,1.167578,"t",3],[-0.881066,0.023248,-0.472422,1.348152,1.167578,"t",3],[0.356822,0.794654,-0.491123,1.401259,1.167578,"v",3],[0.103194,0.794654,-0.598227,1.348152,1.167578,"t",3],[-0.435115,-0.794654,-0.42332,1.348152,1.167578,"t",3],[-0.177036,-0.890451,-0.419233,1.348152,1.167578,"t",3],[-0.0,-0.794654,-0.607062,1.401259,1.167578,"v",3],[-0.091108,-0.608508,-0.7883,1.348152,1.167578,"t",3],[0.389644,-0.890451,0.235108,1.348152,1.167578,"t",3],[0.600836,-0.794654,0.086719,1.348152,1.167578,"t",3],[0.99048,-0.023248,0.13568,1.348152,1.167578,"t",3],[0.881066,-0.432944,-0.19048,1.348152,1.167578,"t",3],[0.177036,0.023248,-0.98393,1.348152,1.167578,"t",3],[0.091108,-0.432944,-0.896805,1.348152,1.167578,"t",3],[0.0,-0.187592,-0.982247,1.401259,1.167578,"v",3],[0.721564,-0.608508,-0.330247,1.348152,1.167578,"t",3],[0.57735,-0.794654,-0.187592,1.401259,1.167578,"v",3],[0.344007,-0.890451,-0.297921,1.348152,1.167578,"t",3],[0.268143,-0.794654,-0.544632,1.348152,1.167578,"t",3],[0.453421,0.432944,-0.779082,1.348152,1.167578,"t",3],[0.537059,0.608508,-0.584197,1.348152,1.167578,"t",3],[0.453421,-0.432944,0.779082,1.348152,1.167578,"t",3],[0.57735,-0.187592,0.794654,1.401259,1.167578,"v",3],[0.103194,-0.794654,0.598227,1.348152,1.167578,"t",3],[-0.721564,0.023248,0.691957,1.348152,1.167578,"t",3],[-0.881066,-0.023248,0.472422,1.348152,1.167578,"t",3],[-0.934172,0.187592,0.303531,1.401259,1.167578,"v",3],[-0.824758,0.432944,0.363776,1.348152,1.167578,"t",3],[0.177036,-0.023248,0.98393,1.348152,1.167578,"t",3],[0.435115,0.023248,0.900075,1.348152,1.167578,"t",3],[-0.600836,-0.432944,0.671979,1.348152,1.167578,"t",3],[-0.389644,-0.608508,0.6913,1.348152,1.167578,"t",3],[0.721564,0.608508,0.330247,1.348152,1.167578,"t",3],[0.268143,0.794654,0.544632,1.348152,1.167578,"t",3],[0.344007,0.890451,0.297921,1.348152,1.167578,"t",3],[0.57735,0.794654,0.187592,1.401259,1.167578,"v",3],[-0.435115,0.794654,0.42332,1.348152,1.167578,"t",3],[-0.177036,0.890451,0.419233,1.348152,1.167578,"t",3],[-0.777872,0.608508,0.15695,1.348152,1.167578,"t",3],[-0.57735,0.794654,0.187592,1.401259,1.167578,"v",3],[-0.537059,0.794654,-0.283006,1.348152,1.167578,"t",3],[-0.453421,0.890451,-0.038821,1.348152,1.167578,"t",3],[-0.777872,-0.608508,-0.15695,1.348152,1.167578,"t",3],[-0.824758,-0.432944,-0.363776,1.348152,1.167578,"t",3],[-0.99048,-0.131753,-0.039884,1.348152,1.167578,"t",3],[-0.934172,-0.187592,-0.303531,1.401259,1.167578,"v",3],[0.435115,-0.023248,-0.900075,1.348152,1.167578,"t",3],[0.57735,0.187592,-0.794654,1.401259,1.167578,"v",3],[0.99048,0.023248,-0.13568,1.348152,1.167578,"t",3],[0.934172,-0.187592,-0.303531,1.401259,1.167578,"v",3],[0.824758,-0.131753,-0.549923,1.348152,1.167578,"t",3],[0.777872,0.131753,-0.614456,1.348152,1.167578,"t",3],[-0.091108,0.608508,0.7883,1.348152,1.167578,"t",3],[-0.268143,0.131753,0.954327,1.348152,1.167578,"t",3],[0.091108,0.432944,0.896805,1.348152,1.167578,"t",3],[0.0,0.187592,0.982247,1.401259,1.167578,"v",3],[-0.453421,-0.890451,0.038821,1.348152,1.167578,"t",3],[-0.537059,-0.794654,0.283006,1.348152,1.167578,"t",3],[-0.103194,-0.890451,0.443225,1.348152,1.167578,"t",3],[-0.356822,-0.794654,0.491123,1.401259,1.167578,"v",3]]}},"icosa":{"t":{"to":"tico","P":[[0.0,-0.447214,0.894427,0.951057,0.775813,"v",5],[0.525731,0.447214,0.723607,0.951057,0.775813,"v",5],[-0.0,1.0,-0.0,0.951057,0.775813,"v",5],[0.850651,0.447214,-0.276393,0.951057,0.775813,"v",5],[0.0,0.447214,-0.894427,0.951057,0.775813,"v",5],[0.0,-1.0,0.0,0.951057,0.775813,"v",5],[0.850651,-0.447214,0.276393,0.951057,0.775813,"v",5],[0.525731,-0.447214,-0.723607,0.951057,0.775813,"v",5],[-0.525731,-0.447214,-0.723607,0.951057,0.775813,"v",5],[-0.525731,0.447214,0.723607,0.951057,0.775813,"v",5],[-0.850651,-0.447214,0.276393,0.951057,0.775813,"v",5],[-0.850651,0.447214,-0.276393,0.951057,0.775813,"v",5]]},"r":{"to":"idod","P":[[0.0,-1.0,0.0,0.951057,0.688191,"v",5],[-0.850651,-0.447214,0.276393,0.951057,0.688191,"v",5],[-0.525731,-0.447214,-0.723607,0.951057,0.688191,"v",5],[0.525731,-0.447214,-0.723607,0.951057,0.688191,"v",5],[0.0,-0.447214,0.894427,0.951057,0.688191,"v",5],[0.850651,-0.447214,0.276393,0.951057,0.688191,"v",5],[0.525731,0.447214,0.723607,0.951057,0.688191,"v",5],[0.850651,0.447214,-0.276393,0.951057,0.688191,"v",5],[0.0,0.447214,-0.894427,0.951057,0.688191,"v",5],[0.0,1.0,-0.0,0.951057,0.688191,"v",5],[-0.525731,0.447214,0.723607,0.951057,0.688191,"v",5],[-0.850651,0.447214,-0.276393,0.951057,0.688191,"v",5]],"mark":0.666667},"c":{"to":"rid","P":[[0.809017,-0.525731,-0.262866,0.809017,0.742102,"e",4],[0.525731,0.447214,0.723607,0.951057,0.72337,"v",5],[0.309017,0.0,0.951057,0.809017,0.742102,"e",4],[-0.0,-0.447214,0.894427,0.951057,0.72337,"v",5],[0.309017,-0.850651,-0.425325,0.809017,0.742102,"e",4],[0.525731,-0.447214,-0.723607,0.951057,0.72337,"v",5],[-0.309017,-0.850651,-0.425325,0.809017,0.742102,"e",4],[-0.525731,-0.447214,-0.723607,0.951057,0.72337,"v",5],[-0.809017,-0.525731,-0.262866,0.809017,0.742102,"e",4],[-0.5,-0.850651,0.16246,0.809017,0.742102,"e",4],[0.809017,-0.0,0.587785,0.809017,0.742102,"e",4],[0.809017,0.0,-0.587785,0.809017,0.742102,"e",4],[-0.0,-1.0,0.0,0.951057,0.72337,"v",5],[0.0,1.0,-0.0,0.951057,0.72337,"v",5],[0.309017,0.850651,0.425325,0.809017,0.742102,"e",4],[0.809017,0.525731,0.262866,0.809017,0.742102,"e",4],[-0.309017,0.0,0.951057,0.809017,0.742102,"e",4],[-0.525731,0.447214,0.723607,0.951057,0.72337,"v",5],[-0.850651,-0.447214,0.276393,0.951057,0.72337,"v",5],[-0.5,-0.525731,0.688191,0.809017,0.742102,"e",4],[-0.850651,0.447214,-0.276393,0.951057,0.72337,"v",5],[-0.5,0.850651,-0.16246,0.809017,0.742102,"e",4],[0.850651,-0.447214,0.276393,0.951057,0.72337,"v",5],[0.5,-0.850651,0.16246,0.809017,0.742102,"e",4],[0.5,-0.525731,0.688191,0.809017,0.742102,"e",4],[0.309017,-0.0,-0.951057,0.809017,0.742102,"e",4],[-0.309017,-0.0,-0.951057,0.809017,0.742102,"e",4],[-0.5,0.525731,-0.688191,0.809017,0.742102,"e",4],[0.0,0.447214,-0.894427,0.951057,0.72337,"v",5],[-0.809017,0.525731,0.262866,0.809017,0.742102,"e",4],[-0.809017,-0.0,0.587785,0.809017,0.742102,"e",4],[-0.809017,0.0,-0.587785,0.809017,0.742102,"e",4],[-0.309017,0.850651,0.425325,0.809017,0.742102,"e",4],[0.5,0.850651,-0.16246,0.809017,0.742102,"e",4],[0.850651,0.447214,-0.276393,0.951057,0.72337,"v",5],[0.5,0.525731,-0.688191,0.809017,0.742102,"e",4],[0.0,-0.525731,-0.850651,0.809017,0.742102,"e",4],[0.0,-0.850651,0.525731,0.809017,0.742102,"e",4],[1.0,0.0,0.0,0.809017,0.742102,"e",4],[0.0,0.525731,0.850651,0.809017,0.742102,"e",4],[-1.0,0.0,0.0,0.809017,0.742102,"e",4],[0.0,0.850651,-0.525731,0.809017,0.742102,"e",4]]},"o":{"to":"tid","P":[[0.850651,-0.447214,0.276393,0.951057,0.708876,"v",10],[0.525731,-0.447214,-0.723607,0.951057,0.708876,"v",10],[-0.809017,-0.0,-0.587785,0.809017,0.769672,"e",4],[-0.850651,-0.447214,0.276393,0.951057,0.708876,"v",10],[-0.525731,-0.447214,-0.723607,0.951057,0.708876,"v",10],[0.525731,0.447214,0.723607,0.951057,0.708876,"v",10],[0.5,-0.850651,0.16246,0.809017,0.769672,"e",4],[-0.525731,0.447214,0.723607,0.951057,0.708876,"v",10],[-0.309017,0.0,0.951057,0.809017,0.769672,"e",4],[0.0,-0.447214,0.894427,0.951057,0.708876,"v",10],[0.309017,0.0,0.951057,0.809017,0.769672,"e",4],[-0.309017,-0.850651,-0.425325,0.809017,0.769672,"e",4],[0.809017,-0.525731,-0.262866,0.809017,0.769672,"e",4],[0.809017,-0.0,-0.587785,0.809017,0.769672,"e",4],[0.850651,0.447214,-0.276393,0.951057,0.708876,"v",10],[0.0,-1.0,-0.0,0.951057,0.708876,"v",10],[0.0,1.0,0.0,0.951057,0.708876,"v",10],[-0.850651,0.447214,-0.276393,0.951057,0.708876,"v",10],[-0.809017,-0.525731,-0.262866,0.809017,0.769672,"e",4],[-0.5,-0.850651,0.16246,0.809017,0.769672,"e",4],[-0.809017,-0.0,0.587785,0.809017,0.769672,"e",4],[0.5,0.850651,-0.16246,0.809017,0.769672,"e",4],[0.809017,0.525731,0.262866,0.809017,0.769672,"e",4],[0.309017,-0.850651,-0.425325,0.809017,0.769672,"e",4],[0.309017,0.850651,0.425325,0.809017,0.769672,"e",4],[-0.309017,0.850651,0.425325,0.809017,0.769672,"e",4],[-0.309017,0.0,-0.951057,0.809017,0.769672,"e",4],[0.309017,0.0,-0.951057,0.809017,0.769672,"e",4],[-0.5,0.525731,-0.688191,0.809017,0.769672,"e",4],[0.0,0.447214,-0.894427,0.951057,0.708876,"v",10],[-0.5,-0.525731,0.688191,0.809017,0.769672,"e",4],[0.809017,-0.0,0.587785,0.809017,0.769672,"e",4],[0.5,-0.525731,0.688191,0.809017,0.769672,"e",4],[-0.809017,0.525731,0.262866,0.809017,0.769672,"e",4],[-0.5,0.850651,-0.16246,0.809017,0.769672,"e",4],[0.5,0.525731,-0.688191,0.809017,0.769672,"e",4],[1.0,0.0,0.0,0.809017,0.769672,"e",4],[0.0,0.525731,0.850651,0.809017,0.769672,"e",4],[0.0,-0.850651,0.525731,0.809017,0.769672,"e",4],[0.0,-0.525731,-0.850651,0.809017,0.769672,"e",4],[-1.0,0.0,0.0,0.809017,0.769672,"e",4],[0.0,0.850651,-0.525731,0.809017,0.769672,"e",4]]},"s":{"to":"sdod","P":[[0.389644,0.890451,-0.235108,0.846869,0.755761,"t",3],[-0.0,1.0,0.0,0.951057,0.720768,"v",5],[0.850651,-0.447214,0.276393,0.951057,0.720768,"v",5],[0.537059,-0.608508,0.584197,0.846869,0.755761,"t",3],[-0.344007,-0.131753,0.929678,0.846869,0.755761,"t",3],[0.777872,-0.131753,0.614456,0.846869,0.755761,"t",3],[0.824758,0.131753,0.549923,0.846869,0.755761,"t",3],[-0.99048,0.131753,0.039884,0.846869,0.755761,"t",3],[0.600836,0.794654,-0.086719,0.846869,0.755761,"t",3],[0.881066,0.432944,0.19048,0.846869,0.755761,"t",3],[0.850651,0.447214,-0.276393,0.951057,0.720768,"v",5],[-0.103194,0.890451,-0.443225,0.846869,0.755761,"t",3],[-0.850651,0.447214,-0.276393,0.951057,0.720768,"v",5],[-0.600836,0.432944,-0.671979,0.846869,0.755761,"t",3],[-0.389644,0.608508,-0.6913,0.846869,0.755761,"t",3],[-0.344007,0.131753,-0.929678,0.846869,0.755761,"t",3],[0.0,0.447214,-0.894427,0.951057,0.720768,"v",5],[-0.268143,-0.131753,-0.954327,0.846869,0.755761,"t",3],[-0.721564,-0.023248,-0.691957,0.846869,0.755761,"t",3],[-0.881066,0.023248,-0.472422,0.846869,0.755761,"t",3],[-0.525731,-0.447214,-0.723607,0.951057,0.720768,"v",5],[0.103194,0.794654,-0.598227,0.846869,0.755761,"t",3],[-0.435115,-0.794654,-0.42332,0.846869,0.755761,"t",3],[-0.177036,-0.890451,-0.419233,0.846869,0.755761,"t",3],[-0.091108,-0.608508,-0.7883,0.846869,0.755761,"t",3],[-0.0,-1.0,-0.0,0.951057,0.720768,"v",5],[0.389644,-0.890451,0.235108,0.846869,0.755761,"t",3],[0.600836,-0.794654,0.086719,0.846869,0.755761,"t",3],[0.99048,-0.023248,0.13568,0.846869,0.755761,"t",3],[0.881066,-0.432944,-0.19048,0.846869,0.755761,"t",3],[0.525731,-0.447214,-0.723607,0.951057,0.720768,"v",5],[0.177036,0.023248,-0.98393,0.846869,0.755761,"t",3],[0.091108,-0.432944,-0.896805,0.846869,0.755761,"t",3],[0.721564,-0.608508,-0.330247,0.846869,0.755761,"t",3],[0.344007,-0.890451,-0.297921,0.846869,0.755761,"t",3],[0.268143,-0.794654,-0.544632,0.846869,0.755761,"t",3],[0.453421,0.432944,-0.779082,0.846869,0.755761,"t",3],[0.537059,0.608508,-0.584197,0.846869,0.755761,"t",3],[0.453421,-0.432944,0.779082,0.846869,0.755761,"t",3],[0.0,-0.447214,0.894427,0.951057,0.720768,"v",5],[0.103194,-0.794654,0.598227,0.846869,0.755761,"t",3],[-0.721564,0.023248,0.691957,0.846869,0.755761,"t",3],[-0.881066,-0.023248,0.472422,0.846869,0.755761,"t",3],[-0.824758,0.432944,0.363776,0.846869,0.755761,"t",3],[-0.525731,0.447214,0.723607,0.951057,0.720768,"v",5],[0.525731,0.447214,0.723607,0.951057,0.720768,"v",5],[0.177036,-0.023248,0.98393,0.846869,0.755761,"t",3],[0.435115,0.023248,0.900075,0.846869,0.755761,"t",3],[-0.600836,-0.432944,0.671979,0.846869,0.755761,"t",3],[-0.850651,-0.447214,0.276393,0.951057,0.720768,"v",5],[-0.389644,-0.608508,0.6913,0.846869,0.755761,"t",3],[0.721564,0.608508,0.330247,0.846869,0.755761,"t",3],[0.268143,0.794654,0.544632,0.846869,0.755761,"t",3],[0.344007,0.890451,0.297921,0.846869,0.755761,"t",3],[-0.435115,0.794654,0.42332,0.846869,0.755761,"t",3],[-0.177036,0.890451,0.419233,0.846869,0.755761,"t",3],[-0.777872,0.608508,0.15695,0.846869,0.755761,"t",3],[-0.537059,0.794654,-0.283006,0.846869,0.755761,"t",3],[-0.453421,0.890451,-0.038821,0.846869,0.755761,"t",3],[-0.777872,-0.608508,-0.15695,0.846869,0.755761,"t",3],[-0.824758,-0.432944,-0.363776,0.846869,0.755761,"t",3],[-0.99048,-0.131753,-0.039884,0.846869,0.755761,"t",3],[0.435115,-0.023248,-0.900075,0.846869,0.755761,"t",3],[0.99048,0.023248,-0.13568,0.846869,0.755761,"t",3],[0.824758,-0.131753,-0.549923,0.846869,0.755761,"t",3],[0.777872,0.131753,-0.614456,0.846869,0.755761,"t",3],[-0.091108,0.608508,0.7883,0.846869,0.755761,"t",3],[-0.268143,0.131753,0.954327,0.846869,0.755761,"t",3],[0.091108,0.432944,0.896805,0.846869,0.755761,"t",3],[-0.453421,-0.890451,0.038821,0.846869,0.755761,"t",3],[-0.537059,-0.794654,0.283006,0.846869,0.755761,"t",3],[-0.103194,-0.890451,0.443225,0.846869,0.755761,"t",3]]}}},"snub":{"tetra":{"mv":[[0.204124,0.755761,0.38814],[0.204124,0.755761,0.38814],[0.204124,0.755761,0.38814],[0.204124,0.755761,0.38814]],"gap":[[[0.743714,0.178411,0.565303],[0.459641,-0.755761,0.349376],[0.861424,-0.178411,-0.361424]],[[-0.743714,-0.178411,-0.565303],[-0.532389,-0.755761,0.223372],[-0.861424,0.178411,0.361424]],[[-0.11771,-0.178411,0.926727],[-0.532389,-0.755761,0.223372],[0.459641,-0.755761,0.349376]],[[-0.11771,-0.178411,0.926727],[0.459641,-0.755761,0.349376],[0.743714,0.178411,0.565303]],[[-0.861424,0.178411,0.361424],[-0.532389,-0.755761,0.223372],[-0.11771,-0.178411,0.926727]],[[-0.072749,0.755761,0.572749],[-0.861424,0.178411,0.361424],[-0.11771,-0.178411,0.926727]],[[-0.072749,0.755761,0.572749],[0.743714,0.178411,0.565303],[0.532389,0.755761,-0.223372]],[[0.532389,0.755761,-0.223372],[0.743714,0.178411,0.565303],[0.861424,-0.178411,-0.361424]],[[0.861424,-0.178411,-0.361424],[0.072749,-0.755761,-0.572749],[0.11771,0.178411,-0.926727]],[[0.459641,-0.755761,0.349376],[0.072749,-0.755761,-0.572749],[0.861424,-0.178411,-0.361424]],[[-0.743714,-0.178411,-0.565303],[0.072749,-0.755761,-0.572749],[-0.532389,-0.755761,0.223372]],[[0.11771,0.178411,-0.926727],[0.072749,-0.755761,-0.572749],[-0.743714,-0.178411,-0.565303]],[[-0.459641,0.755761,-0.349376],[-0.861424,0.178411,0.361424],[-0.072749,0.755761,0.572749]],[[-0.459641,0.755761,-0.349376],[0.11771,0.178411,-0.926727],[-0.743714,-0.178411,-0.565303]],[[-0.459641,0.755761,-0.349376],[-0.072749,0.755761,0.572749],[0.532389,0.755761,-0.223372]],[[0.532389,0.755761,-0.223372],[0.11771,0.178411,-0.926727],[-0.459641,0.755761,-0.349376]]],"R1":0.951057},"cube":{"mv":[[0.5,1.142614,0.287413],[0.5,1.142614,0.287413],[0.5,1.142614,0.287413],[0.5,1.142614,0.287413],[0.5,1.142614,0.287413],[0.5,1.142614,0.287413]],"gap":[[[1.142614,0.621226,-0.337754],[0.621226,0.337754,-1.142614],[0.337754,1.142614,-0.621226]],[[1.142614,-0.337754,-0.621226],[0.621226,0.337754,-1.142614],[1.142614,0.621226,-0.337754]],[[1.142614,0.621226,-0.337754],[0.621226,1.142614,0.337754],[1.142614,0.337754,0.621226]],[[0.337754,1.142614,-0.621226],[0.621226,1.142614,0.337754],[1.142614,0.621226,-0.337754]],[[0.337754,-0.621226,-1.142614],[0.621226,0.337754,-1.142614],[1.142614,-0.337754,-0.621226]],[[1.142614,-0.337754,-0.621226],[0.621226,-1.142614,-0.337754],[0.337754,-0.621226,-1.142614]],[[0.621226,-0.337754,1.142614],[1.142614,0.337754,0.621226],[0.337754,0.621226,1.142614]],[[1.142614,0.337754,0.621226],[0.621226,1.142614,0.337754],[0.337754,0.621226,1.142614]],[[0.621226,-0.337754,1.142614],[0.337754,-1.142614,0.621226],[1.142614,-0.621226,0.337754]],[[1.142614,-0.621226,0.337754],[0.337754,-1.142614,0.621226],[0.621226,-1.142614,-0.337754]],[[1.142614,-0.621226,0.337754],[0.621226,-1.142614,-0.337754],[1.142614,-0.337754,-0.621226]],[[1.142614,-0.621226,0.337754],[1.142614,0.337754,0.621226],[0.621226,-0.337754,1.142614]],[[-0.621226,-1.142614,0.337754],[0.337754,-1.142614,0.621226],[-0.337754,-0.621226,1.142614]],[[-0.337754,-0.621226,1.142614],[0.337754,-1.142614,0.621226],[0.621226,-0.337754,1.142614]],[[0.337754,1.142614,-0.621226],[0.621226,0.337754,-1.142614],[-0.337754,0.621226,-1.142614]],[[0.337754,1.142614,-0.621226],[-0.337754,0.621226,-1.142614],[-0.621226,1.142614,-0.337754]],[[-0.337754,1.142614,0.621226],[-1.142614,0.621226,0.337754],[-0.621226,0.337754,1.142614]],[[-0.621226,1.142614,-0.337754],[-1.142614,0.621226,0.337754],[-0.337754,1.142614,0.621226]],[[-0.621226,0.337754,1.142614],[0.337754,0.621226,1.142614],[-0.337754,1.142614,0.621226]],[[0.337754,0.621226,1.142614],[0.621226,1.142614,0.337754],[-0.337754,1.142614,0.621226]],[[-1.142614,0.337754,-0.621226],[-1.142614,0.621226,0.337754],[-0.621226,1.142614,-0.337754]],[[-0.621226,1.142614,-0.337754],[-0.337754,0.621226,-1.142614],[-1.142614,0.337754,-0.621226]],[[-1.142614,0.337754,-0.621226],[-0.337754,0.621226,-1.142614],[-0.621226,-0.337754,-1.142614]],[[-1.142614,-0.621226,-0.337754],[-1.142614,0.337754,-0.621226],[-0.621226,-0.337754,-1.142614]],[[-0.337754,-1.142614,-0.621226],[-0.621226,-1.142614,0.337754],[-1.142614,-0.621226,-0.337754]],[[-1.142614,-0.621226,-0.337754],[-0.621226,-0.337754,-1.142614],[-0.337754,-1.142614,-0.621226]],[[-0.621226,-0.337754,-1.142614],[0.337754,-0.621226,-1.142614],[-0.337754,-1.142614,-0.621226]],[[0.337754,-0.621226,-1.142614],[0.621226,-1.142614,-0.337754],[-0.337754,-1.142614,-0.621226]],[[-0.621226,0.337754,1.142614],[-1.142614,-0.337754,0.621226],[-0.337754,-0.621226,1.142614]],[[-0.621226,0.337754,1.142614],[-1.142614,0.621226,0.337754],[-1.142614,-0.337754,0.621226]],[[-0.337754,-0.621226,1.142614],[-1.142614,-0.337754,0.621226],[-0.621226,-1.142614,0.337754]],[[-0.621226,-1.142614,0.337754],[-1.142614,-0.337754,0.621226],[-1.142614,-0.621226,-0.337754]]],"R1":1.343713},"octa":{"mv":[[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564],[0.408248,1.213356,-0.354564]],"gap":[[[1.142614,-0.337754,-0.621226],[0.621226,0.337754,-1.142614],[1.142614,0.621226,-0.337754]],[[1.142614,0.621226,-0.337754],[0.621226,1.142614,0.337754],[1.142614,0.337754,0.621226]],[[0.337754,1.142614,-0.621226],[0.621226,1.142614,0.337754],[1.142614,0.621226,-0.337754]],[[0.337754,-0.621226,-1.142614],[0.621226,0.337754,-1.142614],[1.142614,-0.337754,-0.621226]],[[0.621226,-0.337754,1.142614],[1.142614,0.337754,0.621226],[0.337754,0.621226,1.142614]],[[1.142614,-0.621226,0.337754],[0.337754,-1.142614,0.621226],[0.621226,-1.142614,-0.337754]],[[1.142614,-0.621226,0.337754],[0.621226,-1.142614,-0.337754],[1.142614,-0.337754,-0.621226]],[[1.142614,-0.621226,0.337754],[1.142614,0.337754,0.621226],[0.621226,-0.337754,1.142614]],[[-0.621226,-1.142614,0.337754],[0.337754,-1.142614,0.621226],[-0.337754,-0.621226,1.142614]],[[-0.337754,-0.621226,1.142614],[0.337754,-1.142614,0.621226],[0.621226,-0.337754,1.142614]],[[0.337754,1.142614,-0.621226],[0.621226,0.337754,-1.142614],[-0.337754,0.621226,-1.142614]],[[0.337754,1.142614,-0.621226],[-0.337754,0.621226,-1.142614],[-0.621226,1.142614,-0.337754]],[[-0.621226,1.142614,-0.337754],[-1.142614,0.621226,0.337754],[-0.337754,1.142614,0.621226]],[[-0.621226,0.337754,1.142614],[0.337754,0.621226,1.142614],[-0.337754,1.142614,0.621226]],[[0.337754,0.621226,1.142614],[0.621226,1.142614,0.337754],[-0.337754,1.142614,0.621226]],[[-1.142614,0.337754,-0.621226],[-1.142614,0.621226,0.337754],[-0.621226,1.142614,-0.337754]],[[-1.142614,0.337754,-0.621226],[-0.337754,0.621226,-1.142614],[-0.621226,-0.337754,-1.142614]],[[-1.142614,-0.621226,-0.337754],[-1.142614,0.337754,-0.621226],[-0.621226,-0.337754,-1.142614]],[[-0.337754,-1.142614,-0.621226],[-0.621226,-1.142614,0.337754],[-1.142614,-0.621226,-0.337754]],[[-0.621226,-0.337754,-1.142614],[0.337754,-0.621226,-1.142614],[-0.337754,-1.142614,-0.621226]],[[0.337754,-0.621226,-1.142614],[0.621226,-1.142614,-0.337754],[-0.337754,-1.142614,-0.621226]],[[-0.621226,0.337754,1.142614],[-1.142614,-0.337754,0.621226],[-0.337754,-0.621226,1.142614]],[[-0.621226,0.337754,1.142614],[-1.142614,0.621226,0.337754],[-1.142614,-0.337754,0.621226]],[[-0.621226,-1.142614,0.337754],[-1.142614,-0.337754,0.621226],[-1.142614,-0.621226,-0.337754]],[[1.142614,-0.337754,-0.621226],[1.142614,0.621226,-0.337754],[1.142614,0.337754,0.621226],[1.142614,-0.621226,0.337754]],[[-0.337754,-0.621226,1.142614],[0.621226,-0.337754,1.142614],[0.337754,0.621226,1.142614],[-0.621226,0.337754,1.142614]],[[-0.337754,0.621226,-1.142614],[0.621226,0.337754,-1.142614],[0.337754,-0.621226,-1.142614],[-0.621226,-0.337754,-1.142614]],[[-0.337754,1.142614,0.621226],[0.621226,1.142614,0.337754],[0.337754,1.142614,-0.621226],[-0.621226,1.142614,-0.337754]],[[-0.337754,-1.142614,-0.621226],[0.621226,-1.142614,-0.337754],[0.337754,-1.142614,0.621226],[-0.621226,-1.142614,0.337754]],[[-1.142614,-0.337754,0.621226],[-1.142614,0.621226,0.337754],[-1.142614,0.337754,-0.621226],[-1.142614,-0.621226,-0.337754]]],"R1":1.343713},"dodeca":{"mv":[[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875],[1.113516,1.980916,0.22875]],"gap":[[[0.84755,1.980916,0.072565],[1.249504,1.586805,-0.753939],[0.330921,1.980916,-0.783644]],[[-1.646918,0.492818,-1.300933],[-0.84755,0.820988,-1.804237],[-1.103157,-0.144867,-1.846536]],[[1.977839,-0.144867,0.845459],[2.097054,0.492818,0.084443],[1.746186,0.820988,0.961481]],[[0.64303,-1.383985,1.522739],[0.330921,-1.980916,0.783644],[1.249504,-1.586805,0.753939]],[[1.249504,-1.586805,0.753939],[1.454024,-0.820988,1.363608],[0.64303,-1.383985,1.522739]],[[-1.103157,0.144867,1.846536],[-1.646918,-0.492818,1.300933],[-0.84755,-0.820988,1.804237]],[[-0.192894,-0.144867,2.142298],[-1.103157,0.144867,1.846536],[-0.84755,-0.820988,1.804237]],[[1.454024,-0.820988,1.363608],[1.977839,-0.144867,0.845459],[1.415265,0.144867,1.619775]],[[1.977839,-0.144867,0.845459],[1.746186,0.820988,0.961481],[1.415265,0.144867,1.619775]],[[-1.454024,-1.586805,0.12449],[-1.415265,-1.383985,-0.853958],[-0.728335,-1.980916,-0.439471]],[[-1.977839,0.820988,0.248528],[-2.097054,0.144867,-0.478554],[-2.097054,-0.144867,0.478554]],[[1.646918,1.383985,0.141005],[1.249504,1.586805,-0.753939],[0.84755,1.980916,0.072565]],[[2.097054,0.492818,0.084443],[1.646918,1.383985,0.141005],[1.746186,0.820988,0.961481]],[[-0.567715,1.586805,1.34439],[0.374822,1.383985,1.609885],[0.192894,1.980916,0.828492]],[[0.330921,1.980916,-0.783644],[-0.330921,1.586805,-1.421329],[-0.64303,1.980916,-0.556884]],[[-1.249504,1.383985,-1.08211],[-0.84755,0.820988,-1.804237],[-1.646918,0.492818,-1.300933]],[[-0.330921,1.586805,-1.421329],[-0.84755,0.820988,-1.804237],[-1.249504,1.383985,-1.08211]],[[-0.64303,1.980916,-0.556884],[-0.330921,1.586805,-1.421329],[-1.249504,1.383985,-1.08211]],[[-0.84755,0.820988,-1.804237],[-0.192894,0.144867,-2.142298],[-1.103157,-0.144867,-1.846536]],[[-1.103157,-0.144867,-1.846536],[-0.192894,0.144867,-2.142298],[-0.374822,-0.820988,-1.957836]],[[-1.646918,0.492818,-1.300933],[-1.103157,-0.144867,-1.846536],[-1.746186,-0.492818,-1.164302]],[[-2.097054,0.144867,-0.478554],[-1.646918,0.492818,-1.300933],[-1.746186,-0.492818,-1.164302]],[[0.330921,1.980916,-0.783644],[1.249504,1.586805,-0.753939],[0.64303,1.383985,-1.522739]],[[0.64303,1.383985,-1.522739],[-0.330921,1.586805,-1.421329],[0.330921,1.980916,-0.783644]],[[-1.415265,-1.383985,-0.853958],[-0.567715,-1.586805,-1.34439],[-0.728335,-1.980916,-0.439471]],[[-0.728335,-1.980916,-0.439471],[-0.567715,-1.586805,-1.34439],[0.192894,-1.980916,-0.828492]],[[0.192894,-1.980916,-0.828492],[-0.567715,-1.586805,-1.34439],[0.374822,-1.383985,-1.609885]],[[-0.567715,-1.586805,-1.34439],[-0.374822,-0.820988,-1.957836],[0.374822,-1.383985,-1.609885]],[[0.330921,-1.980916,0.783644],[0.84755,-1.980916,-0.072565],[1.249504,-1.586805,0.753939]],[[0.84755,-1.980916,-0.072565],[1.646918,-1.383985,-0.141005],[1.249504,-1.586805,0.753939]],[[2.097054,-0.492818,-0.084443],[2.097054,0.492818,0.084443],[1.977839,-0.144867,0.845459]],[[1.646918,-1.383985,-0.141005],[1.746186,-0.820988,-0.961481],[2.097054,-0.492818,-0.084443]],[[-0.192894,0.144867,-2.142298],[0.728335,0.492818,-1.968322],[0.567715,-0.492818,-2.020511]],[[-0.374822,-0.820988,-1.957836],[0.567715,-0.492818,-2.020511],[0.374822,-1.383985,-1.609885]],[[-0.374822,-0.820988,-1.957836],[-0.192894,0.144867,-2.142298],[0.567715,-0.492818,-2.020511]],[[1.103157,-1.586805,-0.955369],[1.746186,-0.820988,-0.961481],[1.646918,-1.383985,-0.141005]],[[0.84755,-1.980916,-0.072565],[1.103157,-1.586805,-0.955369],[1.646918,-1.383985,-0.141005]],[[0.192894,-1.980916,-0.828492],[1.103157,-1.586805,-0.955369],[0.84755,-1.980916,-0.072565]],[[0.374822,-1.383985,-1.609885],[1.103157,-1.586805,-0.955369],[0.192894,-1.980916,-0.828492]],[[1.454024,0.820988,-1.363608],[0.728335,0.492818,-1.968322],[0.64303,1.383985,-1.522739]],[[1.249504,1.586805,-0.753939],[1.454024,0.820988,-1.363608],[0.64303,1.383985,-1.522739]],[[0.64303,-1.383985,1.522739],[1.454024,-0.820988,1.363608],[0.728335,-0.492818,1.968322]],[[0.728335,-0.492818,1.968322],[1.454024,-0.820988,1.363608],[1.415265,0.144867,1.619775]],[[-0.330921,-1.586805,1.421329],[0.330921,-1.980916,0.783644],[0.64303,-1.383985,1.522739]],[[-1.103157,0.144867,1.846536],[-1.746186,0.492818,1.164302],[-1.646918,-0.492818,1.300933]],[[-1.746186,0.492818,1.164302],[-2.097054,-0.144867,0.478554],[-1.646918,-0.492818,1.300933]],[[-1.746186,0.492818,1.164302],[-1.977839,0.820988,0.248528],[-2.097054,-0.144867,0.478554]],[[-1.415265,1.383985,0.853958],[-1.977839,0.820988,0.248528],[-1.746186,0.492818,1.164302]],[[0.728335,-0.492818,1.968322],[0.567715,0.492818,2.020511],[-0.192894,-0.144867,2.142298]],[[1.415265,0.144867,1.619775],[0.567715,0.492818,2.020511],[0.728335,-0.492818,1.968322]],[[-1.646918,-0.492818,1.300933],[-1.249504,-1.383985,1.08211],[-0.84755,-0.820988,1.804237]],[[-0.84755,-0.820988,1.804237],[-1.249504,-1.383985,1.08211],[-0.330921,-1.586805,1.421329]],[[1.746186,0.820988,0.961481],[1.646918,1.383985,0.141005],[1.103157,1.586805,0.955369]],[[0.374822,1.383985,1.609885],[1.103157,1.586805,0.955369],[0.192894,1.980916,0.828492]],[[1.103157,1.586805,0.955369],[0.84755,1.980916,0.072565],[0.192894,1.980916,0.828492]],[[1.103157,1.586805,0.955369],[1.646918,1.383985,0.141005],[0.84755,1.980916,0.072565]],[[-0.567715,1.586805,1.34439],[-0.728335,1.980916,0.439471],[-1.415265,1.383985,0.853958]],[[0.192894,1.980916,0.828492],[-0.728335,1.980916,0.439471],[-0.567715,1.586805,1.34439]],[[-1.454024,1.586805,-0.12449],[-1.977839,0.820988,0.248528],[-1.415265,1.383985,0.853958]],[[-1.415265,1.383985,0.853958],[-0.728335,1.980916,0.439471],[-1.454024,1.586805,-0.12449]],[[-0.64303,1.980916,-0.556884],[-1.249504,1.383985,-1.08211],[-1.454024,1.586805,-0.12449]],[[-0.728335,1.980916,0.439471],[-0.64303,1.980916,-0.556884],[-1.454024,1.586805,-0.12449]],[[-1.977839,-0.820988,-0.248528],[-1.415265,-1.383985,-0.853958],[-1.454024,-1.586805,0.12449]],[[-1.746186,-0.492818,-1.164302],[-1.415265,-1.383985,-0.853958],[-1.977839,-0.820988,-0.248528]],[[-2.097054,-0.144867,0.478554],[-2.097054,0.144867,-0.478554],[-1.977839,-0.820988,-0.248528]],[[-1.977839,-0.820988,-0.248528],[-2.097054,0.144867,-0.478554],[-1.746186,-0.492818,-1.164302]],[[0.567715,-0.492818,-2.020511],[0.728335,0.492818,-1.968322],[1.415265,-0.144867,-1.619775]],[[1.415265,-0.144867,-1.619775],[0.728335,0.492818,-1.968322],[1.454024,0.820988,-1.363608]],[[1.977839,0.144867,-0.845459],[2.097054,0.492818,0.084443],[2.097054,-0.492818,-0.084443]],[[2.097054,-0.492818,-0.084443],[1.746186,-0.820988,-0.961481],[1.977839,0.144867,-0.845459]],[[1.746186,-0.820988,-0.961481],[1.415265,-0.144867,-1.619775],[1.977839,0.144867,-0.845459]],[[1.415265,-0.144867,-1.619775],[1.454024,0.820988,-1.363608],[1.977839,0.144867,-0.845459]],[[-0.374822,0.820988,1.957836],[0.374822,1.383985,1.609885],[-0.567715,1.586805,1.34439]],[[-0.192894,-0.144867,2.142298],[-0.374822,0.820988,1.957836],[-1.103157,0.144867,1.846536]],[[0.567715,0.492818,2.020511],[0.374822,1.383985,1.609885],[-0.374822,0.820988,1.957836]],[[-0.192894,-0.144867,2.142298],[0.567715,0.492818,2.020511],[-0.374822,0.820988,1.957836]],[[-1.454024,-1.586805,0.12449],[-0.728335,-1.980916,-0.439471],[-0.64303,-1.980916,0.556884]],[[-1.249504,-1.383985,1.08211],[-1.454024,-1.586805,0.12449],[-0.64303,-1.980916,0.556884]],[[-0.64303,-1.980916,0.556884],[0.330921,-1.980916,0.783644],[-0.330921,-1.586805,1.421329]],[[-1.249504,-1.383985,1.08211],[-0.64303,-1.980916,0.556884],[-0.330921,-1.586805,1.421329]]],"R1":2.155837},"icosa":{"mv":[[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652],[0.755761,2.07709,-0.340652]],"gap":[[[0.84755,1.980916,0.072565],[1.249504,1.586805,-0.753939],[0.330921,1.980916,-0.783644]],[[-0.728335,1.980916,0.439471],[0.192894,1.980916,0.828492],[0.84755,1.980916,0.072565],[0.330921,1.980916,-0.783644],[-0.64303,1.980916,-0.556884]],[[1.454024,-0.820988,1.363608],[1.249504,-1.586805,0.753939],[1.646918,-1.383985,-0.141005],[2.097054,-0.492818,-0.084443],[1.977839,-0.144867,0.845459]],[[1.249504,-1.586805,0.753939],[1.454024,-0.820988,1.363608],[0.64303,-1.383985,1.522739]],[[-0.192894,-0.144867,2.142298],[-1.103157,0.144867,1.846536],[-0.84755,-0.820988,1.804237]],[[1.454024,-0.820988,1.363608],[1.977839,-0.144867,0.845459],[1.415265,0.144867,1.619775]],[[1.977839,-0.144867,0.845459],[1.746186,0.820988,0.961481],[1.415265,0.144867,1.619775]],[[-1.977839,0.820988,0.248528],[-2.097054,0.144867,-0.478554],[-2.097054,-0.144867,0.478554]],[[1.646918,1.383985,0.141005],[1.249504,1.586805,-0.753939],[0.84755,1.980916,0.072565]],[[2.097054,0.492818,0.084443],[1.646918,1.383985,0.141005],[1.746186,0.820988,0.961481]],[[2.097054,0.492818,0.084443],[1.977839,0.144867,-0.845459],[1.454024,0.820988,-1.363608],[1.249504,1.586805,-0.753939],[1.646918,1.383985,0.141005]],[[0.330921,1.980916,-0.783644],[-0.330921,1.586805,-1.421329],[-0.64303,1.980916,-0.556884]],[[-1.977839,0.820988,0.248528],[-1.454024,1.586805,-0.12449],[-1.249504,1.383985,-1.08211],[-1.646918,0.492818,-1.300933],[-2.097054,0.144867,-0.478554]],[[-1.249504,1.383985,-1.08211],[-0.84755,0.820988,-1.804237],[-1.646918,0.492818,-1.300933]],[[-0.330921,1.586805,-1.421329],[-0.84755,0.820988,-1.804237],[-1.249504,1.383985,-1.08211]],[[-0.84755,0.820988,-1.804237],[-0.192894,0.144867,-2.142298],[-1.103157,-0.144867,-1.846536]],[[-0.330921,1.586805,-1.421329],[0.64303,1.383985,-1.522739],[0.728335,0.492818,-1.968322],[-0.192894,0.144867,-2.142298],[-0.84755,0.820988,-1.804237]],[[-1.103157,-0.144867,-1.846536],[-0.192894,0.144867,-2.142298],[-0.374822,-0.820988,-1.957836]],[[-1.646918,0.492818,-1.300933],[-1.103157,-0.144867,-1.846536],[-1.746186,-0.492818,-1.164302]],[[-2.097054,0.144867,-0.478554],[-1.646918,0.492818,-1.300933],[-1.746186,-0.492818,-1.164302]],[[-1.415265,-1.383985,-0.853958],[-1.746186,-0.492818,-1.164302],[-1.103157,-0.144867,-1.846536],[-0.374822,-0.820988,-1.957836],[-0.567715,-1.586805,-1.34439]],[[0.64303,1.383985,-1.522739],[-0.330921,1.586805,-1.421329],[0.330921,1.980916,-0.783644]],[[-1.415265,-1.383985,-0.853958],[-0.567715,-1.586805,-1.34439],[-0.728335,-1.980916,-0.439471]],[[-0.728335,-1.980916,-0.439471],[-0.567715,-1.586805,-1.34439],[0.192894,-1.980916,-0.828492]],[[-0.567715,-1.586805,-1.34439],[-0.374822,-0.820988,-1.957836],[0.374822,-1.383985,-1.609885]],[[-0.64303,-1.980916,0.556884],[-0.728335,-1.980916,-0.439471],[0.192894,-1.980916,-0.828492],[0.84755,-1.980916,-0.072565],[0.330921,-1.980916,0.783644]],[[0.330921,-1.980916,0.783644],[0.84755,-1.980916,-0.072565],[1.249504,-1.586805,0.753939]],[[0.84755,-1.980916,-0.072565],[1.646918,-1.383985,-0.141005],[1.249504,-1.586805,0.753939]],[[2.097054,-0.492818,-0.084443],[2.097054,0.492818,0.084443],[1.977839,-0.144867,0.845459]],[[1.646918,-1.383985,-0.141005],[1.746186,-0.820988,-0.961481],[2.097054,-0.492818,-0.084443]],[[1.103157,-1.586805,-0.955369],[0.374822,-1.383985,-1.609885],[0.567715,-0.492818,-2.020511],[1.415265,-0.144867,-1.619775],[1.746186,-0.820988,-0.961481]],[[-0.192894,0.144867,-2.142298],[0.728335,0.492818,-1.968322],[0.567715,-0.492818,-2.020511]],[[-0.374822,-0.820988,-1.957836],[0.567715,-0.492818,-2.020511],[0.374822,-1.383985,-1.609885]],[[1.103157,-1.586805,-0.955369],[1.746186,-0.820988,-0.961481],[1.646918,-1.383985,-0.141005]],[[0.192894,-1.980916,-0.828492],[1.103157,-1.586805,-0.955369],[0.84755,-1.980916,-0.072565]],[[0.374822,-1.383985,-1.609885],[1.103157,-1.586805,-0.955369],[0.192894,-1.980916,-0.828492]],[[1.454024,0.820988,-1.363608],[0.728335,0.492818,-1.968322],[0.64303,1.383985,-1.522739]],[[1.249504,1.586805,-0.753939],[1.454024,0.820988,-1.363608],[0.64303,1.383985,-1.522739]],[[0.64303,-1.383985,1.522739],[1.454024,-0.820988,1.363608],[0.728335,-0.492818,1.968322]],[[-0.330921,-1.586805,1.421329],[0.64303,-1.383985,1.522739],[0.728335,-0.492818,1.968322],[-0.192894,-0.144867,2.142298],[-0.84755,-0.820988,1.804237]],[[-0.330921,-1.586805,1.421329],[0.330921,-1.980916,0.783644],[0.64303,-1.383985,1.522739]],[[-1.103157,0.144867,1.846536],[-1.746186,0.492818,1.164302],[-1.646918,-0.492818,1.300933]],[[-1.746186,0.492818,1.164302],[-2.097054,-0.144867,0.478554],[-1.646918,-0.492818,1.300933]],[[-1.415265,1.383985,0.853958],[-1.977839,0.820988,0.248528],[-1.746186,0.492818,1.164302]],[[-0.374822,0.820988,1.957836],[-0.567715,1.586805,1.34439],[-1.415265,1.383985,0.853958],[-1.746186,0.492818,1.164302],[-1.103157,0.144867,1.846536]],[[0.567715,0.492818,2.020511],[1.415265,0.144867,1.619775],[1.746186,0.820988,0.961481],[1.103157,1.586805,0.955369],[0.374822,1.383985,1.609885]],[[0.728335,-0.492818,1.968322],[0.567715,0.492818,2.020511],[-0.192894,-0.144867,2.142298]],[[1.415265,0.144867,1.619775],[0.567715,0.492818,2.020511],[0.728335,-0.492818,1.968322]],[[-1.646918,-0.492818,1.300933],[-1.249504,-1.383985,1.08211],[-0.84755,-0.820988,1.804237]],[[-1.646918,-0.492818,1.300933],[-2.097054,-0.144867,0.478554],[-1.977839,-0.820988,-0.248528],[-1.454024,-1.586805,0.12449],[-1.249504,-1.383985,1.08211]],[[-0.84755,-0.820988,1.804237],[-1.249504,-1.383985,1.08211],[-0.330921,-1.586805,1.421329]],[[1.746186,0.820988,0.961481],[1.646918,1.383985,0.141005],[1.103157,1.586805,0.955369]],[[0.374822,1.383985,1.609885],[1.103157,1.586805,0.955369],[0.192894,1.980916,0.828492]],[[1.103157,1.586805,0.955369],[0.84755,1.980916,0.072565],[0.192894,1.980916,0.828492]],[[-0.567715,1.586805,1.34439],[-0.728335,1.980916,0.439471],[-1.415265,1.383985,0.853958]],[[0.192894,1.980916,0.828492],[-0.728335,1.980916,0.439471],[-0.567715,1.586805,1.34439]],[[-1.454024,1.586805,-0.12449],[-1.977839,0.820988,0.248528],[-1.415265,1.383985,0.853958]],[[-0.64303,1.980916,-0.556884],[-1.249504,1.383985,-1.08211],[-1.454024,1.586805,-0.12449]],[[-0.728335,1.980916,0.439471],[-0.64303,1.980916,-0.556884],[-1.454024,1.586805,-0.12449]],[[-1.977839,-0.820988,-0.248528],[-1.415265,-1.383985,-0.853958],[-1.454024,-1.586805,0.12449]],[[-1.746186,-0.492818,-1.164302],[-1.415265,-1.383985,-0.853958],[-1.977839,-0.820988,-0.248528]],[[-2.097054,-0.144867,0.478554],[-2.097054,0.144867,-0.478554],[-1.977839,-0.820988,-0.248528]],[[0.567715,-0.492818,-2.020511],[0.728335,0.492818,-1.968322],[1.415265,-0.144867,-1.619775]],[[1.977839,0.144867,-0.845459],[2.097054,0.492818,0.084443],[2.097054,-0.492818,-0.084443]],[[1.746186,-0.820988,-0.961481],[1.415265,-0.144867,-1.619775],[1.977839,0.144867,-0.845459]],[[1.415265,-0.144867,-1.619775],[1.454024,0.820988,-1.363608],[1.977839,0.144867,-0.845459]],[[-0.374822,0.820988,1.957836],[0.374822,1.383985,1.609885],[-0.567715,1.586805,1.34439]],[[-0.192894,-0.144867,2.142298],[-0.374822,0.820988,1.957836],[-1.103157,0.144867,1.846536]],[[0.567715,0.492818,2.020511],[0.374822,1.383985,1.609885],[-0.374822,0.820988,1.957836]],[[-1.454024,-1.586805,0.12449],[-0.728335,-1.980916,-0.439471],[-0.64303,-1.980916,0.556884]],[[-1.249504,-1.383985,1.08211],[-1.454024,-1.586805,0.12449],[-0.64303,-1.980916,0.556884]],[[-0.64303,-1.980916,0.556884],[0.330921,-1.980916,0.783644],[-0.330921,-1.586805,1.421329]]],"R1":2.155837}}};
+  const CEPS = 1e-7;
+  const cdot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+  const csub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+  const ccross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+  const cunit = a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+  function newell(P) {
+    let n = [0, 0, 0];
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length];
+      n[0] += (a[1] - b[1]) * (a[2] + b[2]); n[1] += (a[2] - b[2]) * (a[0] + b[0]); n[2] += (a[0] - b[0]) * (a[1] + b[1]);
+    }
+    n = cunit(n);
+    const c = P.reduce((s, p) => [s[0] + p[0], s[1] + p[1], s[2] + p[2]], [0, 0, 0]);
+    return cdot(n, c) < 0 ? [-n[0], -n[1], -n[2]] : n;
+  }
+  function sourceFaces(key) {
+    const s = CUT.src[key];
+    return s.F.map(f => { const pts = f.map(i => s.V[i]); return { pts, role: 'o', k: 0, n: newell(pts) }; });
+  }
+  function uniqPts(P, eps = 1e-6) {
+    const out = [];
+    P.forEach(p => { if (!out.some(q => Math.abs(p[0] - q[0]) < eps && Math.abs(p[1] - q[1]) < eps && Math.abs(p[2] - q[2]) < eps)) out.push(p); });
+    return out;
+  }
+  function clipBy(faces, n, h, role, k) {
+    const out = [], cap = [];
+    let removed = false;
+    for (const f of faces) {
+      const P = f.pts, d = P.map(p => cdot(n, p) - h);
+      if (d.every(x => x <= CEPS)) { out.push(f); d.forEach((x, i) => { if (x > -CEPS) cap.push(P[i]); }); continue; }
+      removed = true;
+      if (d.every(x => x >= -CEPS)) { d.forEach((x, i) => { if (x <= CEPS) cap.push(P[i]); }); continue; }
+      const Q = [];
+      for (let i = 0; i < P.length; i++) {
+        const j = (i + 1) % P.length, a = P[i], b = P[j], da = d[i], db = d[j];
+        if (da <= CEPS) { Q.push(a); if (da > -CEPS) cap.push(a); }
+        if ((da < -CEPS && db > CEPS) || (da > CEPS && db < -CEPS)) {
+          const t = da / (da - db), q = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+          Q.push(q); cap.push(q);
+        }
+      }
+      const R = uniqRing(Q);
+      if (R.length >= 3) out.push({ pts: R, role: f.role, k: f.k, n: f.n });
+    }
+    if (!removed) return faces;
+    const pts = uniqPts(cap);
+    if (pts.length >= 3) {
+      const c = pts.reduce((s, p) => [s[0] + p[0] / pts.length, s[1] + p[1] / pts.length, s[2] + p[2] / pts.length], [0, 0, 0]);
+      const u = cunit(csub(pts[0], c)), w = ccross(n, u);
+      pts.sort((p, q) => Math.atan2(cdot(csub(p, c), w), cdot(csub(p, c), u)) - Math.atan2(cdot(csub(q, c), w), cdot(csub(q, c), u)));
+      out.push({ pts, role, k, n });
+    }
+    return out;
+  }
+  function uniqRing(Q, eps = 1e-9) {
+    const R = [];
+    Q.forEach(p => { const l = R[R.length - 1]; if (!l || Math.abs(p[0] - l[0]) + Math.abs(p[1] - l[1]) + Math.abs(p[2] - l[2]) > eps) R.push(p); });
+    while (R.length > 1) { const a = R[0], b = R[R.length - 1]; if (Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]) + Math.abs(a[2] - b[2]) > eps) break; R.pop(); }
+    return R;
+  }
+  // src를 op 방법으로 u(0~1)만큼 깎은 모양 → { V, F:[{v, n, role, k, c}], E:[{a, b, f}], vf }
+  function carve(src, op, u) {
+    let faces = sourceFaces(src);
+    const C = CUT.cut[src][op];
+    C.P.forEach(r => {
+      const h = r[3] + (r[4] - r[3]) * u;
+      if (h < r[3] - 1e-9) faces = clipBy(faces, [r[0], r[1], r[2]], h, r[5], r[6]);
+    });
+    return weld(faces);
+  }
+  function weld(faces, eps = 1e-5) {
+    const V = [], key = new Map();
+    const idx = p => {
+      const k = p.map(x => Math.round(x / eps)).join(',');
+      if (key.has(k)) return key.get(k);
+      // 둥글린 칸 경계에 걸친 점: 가까운 점 찾기
+      for (let i = 0; i < V.length; i++) if (Math.abs(V[i][0] - p[0]) < eps && Math.abs(V[i][1] - p[1]) < eps && Math.abs(V[i][2] - p[2]) < eps) { key.set(k, i); return i; }
+      V.push(p); key.set(k, V.length - 1); return V.length - 1;
+    };
+    const F = [];
+    faces.forEach(f => {
+      let v = f.pts.map(idx);
+      v = v.filter((x, i) => x !== v[(i + 1) % v.length]);
+      if (v.length >= 3) {
+        const c = v.reduce((s, i) => [s[0] + V[i][0] / v.length, s[1] + V[i][1] / v.length, s[2] + V[i][2] / v.length], [0, 0, 0]);
+        F.push({ v, n: f.n, role: f.role, k: f.k, c });
+      }
+    });
+    const em = new Map(), E = [];
+    F.forEach((f, fi) => f.v.forEach((a, t) => {
+      const b = f.v[(t + 1) % f.v.length], k = a < b ? `${a}-${b}` : `${b}-${a}`;
+      if (em.has(k)) E[em.get(k)].f.push(fi); else { em.set(k, E.length); E.push({ a: Math.min(a, b), b: Math.max(a, b), f: [fi] }); }
+    }));
+    E.forEach(e => { if (e.f.length < 2) e.f.push(e.f[0]); });
+    const vf = V.map(() => []);
+    F.forEach((f, fi) => f.v.forEach(j => vf[j].push(fi)));
+    return { V, F, E, vf };
+  }
+
+  /* =========================================================
+     공통: 이름, 깎기·비틀기 모양, 그림 (수업 화면과 도감 실험실이 함께 씀)
+     ========================================================= */
+  const SNAME = { tetra: '정사면체', cube: '정육면체', octa: '정팔면체', dodeca: '정십이면체', icosa: '정이십면체' };
+  const OPS = [['t', '꼭짓점 깎기'], ['r', '끝까지 깎기'], ['c', '모서리 깎기'], ['o', '모두 깎기'], ['s', '비틀기']];
+  const TNAME = {
+    ttet: '깎은 정사면체', octa: '정팔면체', cocta: '육팔면체', tocta: '깎은 정팔면체', icosa: '정이십면체',
+    tcube: '깎은 정육면체', rcocta: '마름모육팔면체', tcocta: '깎은 육팔면체', scube: '다듬은 육면체',
+    tdod: '깎은 정십이면체', idod: '십이이십면체', rid: '마름모십이이십면체', tid: '깎은 십이이십면체', sdod: '다듬은 십이면체', tico: '깎은 정이십면체'
+  };
+  const FAMS = [
+    { name: '정사면체 계열', views: ['tetra'] },
+    { name: '정육면체·정팔면체 계열', views: ['cube', 'octa'] },
+    { name: '정십이면체·정이십면체 계열', views: ['dodeca', 'icosa'] }
+  ];
+  // 정사면체 계열에서 나온 도형이 다른 계열의 어디에 있는지: [계열 장면, 단계, 이름표]
+  const ELSEWHERE = { octa: [2, 0, '2 계열의 정다면체'], cocta: [2, 3, '2 계열에도 있다'], tocta: [2, 1, '2 계열에도 있다'], icosa: [3, 0, '3 계열의 정다면체'] };
+  const KTOK = { 3: '--pf-tri', 4: '--pf-sq', 5: '--pf-pen', 6: '--pf-hex', 7: '--pf-7', 8: '--pf-etc', 10: '--pf-or' };
+  const SRCP = {}, FINAL = {};
+  Object.keys(SNAME).forEach(s => { SRCP[s] = carve(s, 't', 0); });
+  const finalOf = (s, i) => { const k = s + i; return FINAL[k] || (FINAL[k] = carve(s, OPS[i][0], 1)); };
+  const toOf = (s, i) => CUT.cut[s][OPS[i][0]].to;
+  const maxR = V => Math.max(...V.map(p => Math.hypot(p[0], p[1], p[2])));
+  const markOf = s => CUT.cut[s].r.mark;
+  // 끝까지 깎기는 시간 0.5에서 꼭짓점 깎기 모양을 지난다 (정다면체마다 그때의 깎은 정도가 달라도 같은 때에 멈춘다)
+  const uOf = (s, oi, tau) => (OPS[oi][0] !== 'r' ? tau : tau <= 0.5 ? markOf(s) * tau / 0.5 : markOf(s) + (1 - markOf(s)) * (tau - 0.5) / 0.5);
+
+  /* ---------- 비틀기: 면을 떼어 밀어내고(0~0.4) 비틀고(0.4~0.7) 틈을 채운다(0.7~1) ---------- */
+  const rotAround = (v, n, th) => {
+    const c = Math.cos(th), s = Math.sin(th), k = cdot(n, v) * (1 - c), x = ccross(n, v);
+    return [v[0] * c + x[0] * s + n[0] * k, v[1] * c + x[1] * s + n[1] * k, v[2] * c + x[2] * s + n[2] * k];
+  };
+  const avg3 = P => P.reduce((s, p) => [s[0] + p[0] / P.length, s[1] + p[1] / P.length, s[2] + p[2] / P.length], [0, 0, 0]);
+  const SNUB_T = [0.4, 0.7];
+  function snubFaces(src, u) {
+    const S0 = CUT.src[src], D = CUT.snub[src];
+    const e = ease(clamp(u / SNUB_T[0], 0, 1)), tw = ease(clamp((u - SNUB_T[0]) / (SNUB_T[1] - SNUB_T[0]), 0, 1)), g = ease(clamp((u - SNUB_T[1]) / (1 - SNUB_T[1]), 0, 1));
+    const out = [];
+    S0.F.forEach((f, i) => {
+      const P = f.map(j => S0.V[j]), n = newell(P), c0 = avg3(P), [d0, d1, th] = D.mv[i], sh = (d1 - d0) * e, a = th * tw;
+      out.push({ pts: P.map(p => { const r = rotAround(csub(p, c0), n, a); return [c0[0] + n[0] * sh + r[0], c0[1] + n[1] * sh + r[1], c0[2] + n[2] * sh + r[2]]; }), n, k: f.length, role: 'o', g: 1 });
+    });
+    if (g > 0.001) D.gap.forEach(W => {
+      const c = avg3(W);
+      out.push({ pts: W.map(w => [c[0] + (w[0] - c[0]) * g, c[1] + (w[1] - c[1]) * g, c[2] + (w[2] - c[2]) * g]), n: newell(W), k: W.length, role: 't', g });
+    });
+    return out;
+  }
+  // 다 비튼 모양 (모서리 1, 원래 정다면체와 같은 방향): 틈을 다 채운 면들을 하나로 이은 것
+  const SNUBFIN = {};
+  const snubFinal = s => SNUBFIN[s] || (SNUBFIN[s] = weld(snubFaces(s, 1).map(f => ({ pts: f.pts, n: f.n, role: f.role, k: f.k })), 1e-5));
+
+  /* ---------- 그림 ---------- */
+  function ghostSVG(G, cm, front, fade = 1) {      // 원래 정다면체 (점선). front: true 앞쪽만, false 뒤쪽만, null 모두
+    const fr = G.F.map(f => cm.rot(f.n)[2] > 1e-6), pp = G.V.map(p => cm.scr(p));
+    let d = '';
+    G.E.forEach(e => { if (front === null || (fr[e.f[0]] || fr[e.f[1]]) === front) d += seg(pp[e.a], pp[e.b]) + ' '; });
+    const f = front !== false;
+    return d ? stroke(d, '--ink-2', f ? 2.2 : 1.6, `stroke-dasharray="${f ? '10 8' : '5 8'}" opacity="${n2((f ? 0.85 : 0.45) * fade)}"`) : '';
+  }
+  const tokOf = f => (f.role === 'o' ? '--t-solid' : (KTOK[f.k] || '--t-solid'));
+  function cutSVG(P, cm, o = {}) {                  // 닫힌 볼록 다면체
+    const ew = o.ew || 2.6, mix = o.mix || 0, gf = 1 - 0.5 * mix;
+    const fr = P.F.map(f => cm.rot(f.n)[2] > 1e-6), pp = P.V.map(p => cm.scr(p));
+    let s = o.ghost ? ghostSVG(o.ghost, cm, o.ghostBehind ? null : false, gf) : '';
+    P.F.forEach((f, i) => {
+      if (!fr[i]) return;
+      const d = pathOf(f.v.map(j => pp[j])), nv = cm.rot(f.n), t0 = tokOf(f), t1 = KTOK[f.v.length];
+      s += faceSVG(d, t0, nv, true, 1);
+      if (mix > 0.004 && t1 && t1 !== t0) s += faceSVG(d, t1, nv, true, mix);
+    });
+    let vis = '';
+    P.E.forEach(e => { if (fr[e.f[0]] || fr[e.f[1]]) vis += seg(pp[e.a], pp[e.b]) + ' '; });
+    if (vis) s += stroke(vis, '--ink', ew);
+    if (o.ghost && !o.ghostBehind) s += ghostSVG(o.ghost, cm, true, gf);
+    return s;
+  }
+  function snubSVG(F, cm, o = {}) {                 // 떨어져 떠 있는 면들: 뒤에서부터 칠한다 (틈으로 뒷면이 보인다)
+    const ew = o.ew || 2.6;
+    let s = o.ghost ? ghostSVG(o.ghost, cm, null, 0.75) : '';
+    F.map(f => { const pp = f.pts.map(cm.scr); return { f, pp, nv: cm.rot(f.n), z: pp.reduce((a, p) => a + p[2], 0) / pp.length }; })
+      .sort((a, b) => a.z - b.z)
+      .forEach(({ f, pp, nv }) => {
+        const d = pathOf(pp), fr = nv[2] > 0, op = f.g > 0.001 ? 1 : 0;
+        let x = faceSVG(d, tokOf(f), nv, fr, 1);
+        x += `<path d="${d}" style="fill:none;stroke:var(--ink);stroke-width:${fr ? ew : n2(ew * 0.6)};stroke-linejoin:round"${fr ? '' : ' opacity="0.6"'}></path>`;
+        s += op < 0.999 ? `<g opacity="${n2(op)}">${x}</g>` : x;
+      });
+    return s;
+  }
+  const Q_THUMB = QT.mul(QT.axis([1, 0, 0], rad(20)), QT.axis([0, 1, 0], rad(-24)));
+  const thumb = (P, mix, w = 160, h = 128) => {
+    const f = sphereFit(P.V, [4, 4, w - 8, h - 8], 0.98);
+    return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true">${cutSVG(P, camFit(Q_THUMB, f), { mix, ew: P.V.length > 50 ? 1.1 : 1.5 })}</svg>`;
+  };
+
+
+  /* ---------- 면의 모양 이름 ---------- */
+  const KNUM = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  const korN = n => (n < 10 ? KNUM[n] : (n >= 20 ? KNUM[Math.floor(n / 10)] : '') + '십' + KNUM[n % 10]);
+  const polyName = (k, reg) => `${reg ? '정' : ''}${korN(k)}각형`;
+  // 면을 모양(변의 개수)별로: [{k, n}]
+  const kindsOf = (P, only) => {
+    const m = {};
+    P.F.forEach((f, i) => { if (only && !only.has(i)) return; m[f.v.length] = (m[f.v.length] || 0) + 1; });
+    return Object.keys(m).map(Number).sort((a, b) => a - b).map(k => ({ k, n: m[k] }));
+  };
+  // 면의 색 견본 (정다각형이면 칠하고, 아직 고르지 않으면 테두리만)
+  const kSwatch = (k, reg, cls = 'sw') => {
+    const r = 10.5, a0 = k % 2 ? 90 : 90 + 180 / k, cy = k === 3 ? 13.6 : 12;
+    const pts = Array.from({ length: k }, (_, i) => { const a = rad(a0 + 360 * i / k); return `${n2(12 + r * Math.cos(a))},${n2(cy - r * Math.sin(a))}`; }).join(' ');
+    return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true"><polygon points="${pts}" style="fill:${reg && KTOK[k] ? `var(${KTOK[k]})` : 'none'};stroke:var(--ink);stroke-width:1.5;stroke-linejoin:round"></polygon></svg>`;
+  };
+
+  /* ---------- 세어 보기: 누른 면·모서리·꼭짓점에 표시 ----------
+     o.mode 'f' | 'e' | 'v', o.mk 센 것(Set), o.hov 가리키는 것, o.flash 아직 안 센 것을 밝히기, o.fill(i) 면 색 */
+  function cntSVG(P, cm, o = {}) {
+    const mode = o.mode, mk = o.mk || new Set(), hov = o.hov, flash = o.flash, ew = o.ew || 2.6;
+    const fr = P.F.map(f => cm.rot(f.n)[2] > 1e-6), pp = P.V.map(p => cm.scr(p));
+    let s = '', dots = '', mo = '';
+    P.F.forEach((f, i) => {
+      if (!fr[i]) return;
+      const d = pathOf(f.v.map(j => pp[j]));
+      s += faceSVG(d, o.fill ? o.fill(i) : '--t-solid', cm.rot(f.n), true, 1);
+      if (mode !== 'f') return;
+      if (mk.has(i)) {
+        s += `<path d="${d}" style="fill:var(--card);opacity:.45"></path>`;
+        mo += `<path d="${d}" style="fill:none;stroke:var(--mark);stroke-width:${n2(ew * 1.3)};stroke-linejoin:round"></path>`;
+        const c = f.v.reduce((a, j) => [a[0] + pp[j][0] / f.v.length, a[1] + pp[j][1] / f.v.length], [0, 0]);
+        dots += `<circle cx="${n2(c[0])}" cy="${n2(c[1])}" r="${n2(ew * 2.6)}" style="fill:var(--mark);stroke:var(--card);stroke-width:2"></circle>`;
+      } else if (hov === i || flash) s += `<path d="${d}" style="fill:var(--hi);opacity:${flash ? 0.8 : 0.45}"></path>`;
+    });
+    let vis = '', mv = '', mh = '', hv = '';
+    P.E.forEach((e, i) => {
+      const v = fr[e.f[0]] || fr[e.f[1]], d = seg(pp[e.a], pp[e.b]) + ' ';
+      if (mode === 'e' && mk.has(i)) { if (v) mv += d; else mh += d; } else if (v) vis += d;
+      if (mode === 'e' && v && !mk.has(i) && (hov === i || flash)) hv += d;
+    });
+    if (hv) s += stroke(hv, '--hi', n2(ew * 4.2), 'opacity="0.85"');
+    if (vis) s += stroke(vis, '--ink', ew);
+    if (mh) s += stroke(mh, '--mark', n2(ew * 0.9), 'stroke-dasharray="8 6" opacity="0.8"');
+    if (mv) s += stroke(mv, '--mark', n2(ew * 2.4));
+    s += mo + dots;
+    if (mode === 'v') P.V.forEach((p, j) => {
+      const [x, y] = pp[j], seen = P.vf[j].some(fi => fr[fi]), c = (r, st) => `<circle cx="${n2(x)}" cy="${n2(y)}" r="${n2(r)}" style="${st}"></circle>`;
+      if (seen) {
+        if (!mk.has(j) && (hov === j || flash)) s += c(ew * 6, 'fill:var(--hi);opacity:.8');
+        s += mk.has(j) ? c(ew * 3.6, 'fill:var(--mark);stroke:var(--card);stroke-width:2.5') : c(ew * 2.6, 'fill:var(--card);stroke:var(--ink);stroke-width:2');
+      } else if (mk.has(j)) s += c(ew * 3, 'fill:none;stroke:var(--mark);stroke-width:2;stroke-dasharray:4 3');
+    });
+    return s;
+  }
+
+  /* ---------- 각기둥 · 엇각기둥 (모서리 1) ---------- */
+  function prismP(kind, n) {
+    const R = 1 / (2 * Math.sin(Math.PI / n)), anti = kind === 'anti';
+    const h = anti ? Math.sqrt(1 - Math.pow(2 * R * Math.sin(Math.PI / (2 * n)), 2)) : 1;
+    const ring = (y, off) => Array.from({ length: n }, (_, i) => { const a = 2 * Math.PI * i / n + off; return [R * Math.cos(a), y, R * Math.sin(a)]; });
+    const T = ring(h / 2, 0), B = ring(-h / 2, anti ? Math.PI / n : 0);
+    const faces = [{ pts: T.slice().reverse() }, { pts: B }];
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n;
+      if (anti) { faces.push({ pts: [T[i], B[i], T[j]] }, { pts: [B[i], B[j], T[j]] }); }
+      else faces.push({ pts: [T[i], B[i], B[j], T[j]] });
+    }
+    return weld(faces.map(f => ({ pts: f.pts, n: newell(f.pts), role: 't', k: f.pts.length })));
+  }
+  const prismName = (kind, n) => `정${korN(n)}각${kind === 'anti' ? '엇각' : ''}기둥`;
+  const PRISM_SAME = { 'prism-4': '정육면체', 'anti-3': '정팔면체' };
+
+  /* =========================================================
+     정다면체 깎기 — 정다면체를 깎거나 비틀어 준정다면체가 되는 모습을 보여 주는 화면 (도감의 '계열'대로 묶음)
+     장면 0 모아 보기: 깎는 방법(줄) × 정다면체(칸) 표. 짝인 두 정다면체에서 같은 모양이 나오는 칸은 하나로 합쳤다.
+     장면 1~3 계열마다: 짝인 두 정다면체를 나란히 놓고 같은 방법으로 함께 깎는다(정사면체 계열은 하나).
+       깎는 방법마다 '무엇이 될까?' → '다음'으로 깎는다. 다 깎으면 아래에 이름이 나오고, 오른쪽 계통도 칸이 채워진다.
+       끝까지 깎기는 꼭짓점 깎기 모양에서 한 번 멈췄다가 더 깎는다(꼭짓점 깎기 다음 단계는 거기서 이어서 시작).
+       비틀기는 깎지 않고, 면을 하나씩 떼어 바깥으로 밀어낸 뒤 비틀고, 벌어진 틈을 새 면으로 채운다.
+       깎는 동안 새로 생긴 면은 다 깎았을 때의 모양 색, 원래 면은 회색. 모양이 다 갖추어지면 원래 면도 모양 색으로 바뀐다.
+       점선은 원래 정다면체. 면·모서리·꼭짓점의 개수는 깎는 동안 계속 바뀐다.
+     ========================================================= */
+
+  /* ---------- 장면 0: 모아 보기 (깎는 방법 × 정다면체) ---------- */
+  function tableScene() {
+    const COLS = { tetra: 2, cube: 4, octa: 5, dodeca: 7, icosa: 8 };   // 1열은 깎는 방법, 3·6열은 계열 사이 틈
+    const FAM_OF = { tetra: 1, cube: 2, octa: 2, dodeca: 3, icosa: 3 };
+    const MATE = { cube: 'octa', octa: 'cube', dodeca: 'icosa', icosa: 'dodeca' };
+    return {
+      title: '모아 보기', nav: 0, solo: true, steps: () => 1,
+      build() {
+        FIG.classList.add('tbl');
+        let h = '<div class="ctab">';
+        h += `<div class="fh" style="grid-column:2">정사면체 계열</div><div class="fh" style="grid-column:4 / span 2">정육면체·정팔면체 계열</div><div class="fh" style="grid-column:7 / span 2">정십이면체·정이십면체 계열</div>`;
+        Object.keys(COLS).forEach(s => {
+          h += `<button type="button" class="ch" data-go="${FAM_OF[s]}" data-step="0" style="grid-column:${COLS[s]};grid-row:2">${thumb(SRCP[s], 0, 160, 110)}<span class="n">${SNAME[s]}</span></button>`;
+        });
+        OPS.forEach((o, i) => {
+          const row = i + 3;
+          h += `<div class="rl" style="grid-row:${row}"><span class="on">${i + 1}</span>${o[1]}</div>`;
+          Object.keys(COLS).forEach(s => {
+            const to = toOf(s, i), mate = MATE[s];
+            if ((s === 'octa' || s === 'icosa') && toOf(mate, i) === to) return;     // 짝과 같은 모양이면 앞 칸에 합쳤다
+            const merged = (s === 'cube' || s === 'dodeca') && toOf(mate, i) === to;
+            h += `<button type="button" class="tc${merged ? ' span2' : ''}" data-go="${FAM_OF[s]}" data-step="${2 * i}" style="grid-column:${COLS[s]}${merged ? ' / span 2' : ''};grid-row:${row}">${thumb(finalOf(s, i), 1)}<span class="n">${TNAME[to]}</span></button>`;
+          });
+        });
+        FIG.innerHTML = h + '</div>';
+        $$('[data-go]', FIG).forEach(b => b.addEventListener('click', () => go(Number(b.getAttribute('data-go')), Number(b.getAttribute('data-step')))));
+      },
+      update() {}
+    };
+  }
+
+  /* ---------- 장면 1~3: 한 계열을 깎기 ---------- */
+  function famScene(fam, si) {
+    const V = fam.views, duo = V.length === 2;
+    const VB = [1200, 600], BOX = duo ? [[20, 10, 560, 580], [620, 10, 560, 580]] : [[20, 10, 1160, 580]];
+    const boxR = 0.95 * Math.min(BOX[0][2], BOX[0][3]) / 2;
+    // 깎는 방법마다 크기: 다 깎은 모양이 두 쪽에서 같은 크기로 보이고, 원래 정다면체도 칸에 들어가게 (꼭짓점 깎기는 끝까지 깎기와 같은 크기)
+    const SC = OPS.map((o, oi) => {
+      const ref = o[0] === 't' ? 1 : oi;
+      const Rf = s => (o[0] === 's' ? CUT.snub[s].R1 : maxR(finalOf(s, ref).V));
+      const lim = s => (o[0] === 's' ? Math.max(maxR(SRCP[s].V), Rf(s)) : maxR(SRCP[s].V));
+      const c = Math.min(...V.map(s => boxR * Rf(s) / lim(s)));
+      return V.map(s => c / Rf(s));
+    });
+    const DUR = 4600, HALF = 2700, HOLD = 1300, SNUB = 6400;
+    const revealed = new Set();
+    let view = null, dirty = true, stopLoop = null, tau = 0, mix = 0, op = 0, anim = null, ghost = true;
+    const cache = V.map(() => ({ key: '', P: null }));
+    const cnt = { mode: '', mk: V.map(() => ({ f: new Set(), e: new Set(), v: new Set() })), hov: null, checked: false, flashT: 0, key: '' };   // 세어 보기
+    const isR = () => OPS[op][0] === 'r', isS = () => OPS[op][0] === 's';
+    const done = () => tau >= 0.9995;
+    const atMark = () => isR() && Math.abs(tau - 0.5) < 0.0015;
+    const regular = () => tau <= 0 || done() || atMark();
+    const shapeKey = () => `${op}:${tau.toFixed(4)}`;
+    const cams = () => V.map((s, i) => camera(view.q, SC[op][i], BOX[i][0] + BOX[i][2] / 2, BOX[i][1] + BOX[i][3] / 2, [0, 0, 0]));
+    function shapeOf(i) {
+      const s = V[i], u = uOf(s, op, tau), key = `${op}:${u.toFixed(5)}`, c = cache[i];
+      if (c.key !== key) { c.key = key; c.P = isS() ? (u >= 0.9995 ? snubFinal(s) : u <= 0 ? SRCP[s] : snubFaces(s, u)) : carve(s, OPS[op][0], u); }
+      return c.P;
+    }
+    function draw() {
+      if (cnt.key !== shapeKey()) { cnt.key = shapeKey(); cnt.mk.forEach(m => { m.f.clear(); m.e.clear(); m.v.clear(); }); cnt.checked = false; cnt.flashT = 0; }
+      const cm = cams(), flash = performance.now() < cnt.flashT, reg = regular();
+      V.forEach((s, i) => {
+        const g = $(`#gV${i}`, FIG);
+        if (!g) return;
+        const P = shapeOf(i), many = Array.isArray(P) ? P.length > 40 : P.V.length > 50, ew = many ? 2 : 2.6;
+        if (cnt.mode && !Array.isArray(P)) {
+          g.innerHTML = cntSVG(P, cm[i], { mode: cnt.mode, mk: cnt.mk[i][cnt.mode], hov: cnt.hov && cnt.hov[0] === i ? cnt.hov[1] : null, flash, ew,
+            fill: fi => (reg ? (KTOK[P.F[fi].v.length] || '--t-solid') : tokOf(P.F[fi])) });
+          return;
+        }
+        g.innerHTML = Array.isArray(P) ? snubSVG(P, cm[i], { ghost: ghost ? SRCP[s] : null, ew })
+          : cutSVG(P, cm[i], { mix, ghost: ghost ? SRCP[s] : null, ghostBehind: isS() && tau > 0, ew });
+      });
+      paintCaps();
+    }
+    /* 아래 이름표: 원래 → (끝까지 깎기는 꼭짓점 깎기 모양에서 한 번) → 다 깎은 모양. 움직이는 동안은 흐리게 */
+    function paintCaps() {
+      V.forEach((s, i) => {
+        const cap = $(`#cap${i}`, FIG);
+        if (!cap) return;
+        let name, fin = false, live = true;
+        if (done()) { name = TNAME[toOf(s, op)]; fin = true; }
+        else if (atMark()) name = TNAME[toOf(s, 0)];
+        else if (tau <= 0) name = SNAME[s];
+        else { live = false; name = isR() && tau > 0.5 ? TNAME[toOf(s, 0)] : SNAME[s]; }
+        const cn = cap.querySelector('.capn');
+        if (cn.textContent !== name) cn.textContent = name;
+        cn.classList.toggle('fin', fin);
+        cn.classList.toggle('dim', !live);
+        const P = shapeOf(i), closed = !Array.isArray(P), reg = regular();
+        let chips = '', ccs;
+        if (!closed) ccs = '';
+        else if (cnt.mode) {
+          const mk = cnt.mk[i][cnt.mode], word = { f: '면', e: '모서리', v: '꼭짓점' }[cnt.mode], tot = { f: P.F.length, e: P.E.length, v: P.V.length }[cnt.mode];
+          if (cnt.mode === 'f') {
+            const got = {}; kindsOf(P, mk).forEach(c => { got[c.k] = c.n; });
+            chips = (cnt.checked ? kindsOf(P) : kindsOf(P, mk)).map(c => `<li>${kSwatch(c.k, reg, 'shp')}<span>${polyName(c.k, reg)}</span><b>${cnt.checked ? `${got[c.k] || 0}/${c.n}` : c.n}</b></li>`).join('');
+          }
+          ccs = `<span>센 ${word}<b class="mk">${mk.size}</b></span>` + (cnt.checked ? `<span class="${mk.size === tot ? 'ok' : ''}">전체<b>${tot}</b></span>` : '');
+        } else {
+          chips = kindsOf(P).map(c => `<li>${kSwatch(c.k, reg, 'shp')}<span>${polyName(c.k, reg)}</span></li>`).join('');   // 개수는 '세기'로 직접 센다
+          ccs = '';
+        }
+        const ul = cap.querySelector('.cchips'), pc = cap.querySelector('.cc');
+        if (ul.innerHTML !== chips) ul.innerHTML = chips;
+        if (pc.innerHTML !== ccs) pc.innerHTML = ccs;
+        const pill = cap.querySelector('.pill'), el = !duo && fin ? ELSEWHERE[toOf(s, op)] : null;
+        pill.hidden = !el;
+        if (el) { pill.textContent = el[2]; pill.dataset.go = el[0]; pill.dataset.step = el[1]; }
+      });
+      const eq = $('#eqb', FIG);
+      if (eq) eq.classList.toggle('off', !(duo && done() && toOf(V[0], op) === toOf(V[1], op)) || !!cnt.mode);
+    }
+    function markRevealed() {
+      let ch = false;
+      if (done() && !revealed.has(op)) { revealed.add(op); ch = true; }
+      if (isR() && tau >= 0.4985 && !revealed.has(0)) { revealed.add(0); ch = true; }
+      if (ch) paintLadder();
+      const q = $('#rQ', PANEL);
+      if (q) q.classList.toggle('is-off', done());
+    }
+    function ladderHTML() {
+      let h = `<div class="ladder ${duo ? 'two' : 'one'}">`;
+      V.forEach((s, i) => { h += `<div class="rail" style="grid-column:${i + 2}"></div>`; });
+      V.forEach((s, i) => { h += `<div class="lh" style="grid-column:${i + 2}">${thumb(SRCP[s], 0, 120, 84)}<span>${SNAME[s]}</span></div>`; });
+      OPS.forEach((o, oi) => {
+        const row = oi + 2;
+        h += `<button type="button" class="ll" data-op="${oi}" style="grid-row:${row}"><span class="on">${oi + 1}</span>${o[1]}</button>`;
+        if (duo && toOf(V[0], oi) === toOf(V[1], oi)) h += `<button type="button" class="lc" data-op="${oi}" data-v="0" style="grid-row:${row};grid-column:2 / span 2"></button>`;
+        else V.forEach((s, i) => { h += `<button type="button" class="lc" data-op="${oi}" data-v="${i}" style="grid-row:${row};grid-column:${i + 2}"></button>`; });
+      });
+      return h + '</div>';
+    }
+    function paintLadder() {
+      $$('.ll', PANEL).forEach(b => b.classList.toggle('cur', Number(b.dataset.op) === op));
+      $$('.lc', PANEL).forEach(b => {
+        const oi = Number(b.dataset.op), s = V[Number(b.dataset.v)], on = revealed.has(oi);
+        b.classList.toggle('cur', oi === op);
+        b.classList.toggle('open', on);
+        const want = on ? `r:${oi}` : 'q';
+        if (b.dataset.st !== want) {
+          b.dataset.st = want;
+          b.innerHTML = on ? `${thumb(finalOf(s, oi), 1, 120, 84)}<span>${TNAME[toOf(s, oi)]}</span>` : '<span class="qm">?</span>';
+          b.setAttribute('aria-label', on ? TNAME[toOf(s, oi)] : `${OPS[oi][1]}: 아직 모름`);
+        }
+      });
+      const t = $('#opT', PANEL);
+      if (t) t.innerHTML = `<span class="on">${op + 1}</span>${OPS[op][1]}`;
+    }
+    function paintCtl() {
+      const r = $('#uR', FIG), b = $('#bPlay', FIG);
+      if (r) r.value = String(Math.round(tau * 1000));
+      if (b) {
+        const lab = anim ? '멈춤' : done() ? '다시' : tau > 0 && !atMark() ? '이어서' : isS() ? '비틀기' : '깎기';
+        if (b.dataset.lab !== lab) { b.dataset.lab = lab; b.innerHTML = (anim ? ICO_PAUSE : ICO_PLAY) + `<span>${lab}</span>`; }
+      }
+      $$('[data-act]', FIG).forEach(x => x.setAttribute('aria-pressed', view.spin === x.getAttribute('data-act') ? 'true' : 'false'));
+      const gb = $('#bGhost', FIG);
+      if (gb) gb.setAttribute('aria-pressed', ghost ? 'true' : 'false');
+      const dl = $('#uMarks', FIG);
+      if (dl) { const want = isR() ? '<option value="500"></option>' : ''; if (dl.innerHTML !== want) dl.innerHTML = want; }
+      const cb = $('#bCnt', FIG), closed = V.every((s, i) => !Array.isArray(shapeOf(i)));
+      if (cb) { cb.setAttribute('aria-pressed', cnt.mode ? 'true' : 'false'); cb.disabled = !closed; }
+      const bar = $('#cBar', FIG);
+      if (bar) bar.hidden = !cnt.mode;
+      $$('[data-cm]', FIG).forEach(x => x.setAttribute('aria-pressed', cnt.mode === x.dataset.cm ? 'true' : 'false'));
+    }
+    function setCount(m) {
+      cnt.mode = m; cnt.checked = false; cnt.flashT = 0; cnt.hov = null;
+      if (m) { anim = null; view.spin = 'none'; }
+      dirty = true;
+    }
+    const viewAt = pt => BOX.findIndex(b => pt[0] >= b[0] && pt[0] <= b[0] + b[2] && pt[1] >= b[1] && pt[1] <= b[1] + b[3]);
+    function play() {
+      const from = done() ? 0 : tau, segs = [];
+      if (isR()) {
+        if (from < 0.5) segs.push({ a: from, b: 0.5, ms: HALF * (0.5 - from) / 0.5 + 100 }, { hold: HOLD });
+        const a = Math.max(from, 0.5);
+        segs.push({ a, b: 1, ms: HALF * (1 - a) / 0.5 + 100 });
+      } else segs.push({ a: from, b: 1, ms: (isS() ? SNUB : DUR) * (1 - from) + 150 });
+      anim = { segs, t0: performance.now() };
+      setCount('');
+      paintCtl();
+    }
+    function stepAnim(now) {
+      let t = now - anim.t0;
+      for (const sg of anim.segs) {
+        if (sg.hold) { if (t < sg.hold) return; t -= sg.hold; continue; }
+        if (t < sg.ms) { tau = sg.a + (sg.b - sg.a) * ease(t / sg.ms); return; }
+        t -= sg.ms; tau = sg.b;
+      }
+      tau = 1; anim = null;
+    }
+    return {
+      title: fam.name, nav: si, figwide: true, steps: () => OPS.length * 2,
+      dots: step => ({ n: OPS.length, cur: Math.floor(step / 2) }),
+      build() {
+        FIG.classList.add('app3d');
+        const caps = V.map((s, i) => `<div class="cap" id="cap${i}"><p class="capn"></p><ul class="cchips"></ul><p class="cc"></p><button type="button" class="pill" hidden></button></div>`);
+        FIG.innerHTML = `<svg viewBox="0 0 ${VB[0]} ${VB[1]}" role="img" aria-label="${fam.name} 깎기">${V.map((s, i) => `<g id="gV${i}"></g>`).join('')}<rect class="grab drag3d" x="0" y="0" width="${VB[0]}" height="${VB[1]}"></rect></svg>
+          <div class="caps ${duo ? 'two' : 'one'}">${duo ? caps[0] + '<div class="eqb off" id="eqb"><b>=</b><span>같은 도형</span></div>' + caps[1] : caps[0]}</div>
+          <div class="kbar">
+            <span class="kgrp"><button type="button" class="kbtn pri" id="bPlay">${ICO_PLAY}<span>깎기</span></button></span>
+            <span class="rng"><input type="range" id="uR" min="0" max="1000" step="1" value="0" list="uMarks" aria-label="깎은 정도"><datalist id="uMarks"></datalist></span>
+            <span class="kgrp"><button type="button" class="kbtn" id="bGhost" aria-pressed="true">${ICO_GHOST}<span>원래 모양</span></button><button type="button" class="kbtn" data-act="spin" aria-pressed="false">${ICO_SPIN}<span>돌리기</span></button><button type="button" class="kbtn" id="bCnt" aria-pressed="false">${ICO_CNT}<span>세기</span></button></span>
+          </div>
+          <div class="kbar cbar" id="cBar" hidden>
+            <span class="kgrp"><button type="button" class="kbtn" data-cm="f" aria-pressed="false">면</button><button type="button" class="kbtn" data-cm="e" aria-pressed="false">모서리</button><button type="button" class="kbtn" data-cm="v" aria-pressed="false">꼭짓점</button></span>
+            <span class="kgrp"><button type="button" class="kbtn pri" id="bChk">확인</button><button type="button" class="kbtn" id="bClr">지우기</button></span>
+          </div>`;
+        PANEL.innerHTML = `<p class="sub fam">${fam.name}</p>
+          <h2 class="q opt" id="opT"></h2>
+          <p class="ask big" id="rQ">무엇이 될까?</p>
+          ${ladderHTML()}`;
+        view = makeView(); view.spin = 'spin';
+        $$('.ll, .lc', PANEL).forEach(b => b.addEventListener('click', () => go(si, 2 * Number(b.dataset.op))));
+        $$('.pill', FIG).forEach(b => b.addEventListener('click', () => go(Number(b.dataset.go), Number(b.dataset.step))));
+        $('#bPlay', FIG).addEventListener('click', () => { if (anim) anim = null; else play(); paintCtl(); });
+        $('#uR', FIG).addEventListener('input', e => { anim = null; tau = Number(e.target.value) / 1000; if (isR() && Math.abs(tau - 0.5) < 0.012) tau = 0.5; markRevealed(); paintCtl(); dirty = true; });
+        $('#bGhost', FIG).addEventListener('click', () => { ghost = !ghost; paintCtl(); dirty = true; });
+        $$('[data-act]', FIG).forEach(b => b.addEventListener('click', () => { const a = b.getAttribute('data-act'); view.spin = view.spin === a ? 'none' : a; paintCtl(); dirty = true; }));
+        $('#bCnt', FIG).addEventListener('click', () => { setCount(cnt.mode ? '' : 'f'); paintCtl(); });
+        $$('[data-cm]', FIG).forEach(b => b.addEventListener('click', () => { setCount(b.dataset.cm); paintCtl(); }));
+        $('#bChk', FIG).addEventListener('click', () => {
+          cnt.checked = true;
+          const all = V.every((s, i) => { const P = shapeOf(i); return cnt.mk[i][cnt.mode].size === { f: P.F.length, e: P.E.length, v: P.V.length }[cnt.mode]; });
+          if (!all) cnt.flashT = performance.now() + 1600;
+          dirty = true;
+        });
+        $('#bClr', FIG).addEventListener('click', () => { cnt.mk.forEach(m => { m.f.clear(); m.e.clear(); m.v.clear(); }); cnt.checked = false; dirty = true; });
+        attachDrag($('svg', FIG), {
+          move: (dx, dy) => { view.drag(dx, dy); paintCtl(); dirty = true; },
+          tap: pt => {
+            if (!cnt.mode) return;
+            const i = viewAt(pt); if (i < 0) return;
+            const P = shapeOf(i); if (Array.isArray(P)) return;
+            const h = hitTest(P, cams()[i], cnt.mode, pt); if (h < 0) return;
+            const mk = cnt.mk[i][cnt.mode]; if (mk.has(h)) mk.delete(h); else mk.add(h);
+            dirty = true;
+          },
+          hover: pt => {
+            if (!cnt.mode || !pt) { if (cnt.hov) { cnt.hov = null; dirty = true; } return; }
+            const i = viewAt(pt); if (i < 0) return;
+            const P = shapeOf(i); if (Array.isArray(P)) return;
+            const h = hitTest(P, cams()[i], cnt.mode, pt), nh = h >= 0 ? [i, h] : null;
+            if (JSON.stringify(nh) !== JSON.stringify(cnt.hov)) { cnt.hov = nh; dirty = true; }
+          }
+        });
+        stopLoop = rafLoop((dt, now) => {
+          if (anim) { stepAnim(now); markRevealed(); paintCtl(); dirty = true; }
+          const target = done() || atMark() ? 1 : 0;
+          if (mix !== target) { mix = target > mix ? Math.min(target, mix + dt * 1.6) : Math.max(target, mix - dt * 4); dirty = true; }
+          if (cnt.flashT && now < cnt.flashT + 50) dirty = true;
+          if (view.tick(dt) || dirty) { dirty = false; draw(); }
+        });
+      },
+      leave() { if (stopLoop) stopLoop(); stopLoop = null; anim = null; },
+      update(step, prev) {
+        const i = Math.floor(step / 2), q = step % 2;
+        op = i;
+        setCount('');
+        if (q === 0) { anim = null; tau = isR() ? 0.5 : 0; mix = isR() ? 1 : 0; }   // 끝까지 깎기는 꼭짓점 깎기 모양에서 이어서 시작
+        else if (prev === step - 1 && !done()) play();
+        else { anim = null; tau = 1; mix = 1; }
+        markRevealed(); paintLadder(); paintCtl(); dirty = true;
+      }
+    };
+  }
+  const ICO_SPIN = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.4-5.7"></path><path d="M20 4v4h-4"></path></svg>';
+  const ICO_PLAY = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" fill="currentColor"></path></svg>';
+  const ICO_PAUSE = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"></path></svg>';
+  const ICO_CNT = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12l4 4 10-10"></path></svg>';
+  const ICO_GHOST = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8l8-4 8 4v8l-8 4-8-4z" stroke-dasharray="3 2.5"></path></svg>';
+
+  /* ---------- 장면 목록과 위 띠 (번호, 이름, 장면 순서) ---------- */
+  const scenes = [tableScene()].concat(FAMS.map((f, i) => famScene(f, i + 1)));
+  const NAVS = [['', '모아 보기', 0], ['1', '정사면체 계열', 1], ['2', '정육면체·정팔면체', 2], ['3', '정십이면체·정이십면체', 3]];
+
+  /* ---------- 진행 ---------- */
+  let curSi = -1;
+  function go(si, step) {
+    si = Math.max(0, Math.min(scenes.length - 1, si));
+    const sc = scenes[si];
+    step = Math.max(0, Math.min(sc.steps() - 1, step));
+    if (si !== curSi) {
+      if (curSi >= 0 && scenes[curSi].leave) scenes[curSi].leave();
+      curSi = si; state.si = si; state.step = step;
+      FIG.className = 'fig'; FIG.innerHTML = ''; PANEL.innerHTML = '';
+      STAGE.classList.toggle('wide', !!sc.wide);
+      STAGE.classList.toggle('figwide', !!sc.figwide);
+      STAGE.classList.toggle('solo', !!sc.solo);
+      STAGE.classList.add('instant');
+      sc.build();
+      FIG.classList.add('no-anim'); PANEL.classList.add('no-anim');
+      sc.update(step, step);
+      void FIG.offsetWidth;
+      FIG.classList.remove('no-anim'); PANEL.classList.remove('no-anim');
+      STAGE.classList.remove('enter'); void STAGE.offsetWidth; STAGE.classList.add('enter');
+      renderInk();
+    } else {
+      const prev = state.step;
+      state.step = step;
+      STAGE.classList.toggle('instant', step < prev);   // 뒤로 갈 때는 늦게 나타나기 없이 바로
+      if (prev !== step) sc.update(step, prev);
+    }
+    updateChrome();
+  }
+  const next = () => {
+    const sc = scenes[state.si];
+    if (sc.advance && sc.advance()) return;
+    if (state.step < sc.steps() - 1) go(state.si, state.step + 1);
+    else if (state.si < scenes.length - 1) go(state.si + 1, 0);
+  };
+  const prev = () => {
+    const sc = scenes[state.si];
+    if (sc.retreat && sc.retreat()) return;
+    if (state.step > 0) go(state.si, state.step - 1);
+    else if (state.si > 0) go(state.si - 1, scenes[state.si - 1].steps() - 1);
+  };
+
+  const navEl = $('#nav');
+  navEl.innerHTML = NAVS.map((n, i) => `<button type="button" data-nav="${i}" data-si="${n[2]}">${n[0] ? `<span class="n">${n[0]}</span>` : ''}${n[1]}</button>`).join('');
+  $$('button', navEl).forEach(b => b.addEventListener('click', () => go(Number(b.getAttribute('data-si')), 0)));
+
+  function updateChrome() {
+    const sc = scenes[state.si], n = sc.steps();
+    $$('button', navEl).forEach(b => {
+      if (Number(b.getAttribute('data-nav')) === sc.nav) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
+    });
+    const di = sc.dots ? sc.dots(state.step) : { n, cur: state.step };
+    $('#dots').innerHTML = Array.from({ length: di.n }, (_, i) => `<span class="dot${i <= di.cur ? ' on' : ''}${i === di.cur ? ' cur' : ''}"></span>`).join('');
+    $('#prevBtn').disabled = state.si === 0 && state.step === 0;
+    $('#nextBtn').disabled = state.si === scenes.length - 1 && state.step === n - 1;
+  }
+  $('#nextBtn').addEventListener('click', next);
+  $('#prevBtn').addEventListener('click', prev);
+
+  /* ---------- 펜 (장면마다 따로 남는다) ---------- */
+  const INK = $('#ink');
+  const inkStore = new Map();
+  let penOn = false, penVar = '--pen1', cur = null;
+  const inkKey = () => String(state.si);
+  const ptsStr = pts => pts.map(p => p.join(',')).join(' ');
+  function renderInk() {
+    const arr = inkStore.get(inkKey()) || [];
+    INK.innerHTML = arr.map(s => `<polyline points="${ptsStr(s.pts)}" style="stroke:var(${s.c})"></polyline>`).join('');
+  }
+  function undoInk() { const arr = inkStore.get(inkKey()); if (arr && arr.length) { arr.pop(); renderInk(); } }
+  const toInk = e => {
+    const r = INK.getBoundingClientRect();
+    return [Math.round((e.clientX - r.left) / (r.width || 1) * 1000), Math.round((e.clientY - r.top) / (r.height || 1) * 1000)];
+  };
+  INK.addEventListener('pointerdown', e => {
+    if (!penOn) return;
+    e.preventDefault();
+    try { INK.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+    const p = toInk(e);
+    cur = { c: penVar, pts: [p], el: document.createElementNS(NS, 'polyline') };
+    cur.el.setAttribute('points', p.join(','));
+    cur.el.style.stroke = `var(${penVar})`;
+    INK.appendChild(cur.el);
+    const arr = inkStore.get(inkKey()) || [];
+    arr.push(cur);
+    inkStore.set(inkKey(), arr);
+  });
+  INK.addEventListener('pointermove', e => {
+    if (!cur) return;
+    const p = toInk(e), last = cur.pts[cur.pts.length - 1];
+    if (Math.abs(p[0] - last[0]) + Math.abs(p[1] - last[1]) < 3) return;
+    cur.pts.push(p);
+    cur.el.setAttribute('points', ptsStr(cur.pts));
+  });
+  const endStroke = () => {
+    if (!cur) return;
+    if (cur.pts.length === 1) { cur.pts.push([cur.pts[0][0] + 1, cur.pts[0][1] + 1]); cur.el.setAttribute('points', ptsStr(cur.pts)); }
+    delete cur.el;
+    cur = null;
+  };
+  INK.addEventListener('pointerup', endStroke);
+  INK.addEventListener('pointercancel', endStroke);
+  function setPen(on) {
+    penOn = on;
+    document.body.classList.toggle('pen-on', on);
+    $('#penBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (!on) endStroke();
+  }
+  $('#penBtn').addEventListener('click', () => setPen(!penOn));
+  $('#penOff').addEventListener('click', () => setPen(false));
+  $('#penUndo').addEventListener('click', undoInk);
+  $('#penClear').addEventListener('click', () => { inkStore.set(inkKey(), []); renderInk(); });
+  $$('.pen-sw').forEach(b => b.addEventListener('click', () => {
+    penVar = b.getAttribute('data-pen');
+    $$('.pen-sw').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+
+  /* ---------- 화면 색: 종이 ↔ 칠판 ---------- */
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('lesson-theme'); if (t === 'dark' || t === 'light') root.setAttribute('data-theme', t); } catch (err) { /* 무시 */ }
+  const themeNow = () => root.getAttribute('data-theme') || (mq('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const paintTheme = () => {
+    const dark = themeNow() === 'dark';
+    $('#themeLbl').textContent = dark ? '칠판' : '종이';
+    $('#themeBtn').setAttribute('aria-label', `화면 색 바꾸기, 지금은 ${dark ? '칠판' : '종이'}`);
+  };
+  $('#themeBtn').addEventListener('click', () => {
+    const t = themeNow() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('lesson-theme', t); } catch (err) { /* 무시 */ }
+    paintTheme();
+  });
+  paintTheme();
+  const schemeMq = mq('(prefers-color-scheme: dark)');
+  if (schemeMq.addEventListener) schemeMq.addEventListener('change', paintTheme);
+
+  /* ---------- 전체 화면 ---------- */
+  const fsBtn = $('#fsBtn');
+  if (!document.fullscreenEnabled) fsBtn.hidden = true;
+  const toggleFs = () => {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else root.requestFullscreen().catch(() => {});
+  };
+  fsBtn.addEventListener('click', toggleFs);
+
+  /* ---------- 키보드 (방향키, 발표용 리모컨) ---------- */
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.defaultPrevented) return;
+    const tn = e.target && e.target.tagName ? e.target.tagName : '';
+    const k = e.key;
+    if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'Z')) { if (penOn) { e.preventDefault(); undoInk(); } return; }
+    if (e.ctrlKey || e.metaKey) return;
+    if (tn === 'TEXTAREA' || tn === 'INPUT') return;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || ((k === ' ' || k === 'Enter') && tn !== 'BUTTON')) { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); prev(); }
+    else if (k === 'p' || k === 'P' || k === 'ㅔ') setPen(!penOn);
+    else if (k === 'f' || k === 'F' || k === 'ㄹ') toggleFs();
+    else if (k === 'Escape') { if (penOn) setPen(false); }
+    else if (/^[0-9]$/.test(k)) { const nv = NAVS.find(x => x[0] === k); if (nv) go(nv[2], 0); }   // 탭 번호로 바로 가기
+  });
+
+  go(0, 0);
+})();
+</script>
+
+</body></html>

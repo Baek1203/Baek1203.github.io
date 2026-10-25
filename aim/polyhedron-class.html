@@ -1,0 +1,1652 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!--
+  다면체 수업 화면 (전자칠판용) — 안내/03_수업화면_기본틀.html을 복사해 장면만 바꿈
+  교과서: 비상교육 중학교 수학 1 (이진호) 206~207쪽, 12차시 01 다면체와 회전체 중 다면체 부분
+  흐름: 1 다면체(함께 탐구 → 뜻 → ○면체) → 2 구성 요소(면·모서리·꼭짓점 → 문제 1) → 3 각기둥과 각뿔(초등 6학년 확인)
+        → 4 각뿔대(평면으로 자르기 → 밑면·옆면·높이 → 문제 2) → 전개도(번호 없음: 학습지에는 없고 화면에서만 보여 줌, 접었다 펼치기)
+        → 5 그림 없이 세기 - 연습(그림 아래 단계 단추로 밑면 → 기둥 → 지붕 → 벽, '다음'은 6번으로)
+        → 6 그림 없이 세기 - 실전(4문제, 3·4번은 더 해 보기, 새 문제) → 마무리(총정리 두 단계(n으로 일반화하지 않음) → 문제 3, 문제 4, 더 해 보기: 전개도, 거꾸로 생각하기 두 문제)
+  이 화면의 색 (그림과 글에서 같은 대상은 같은 색)
+    밑면 = 파랑(--c-arc), 옆면·벽 = 청록(--c-arc2), 모서리·기둥 = 주황(--c-chord), 지붕 = 보라(--c-secant), 꼭짓점 = 초록(--c-center)
+    입체도형은 정사영으로 그리고, 보이지 않는 모서리는 점선으로 그린다. 그림을 끌면 입체도형이 돌아간다(화면에 안내 문구는 두지 않음).
+    면은 불투명하게 칠하고 빛을 받는 방향에 따라 밝기를 달리해, 같은 색이어도 면끼리 구분되게 한다.
+-->
+<title>다면체 수업 화면</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap">
+<style>
+/* ---------- 색: 종이(밝은 화면) ---------- */
+:root{
+  --bg:#f4f6f9;--surface:#ffffff;--surface-2:#e8edf4;--ink:#15202b;--ink-2:#4b5664;--line:#c8d0da;--ghost:#b8c1cc;
+  --accent:#1c4f8c;--on-accent:#ffffff;
+  /* 수학 색: 그림과 글에서 같은 대상은 같은 색 */
+  --c-arc:#1f63c6;--c-arc2:#0a7f9f;--c-chord:#c9510f;--c-secant:#7442c0;--c-center:#12804f;
+  --hi:#f2b705;--hl:rgba(242,183,5,.17);
+  --fill-sec:rgba(31,99,198,.16);--fill-sec2:rgba(31,99,198,.30);--fill-mov:rgba(10,127,159,.24);--fill-tri:rgba(201,81,15,.16);
+  --ok:#12804f;--no:#c62828;
+  --pen1:#d62f2f;--pen2:#1f63c6;--pen3:#12804f;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* ---------- 색: 칠판(어두운 화면) ---------- */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+    --accent:#ffd66b;--on-accent:#1b2a26;
+    --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+    --hi:#ffe27a;--hl:rgba(255,226,122,.13);
+    --fill-sec:rgba(130,188,255,.18);--fill-sec2:rgba(130,188,255,.34);--fill-mov:rgba(111,219,233,.24);--fill-tri:rgba(255,173,107,.2);
+    --ok:#86e3ab;--no:#ff8f8f;
+    --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+  --accent:#ffd66b;--on-accent:#1b2a26;
+  --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+  --hi:#ffe27a;--hl:rgba(255,226,122,.13);
+  --fill-sec:rgba(130,188,255,.18);--fill-sec2:rgba(130,188,255,.34);--fill-mov:rgba(111,219,233,.24);--fill-tri:rgba(255,173,107,.2);
+  --ok:#86e3ab;--no:#ff8f8f;
+  --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+  color-scheme:dark;
+}
+/* ---------- 다면체에서 더한 색: 입체도형의 면 칠 ----------
+   면은 불투명한 바탕색(--t-)에 빛을 받는 정도만큼 밝게(--lit) 또는 어둡게(--shd) 덧칠해, 같은 색이어도 면끼리 구분되게 한다. */
+:root{
+  --t-solid:#c3d0e1;--t-base:#8fb4e8;--t-side:#93d0da;--t-top:#bea8e8;--t-face:#5fb8c7;--t-hi:#f3cf63;--t-cv:var(--t-solid);--t-blank:#e9ebee;
+  --lit:#ffffff;--shd:#0b1a2b;--f-plane:rgba(18,128,79,.2);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --t-solid:#4f6a77;--t-base:#3e6ca6;--t-side:#2d7b84;--t-top:#65539b;--t-face:#2f97a5;--t-hi:#9c8838;--t-blank:#474c52;
+    --shd:#000000;--f-plane:rgba(134,227,171,.2);
+  }
+}
+:root[data-theme="dark"]{
+  --t-solid:#4f6a77;--t-base:#3e6ca6;--t-side:#2d7b84;--t-top:#65539b;--t-face:#2f97a5;--t-hi:#9c8838;--t-blank:#474c52;
+  --shd:#000000;--f-plane:rgba(134,227,171,.2);
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;font-size:clamp(15px,.95vw + .7vh,32px);line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden;word-break:keep-all;overflow-wrap:break-word}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+i{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+
+/* ---------- 틀: 위 띠 · 무대 · 아래 띠 ---------- */
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
+.top{display:flex;align-items:center;gap:.8em;padding:.4em 1em;background:var(--surface);border-bottom:1px solid var(--line);min-width:0}
+.brand{font-family:'Noto Serif KR',serif;font-weight:900;font-size:.95em;white-space:nowrap}
+.nav{display:flex;gap:.25em;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav>:first-child{margin-left:auto}
+.nav>:last-child{margin-right:auto}
+.nav button{display:inline-flex;align-items:center;gap:.35em;border:0;background:transparent;border-radius:.55em;padding:.3em .75em;min-height:44px;font-size:.78em;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.nav button .n{font-family:'Noto Serif KR',serif;font-weight:900}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="step"]{background:var(--accent);color:var(--on-accent)}
+.tools{display:flex;gap:.35em}
+.tool{display:inline-flex;align-items:center;gap:.35em;border:1px solid var(--line);background:var(--surface);border-radius:.55em;padding:.25em .65em;min-height:44px;font-size:.7em;font-weight:600;white-space:nowrap}
+.tool:hover{background:var(--surface-2)}
+.tool[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ico{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+.stage{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2.4vw;padding:2vh 2.8vw;min-height:0}
+.stage.wide{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}      /* 설명이 긴 장면 */
+.stage.figwide{grid-template-columns:minmax(0,1.6fr) minmax(0,.78fr)}  /* 그림이 주인공인 장면 */
+.fig{position:relative;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+.fig>svg{display:block;width:100%;height:100%;overflow:visible}
+.fig svg *{pointer-events:none}
+.fig svg .grab{pointer-events:auto;cursor:grab;touch-action:none}
+.fig svg .grab:active{cursor:grabbing}
+.fig.tapface svg .grab{cursor:pointer}
+.panel{min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;gap:.65em;overflow-y:auto;padding:.2em}
+.stage.enter .fig,.stage.enter .panel{animation:enter .45s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.bottom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1em;padding:.45em 1em;background:var(--surface);border-top:1px solid var(--line)}
+.navbtn{display:inline-flex;align-items:center;gap:.35em;border:1.5px solid var(--line);background:var(--surface);border-radius:.7em;padding:.35em 1.1em;min-height:52px;font-size:.9em;font-weight:700}
+.navbtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.navbtn:disabled{opacity:.35;cursor:default}
+.progress{display:flex;justify-content:center;min-width:0}
+.dots{display:flex;gap:.45em;align-items:center;min-height:.9em;flex-wrap:wrap;justify-content:center}
+.dot{width:.55em;height:.55em;border-radius:50%;background:var(--line);transition:transform .25s,background .25s}
+.dot.on{background:var(--accent)}
+.dot.cur{transform:scale(1.4)}
+
+/* ---------- 단계 표시 ---------- */
+.is-off{opacity:0 !important;pointer-events:none !important}
+[data-show],[data-hide],[data-only],[data-ph]{transition:opacity .45s ease}
+[data-late]:not(.is-off){transition-delay:1.15s}
+[data-late2]:not(.is-off){transition-delay:2.7s}
+[data-late3]:not(.is-off){transition-delay:4.2s}
+[data-collapse].is-off{display:none}
+[data-collapse]:not(.is-off){animation:enter .4s ease both}
+[data-collapse][data-late]:not(.is-off){animation-delay:1.15s}
+.instant [data-late]:not(.is-off),.instant [data-late2]:not(.is-off),.instant [data-late3]:not(.is-off){transition-delay:0s !important;animation-delay:0s !important}
+.no-anim,.no-anim *{transition:none !important}
+
+/* ---------- 설명 칸의 글 ---------- */
+.q{margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.5em;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:0;color:var(--ink-2);font-size:.92em;text-wrap:pretty}
+.say{margin:0;font-size:1.05em;line-height:1.65;text-wrap:pretty}
+.ask{margin:0;font-size:1.12em;font-weight:700;line-height:1.6;text-wrap:pretty}
+.eq2{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.25em;line-height:1.5}
+.note{margin:0;font-size:.88em;line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+.stack{display:flex;flex-direction:column;gap:.5em}
+.nw{white-space:nowrap}
+.given{display:inline-block;background:var(--surface-2);border-radius:.45em;padding:.12em .6em;font-weight:600}
+/* 분수, 색 글자 */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-size:.88em;line-height:1.12;margin:0 .12em}
+.fr>span{padding:0 .2em}
+.fr>span:first-child{border-bottom:.09em solid currentColor}
+.ca{color:var(--accent)}.cn{color:var(--c-center)}.cw{color:var(--c-arc2)}.cl{color:var(--c-arc)}.cr{color:var(--c-chord)}.cs{color:var(--c-secant)}
+/* 식 상자, 성질 상자, 답 상자, 핵심 한 줄(상자 없이 강조색 굵은 글) */
+.fbox{border:2px solid var(--accent);border-radius:.8em;padding:.45em .9em;display:flex;flex-direction:column;gap:.05em}
+.fbox .pl,.prop .pl{font-weight:800;font-size:.85em;color:var(--accent)}
+.fm{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.32em;line-height:1.65}
+.fm-s{font-size:1.14em;line-height:1.8}
+.fm .dim{color:var(--ink-2);font-weight:400}
+.prop{border:2px solid var(--accent);border-radius:.8em;padding:.5em .9em;display:flex;flex-direction:column;gap:.15em}
+.prop p{margin:0;font-size:1.05em;text-wrap:pretty}
+.answer{background:var(--surface-2);border-radius:.8em;padding:.6em .9em;display:flex;flex-direction:column;gap:.25em}
+.answer .big{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.6em;line-height:1.3;color:var(--accent)}
+.answer .why{margin:0;font-size:1.02em;line-height:1.8;text-wrap:pretty}
+.kkt{margin:0;font-weight:800;font-size:1.12em;line-height:1.5;text-wrap:balance;color:var(--accent)}
+/* 표 */
+.mt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.92em}
+.mt th,.mt td{border:1.5px solid var(--line);padding:.35em .4em;text-align:center}
+.mt thead th{background:var(--surface-2);font-weight:700}
+.mt tbody th{text-align:left;font-weight:700;background:var(--surface)}
+/* 복습 문제 */
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:1em;font-weight:700;color:var(--ink-2);font-size:.85em}
+.ox circle,.ox path{fill:none;stroke:var(--ghost);stroke-width:30;stroke-linecap:round;transition:stroke .4s,opacity .4s}
+.fig.rev .ox.ok circle,.fig.rev .ox.ok path{stroke:var(--accent)}
+.fig.rev .ox:not(.ok){opacity:.2}
+.fig .rv{opacity:0;transition:opacity .45s ease}
+.fig.rev .rv{opacity:1}
+.fig .hide-rev{transition:opacity .45s ease}
+.fig.rev .hide-rev{opacity:0}
+
+/* ---------- 그림 ---------- */
+.base{fill:none;stroke:var(--ink);stroke-width:3.5}
+.guide{fill:none;stroke:var(--ink-2);stroke-width:3}
+.ghost{opacity:.4}
+.f-ink{fill:var(--ink)}
+.rd{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lbl{font-family:'Noto Serif KR',Georgia,serif;font-weight:700;fill:var(--ink)}                     /* 점 이름 A, B, O */
+.tag{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700;fill:var(--ink)}  /* 한글 이름표 */
+.num{font-family:'STIX Two Text','Times New Roman',serif;font-weight:600;fill:var(--ink)}           /* 수, 단위 */
+.var{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic;font-weight:600;fill:var(--ink)}  /* 문자 r, l, x */
+.vi{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+.is-dim{opacity:.15}
+
+/* ---------- 다면체에서 더한 것 ---------- */
+@keyframes pop{from{opacity:0;transform:translateY(.35em) scale(.85)}to{opacity:1;transform:none}}
+.cnt{transform-box:fill-box;transform-origin:center;animation:pop .42s ease both}
+@keyframes fin{from{opacity:1}to{opacity:0}}
+.fin{animation:fin .45s ease-out both}
+.prob{border:1.5px solid var(--line);border-radius:.8em;padding:.5em .9em;display:flex;flex-direction:column;gap:.15em}
+.prob .pl{font-weight:800;font-size:.85em;color:var(--accent)}
+.prob p{margin:0;font-size:1.05em;text-wrap:pretty}
+.qrow{display:flex;align-items:center;gap:.45em;flex-wrap:wrap}
+.qrow .qn{font-family:'STIX Two Text','Times New Roman',serif;font-weight:700;font-size:1.1em;min-width:1.8em}
+.chip{display:inline-flex;align-items:baseline;gap:.25em;background:var(--surface-2);border-radius:.55em;padding:.15em .65em;font-weight:700}
+.chip b{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-size:1.12em}
+/* 그림 아래 조작 막대 */
+.fig.ctl{flex-direction:column;align-items:stretch;gap:.5em}
+.fig.ctl>svg{flex:1 1 0;min-height:0;height:auto}
+.kbar{display:flex;align-items:center;justify-content:center;gap:.7em;flex-wrap:wrap;font-size:.8em;transition:opacity .35s ease}
+.kbar .kl{font-weight:700;color:var(--ink-2)}
+.seg{display:inline-flex;border:1.5px solid var(--line);border-radius:.75em;overflow:hidden;background:var(--surface)}
+.seg button{min-width:56px;min-height:50px;border:0;border-left:1px solid var(--line);background:transparent;font-weight:800;padding:0 .75em;white-space:nowrap}
+.seg button:first-child{border-left:0}
+.seg button:hover{background:var(--surface-2)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.stepper{display:inline-flex;align-items:center;border:1.5px solid var(--line);border-radius:.75em;overflow:hidden;background:var(--surface)}
+.stepper button{min-width:52px;min-height:50px;border:0;background:transparent;font-weight:800;font-size:1.15em}
+.stepper button:hover{background:var(--surface-2)}
+.stepper button:disabled{opacity:.3;cursor:default}
+.stepper .val{min-width:5.6em;text-align:center;font-weight:800;padding:0 .3em;border-left:1px solid var(--line);border-right:1px solid var(--line);line-height:50px}
+.kbtn{display:inline-flex;align-items:center;gap:.35em;min-height:50px;border:1.5px solid var(--line);border-radius:.75em;background:var(--surface);padding:0 1em;font-weight:700;white-space:nowrap}
+.kbtn:hover{background:var(--surface-2)}
+.kbtn:disabled{opacity:.35;cursor:default}
+.kbtn.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.kbtn.pri:hover{background:var(--accent);filter:brightness(1.08)}
+.sseg button{min-width:58px;padding:0 .6em}
+.rngw{display:inline-flex;align-items:center;gap:.5em;font-weight:700;color:var(--ink-2)}
+.rng{-webkit-appearance:none;appearance:none;width:min(13em,26vw);height:50px;background:transparent;margin:0}
+.rng:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.rng::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line)}
+.rng::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:34px;height:34px;border-radius:50%;background:var(--accent);border:4px solid var(--surface);margin-top:-13px;box-shadow:0 0 0 1.5px var(--line)}
+.rng::-moz-range-track{height:10px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line)}
+.rng::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--accent);border:4px solid var(--surface)}
+/* 짓기 표: 밑면 → 기둥 → 지붕 → 벽 */
+.bt{width:100%;border-collapse:collapse;table-layout:fixed}
+.bt col.lab{width:7.4em}
+.bt th,.bt td{border:1.5px solid var(--line);padding:.22em .3em;text-align:center;vertical-align:middle;transition:background .35s}
+.bt thead th{background:var(--surface-2);font-weight:700;font-size:.9em}
+.bt tbody th{text-align:left;font-weight:700;font-size:.9em;white-space:nowrap;background:var(--surface)}
+.bt td{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.18em;height:1.85em;line-height:1.2}
+.bt tr.now td,.bt tr.now th{background:var(--hl)}
+.bt tr.sum th{background:var(--surface-2)}
+.bt tr.sum td{color:var(--accent);font-size:1.3em}
+.bt .z{color:var(--ghost)}
+.bt .in{display:inline-block;animation:pop .5s ease both}
+.stg{display:inline-flex;align-items:center;gap:.4em}
+.stg::before{content:'';width:.75em;height:.75em;border-radius:.22em;background:var(--sc);flex-shrink:0}
+.gt td{font-size:1.05em;height:auto;padding:.3em .2em}
+.gt td .ex{display:block;font-size:.92em;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.gt td b{display:block;font-size:1.28em;color:var(--accent)}
+.gt tbody th{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-size:1.02em}
+.panel .rvp{opacity:0;transition:opacity .45s ease}
+.panel.rev .rvp{opacity:1}
+
+/* ---------- 펜 ---------- */
+.ink{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.pen-on .ink{pointer-events:auto;cursor:crosshair;touch-action:none}
+.ink polyline{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.penbar{position:absolute;top:.6em;right:.8em;z-index:6;display:none;align-items:center;gap:.35em;background:var(--surface);border:1px solid var(--line);border-radius:.8em;padding:.3em .4em;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.pen-on .penbar{display:flex}
+.pen-sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 2px var(--line)}
+.pen-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.pbtn{min-height:44px;border:1px solid var(--line);border-radius:.55em;background:var(--surface);padding:0 .7em;font-size:.7em;font-weight:600;white-space:nowrap}
+
+@media (max-width:860px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%}
+  .brand,.tool span{display:none}
+  .stage,.stage.wide,.stage.figwide{grid-template-columns:minmax(0,1fr);padding:1.5vh 4vw}
+  .fig{height:46vh}
+  .fig.ctl{height:auto}
+  .fig.ctl>svg{flex:none;height:auto;aspect-ratio:600/460}
+  .panel{overflow:visible;justify-content:flex-start}
+  .penbar{flex-wrap:wrap;max-width:calc(100% - 1.6em)}
+}
+</style>
+<div class="app">
+  <header class="top">
+    <div class="brand">다면체</div>
+    <nav class="nav" id="nav" aria-label="수업 흐름"></nav>
+    <div class="tools">
+      <button type="button" class="tool" id="penBtn" aria-pressed="false" aria-label="펜"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"></path><path d="M14 7l3 3"></path></svg><span>펜</span></button>
+      <button type="button" class="tool" id="themeBtn" aria-label="화면 색 바꾸기"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"></path></svg><span id="themeLbl">종이</span></button>
+      <button type="button" class="tool" id="fsBtn" aria-label="전체 화면"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><span>전체 화면</span></button>
+    </div>
+  </header>
+  <main class="stage" id="stage">
+    <div class="fig" id="fig"></div>
+    <div class="panel" id="panel"></div>
+    <svg class="ink" id="ink" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="penbar" role="toolbar" aria-label="펜 도구">
+      <button type="button" class="pen-sw" data-pen="--pen1" aria-pressed="true" aria-label="빨강 펜" style="--sw:var(--pen1)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen2" aria-pressed="false" aria-label="파랑 펜" style="--sw:var(--pen2)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen3" aria-pressed="false" aria-label="초록 펜" style="--sw:var(--pen3)"></button>
+      <button type="button" class="pbtn" id="penUndo">되돌리기</button>
+      <button type="button" class="pbtn" id="penClear">모두 지우기</button>
+      <button type="button" class="pbtn" id="penOff">펜 끄기</button>
+    </div>
+  </main>
+  <footer class="bottom">
+    <button type="button" class="navbtn" id="prevBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>이전</button>
+    <div class="progress"><div class="dots" id="dots"></div></div>
+    <button type="button" class="navbtn primary" id="nextBtn">다음<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+  </footer>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const mq = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
+  const RM = false;   // 수업용 움직임은 기기의 '동작 줄이기' 설정과 상관없이 항상 보여 준다
+  const NS = 'http://www.w3.org/2000/svg';
+  const FIG = $('#fig'), PANEL = $('#panel'), STAGE = $('#stage');
+  const state = { si: 0, step: 0 };
+
+  /* ---------- 기하 ---------- */
+  const rad = d => d * Math.PI / 180;
+  const n2 = v => Math.round(v * 100) / 100;
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const seg = (p, q) => `M ${n2(p[0])} ${n2(p[1])} L ${n2(q[0])} ${n2(q[1])}`;
+  const ease = u => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+
+  /* ---------- SVG 조각 ---------- */
+  const svgWrap = (body, label, w = 600, h = 460) => `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
+  const stroke = (d, c, w, extra = '') => `<path d="${d}" class="rd" style="stroke:var(${c});stroke-width:${w}" ${extra}></path>`;
+  const txt = cls => (x, y, t, s, a = 'start', c = '', extra = '') =>
+    `<text x="${n2(x)}" y="${n2(y)}" class="${cls}" font-size="${s}" text-anchor="${a}"${c ? ` style="fill:var(${c})"` : ''} ${extra}>${t}</text>`;
+  const tag = txt('tag'), num = txt('num');
+  // 선 위에 놓아도 읽히는 이름표 (바탕색 테두리)
+  const tagH = (x, y, t, s, a = 'middle', c = '--ink', extra = '') =>
+    `<text x="${n2(x)}" y="${n2(y)}" class="tag" font-size="${s}" text-anchor="${a}" style="fill:var(${c});paint-order:stroke;stroke:var(--bg);stroke-width:${n2(s * 0.32)}px;stroke-linejoin:round" ${extra}>${t}</text>`;
+
+  /* ---------- 설명 칸의 수식 조각 ---------- */
+  const I = ch => `<i>${ch}</i>`;
+  const N_ = I('n');
+
+  /* ---------- 단계 엔진 ---------- */
+  function drawIn(el, ms = 900) {                  // 선이 그려지며 나타나기
+    if (RM || !el || typeof el.getTotalLength !== 'function') return;
+    let len = 0;
+    try { len = el.getTotalLength(); } catch (e) { return; }
+    if (!(len > 0)) return;
+    clearTimeout(el._dt);
+    el.style.transition = 'none';
+    el.style.strokeDasharray = `${len} ${len}`;
+    el.style.strokeDashoffset = `${len}`;
+    el.getBoundingClientRect();
+    el.style.transition = `stroke-dashoffset ${ms}ms ease-in-out, opacity .45s ease`;
+    el.style.strokeDashoffset = '0';
+    el._dt = setTimeout(() => { el.style.transition = ''; el.style.strokeDasharray = ''; el.style.strokeDashoffset = ''; }, ms + 80);
+  }
+  const drawAll = root => {
+    if (!root) return;
+    if (root.hasAttribute('data-draw')) drawIn(root);
+    $$('[data-draw]', root).forEach(x => drawIn(x));
+  };
+  function applyStep(root, step, prev) {
+    $$('[data-show],[data-hide],[data-only]', root).forEach(el => {
+      const s = el.getAttribute('data-show'), h = el.getAttribute('data-hide'), o = el.getAttribute('data-only');
+      let vis = true;
+      if (s !== null && step < Number(s)) vis = false;
+      if (h !== null && step >= Number(h)) vis = false;
+      if (o !== null && !o.split(',').map(Number).includes(step)) vis = false;
+      const wasOff = el.classList.contains('is-off');
+      el.classList.toggle('is-off', !vis);
+      if (vis && wasOff && step > prev) drawAll(el);
+    });
+  }
+  function tween(ms, fn, done) {                   // 0→1로 움직이기. 돌려받은 함수를 부르면 멈춘다
+    if (RM || !(ms > 0)) { fn(1); if (done) done(); return () => {}; }
+    let alive = true, fin = false, wd = 0;
+    const t0 = performance.now();
+    const finish = () => { if (!alive || fin) return; fin = true; clearTimeout(wd); fn(1); if (done) done(); };
+    const tick = now => {
+      if (!alive || fin) return;
+      const u = Math.min(1, Math.max(0, (now - t0) / ms));
+      if (u >= 1) { finish(); return; }
+      fn(ease(u));
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    wd = setTimeout(finish, ms + 700);           // 화면이 잠시 멈춰도 끝 상태로 마무리
+    return () => { alive = false; clearTimeout(wd); };
+  }
+
+  /* =========================================================
+     다면체에서 더한 것: 입체도형을 SVG로 그리기 (정사영, y축이 위쪽)
+     - 면은 바깥을 향하는 법선으로 앞/뒤를 가리고, 앞면이 하나도 없는 모서리는 점선으로 그린다.
+     - 굽은 면(원기둥, 원뿔)은 같은 묶음(g)의 면 사이 모서리를 그리지 않고, 윤곽선만 그린다.
+     ========================================================= */
+  const range = k => Array.from({ length: k }, (_, i) => i);
+  const V3 = {
+    add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+    sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+    mul: (a, k) => [a[0] * k, a[1] * k, a[2] * k],
+    dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+    unit: a => { const L = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / L, a[1] / L, a[2] / L]; },
+    lerp: (a, b, u) => [lerp(a[0], b[0], u), lerp(a[1], b[1], u), lerp(a[2], b[2], u)],
+    avg: ps => V3.mul(ps.reduce((s, p) => V3.add(s, p), [0, 0, 0]), 1 / ps.length)
+  };
+  const L2 = (p, q, u) => [lerp(p[0], q[0], u), lerp(p[1], q[1], u)];
+  const LT = V3.unit([-0.4, 0.8, 0.55]);            // 빛의 방향 (화면 기준)
+  const pathOf = pp => 'M ' + pp.map(p => `${n2(p[0])} ${n2(p[1])}`).join(' L ') + ' Z';
+
+  const newell = Q => {                              // 다각형의 법선
+    let nn = [0, 0, 0];
+    Q.forEach((a, i) => { const b = Q[(i + 1) % Q.length]; nn = V3.add(nn, [(a[1] - b[1]) * (a[2] + b[2]), (a[2] - b[2]) * (a[0] + b[0]), (a[0] - b[0]) * (a[1] + b[1])]); });
+    return V3.unit(nn);
+  };
+  function mkSolid(V, F) {
+    const C = V3.avg(V);
+    F.forEach(f => {
+      const Q = f.v.map(i => V[i]);
+      let nn = newell(Q);
+      f.c = V3.avg(Q);
+      if (V3.dot(nn, V3.sub(f.c, C)) < 0) { f.v = f.v.slice().reverse(); nn = V3.mul(nn, -1); }
+      f.n = nn;
+    });
+    const map = new Map();
+    F.forEach((f, fi) => f.v.forEach((a, i) => {
+      const b = f.v[(i + 1) % f.v.length], key = a < b ? `${a}-${b}` : `${b}-${a}`;
+      if (!map.has(key)) map.set(key, { a: Math.min(a, b), b: Math.max(a, b), f: [] });
+      map.get(key).f.push(fi);
+    }));
+    const E = Array.from(map.values());
+    E.forEach(e => { const g0 = F[e.f[0]].g; e.smooth = e.f.length === 2 && g0 != null && g0 === F[e.f[1]].g; });
+    const vf = V.map(() => []);
+    F.forEach((f, fi) => f.v.forEach(i => vf[i].push(fi)));
+    return { V, F, E, vf, C };
+  }
+  // 밑면의 꼭짓점: 첫 번째 변이 앞쪽(+z)을 향하도록
+  const ring = (k, R, y, a0 = 90 - 180 / k) => range(k).map(j => [R * Math.cos(rad(a0 + 360 * j / k)), y, R * Math.sin(rad(a0 + 360 * j / k))]);
+  // 각기둥(r = R), 각뿔(r = 0), 각뿔대(0 < r < R). 면의 순서: 밑면, (윗면), 옆면 k개
+  function mkPrismoid(k, R, r, h) {
+    let S;
+    if (r <= 0) S = mkSolid([...ring(k, R, 0), [0, h, 0]], [{ v: range(k), k: 'base' }, ...range(k).map(j => ({ v: [j, (j + 1) % k, k], k: 'side' }))]);
+    else S = mkSolid([...ring(k, R, 0), ...ring(k, r, h)], [{ v: range(k), k: 'base' }, { v: range(k).map(i => i + k), k: 'top' },
+      ...range(k).map(j => ({ v: [j, (j + 1) % k, (j + 1) % k + k, j + k], k: 'side' }))]);
+    S.n = k;
+    return S;
+  }
+  const DIM = { prism: { r: 1, h: 1.2 }, pyr: { r: 0, h: 1.45 }, fru: { r: 0.55, h: 1.05 } };
+  const yawOf = k => (k === 3 ? 36 : -24);           // 밑면이 삼각형이면 꼭짓점이 앞으로 오게 본다
+  const mkType = (t, k) => mkPrismoid(k, 1, DIM[t].r, DIM[t].h);
+  function mkBox(w, h, d) {
+    const x = w / 2, z = d / 2;
+    const V = [[-x, 0, -z], [x, 0, -z], [x, 0, z], [-x, 0, z], [-x, h, -z], [x, h, -z], [x, h, z], [-x, h, z]];
+    return mkSolid(V, [{ v: [0, 1, 2, 3], k: 'base' }, { v: [4, 5, 6, 7], k: 'top' }, { v: [0, 1, 5, 4], k: 'side' }, { v: [1, 2, 6, 5], k: 'side' }, { v: [2, 3, 7, 6], k: 'side' }, { v: [3, 0, 4, 7], k: 'side' }]);
+  }
+  function mkHouse() {                               // 오각기둥을 눕힌 집 모양
+    const pr = [[-0.5, 0], [0.5, 0], [0.5, 0.62], [0, 1.05], [-0.5, 0.62]];
+    const V = [...pr.map(([z, y]) => [-0.8, y, z]), ...pr.map(([z, y]) => [0.8, y, z])];
+    return mkSolid(V, [{ v: range(5), k: 'base' }, { v: range(5).map(i => i + 5), k: 'top' }, ...range(5).map(j => ({ v: [j, (j + 1) % 5, (j + 1) % 5 + 5, j + 5], k: 'side' }))]);
+  }
+  function mkCyl(R, h, m = 48) {
+    const V = [...ring(m, R, 0, 0), ...ring(m, R, h, 0)];
+    return mkSolid(V, [{ v: range(m), k: 'base' }, { v: range(m).map(i => i + m), k: 'top' }, ...range(m).map(j => ({ v: [j, (j + 1) % m, (j + 1) % m + m, j + m], k: 'side', g: 1, cv: 1 }))]);
+  }
+  function mkCone(R, h, m = 48) {
+    const V = [...ring(m, R, 0, 0), [0, h, 0]];
+    return mkSolid(V, [{ v: range(m), k: 'base' }, ...range(m).map(j => ({ v: [j, (j + 1) % m, m], k: 'side', g: 1, cv: 1 }))]);
+  }
+  const shiftS = (S, d) => mkSolid(S.V.map(v => V3.add(v, d)), S.F.map(f => ({ v: f.v.slice(), k: f.k, g: f.g, cv: f.cv })));
+
+  /* ---------- 카메라 (yaw: 옆으로 돌린 각, pitch: 내려다보는 각) ---------- */
+  function mkCam(yaw, pitch, s, ox, oy) {
+    const cw = Math.cos(rad(yaw)), sw = Math.sin(rad(yaw)), cp = Math.cos(rad(pitch)), sp = Math.sin(rad(pitch));
+    const rot = v => { const x1 = v[0] * cw + v[2] * sw, z1 = -v[0] * sw + v[2] * cw; return [x1, v[1] * cp - z1 * sp, v[1] * sp + z1 * cp]; };
+    return { yaw, pitch, s, rot, p: v => { const r = rot(v); return [ox + s * r[0], oy - s * r[1], r[2]]; } };
+  }
+  const bb2 = (pts, cam) => {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    pts.forEach(v => { const p = cam.p(v); x0 = Math.min(x0, p[0]); x1 = Math.max(x1, p[0]); y0 = Math.min(y0, p[1]); y1 = Math.max(y1, p[1]); });
+    return [x0, y0, x1, y1];
+  };
+  const sFit = (pts, yaw, pitch, w, h) => { const b = bb2(pts, mkCam(yaw, pitch, 1, 0, 0)); return Math.min(w / (b[2] - b[0] || 1), h / (b[3] - b[1] || 1)); };
+  const camBox = (pts, yaw, pitch, s, box) => { const b = bb2(pts, mkCam(yaw, pitch, s, 0, 0)); return mkCam(yaw, pitch, s, box[0] + box[2] / 2 - (b[0] + b[2]) / 2, box[1] + box[3] / 2 - (b[1] + b[3]) / 2); };
+  // 끌어서 돌려도 크기와 가운데가 그대로인 카메라
+  const fitOrbit = (pts, yaw, pitch, box, k = 0.9) => {
+    const mn = [0, 1, 2].map(i => Math.min(...pts.map(p => p[i]))), mx = [0, 1, 2].map(i => Math.max(...pts.map(p => p[i])));
+    const C = mn.map((v, i) => (v + mx[i]) / 2), c0 = mkCam(yaw, pitch, 1, 0, 0), pc = c0.p(C);
+    let ex = 0, ey = 0;
+    pts.forEach(v => { const p = c0.p(v); ex = Math.max(ex, Math.abs(p[0] - pc[0])); ey = Math.max(ey, Math.abs(p[1] - pc[1])); });
+    return { C, box, s: k * Math.min(box[2] / 2 / (ex || 1), box[3] / 2 / (ey || 1)) };
+  };
+  const camOrbit = (fit, view) => {
+    const c0 = mkCam(view.yaw, view.pitch, 1, 0, 0), pc = c0.p(fit.C);
+    return mkCam(view.yaw, view.pitch, fit.s, fit.box[0] + fit.box[2] / 2 - fit.s * pc[0], fit.box[1] + fit.box[3] / 2 - fit.s * pc[1]);
+  };
+  function orbit(el, view, redraw, lim = [-35, 85], onTap = null) {   // 그림을 끌면 돌아가고, 살짝 누르면 onTap
+    if (!el) return;
+    let d = null;
+    el.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      d = { x: e.clientX, y: e.clientY, yaw: view.yaw, pitch: view.pitch, moved: false };
+      try { el.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+    });
+    el.addEventListener('pointermove', e => {
+      if (!d) return;
+      if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 8) return;
+      d.moved = true;
+      view.yaw = d.yaw + (e.clientX - d.x) * 0.45;
+      view.pitch = clamp(d.pitch + (e.clientY - d.y) * 0.35, lim[0], lim[1]);
+      redraw();
+    });
+    el.addEventListener('pointerup', e => { const tap = d && !d.moved; d = null; if (tap && onTap) onTap(e); });
+    el.addEventListener('pointercancel', () => { d = null; });
+  }
+  const inPoly = (q, pp) => {                       // 점 q가 다각형 pp 안에 있는가
+    let c = false;
+    for (let i = 0, j = pp.length - 1; i < pp.length; j = i++) {
+      const a = pp[i], b = pp[j];
+      if ((a[1] > q[1]) !== (b[1] > q[1]) && q[0] < (b[0] - a[0]) * (q[1] - a[1]) / (b[1] - a[1]) + a[0]) c = !c;
+    }
+    return c;
+  };
+  const svgPt = (svg, e) => {
+    try { const m = svg.getScreenCTM(); if (!m) return null; const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const r = p.matrixTransform(m.inverse()); return [r.x, r.y]; }
+    catch (err) { return null; }
+  };
+  const GRAB = '<rect class="grab" x="0" y="0" width="600" height="460" style="fill:transparent"></rect>';
+
+  /* ---------- 면 하나 칠하기: 바탕색 + 빛을 받은 만큼 밝게, 등진 만큼 어둡게 ---------- */
+  const litOf = (cam, nn) => clamp(0.5 + 0.5 * V3.dot(cam.rot(nn), LT), 0, 1);
+  function facePath(d, tk, l, op = 1) {
+    const [oc, oa] = l >= 0.55 ? ['--lit', Math.min(0.4, (l - 0.55) * 1.0)] : ['--shd', Math.min(0.32, (0.55 - l) * 0.6)];
+    const s = `<path d="${d}" style="fill:var(${tk})"></path>` + (oa > 0.01 ? `<path d="${d}" style="fill:var(${oc});fill-opacity:${n2(oa)}"></path>` : '');
+    return op < 0.999 ? `<g opacity="${n2(op)}">${s}</g>` : s;
+  }
+
+  /* ---------- 입체도형 하나 그리기 (면 → 보이지 않는 모서리(점선) → 보이는 모서리 → 꼭짓점) ---------- */
+  function drawSolid(S, cam, o = {}) {
+    const P = S.V.map(cam.p), FR = S.F.map(f => cam.rot(f.n)[2] > 1e-6);
+    const fill = o.fill || (() => '--t-solid');
+    const order = S.F.map((_, i) => i).sort((a, b) => cam.rot(S.F[a].c)[2] - cam.rot(S.F[b].c)[2]);
+    let bf = '', ff = '';
+    order.forEach(i => {
+      const f = S.F[i], tk = fill(f, i);
+      if (!tk) return;
+      const d = pathOf(f.v.map(j => P[j])), l = FR[i] ? litOf(cam, f.n) : 0.3;
+      const s = facePath(d, tk, l) + (o.over ? o.over(i, d, l) || '' : '');
+      if (FR[i]) ff += s; else bf += s;
+    });
+    const dash = o.dash == null ? 1 : o.dash, edge = o.edge || (() => ({ c: '--ink', w: 3 }));
+    let he = '', ve = '';
+    S.E.forEach(e => {
+      const st = edge(e);
+      if (!st) return;
+      const sil = e.f.length === 2 && FR[e.f[0]] !== FR[e.f[1]];
+      if (e.smooth && !sil) return;
+      const d = seg(P[e.a], P[e.b]);
+      if (e.f.some(fi => FR[fi])) ve += stroke(d, st.c, st.w);
+      else {
+        if (dash < 1) he += stroke(d, st.c, st.w, `opacity="${n2(1 - dash)}"`);
+        if (dash > 0) he += stroke(d, st.c, n2(st.w * 0.62), `stroke-dasharray="7 7" opacity="${n2(dash * 0.9)}"`);
+      }
+    });
+    let hv = '', vv = '';
+    if (o.vert) S.V.forEach((_, i) => {
+      const st = o.vert(i);
+      if (!st) return;
+      const p = P[i];
+      if (S.vf[i].some(fi => FR[fi])) vv += `<circle cx="${n2(p[0])}" cy="${n2(p[1])}" r="${st.r}" style="fill:var(${st.c})"></circle>`;
+      else hv += `<circle cx="${n2(p[0])}" cy="${n2(p[1])}" r="${n2(st.r * 0.8)}" style="fill:var(--surface);stroke:var(${st.c});stroke-width:2.5"></circle>`;
+    });
+    return { svg: bf + ff + he + ve + hv + vv, P, FR };
+  }
+  const colorFill = f => (f.k === 'side' ? '--t-side' : '--t-base');
+  const solidIn = (S, box, o = {}) => {
+    const yaw = o.yaw == null ? yawOf(S.n) : o.yaw, pitch = o.pitch == null ? 22 : o.pitch;
+    return drawSolid(S, camBox(S.V, yaw, pitch, sFit(S.V, yaw, pitch, box[2], box[3]) * (o.k || 0.94), box), o).svg;
+  };
+
+  /* ---------- 이름과 개수 ---------- */
+  const KD = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  const ko = k => { const t = Math.floor(k / 10), o = k % 10; return (t ? (t > 1 ? KD[t] : '') + '십' : '') + KD[o]; };
+  const TYPES = ['prism', 'pyr', 'fru'];
+  const TN = { prism: '각기둥', pyr: '각뿔', fru: '각뿔대' };
+  const nameOf = (t, k) => `${ko(k)}${TN[t]}`;
+  const gon = k => `${ko(k)}각형`;
+  const faceNm = f => `${ko(f)}면체`;
+  const eun = t => (t === 'fru' ? '는' : '은'), eul = t => (t === 'fru' ? '를' : '을');
+  const CNT = (t, k) => (t === 'pyr' ? { v: k + 1, e: 2 * k, f: k + 1 } : { v: 2 * k, e: 3 * k, f: k + 2 });
+  // 짓는 순서마다 늘어나는 개수: ① 밑면 ② 기둥 ③ 지붕 ④ 벽(옆면)
+  const ROWS = (t, k) => [{ v: k, e: k, f: 1 }, { v: 0, e: k, f: 0 }, t === 'pyr' ? { v: 1, e: 0, f: 0 } : { v: k, e: k, f: 1 }, { v: 0, e: 0, f: k }];
+  const STG = [['--c-arc', '① 밑면'], ['--c-chord', '② 기둥'], ['--c-secant', '③ 지붕'], ['--c-arc2', '④ 벽(옆면)']];
+  function tableHTML(t, k, ph, animRow = -1) {      // ph: 0 = 빈 표, 1~4 = 그 줄까지, 5 = 합계까지
+    const rows = ROWS(t, k), c = CNT(t, k);
+    const cell = (v, show, dl) => (show ? `<span${dl ? ` class="in" style="animation-delay:${dl}ms"` : ''}>${v === 0 ? '<span class="z">0</span>' : v}</span>` : '');
+    let h = '<table class="bt"><colgroup><col class="lab"><col><col><col></colgroup><thead><tr><th></th><th>꼭짓점</th><th>모서리</th><th>면</th></tr></thead><tbody>';
+    rows.forEach((r, i) => {
+      h += `<tr${ph === i + 1 ? ' class="now"' : ''}><th><span class="stg" style="--sc:var(${STG[i][0]})">${STG[i][1]}</span></th>` +
+        ['v', 'e', 'f'].map((q, j) => `<td>${cell(r[q], ph > i, animRow === i ? 700 + j * 230 : 0)}</td>`).join('') + '</tr>';
+    });
+    h += `<tr class="sum${ph === 5 ? ' now' : ''}"><th>합계</th>` + ['v', 'e', 'f'].map((q, j) => `<td>${cell(c[q], ph >= 5, animRow === 4 ? 150 + j * 230 : 0)}</td>`).join('') + '</tr></tbody></table>';
+    return h;
+  }
+  // n각기둥, n각뿔, n각뿔대 정리 표 (밑면 = 파랑, 기둥 = 주황, 지붕 = 보라, 벽 = 청록)
+  const cB = s => `<span class="cl">${s}</span>`, cP = s => `<span class="cr">${s}</span>`, cR = s => `<span class="cs">${s}</span>`, cW = s => `<span class="cw">${s}</span>`;
+  const GEN = [
+    [`${N_}각기둥`, `${cB(N_)} + ${cR(N_)}`, `2${N_}`, `${cB(N_)} + ${cP(N_)} + ${cR(N_)}`, `3${N_}`, `${cB(1)} + ${cR(1)} + ${cW(N_)}`, `${N_} + 2`],
+    [`${N_}각뿔`, `${cB(N_)} + ${cR(1)}`, `${N_} + 1`, `${cB(N_)} + ${cP(N_)}`, `2${N_}`, `${cB(1)} + ${cW(N_)}`, `${N_} + 1`],
+    [`${N_}각뿔대`, `${cB(N_)} + ${cR(N_)}`, `2${N_}`, `${cB(N_)} + ${cP(N_)} + ${cR(N_)}`, `3${N_}`, `${cB(1)} + ${cR(1)} + ${cW(N_)}`, `${N_} + 2`]
+  ];
+  const genTable = (cls = '') => `<table class="bt gt ${cls}"><colgroup><col style="width:5.6em"><col><col><col></colgroup><thead><tr><th></th><th>꼭짓점</th><th>모서리</th><th>면</th></tr></thead><tbody>` +
+    GEN.map(r => `<tr><th>${r[0]}</th><td><span class="ex">${r[1]}</span><b>${r[2]}</b></td><td><span class="ex">${r[3]}</span><b>${r[4]}</b></td><td><span class="ex">${r[5]}</span><b>${r[6]}</b></td></tr>`).join('') + '</tbody></table>';
+
+  /* ---------- 집 짓기 그림: 밑면 → 기둥 → 지붕 → 벽 ----------
+     st = { b: 밑면, p: 기둥, r: 지붕, w: 벽 } (각각 0~1). 지붕은 위에서 내려와 얹힌다.
+     꼭짓점 번호: 밑면 0~n-1, 지붕 n~2n-1 (각뿔은 꼭대기 n 하나) */
+  const houseOf = (t, k) => ({ t, n: k, S: mkType(t, k), h: DIM[t].h });
+  const FULL = { b: 1, p: 1, r: 1, w: 1 };
+  function drawHouse(H, cam, st, o = {}) {
+    const { S, n, t } = H, pyr = t === 'pyr', TOP = k => (pyr ? n : k + n);
+    const lift = (1 - clamp(st.r, 0, 1)) * H.h * 0.7;
+    const P = S.V.map(cam.p);
+    const PL = S.V.map((v, i) => (i >= n ? cam.p([v[0], v[1] + lift, v[2]]) : P[i]));
+    const FR = S.F.map(f => cam.rot(f.n)[2] > 1e-6);
+    const vis = new Map();
+    S.E.forEach(e => vis.set(`${e.a}-${e.b}`, e.f.some(fi => FR[fi])));
+    const isVis = (a, b) => vis.get(a < b ? `${a}-${b}` : `${b}-${a}`);
+    const visV = i => S.vf[i].some(fi => FR[fi]);
+    const hb = clamp(st.w, 0, 1), rOp = clamp(st.r * 2.5, 0, 1), first = pyr ? 1 : 2;
+    // 면
+    const fs = [];
+    S.F.forEach((f, i) => {
+      let tk, op, pts;
+      if (f.k === 'base') { tk = '--t-base'; op = clamp(st.b * 1.6 - 0.6, 0, 1); pts = f.v.map(j => P[j]); }
+      else if (f.k === 'top') { tk = '--t-top'; op = clamp(st.r * 1.6 - 0.6, 0, 1); pts = f.v.map(j => PL[j]); }
+      else { const kk = i - first; tk = '--t-side'; op = clamp(st.w * 1.7 - 0.7 * kk / Math.max(1, n - 1), 0, 1); pts = f.v.map(j => P[j]); }
+      if (op <= 0.001) return;
+      fs.push({ z: cam.rot(f.c)[2], fr: FR[i], s: facePath(pathOf(pts), tk, FR[i] ? litOf(cam, f.n) : 0.3, op) });
+    });
+    fs.sort((a, b) => a.z - b.z);
+    const bfs = fs.filter(x => !x.fr).map(x => x.s).join(''), ffs = fs.filter(x => x.fr).map(x => x.s).join('');
+    // 모서리 (안 보이는 모서리는 벽이 생길수록 점선으로)
+    let hid = '', vsb = '', rh = '', rv = '';
+    const ed = (p, q, c, w, visible, roof) => {
+      let h = '', v = '';
+      if (visible) v = stroke(seg(p, q), c, w);
+      else {
+        if (hb < 1) h += stroke(seg(p, q), c, w, `opacity="${n2(1 - hb)}"`);
+        if (hb > 0) h += stroke(seg(p, q), c, n2(w * 0.6), `stroke-dasharray="7 7" opacity="${n2(hb * 0.85)}"`);
+      }
+      if (roof) { rh += h; rv += v; } else { hid += h; vsb += v; }
+    };
+    for (let k = 0; k < n; k++) {
+      const pr = clamp(st.b * n - k, 0, 1);
+      if (pr > 0) ed(P[k], L2(P[k], P[(k + 1) % n], pr), '--c-arc', 5, isVis(k, (k + 1) % n));
+    }
+    if (st.p > 0) for (let k = 0; k < n; k++) ed(P[k], L2(P[k], P[TOP(k)], st.p), '--c-chord', 5, isVis(k, TOP(k)));
+    if (!pyr && st.r > 0) for (let k = 0; k < n; k++) ed(PL[k + n], PL[(k + 1) % n + n], '--c-secant', 5, isVis(k + n, (k + 1) % n + n), true);
+    // 꼭짓점
+    let vh = '', vv = '';
+    const vdot = (p, c, r, visible, op = 1) => {
+      if (visible || hb < 0.5) vv += `<circle cx="${n2(p[0])}" cy="${n2(p[1])}" r="${n2(r)}" style="fill:var(${c})" opacity="${n2(op)}"></circle>`;
+      else vh += `<circle cx="${n2(p[0])}" cy="${n2(p[1])}" r="${n2(r * 0.8)}" style="fill:var(--surface);stroke:var(${c});stroke-width:2.5" opacity="${n2(op)}"></circle>`;
+    };
+    for (let k = 0; k < n; k++) { const a = clamp((st.b * n - k) * 2, 0, 1); if (a > 0) vdot(P[k], '--c-arc', 7 * a, visV(k)); }
+    if (st.r > 0) {
+      if (pyr) vdot(PL[n], '--c-secant', 9, visV(n), rOp);
+      else for (let k = n; k < 2 * n; k++) vdot(PL[k], '--c-secant', 7, visV(k), rOp);
+    }
+    const ghost = o.ghost && st.b < 1 ? stroke(pathOf(range(n).map(k => P[k])), '--ink-2', 2.5, `stroke-dasharray="8 8" opacity="${n2((1 - st.b) * 0.7)}"`) : '';
+    // 지금 짓는 부분의 이름표
+    let tg = '';
+    if (o.tag) {
+      const C = cam.p([0, H.h / 2, 0]), sz = o.tagSize || 26;
+      if (o.tag === 'base') {
+        let best = 0;
+        for (let k = 0; k < n; k++) if (cam.rot(V3.lerp(S.V[k], S.V[(k + 1) % n], 0.5))[2] > cam.rot(V3.lerp(S.V[best], S.V[(best + 1) % n], 0.5))[2]) best = k;
+        const m = L2(P[best], P[(best + 1) % n], 0.5);
+        tg = tagH(m[0], m[1] + 40, '밑면', sz, 'middle', '--c-arc');
+      } else if (o.tag === 'pil') {
+        let best = 0;
+        for (let k = 0; k < n; k++) if (P[k][0] + P[TOP(k)][0] > P[best][0] + P[TOP(best)][0]) best = k;
+        const m = L2(P[best], P[TOP(best)], 0.5);
+        tg = tagH(m[0] + 16, m[1] + 9, '기둥', sz, 'start', '--c-chord');
+      } else if (o.tag === 'roof') {
+        const ys = pyr ? [PL[n]] : range(n).map(k => PL[k + n]), y0 = Math.min(...ys.map(p => p[1]));
+        tg = tagH(pyr ? PL[n][0] : C[0], y0 - 22, pyr ? '지붕 (점 하나)' : '지붕', sz, 'middle', '--c-secant');
+      } else if (o.tag === 'wall') {
+        let best = first;
+        for (let i = first; i < S.F.length; i++) if (cam.rot(S.F[i].n)[2] > cam.rot(S.F[best].n)[2]) best = i;
+        const c = cam.p(S.F[best].c);
+        tg = tagH(c[0], c[1] + 9, '벽', sz, 'middle', '--c-arc2');
+      }
+    }
+    return { svg: ghost + bfs + ffs + hid + `<g opacity="${n2(rOp)}">${rh}</g>` + vsb + `<g opacity="${n2(rOp)}">${rv}</g>` + vh + vv + tg, P };
+  }
+  const houseIn = (H, box, st = FULL, o = {}) => {
+    const yaw = o.yaw == null ? yawOf(H.n) : o.yaw, pitch = o.pitch == null ? 22 : o.pitch;
+    return drawHouse(H, camBox(H.S.V, yaw, pitch, sFit(H.S.V, yaw, pitch, box[2], box[3]) * (o.k || 0.94), box), st, o).svg;
+  };
+
+  /* ---------- 전개도: u = 0(다 펼침) ~ 1(다 접음) ----------
+     밑면은 바닥에 두고, 옆면은 밑면의 변을 경첩으로 접어 올린다. 지붕(윗면)은 첫 번째 옆면의 윗변에 붙어 있다. */
+  function netGeo(t, k, u) {
+    const R = 1, r = DIM[t].r, h = DIM[t].h, d = Math.PI / k;
+    const rho = R * Math.cos(d), rho2 = r * Math.cos(d), s = 2 * R * Math.sin(d), s2 = 2 * r * Math.sin(d);
+    const L = Math.hypot(h, rho - rho2), phi = Math.PI - Math.atan2(h, rho - rho2);
+    const al = u * phi, be = u * (Math.PI - phi), Y = [0, 1, 0];
+    const B = ring(k, R, 0), out = [{ k: 'base', pts: B }];
+    for (let j = 0; j < k; j++) {
+      const M = V3.lerp(B[j], B[(j + 1) % k], 0.5), uu = V3.unit([M[0], 0, M[2]]), X = [uu[2], 0, -uu[0]];
+      const D = V3.add(V3.mul(Y, Math.sin(al)), V3.mul(uu, Math.cos(al)));
+      const W = (x, z) => V3.add(V3.add(M, V3.mul(X, x)), V3.mul(D, z));
+      const loc = r > 0 ? [[s / 2, 0], [-s / 2, 0], [-s2 / 2, L], [s2 / 2, L]] : [[s / 2, 0], [-s / 2, 0], [0, L]];
+      out.push({ k: 'side', j, pts: loc.map(([x, z]) => W(x, z)) });
+      if (j === 0 && r > 0) {
+        const O = W(0, L), D2 = V3.add(V3.mul(Y, Math.sin(al + be)), V3.mul(uu, Math.cos(al + be)));
+        out.push({ k: 'top', pts: range(k).map(i => { const th = -Math.PI / 2 + d + 2 * Math.PI * i / k; return V3.add(V3.add(O, V3.mul(X, r * Math.cos(th))), V3.mul(D2, rho2 + r * Math.sin(th))); }) });
+      }
+    }
+    return out;
+  }
+  function drawNet(G, cam) {                       // 면마다 뒤에서부터 칠하기 (이웃한 옆면은 밝기를 번갈아 달리한다)
+    return G.map(f => { const pp = f.pts.map(cam.p); return { f, pp, z: pp.reduce((a, p) => a + p[2], 0) / pp.length }; })
+      .sort((a, b) => a.z - b.z)
+      .map(({ f, pp }) => {
+        let nn = newell(f.pts);
+        if (cam.rot(nn)[2] < 0) nn = V3.mul(nn, -1);
+        const l = clamp(litOf(cam, nn) + (f.k === 'side' ? (f.j % 2 ? -0.12 : 0.04) : 0), 0, 1), d = pathOf(pp);
+        return facePath(d, f.k === 'side' ? '--t-side' : '--t-base', l) + `<path d="${d}" style="fill:none;stroke:var(--ink);stroke-width:2.6;stroke-linejoin:round"></path>`;
+      }).join('');
+  }
+  const netIn = (t, k, box, pitch = 72, yaw = -22) => { const G = netGeo(t, k, 0), pts = G.flatMap(f => f.pts); return drawNet(G, camBox(pts, yaw, pitch, sFit(pts, yaw, pitch, box[2], box[3]) * 0.94, box)); };
+
+  /* =========================================================
+     1. 다면체: 함께 탐구(다각형인 면으로만 둘러싸인 것 찾기) → 다면체의 뜻 → 면의 개수에 따라 ○면체
+     ========================================================= */
+  const K1 = { xs: [100, 300, 500], ys: [118, 333] };
+  const OBJ1 = [
+    { poly: true, f: 6, mk: () => mkBox(1.45, 0.9, 0.95) },
+    { mk: () => mkCone(0.62, 1.45) },
+    { mk: () => mkCyl(0.6, 1.15) },
+    { poly: true, f: 7, mk: mkHouse },
+    { ball: true },
+    { poly: true, f: 4, mk: () => mkPrismoid(3, 1, 0, 1.25) }
+  ];
+  const ballSVG = (cx, cy, R) => `<circle cx="${cx}" cy="${cy}" r="${R}" style="fill:var(--t-cv)"></circle>` +
+    `<circle cx="${n2(cx - R * 0.28)}" cy="${n2(cy - R * 0.3)}" r="${n2(R * 0.5)}" style="fill:var(--lit);fill-opacity:.28"></circle>` +
+    `<circle cx="${cx}" cy="${cy}" r="${R}" style="fill:none;stroke:var(--ink);stroke-width:2.8"></circle>` +
+    stroke(`M ${cx - R} ${cy} A ${R} ${n2(R * 0.34)} 0 0 0 ${cx + R} ${cy}`, '--ink', 2) +
+    stroke(`M ${cx - R} ${cy} A ${R} ${n2(R * 0.34)} 0 0 1 ${cx + R} ${cy}`, '--ink-2', 1.8, 'stroke-dasharray="6 6"');
+  const scDef = {
+    title: '다면체', nav: 0, steps: () => 5,
+    build() {
+      const cell = (o, i) => {
+        const cx = K1.xs[i % 3], cy = K1.ys[Math.floor(i / 3)], box = [cx - 74, cy - 56, 148, 122];
+        let body;
+        if (o.ball) body = ballSVG(cx, cy + 4, 58);
+        else {
+          const S = o.mk();
+          const yw = yawOf(S.n);
+          body = drawSolid(S, camBox(S.V, yw, 20, sFit(S.V, yw, 20, box[2], box[3]) * 0.94, box), { fill: f => (f.cv ? '--t-cv' : '--t-solid'), edge: () => ({ c: '--ink', w: 2.8 }) }).svg;
+        }
+        return `<g id="c1-${i}" style="transition:opacity .45s ease">
+          ${o.poly ? `<rect x="${cx - 94}" y="${cy - 90}" width="188" height="200" rx="18" style="fill:var(--surface);stroke:var(--accent);stroke-width:3" data-show="1"></rect>` : ''}
+          ${num(cx - 84, cy - 62, `(${i + 1})`, 24, 'start', '--ink-2')}
+          ${body}
+          ${o.poly ? tag(cx, cy + 96, faceNm(o.f), 26, 'middle', '--accent', 'data-show="4"') : ''}
+        </g>`;
+      };
+      FIG.innerHTML = svgWrap(`<g id="c1all">${OBJ1.map(cell).join('')}</g>`, '상자, 고깔, 통조림, 집, 공, 삼각뿔 모양의 입체도형');
+      PANEL.innerHTML = `
+        <h2 class="q">다각형인 면으로만 둘러싸인 것은 무엇일까요?</h2>
+        <p class="ask" data-only="0" data-collapse>다음 입체도형 모양의 사물 중 다각형인 면으로만 둘러싸인 것을 모두 찾아봐요.</p>
+        <div class="stack" data-show="1" data-hide="3" data-collapse>
+          <p class="say">(1), (4), (6)은 다각형인 면으로만 둘러싸여 있어요.</p>
+          <p class="say">(2), (3), (5)에는 굽은 면(색칠한 부분)이 있어요.</p>
+        </div>
+        <div class="prop" data-show="2" data-collapse><span class="pl">다면체</span><p>사각기둥, 삼각뿔과 같이 다각형인 면으로만 둘러싸인 입체도형을 다면체라고 한다.</p></div>
+        <p class="ask" data-only="3" data-collapse>(1), (4), (6)은 각각 면이 몇 개일까요?</p>
+        <div class="stack" data-show="4" data-collapse>
+          <p class="say">(1)은 면이 6개, (4)는 7개, (6)은 4개예요.</p>
+          <div class="prop"><span class="pl">면의 개수에 따른 이름</span><p>다면체는 둘러싸인 면의 개수에 따라 사면체, 오면체, 육면체, …라고 한다.</p></div>
+        </div>`;
+    },
+    update(step, prev) {
+      applyStep(FIG, step, prev); applyStep(PANEL, step, prev);
+      const g = $('#c1all', FIG);
+      if (g) g.style.setProperty('--t-cv', step >= 1 ? 'var(--t-hi)' : 'var(--t-solid)');
+      OBJ1.forEach((o, i) => { const c = $(`#c1-${i}`, FIG); if (c) c.style.opacity = !o.poly && step >= 2 ? 0.3 : 1; });
+    }
+  };
+
+  /* =========================================================
+     2. 다면체의 구성 요소: 면 → 모서리 → 꼭짓점 → 정리 → 교과서 206쪽 문제 1 (하나씩 번호를 붙이며 세기)
+     ========================================================= */
+  const pill = (p, k, c, hid, delay) => `<g${delay != null ? ` class="cnt" style="animation-delay:${delay}ms"` : ''}><circle cx="${n2(p[0])}" cy="${n2(p[1])}" r="15" style="fill:var(--surface);stroke:var(${c});stroke-width:2.5"${hid ? ' stroke-dasharray="4 3"' : ''}></circle><text x="${n2(p[0])}" y="${n2(p[1])}" dy="6.5" class="num" font-size="19" text-anchor="middle" style="fill:var(${hid ? '--ink-2' : c})">${k}</text></g>`;
+  const scParts = {
+    title: '다면체의 구성 요소', nav: 1, steps: () => 13, view: null, S: null, fit: null, sel: null, ord: null, anim: false, key: '', fc: [], fcNew: 0,
+    shapeAt: step => (step <= 4 ? 'box' : step <= 8 ? 'tri' : 'sq'),
+    countAt: step => ([6, 10].includes(step) ? 'f' : [7, 11].includes(step) ? 'e' : [8, 12].includes(step) ? 'v' : ''),
+    build() {
+      this.key = ''; this.ord = null;
+      FIG.innerHTML = svgWrap(`${GRAB}<g id="p2G"></g>`, '다면체의 면, 모서리, 꼭짓점');
+      this.fc = []; this.fcNew = 0;
+      orbit($('.grab', FIG), this.view = { yaw: -24, pitch: 22 }, () => this.draw(), [-35, 85], e => this.tap(e));
+      PANEL.innerHTML = `
+        <h2 class="q" data-hide="5" data-collapse>다면체는 무엇으로 이루어져 있을까요?</h2>
+        <p class="sub" data-only="0" data-collapse>사각기둥을 보며 생각해 봐요.</p>
+        <p class="say" data-show="1" data-hide="4" data-collapse>다면체를 둘러싸고 있는 다각형을 다면체의 <b class="cw">면</b>이라고 해요.</p>
+        <p class="say" data-show="2" data-hide="4" data-collapse>다각형의 변을 다면체의 <b class="cr">모서리</b>라고 해요.</p>
+        <p class="say" data-show="3" data-hide="4" data-collapse>다각형의 꼭짓점을 다면체의 <b class="cn">꼭짓점</b>이라고 해요.</p>
+        <div class="prop" data-only="4" data-collapse><span class="pl">면, 모서리, 꼭짓점</span><p>다면체를 둘러싸고 있는 다각형을 다면체의 <b class="cw">면</b>, 다각형의 변을 다면체의 <b class="cr">모서리</b>, 다각형의 꼭짓점을 다면체의 <b class="cn">꼭짓점</b>이라고 한다.</p></div>
+        <div class="prob" data-show="5" data-collapse><span class="pl">문제 1 · 교과서 206쪽</span><p>다음 입체도형은 몇 면체인지 말하고, 모서리와 꼭짓점의 개수를 각각 구해 보세요.</p></div>
+        <div class="qrow" data-show="5" data-collapse><span class="qn">(1)</span>
+          <span class="chip" data-show="6" id="p2c6"></span><span class="chip" data-show="7">모서리 <b class="cr">9</b>개</span><span class="chip" data-show="8">꼭짓점 <b class="cn">6</b>개</span></div>
+        <div class="qrow" data-show="9" data-collapse><span class="qn">(2)</span>
+          <span class="chip" data-show="10" id="p2c10"></span><span class="chip" data-show="11">모서리 <b class="cr">8</b>개</span><span class="chip" data-show="12">꼭짓점 <b class="cn">5</b>개</span></div>
+        <p class="note" data-only="5,9" data-collapse>보이지 않는 면, 모서리, 꼭짓점도 빠뜨리지 말고 세어 봐요.</p>
+        <p class="ask" data-only="6,10" data-collapse>면을 하나씩 세어 볼까요? 뒤쪽과 아래쪽에 숨은 면도 찾아봐요.</p>
+        <p class="note" data-only="7,8" data-collapse>점선 동그라미는 뒤쪽에 있어서 보이지 않는 것이에요.</p>
+        <p class="kkt" data-show="12" data-collapse>그림을 보고 하나씩 세면 빠뜨리거나 두 번 세기 쉬워요. 그림 없이 셀 수는 없을까요?</p>`;
+    },
+    setShape(key) {
+      if (this.key === key) return;
+      this.key = key;
+      this.S = key === 'box' ? mkBox(1.45, 1, 1) : key === 'tri' ? mkType('prism', 3) : mkType('pyr', 4);
+      const yw = key === 'tri' ? 36 : -24, pt = key === 'tri' ? 26 : key === 'sq' ? 20 : 22;
+      this.view.yaw = yw; this.view.pitch = pt;
+      this.fit = fitOrbit(this.S.V, yw, pt, [80, 50, 440, 360]);
+      const cam = camOrbit(this.fit, this.view), S = this.S;
+      const sides = S.F.map((f, i) => i).filter(i => Math.abs(S.F[i].n[1]) < 0.9).sort((a, b) => cam.rot(S.F[b].n)[2] - cam.rot(S.F[a].n)[2]);
+      const e = S.E.find(x => x.f.includes(sides[0]) && x.f.includes(sides[1])) || S.E[0];
+      this.sel = { f: sides[0], e, v: S.V[e.a][1] > S.V[e.b][1] ? e.a : e.b };
+    },
+    order(kind) {                                     // 보이는 것부터 위에서 시계 방향으로, 그다음 보이지 않는 것
+      const S = this.S, cam = camOrbit(this.fit, this.view), FR = S.F.map(f => cam.rot(f.n)[2] > 1e-6), C = cam.p(S.C);
+      const ang = p => (Math.atan2(p[1] - C[1], p[0] - C[0]) + Math.PI * 2.5) % (Math.PI * 2);
+      const items = kind === 'f' ? S.F.map((f, i) => ({ i, p: cam.p(f.c), vis: FR[i] }))
+        : kind === 'e' ? S.E.map((e, i) => ({ i, p: L2(cam.p(S.V[e.a]), cam.p(S.V[e.b]), 0.5), vis: e.f.some(fi => FR[fi]) }))
+          : S.V.map((v, i) => ({ i, p: cam.p(v), vis: S.vf[i].some(fi => FR[fi]) }));
+      const by = a => a.slice().sort((x, y) => ang(x.p) - ang(y.p)).map(x => x.i);
+      return [...by(items.filter(x => x.vis)), ...by(items.filter(x => !x.vis))];
+    },
+    draw() {
+      const g = $('#p2G', FIG);
+      if (!g || !this.S) return;
+      const S = this.S, step = state.step, cam = camOrbit(this.fit, this.view), sel = this.sel, ck = this.countAt(step), intro = step <= 4;
+      const fresh = i => { const j = this.fc.indexOf(i); return ck === 'f' && j >= this.fcNew ? j - this.fcNew : -1; };
+      const r = drawSolid(S, cam, {               // 면을 셀 때는 센 면만 푸르게, 아직 세지 않은 면은 흐린 회색
+        fill: (f, i) => (ck === 'f' ? (this.fc.includes(i) ? '--t-face' : '--t-blank') : intro && step >= 1 && i === sel.f ? '--t-face' : '--t-solid'),
+        over: (i, d, l) => { const k = fresh(i); return k < 0 ? '' : `<g class="fin" style="animation-delay:${60 + k * 190}ms">${facePath(d, '--t-blank', l)}</g>`; },
+        edge: e => (ck === 'e' ? { c: '--c-chord', w: 4.5 } : intro && step >= 2 && e === sel.e ? { c: '--c-chord', w: 9 } : { c: '--ink', w: 3 }),
+        vert: i => (ck === 'v' ? { c: '--c-center', r: 7.5 } : intro && step >= 3 && i === sel.v ? { c: '--c-center', r: 11 } : null)
+      });
+      const P = r.P, FR = r.FR, C = cam.p(S.C);
+      const out = (p, d) => { const v = [p[0] - C[0], p[1] - C[1]], L = Math.hypot(v[0], v[1]) || 1; return [p[0] + v[0] / L * d, p[1] + v[1] / L * d]; };
+      const pop = (s, on) => (on ? `<g class="cnt">${s}</g>` : s);
+      let lab = '';
+      if (intro) {
+        if (step >= 1) { const fc = cam.p(S.F[sel.f].c); lab += pop(tagH(fc[0], fc[1] + 10, '면', 30, 'middle', '--c-arc2'), this.anim && step === 1); }
+        if (step >= 2) { const m = out(L2(P[sel.e.a], P[sel.e.b], 0.5), 18); lab += pop(tagH(m[0] + 6, m[1] + 9, '모서리', 28, 'start', '--c-chord'), this.anim && step === 2); }
+        if (step >= 3) { const m = out(P[sel.v], 26); lab += pop(tagH(m[0] + 4, m[1] - 4, '꼭짓점', 28, 'start', '--c-center'), this.anim && step === 3); }
+      } else lab += num(24, 46, step <= 8 ? '(1)' : '(2)', 32, 'start', '--ink-2');
+      if (ck === 'f') {                             // 센 면에만 번호 (새로 센 것만 톡 튀어나온다)
+        this.fc.forEach((i, j) => { lab += pill(cam.p(S.F[i].c), j + 1, '--c-arc2', !FR[i], j >= this.fcNew ? 60 + (j - this.fcNew) * 190 : null); });
+        this.fcNew = this.fc.length;
+      } else if (ck && this.ord) {
+        const dl = j => (this.anim ? 150 + j * 190 : null);
+        this.ord.forEach((i, j) => {
+          if (ck === 'e') { const e = S.E[i]; lab += pill(L2(P[e.a], P[e.b], 0.5), j + 1, '--c-chord', !e.f.some(fi => FR[fi]), dl(j)); }
+          else lab += pill(out(P[i], 24), j + 1, '--c-center', !S.vf[i].some(fi => FR[fi]), dl(j));
+        });
+      }
+      g.innerHTML = r.svg + lab;
+      this.anim = false;
+    },
+    tap(e) {                                        // 면을 누르면 다음 번호를 붙인다. 마지막에 센 면을 다시 누르면 취소
+      if (this.countAt(state.step) !== 'f' || !this.S) return;
+      const q = svgPt(FIG.querySelector(':scope > svg'), e);
+      if (!q) return;
+      const S = this.S, cam = camOrbit(this.fit, this.view), P = S.V.map(cam.p);
+      const hit = S.F.map((f, i) => i).filter(i => cam.rot(S.F[i].n)[2] > 1e-6 && inPoly(q, S.F[i].v.map(j => P[j])))
+        .sort((a, b) => cam.rot(S.F[b].c)[2] - cam.rot(S.F[a].c)[2])[0];
+      if (hit == null) return;
+      const at = this.fc.indexOf(hit);
+      if (at < 0) this.fc.push(hit);
+      else if (at === this.fc.length - 1) { this.fc.pop(); this.fcNew = this.fc.length; }
+      else return;
+      this.draw(); this.paintChips();
+    },
+    paintChips() {                                  // 세는 동안: 센 면 ○개 → 다 세면: 면 5개 → 오면체
+      [[6, 'p2c6'], [10, 'p2c10']].forEach(([st, id]) => {
+        const el = $(`#${id}`, PANEL);
+        if (!el) return;
+        const total = 5, cnt = state.step === st ? this.fc.length : total;
+        el.innerHTML = cnt < total ? `센 면 <b class="cw">${cnt}</b>개` : `면 ${total}개 → <b class="cw">${faceNm(total)}</b>`;
+      });
+    },
+    advance() {                                     // 다 세지 않았으면 '다음'이 남은 면을 마저 센다
+      if (this.countAt(state.step) !== 'f' || !this.S || this.fc.length >= this.S.F.length) return false;
+      this.fcNew = this.fc.length;
+      this.order('f').forEach(i => { if (!this.fc.includes(i)) this.fc.push(i); });
+      this.draw(); this.paintChips();
+      return true;
+    },
+    update(step, prev) {
+      applyStep(PANEL, step, prev);
+      this.setShape(this.shapeAt(step));
+      const ck = this.countAt(step);
+      if (ck === 'f') {                             // 앞에서 들어오면 하나도 세지 않은 채로, 뒤에서 돌아오면 다 센 채로
+        if (step !== prev) this.fc = step > prev ? [] : this.order('f');
+        this.fcNew = this.fc.length; this.ord = null;
+      } else this.ord = ck ? this.order(ck) : null;
+      this.anim = step !== prev;
+      FIG.classList.toggle('tapface', ck === 'f');
+      this.draw(); this.paintChips();
+    }
+  };
+
+  /* =========================================================
+     3. 각기둥과 각뿔 (초등학교 6학년 때 배운 것 확인)
+     ========================================================= */
+  const K3 = [{ t: 'prism', n: 3, m: '㉠' }, { t: 'prism', n: 5, m: '㉡' }, { t: 'pyr', n: 4, m: '㉢' }, { t: 'pyr', n: 6, m: '㉣' }];
+  const scRecall = {
+    title: '각기둥과 각뿔', nav: 2, steps: () => 9,
+    build() {
+      FIG.innerHTML = svgWrap('<g id="r3G"></g>', '삼각기둥, 오각기둥, 사각뿔, 육각뿔');
+      PANEL.innerHTML = `
+        <h2 class="q">초등학교에서 배운 각기둥과 각뿔, 기억하나요?</h2>
+        <p class="ask" data-only="0" data-collapse>㉠~㉣의 이름을 말해 볼까요?</p>
+        <p class="say" data-only="1" data-collapse>㉠ 삼각기둥, ㉡ 오각기둥, ㉢ 사각뿔, ㉣ 육각뿔이에요.</p>
+        <p class="ask" data-only="2" data-collapse>각기둥의 <span class="cl">밑면</span>과 <span class="cw">옆면</span>은 어떤 모양인가요?</p>
+        <div class="prop" data-show="3" data-collapse><span class="pl">각기둥</span><p>두 <b class="cl">밑면</b>이 서로 평행하고 합동인 다각형이고, <b class="cw">옆면</b>이 모두 직사각형인 다면체</p></div>
+        <p class="ask" data-only="4" data-collapse>각뿔의 <span class="cl">밑면</span>과 <span class="cw">옆면</span>은 어떤 모양인가요?</p>
+        <div class="prop" data-show="5" data-collapse><span class="pl">각뿔</span><p><b class="cl">밑면</b>이 다각형이고 <b class="cw">옆면</b>이 모두 삼각형인 다면체</p></div>
+        <p class="say" data-only="6" data-collapse>각기둥과 각뿔의 이름은 <b class="cl">밑면의 모양</b>에 따라 정해요. 밑면이 오각형이면 오각기둥, 육각형이면 육각뿔이에요.</p>
+        <p class="ask" data-only="7" data-collapse>각기둥과 각뿔도 다면체예요. ㉠~㉣은 각각 몇 면체일까요?</p>
+        <p class="say" data-show="8" data-collapse>㉠ 오면체, ㉡ 칠면체, ㉢ 오면체, ㉣ 칠면체예요.</p>`;
+    },
+    draw(step) {
+      let s = '';
+      K3.forEach((it, i) => {
+        const cx = i % 2 ? 450 : 150, cy = i < 2 ? 93 : 303, box = [cx - 118, cy - 66, 236, 132];
+        const S = mkType(it.t, it.n), on = it.t === 'prism' ? step >= 2 : step >= 4, yw = yawOf(it.n);
+        const cam = camBox(S.V, yw, 24, sFit(S.V, yw, 24, box[2], box[3]) * 0.96, box);
+        s += tag(cx - 140, cy - 44, it.m, 30, 'start');
+        s += drawSolid(S, cam, { fill: f => (on ? colorFill(f) : '--t-solid'), edge: () => ({ c: '--ink', w: 2.8 }) }).svg;
+        if (on && (i === 1 || i === 3)) {           // ㉡, ㉣에 밑면·옆면 이름표
+          const fi = S.F.findIndex(f => f.k === 'side' && cam.rot(f.n)[2] === Math.max(...S.F.filter(g => g.k === 'side').map(g => cam.rot(g.n)[2])));
+          const sc = cam.p(S.F[fi].c);
+          s += tagH(sc[0], sc[1] + 8, '옆면', 22, 'middle', '--c-arc2');
+          if (it.t === 'prism') { const tc = cam.p(S.F[1].c); s += tagH(tc[0], tc[1] + 8, '밑면', 22, 'middle', '--c-arc'); }
+          else { const lx = Math.min(...range(it.n).map(k => cam.p(S.V[k])[0])), bc = cam.p([0, 0, 0]); s += tagH(lx - 6, bc[1] + 8, '밑면', 22, 'end', '--c-arc'); }
+        }
+        if (step >= 1) {
+          const name = step >= 6 && step < 8 ? `<tspan style="fill:var(--c-arc)">${ko(it.n)}각</tspan>${TN[it.t].slice(1)}` : nameOf(it.t, it.n);
+          s += tag(cx, cy + 95, name, 26, 'middle');
+        }
+        if (step >= 6 && step < 8) s += tag(cx, cy + 124, `밑면이 ${gon(it.n)}`, 20, 'middle', '--c-arc');
+        if (step >= 8) s += tag(cx, cy + 124, faceNm(CNT(it.t, it.n).f), 22, 'middle', '--accent');
+      });
+      $('#r3G', FIG).innerHTML = s;
+    },
+    update(step, prev) { applyStep(PANEL, step, prev); this.draw(step); }
+  };
+
+  /* =========================================================
+     4. 각뿔대: 평면이 내려와 자르기 → 들어 올리기 → 작은 각뿔 치우기(마디는 단계마다 하나) → 밑면·옆면·사다리꼴·높이 → 이름 → 문제 2
+     ========================================================= */
+  const K4 = { R: 1, H: 1.6, hc: 0.8, lift: 0.55, box: [40, 16, 520, 410] };
+  const chev = (p, q, c) => {                       // 평행 표시 ›
+    const m = L2(p, q, 0.5), L = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1, u = [(q[0] - p[0]) / L, (q[1] - p[1]) / L], nr = [-u[1], u[0]];
+    return stroke(`M ${n2(m[0] - u[0] * 10 + nr[0] * 11)} ${n2(m[1] - u[1] * 10 + nr[1] * 11)} L ${n2(m[0] + u[0] * 7)} ${n2(m[1] + u[1] * 7)} L ${n2(m[0] - u[0] * 10 - nr[0] * 11)} ${n2(m[1] - u[1] * 10 - nr[1] * 11)}`, c, 4.5);
+  };
+  const scFru = {
+    title: '각뿔대', nav: 3, steps: () => 11, n: 4, view: null, fit: null, st: null, cancel: null,
+    build() {
+      this.n = 4; this.cancel = null;
+      FIG.classList.add('ctl');
+      FIG.innerHTML = svgWrap(`${GRAB}<g id="f4G"></g>`, '각뿔을 밑면에 평행한 평면으로 잘라 생기는 각뿔대');
+      FIG.insertAdjacentHTML('beforeend', `<div class="kbar" id="f4Bar"><span class="kl">각뿔의 밑면</span><div class="seg" role="group" aria-label="각뿔의 밑면">${[3, 4, 5, 6].map(k => `<button type="button" data-n="${k}" aria-pressed="false">${gon(k)}</button>`).join('')}</div></div>`);
+      $$('#f4Bar [data-n]', FIG).forEach(b => b.addEventListener('click', () => { this.n = Number(b.getAttribute('data-n')); this.view.yaw = yawOf(this.n); this.view.pitch = 20; this.refit(); this.paintBar(); this.draw(); }));
+      orbit($('.grab', FIG), this.view = { yaw: -24, pitch: 20 }, () => this.draw());
+      this.refit(); this.paintBar();
+      PANEL.innerHTML = `
+        <h2 class="q" data-hide="3" data-collapse>각뿔을 밑면에 평행한 평면으로 자르면 어떻게 될까요?</h2>
+        <h2 class="q" data-show="3" data-hide="9" data-collapse>각뿔대</h2>
+        <p class="say" data-only="1" data-collapse>평면이 내려와 각뿔을 밑면에 평행하게 잘라요.</p>
+        <div class="stack" data-only="2" data-collapse><p class="say">각뿔이 두 다면체로 나뉘었어요. 위쪽은 작은 각뿔이에요.</p><p class="ask">아래쪽도 각뿔일까요?</p></div>
+        <div class="prop" data-show="3" data-hide="9" data-collapse><span class="pl">각뿔대</span><p>각뿔을 밑면에 평행한 평면으로 잘라서 생기는 두 다면체 중에서 각뿔이 아닌 쪽의 입체도형을 각뿔대라고 한다.</p></div>
+        <p class="say" data-only="4" data-collapse>각뿔대에서 서로 평행한 두 면을 <b class="cl">밑면</b>이라고 해요. 위에 있는 면도 '윗면'이라고 하지 않고 밑면이라고 해요.</p>
+        <div class="stack" data-only="5" data-collapse><p class="say">밑면이 아닌 면을 <b class="cw">옆면</b>이라고 해요.</p><p class="ask">옆면은 어떤 사각형일까요?</p></div>
+        <p class="say" data-only="6" data-collapse>옆면은 마주 보는 한 쌍의 변이 서로 평행한 사각형이므로 모두 <b class="cw">사다리꼴</b>이에요.</p>
+        <p class="say" data-only="7" data-collapse>두 밑면에 수직인 선분의 길이를 각뿔대의 <b class="ca">높이</b>라고 해요.</p>
+        <div class="prop" data-only="8" data-collapse><span class="pl">각뿔대의 이름</span><p>각뿔대는 밑면의 모양에 따라 삼각뿔대, 사각뿔대, 오각뿔대, …라고 한다.</p></div>
+        <div class="prob" data-show="9" data-collapse><span class="pl">문제 2 · 교과서 207쪽</span><p>다음 각뿔대의 이름을 말해 보세요.</p></div>
+        <div class="answer" data-show="10" data-collapse><div class="big">(1) 삼각뿔대 &nbsp;(2) 육각뿔대</div><p class="why">밑면이 각각 삼각형, 육각형이에요.</p></div>`;
+    },
+    paintBar() { $$('#f4Bar [data-n]', FIG).forEach(b => b.setAttribute('aria-pressed', Number(b.getAttribute('data-n')) === this.n ? 'true' : 'false')); },
+    refit() {
+      const { R, H, hc, lift } = K4, yw = yawOf(this.n), pl = y => [[-1.3, y, -1.3], [1.3, y, -1.3], [1.3, y, 1.3], [-1.3, y, 1.3]];
+      this.fitA = fitOrbit([...mkPrismoid(this.n, R, 0, H).V, ...pl(H * 1.22), ...pl(hc), [0, H + lift, 0]], yw, 20, K4.box, 0.96);
+      this.fitB = fitOrbit(mkPrismoid(this.n, R, R * (1 - hc / H), hc).V, yw, 20, K4.box, 0.8);
+    },
+    fitAt(z) { const a = this.fitA, b = this.fitB; return { C: V3.lerp(a.C, b.C, z), s: lerp(a.s, b.s, z), box: a.box }; },
+    tgtOf(step) {
+      const { H, hc, lift } = K4, S0 = { py: H * 1.22, cut: false, lift: 0, topOp: 1, planeOp: 1, z: 0 };
+      return step === 0 ? S0 : step === 1 ? Object.assign({}, S0, { py: hc }) : step === 2 ? { py: hc, cut: true, lift, topOp: 1, planeOp: 0, z: 0 } : { py: hc, cut: true, lift, topOp: 0, planeOp: 0, z: 1 };
+    },
+    advance() { if (!this.cancel) return false; this.stop(); this.st = this.tgtOf(state.step); this.draw(); return true; },   // 움직이는 중이면 바로 끝내고 멈춘다
+    stop() { if (this.cancel) { this.cancel(); this.cancel = null; } },
+    leave() { this.stop(); },
+    rowFig(step) {
+      if (step === 8) return [3, 4, 5].map((k, i) => { const cx = [102, 300, 498][i]; return solidIn(mkPrismoid(k, 1, 0.5, 0.8), [cx - 94, 130, 188, 170], { fill: colorFill }) + tag(cx, 345, `${ko(k)}각뿔대`, 26, 'middle'); }).join('');
+      return [3, 6].map((k, i) => { const cx = [158, 442][i]; return num(cx - 138, 110, `(${i + 1})`, 30, 'start', '--ink-2') + solidIn(mkPrismoid(k, 1, 0.5, 0.8), [cx - 128, 130, 256, 200]) + (step >= 10 ? tag(cx, 375, `${ko(k)}각뿔대`, 28, 'middle', '--accent') : ''); }).join('');
+    },
+    draw() {
+      const g = $('#f4G', FIG);
+      if (!g) return;
+      const step = state.step;
+      if (step >= 8) { g.innerHTML = this.rowFig(step); return; }
+      const { R, H, hc } = K4, n = this.n, st = this.st, cam = camOrbit(this.fitAt(st.z || 0), this.view);
+      const planeSVG = op => (op > 0.01 ? `<path d="${pathOf([[-1.3, st.py, -1.3], [1.3, st.py, -1.3], [1.3, st.py, 1.3], [-1.3, st.py, 1.3]].map(cam.p))}" style="fill:var(--f-plane);stroke:var(--c-center);stroke-width:2;opacity:${n2(op)}"></path>` : '');
+      let s = '';
+      if (!st.cut) {
+        const Sw = mkPrismoid(n, R, 0, H), rw = drawSolid(Sw, cam);
+        s += rw.svg + planeSVG(st.planeOp);
+        if (st.py < H - 0.01) {                     // 자를 자리
+          const sec = ring(n, R * (1 - st.py / H), st.py).map(cam.p);
+          for (let k = 0; k < n; k++) { const v = rw.FR[1 + k]; s += stroke(seg(sec[k], sec[(k + 1) % n]), '--c-center', v ? 4.5 : 3, v ? '' : 'stroke-dasharray="7 6"'); }
+        }
+      } else {
+        const r = R * (1 - hc / H), Sf = mkPrismoid(n, R, r, hc), lab = step;
+        let fk = 2;
+        for (let i = 2; i < Sf.F.length; i++) if (cam.rot(Sf.F[i].n)[2] > cam.rot(Sf.F[fk].n)[2]) fk = i;
+        const rf = drawSolid(Sf, cam, { fill: (f, i) => (lab >= 4 && f.k !== 'side' ? '--t-base' : lab >= 5 && f.k === 'side' ? (lab === 6 && i === fk ? '--t-face' : '--t-side') : '--t-solid') });
+        s += rf.svg + planeSVG(st.planeOp);
+        if (st.topOp > 0.01) s += `<g opacity="${n2(st.topOp)}">${drawSolid(shiftS(mkPrismoid(n, r, 0, H - hc), [0, hc + st.lift, 0]), cam).svg}</g>`;
+        const P = rf.P, k0 = fk - 2;
+        if (lab >= 4) {                             // 두 밑면
+          const tc = cam.p([0, hc, 0]), by = Math.max(...range(n).map(k => P[k][1])), bc = cam.p([0, 0, 0]);
+          if (lab !== 7) s += tagH(tc[0], tc[1] + 9, '밑면', 26, 'middle', '--c-arc');
+          else s += tagH(tc[0] + 70, tc[1] - 22, '밑면', 26, 'start', '--c-arc');
+          s += tagH(bc[0], by + 38, '밑면', 26, 'middle', '--c-arc');
+        }
+        if (lab === 5 || lab === 6) {
+          const fc = cam.p(Sf.F[fk].c);
+          s += tagH(fc[0], fc[1] + 9, lab === 5 ? '옆면' : '사다리꼴', 26, 'middle', '--c-arc2');
+          if (lab === 6) s += chev(P[k0], P[(k0 + 1) % n], '--accent') + chev(P[k0 + n], P[(k0 + 1) % n + n], '--accent');
+        }
+        if (lab === 7) {                            // 높이
+          const a = cam.p([0, hc, 0]), b = cam.p([0, 0, 0]), q = 0.12;
+          s += stroke(seg(a, b), '--accent', 3.5, 'stroke-dasharray="9 7"');
+          s += stroke(`M ${pathOf([[q, 0, 0], [q, q, 0], [0, q, 0]].map(cam.p)).slice(2).replace(' Z', '')}`, '--accent', 2.5);
+          s += `<circle cx="${n2(a[0])}" cy="${n2(a[1])}" r="5" style="fill:var(--accent)"></circle><circle cx="${n2(b[0])}" cy="${n2(b[1])}" r="5" style="fill:var(--accent)"></circle>`;
+          const m = L2(a, b, 0.5);
+          s += tagH(m[0] + 16, m[1] + 9, '높이', 26, 'start', '--accent');
+        }
+      }
+      g.innerHTML = s;
+    },
+    update(step, prev) {
+      applyStep(PANEL, step, prev);
+      this.stop();
+      $('#f4Bar', FIG).classList.toggle('is-off', step >= 8);
+      const { H, hc, lift } = K4, fwd = step === prev + 1;
+      const S0 = this.tgtOf(0), tgt = this.tgtOf(step);
+      const run = (ms, f) => { this.cancel = tween(ms, u => { f(u); this.draw(); }, () => { this.cancel = null; }); };
+      if (fwd && step === 1) { this.st = Object.assign({}, S0); run(1300, u => { this.st.py = lerp(S0.py, hc, u); }); }
+      else if (fwd && step === 2) { this.st = { py: hc, cut: true, lift: 0, topOp: 1, planeOp: 1, z: 0 }; run(1300, u => { this.st.lift = lift * u; this.st.planeOp = 1 - u; }); }
+      else if (fwd && step === 3) { this.st = Object.assign({}, tgt, { topOp: 1, z: 0 }); run(1100, u => { this.st.topOp = 1 - u; this.st.z = u; }); }
+      else { this.st = Object.assign({}, tgt); this.draw(); }
+    }
+  };
+
+  /* =========================================================
+     5. 전개도: 각기둥 → 각뿔 → 각뿔대 (접힌 모습 → 펼치기 → 살펴보기), 마지막에 세 전개도 비교
+     ========================================================= */
+  const scNet = {
+    title: '전개도', nav: 4, figwide: true, steps: () => 10, type: 'prism', n: 5, t: 1, cancel: null, view: null, s: 1, sk: '',
+    build() {
+      this.n = 5; this.t = 1; this.type = 'prism'; this.sk = ''; this.cancel = null;
+      FIG.classList.add('ctl');
+      FIG.innerHTML = svgWrap(`${GRAB}<g id="n5G"></g>`, '각기둥, 각뿔, 각뿔대의 전개도');
+      FIG.insertAdjacentHTML('beforeend', `<div class="kbar" id="n5Bar">
+          <div class="seg" role="group" aria-label="입체도형">${TYPES.map(t => `<button type="button" data-t="${t}" aria-pressed="false">${TN[t]}</button>`).join('')}</div>
+          <div class="stepper" role="group" aria-label="밑면의 모양"><button type="button" data-dn="-1" aria-label="밑면의 변 줄이기">−</button><span class="val" id="n5N"></span><button type="button" data-dn="1" aria-label="밑면의 변 늘리기">+</button></div>
+          <label class="rngw" id="n5RW">펼치기<input type="range" class="rng" id="n5R" min="0" max="100" value="100" aria-label="접은 정도">접기</label>
+        </div>`);
+      $$('#n5Bar [data-t]', FIG).forEach(b => b.addEventListener('click', () => { const i = TYPES.indexOf(b.getAttribute('data-t')); go(state.si, i * 3 + (state.step >= 9 ? 2 : state.step % 3)); }));
+      $$('#n5Bar [data-dn]', FIG).forEach(b => b.addEventListener('click', () => { this.n = clamp(this.n + Number(b.getAttribute('data-dn')), 3, 8); this.paintBar(); this.draw(); }));
+      const rg = $('#n5R', FIG);
+      rg.addEventListener('input', () => { this.stop(); this.t = Number(rg.value) / 100; this.draw(); });
+      orbit($('.grab', FIG), this.view = { yaw: 0, pitch: 0 }, () => this.draw(), [-40, 30]);
+      PANEL.innerHTML = `
+        <h2 class="q" data-hide="3" data-collapse>각기둥을 펼치면 어떤 모양일까요?</h2>
+        <h2 class="q" data-show="3" data-hide="6" data-collapse>각뿔을 펼치면 어떤 모양일까요?</h2>
+        <h2 class="q" data-show="6" data-hide="9" data-collapse>각뿔대를 펼치면 어떤 모양일까요?</h2>
+        <h2 class="q" data-show="9" data-collapse>세 전개도를 비교해 볼까요?</h2>
+        <p class="sub" data-only="0" data-collapse>입체도형의 모서리를 잘라서 평면 위에 펼쳐 놓은 그림을 전개도라고 해요.</p>
+        <p class="ask" data-only="3,6" data-collapse>밑면과 옆면이 어떻게 펼쳐질지 먼저 떠올려 봐요.</p>
+        <div class="stack" data-only="2" data-collapse><p class="say"><b class="cl">밑면</b> 2개는 서로 합동인 다각형이에요.</p><p class="say"><b class="cw">옆면</b>은 모두 직사각형이고, 밑면의 변의 개수만큼 있어요.</p></div>
+        <div class="stack" data-only="5" data-collapse><p class="say"><b class="cl">밑면</b>은 1개예요.</p><p class="say"><b class="cw">옆면</b>은 모두 삼각형이고, 밑면의 변의 개수만큼 있어요.</p></div>
+        <div class="stack" data-only="8" data-collapse><p class="say"><b class="cl">밑면</b> 2개는 모양이 같고 크기가 달라요.</p><p class="say"><b class="cw">옆면</b>은 모두 사다리꼴이고, 밑면의 변의 개수만큼 있어요.</p></div>
+        <table class="mt" data-show="9" data-collapse><thead><tr><th></th><th>각기둥</th><th>각뿔</th><th>각뿔대</th></tr></thead><tbody>
+          <tr><th>밑면의 개수</th><td>2</td><td>1</td><td>2</td></tr><tr><th>옆면의 모양</th><td>직사각형</td><td>삼각형</td><td>사다리꼴</td></tr></tbody></table>
+        <p class="kkt" data-show="9" data-collapse>옆면의 모양을 보면 각기둥, 각뿔, 각뿔대를 구별할 수 있어요.</p>`;
+    },
+    paintBar() {
+      const step = state.step, T = step >= 9 ? null : TYPES[Math.floor(step / 3)];
+      $$('#n5Bar [data-t]', FIG).forEach(b => b.setAttribute('aria-pressed', b.getAttribute('data-t') === T ? 'true' : 'false'));
+      $('#n5N', FIG).textContent = gon(this.n);
+      $$('#n5Bar [data-dn]', FIG).forEach(b => { b.disabled = (this.n <= 3 && b.getAttribute('data-dn') === '-1') || (this.n >= 8 && b.getAttribute('data-dn') === '1'); });
+      $('#n5RW', FIG).style.visibility = step >= 9 ? 'hidden' : '';
+    },
+    stop() { if (this.cancel) { this.cancel(); this.cancel = null; } },
+    leave() { this.stop(); },
+    advance() { if (!this.cancel) return false; this.stop(); this.t = state.step % 3 === 0 ? 1 : 0; this.draw(); return true; },
+    draw() {
+      const g = $('#n5G', FIG);
+      if (!g) return;
+      const step = state.step, k = this.n;
+      if (step >= 9) {
+        g.innerHTML = TYPES.map((t, i) => { const cx = [100, 300, 500][i]; return netIn(t, k, [cx - 94, 36, 188, 320]) + tag(cx, 410, `${nameOf(t, k)}의 전개도`, 22, 'middle'); }).join('');
+        return;
+      }
+      const T = this.type, t = this.t, box = [20, 14, 560, 412];
+      const yaw = (k === 3 ? 38 : -22) + this.view.yaw, pitch = clamp(lerp(66, 24, t) + this.view.pitch, -30, 88);
+      if (this.sk !== T + k) {
+        this.sk = T + k;
+        const p0 = netGeo(T, k, 0).flatMap(f => f.pts), p1 = netGeo(T, k, 1).flatMap(f => f.pts);
+        this.s0 = sFit(p0, -22, 66, box[2], box[3]) * 0.9;
+        this.s1 = Math.min(sFit(p1, -22, 24, box[2], box[3]) * 0.72, this.s0 * 1.7);
+      }
+      const G = netGeo(T, k, t), cam = camBox(G.flatMap(f => f.pts), yaw, pitch, lerp(this.s0, this.s1, t), box);
+      let s = t > 0.995 ? drawSolid(mkType(T, k), cam, { fill: colorFill }).svg : drawNet(G, cam);
+      if (step % 3 === 2 && t < 0.05) {
+        G.forEach((f, i) => {
+          if (f.k === 'side' && k > 6 && i % 2 === 0) return;
+          const c = cam.p(V3.avg(f.pts));
+          s += tagH(c[0], c[1] + 8, f.k === 'side' ? '옆면' : '밑면', f.k === 'side' && T === 'pyr' ? 19 : 22, 'middle', f.k === 'side' ? '--c-arc2' : '--c-arc');
+        });
+      }
+      g.innerHTML = s;
+      const rg = $('#n5R', FIG);
+      if (rg) rg.value = String(Math.round(t * 100));
+    },
+    update(step, prev) {
+      applyStep(PANEL, step, prev);
+      this.stop();
+      const T = step >= 9 ? null : TYPES[Math.floor(step / 3)], ph = step % 3;
+      if (T) {
+        this.type = T;
+        if (prev !== step) {
+          if (ph === 0) this.t = 1;
+          else if (ph === 1 && step === prev + 1) {
+            const from = this.t;
+            this.cancel = tween(1700, u => { this.t = lerp(from, 0, u); this.draw(); }, () => { this.cancel = null; });
+          } else this.t = 0;
+        }
+      }
+      this.paintBar();
+      this.draw();
+    }
+  };
+
+  /* =========================================================
+     5. 그림 없이 세기 - 연습: 그림 아래의 단계 단추로 한 마디씩 짓는다 (처음 → 밑면 → 기둥 → 지붕 → 벽 → 합계).
+     각기둥 → 각뿔 → 각뿔대 → 정리(n) 순서. '다음 단계'는 합계 다음에 다음 입체도형으로 넘어간다.
+     이 장면은 단계가 하나뿐이라 아래 띠의 '다음'은 곧바로 6번(실전) 장면으로 간다.
+     ========================================================= */
+  const MSB = [1300, 1100, 1100, 1200];
+  const stOf = ph => ({ b: ph >= 1 ? 1 : 0, p: ph >= 2 ? 1 : 0, r: ph >= 3 ? 1 : 0, w: ph >= 4 ? 1 : 0 });
+  const TAGOF = ['', 'base', 'pil', 'roof', 'wall', ''];
+  function buildSay(t, k, ph) {
+    const nm = nameOf(t, k), g = gon(k);
+    if (ph === 1) return `밑면 ${g}을 놓아요. ${g}에는 꼭짓점 ${k}개와 변 ${k}개가 있으니 <b class="cl">꼭짓점 ${k}개, 모서리 ${k}개, 면 1개</b>예요.`;
+    if (ph === 2) return t === 'pyr' ? `밑면의 꼭짓점마다 기둥을 하나씩 세우는데, 기둥이 모두 꼭대기의 한 점을 향해 기울어져요. 기둥 ${k}개는 모두 <b class="cr">모서리</b>예요.`
+      : t === 'fru' ? `밑면의 꼭짓점마다 기둥을 하나씩 세워요. 각뿔을 자른 모양이라 기둥이 안쪽으로 조금 기울어져요. 기둥 ${k}개는 모두 <b class="cr">모서리</b>예요.`
+        : `밑면의 꼭짓점마다 기둥을 하나씩 세워요. 기둥 ${k}개는 모두 <b class="cr">모서리</b>예요.`;
+    if (ph === 3) return t === 'pyr' ? `기둥이 모이는 꼭대기에 점 하나를 얹으면 끝이에요. 각뿔의 지붕은 점 하나라서 <b class="cs">꼭짓점만 1개</b> 늘어요.`
+      : t === 'fru' ? `밑면보다 작은 ${g} 지붕을 얹어요. 지붕에도 <b class="cs">꼭짓점 ${k}개, 모서리 ${k}개, 면 1개</b>가 있어요.`
+        : `밑면과 똑같은 ${g} 지붕을 얹어요. 지붕에도 <b class="cs">꼭짓점 ${k}개, 모서리 ${k}개, 면 1개</b>가 있어요.`;
+    if (ph === 4) return `기둥과 기둥 사이에 벽이 하나씩 생겨요. 벽은 옆면이고 <b class="cw">${k}개</b>예요.`;
+    if (ph === 5) { const c = CNT(t, k); return `${nm}${eun(t)} 꼭짓점 ${c.v}개, 모서리 ${c.e}개, 면 ${c.f}개인 ${faceNm(c.f)}예요.`; }
+    return '';
+  }
+  const PHN = ['처음', '밑면', '기둥', '지붕', '벽', '합계'];
+  const ARW = d => `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="${d}"></path></svg>`;
+  const scBuild = {
+    title: '그림 없이 세기 - 연습', nav: 5, steps: () => 1, n: 5, type: 'prism', ph: 0, H: null, hk: '', fit: null, st: stOf(0), view: null, cancel: null, tg: '',
+    build() {
+      this.n = 5; this.type = 'prism'; this.ph = 0; this.hk = ''; this.cancel = null;
+      FIG.classList.add('ctl');
+      FIG.innerHTML = svgWrap(`${GRAB}<g id="b6G"></g>`, '밑면, 기둥, 지붕, 벽 순서로 짓는 입체도형');
+      FIG.insertAdjacentHTML('beforeend', `<div class="kbar" id="b6Bar">
+          <div class="seg" role="group" aria-label="입체도형">${[...TYPES, 'gen'].map(t => `<button type="button" data-t="${t}" aria-pressed="false">${t === 'gen' ? '정리' : TN[t]}</button>`).join('')}</div>
+          <span class="kl">밑면</span>
+          <div class="stepper" role="group" aria-label="밑면의 모양"><button type="button" data-dn="-1" aria-label="밑면의 변 줄이기">−</button><span class="val" id="b6N"></span><button type="button" data-dn="1" aria-label="밑면의 변 늘리기">+</button></div>
+        </div>
+        <div class="kbar" id="b6Ph">
+          <button type="button" class="kbtn" id="b6Back" aria-label="앞 단계">${ARW('M15 5l-7 7 7 7')}</button>
+          <div class="seg sseg" role="group" aria-label="짓는 단계">${PHN.map((t, i) => `<button type="button" data-k="${i}" aria-pressed="false">${i >= 1 && i <= 4 ? `<span class="stg" style="--sc:var(${STG[i - 1][0]})">${t}</span>` : t}</button>`).join('')}</div>
+          <button type="button" class="kbtn pri" id="b6Fwd"><span id="b6FwdL">다음 단계</span>${ARW('M9 5l7 7-7 7')}</button>
+        </div>`);
+      $$('#b6Bar [data-t]', FIG).forEach(b => b.addEventListener('click', () => this.setType(b.getAttribute('data-t'))));
+      $$('#b6Bar [data-dn]', FIG).forEach(b => b.addEventListener('click', () => { this.n = clamp(this.n + Number(b.getAttribute('data-dn')), 3, 12); this.setType(this.type, this.ph); }));
+      $$('#b6Ph [data-k]', FIG).forEach(b => b.addEventListener('click', () => { const k = Number(b.getAttribute('data-k')); this.setPh(k, k === this.ph + 1); }));
+      $('#b6Fwd', FIG).addEventListener('click', () => this.fwd());
+      $('#b6Back', FIG).addEventListener('click', () => this.back());
+      orbit($('.grab', FIG), this.view = { yaw: -24, pitch: 22 }, () => this.draw());
+    },
+    stop() { if (this.cancel) { this.cancel(); this.cancel = null; } },
+    leave() { this.stop(); },
+    setHouse(t) {
+      const key = t + this.n;
+      if (this.hk === key) return;
+      this.hk = key; this.H = houseOf(t, this.n);
+      const V = this.H.S.V, up = V.map((v, i) => (i >= this.n ? [v[0], v[1] + this.H.h * 0.7, v[2]] : v)), yw = yawOf(this.n);
+      this.view.yaw = yw; this.view.pitch = 22;
+      this.fit = fitOrbit([...V, ...up], yw, 22, [30, 26, 540, 400], 0.92);
+    },
+    setType(t, ph = 0) {                            // 입체도형을 고르면 처음(빈 바닥)부터
+      this.stop();
+      this.type = t;
+      if (t !== 'gen') this.setHouse(t);
+      this.ph = ph; this.st = stOf(ph); this.tg = TAGOF[ph];
+      this.paint(-1);
+    },
+    setPh(k, anim) {                                // 바로 다음 마디면 움직이며, 아니면 그 모습으로 바로
+      if (this.type === 'gen') return;
+      this.stop();
+      k = clamp(k, 0, 5);
+      const one = anim && k === this.ph + 1;
+      this.ph = k; this.tg = TAGOF[k];
+      if (one && k <= 4) {
+        const key = 'bprw'[k - 1];
+        this.st = Object.assign(stOf(k), { [key]: 0 });
+        this.cancel = tween(MSB[k - 1], u => { this.st[key] = u; this.draw(); }, () => { this.cancel = null; });
+      } else this.st = stOf(k);
+      this.paint(one ? k - 1 : -1);
+    },
+    fwd() {
+      if (this.cancel) { this.stop(); this.st = stOf(this.ph); this.draw(); return; }   // 움직이는 중이면 그 마디를 끝내고 멈춘다
+      if (this.type === 'gen') return;
+      if (this.ph < 5) this.setPh(this.ph + 1, true);
+      else this.setType(TYPES[TYPES.indexOf(this.type) + 1] || 'gen');
+    },
+    back() {
+      this.stop();
+      if (this.type === 'gen') { this.setType('fru', 5); return; }
+      if (this.ph > 0) this.setPh(this.ph - 1, false);
+      else if (this.type !== 'prism') this.setType(TYPES[TYPES.indexOf(this.type) - 1], 5);
+    },
+    paint(animRow) {
+      const gen = this.type === 'gen';
+      $$('#b6Bar [data-t]', FIG).forEach(b => b.setAttribute('aria-pressed', b.getAttribute('data-t') === this.type ? 'true' : 'false'));
+      $('#b6N', FIG).textContent = gon(this.n);
+      $$('#b6Bar [data-dn]', FIG).forEach(b => { b.disabled = (this.n <= 3 && b.getAttribute('data-dn') === '-1') || (this.n >= 12 && b.getAttribute('data-dn') === '1'); });
+      $$('#b6Ph [data-k]', FIG).forEach(b => b.setAttribute('aria-pressed', !gen && Number(b.getAttribute('data-k')) === this.ph ? 'true' : 'false'));
+      $('#b6Ph', FIG).classList.toggle('is-off', gen);
+      $('#b6Back', FIG).disabled = this.type === 'prism' && this.ph === 0;
+      const nx = TYPES[TYPES.indexOf(this.type) + 1];
+      $('#b6FwdL', FIG).textContent = this.ph === 5 && !gen ? `${nx ? TN[nx] : '정리'}로` : '다음 단계';
+      this.draw();
+      this.panel(animRow);
+    },
+    draw() {
+      const g = $('#b6G', FIG);
+      if (!g) return;
+      if (this.type === 'gen') {
+        g.innerHTML = TYPES.map((t, i) => { const cx = [102, 300, 498][i], c = CNT(t, this.n); return houseIn(houseOf(t, this.n), [cx - 90, 70, 180, 220]) + tag(cx, 345, nameOf(t, this.n), 26, 'middle') + tag(cx, 382, `${c.v} · ${c.e} · ${c.f}`, 24, 'middle', '--accent'); }).join('') +
+          tag(300, 422, '(꼭짓점 · 모서리 · 면)', 19, 'middle', '--ink-2');
+        return;
+      }
+      g.innerHTML = drawHouse(this.H, camOrbit(this.fit, this.view), this.st, { ghost: true, tag: this.tg }).svg;
+    },
+    panel(animRow) {
+      const k = this.n;
+      if (this.type === 'gen') {
+        PANEL.innerHTML = `
+          <h2 class="q">${N_}각기둥, ${N_}각뿔, ${N_}각뿔대로 정리해 볼까요?</h2>
+          <p class="sub">밑면이 ${N_}각형일 때 <span class="cl">밑면</span>, <span class="cr">기둥</span>, <span class="cs">지붕</span>, <span class="cw">벽</span>에서 생기는 개수를 더해요.</p>
+          ${genTable()}
+          <p class="kkt">밑면의 모양만 알면 그림이 없어도 꼭짓점, 모서리, 면의 개수를 알 수 있어요.</p>`;
+        return;
+      }
+      const t = this.type, ph = this.ph, nm = nameOf(t, k);
+      const ask = t === 'prism' ? `${nm}의 꼭짓점, 모서리, 면은 몇 개일까요? 하나씩 세지 않고 알 수 있을까요?`
+        : t === 'pyr' ? `${nm}도 지어 볼까요? 각기둥과 무엇이 다를까요?` : `${nm}${eun(t)} ${nameOf('prism', k)}과 무엇이 같고 무엇이 다를까요?`;
+      const key = t === 'prism' ? '지붕이 밑면과 똑같아서, 꼭짓점과 모서리는 밑면의 것을 한 번 더 세는 셈이에요.'
+        : t === 'pyr' ? '각뿔은 지붕이 점 하나예요. 지붕만 빼면 각기둥과 같아요.' : '각뿔대는 지붕이 작아졌을 뿐, 개수는 각기둥과 똑같아요.';
+      PANEL.innerHTML = `
+        <h2 class="q">${nm}${eul(t)} 지으며 세어 봐요</h2>
+        ${ph === 0 ? `<p class="ask">${ask}</p><p class="sub">밑면 → 기둥 → 지붕 → 벽 순서로 집을 짓듯이 세어 봐요.</p>` : ''}
+        ${tableHTML(t, k, ph, animRow)}
+        ${ph >= 1 ? `<p class="say">${buildSay(t, k, ph)}</p>` : ''}
+        ${ph === 5 ? `<p class="kkt">${key}</p>` : ''}`;
+    },
+    update() { this.setType(this.type, this.ph); }
+  };
+
+  /* =========================================================
+     6. 그림 없이 세기 - 실전: 문제 → 밑면 → 기둥 → 지붕 → 벽 → 합계 → 그림으로 확인. '새 문제'로 바꿀 수 있다.
+     ========================================================= */
+  const PRAC = [{ t: 'prism', n: 8 }, { t: 'pyr', n: 9 }, { t: 'fru', n: 12 }, { t: 'prism', n: 20 }];
+  const DICE = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"></rect><circle cx="9" cy="9" r="1.2" fill="currentColor"></circle><circle cx="15" cy="15" r="1.2" fill="currentColor"></circle><circle cx="15" cy="9" r="1.2" fill="currentColor"></circle><circle cx="9" cy="15" r="1.2" fill="currentColor"></circle></svg>';
+  const scPrac = {
+    title: '그림 없이 세기 - 실전', nav: 6, probs: null, H: null, fit: null, view: null, st: FULL, cancel: null,
+    steps: () => PRAC.length * 7,
+    dots: step => ({ n: PRAC.length, cur: Math.floor(step / 7) }),
+    build() {
+      this.probs = PRAC.map(p => Object.assign({}, p)); this.cancel = null;
+      FIG.classList.add('ctl');
+      FIG.innerHTML = svgWrap(`${GRAB}<g id="q7G"></g>`, '그림 없이 꼭짓점, 모서리, 면의 개수 세기');
+      orbit($('.grab', FIG), this.view = { yaw: -24, pitch: 22 }, () => this.draw());
+      FIG.insertAdjacentHTML('beforeend', `<div class="kbar"><button type="button" class="kbtn" id="q7New">${DICE}새 문제</button><button type="button" class="kbtn" id="q7All">답 한 번에 보기</button></div>`);
+      $('#q7New', FIG).addEventListener('click', () => this.newProb());
+      $('#q7All', FIG).addEventListener('click', () => { const k = Math.floor(state.step / 7); if (state.step !== k * 7 + 5) go(state.si, k * 7 + 5); });
+    },
+    newProb() {
+      const k = Math.floor(state.step / 7), cur = this.probs[k];
+      let p;
+      do p = { t: TYPES[Math.floor(Math.random() * 3)], n: 3 + Math.floor(Math.random() * 18) }; while (p.t === cur.t && p.n === cur.n);
+      this.probs[k] = p;
+      if (state.step === k * 7) this.update(state.step, state.step); else go(state.si, k * 7);
+    },
+    stop() { if (this.cancel) { this.cancel(); this.cancel = null; } },
+    leave() { this.stop(); },
+    advance() { if (!this.cancel) return false; this.stop(); this.st = FULL; this.draw(); return true; },
+    planFig(pr, ph) {
+      const H6 = houseOf(pr.t, 6), xs = [80, 226, 374, 520];
+      let s = `<text x="300" y="66" class="lbl" font-size="36" text-anchor="middle">밑면이 <tspan style="fill:var(--c-arc)">${gon(pr.n)}</tspan>인 ${TN[pr.t]}</text>`;
+      s += tag(300, 112, '그림은 없어요. 머릿속으로 지어 봐요.', 22, 'middle', '--ink-2');
+      xs.forEach((cx, i) => {
+        const cur = ph === i + 1, done = ph > i + 1, op = cur || done ? 1 : 0.38;
+        const st = { b: 1, p: i >= 1 ? 1 : 0, r: i >= 2 ? 1 : 0, w: i >= 3 ? 1 : 0 };
+        s += `<g style="opacity:${op};transition:opacity .4s ease">
+          <rect x="${cx - 64}" y="150" width="128" height="196" rx="16" style="fill:var(${cur ? '--hl' : '--surface'});stroke:var(${cur ? '--accent' : '--line'});stroke-width:${cur ? 3.5 : 2}"></rect>
+          ${houseIn(H6, [cx - 54, 166, 108, 124], st)}
+          ${tag(cx, 324, STG[i][1], 21, 'middle', STG[i][0])}</g>`;
+        if (i < 3) s += tag(cx + 73, 256, '→', 22, 'middle', '--ink-2');
+      });
+      s += tag(300, 410, ph >= 5 ? '다 지었어요! 그림으로 확인해 볼까요?' : '그림 속 육각형은 예시예요. 문제의 밑면으로 생각해요.', 20, 'middle', '--ink-2');
+      return s;
+    },
+    draw() {
+      const g = $('#q7G', FIG);
+      if (!g) return;
+      const k = Math.floor(state.step / 7), ph = state.step % 7, pr = this.probs[k];
+      $('.grab', FIG).style.display = ph < 6 ? 'none' : '';
+      if (ph < 6) { g.innerHTML = this.planFig(pr, ph); return; }
+      g.innerHTML = tag(300, 34, '그림으로 확인', 24, 'middle', '--accent') + drawHouse(this.H, camOrbit(this.fit, this.view), this.st, {}).svg;
+    },
+    panel(k, pr, ph, animRow) {
+      const nm = nameOf(pr.t, pr.n), c = CNT(pr.t, pr.n);
+      PANEL.innerHTML = `
+        <div class="qhead"><span>그림 없이 세기 - 실전${k >= 2 ? ' · 더 해 보기' : ''}</span><span>${k + 1} / ${PRAC.length}</span></div>
+        <h2 class="q">${nm}의 꼭짓점, 모서리, 면은 각각 몇 개일까요?</h2>
+        ${ph === 0 ? `<p class="sub">밑면이 ${gon(pr.n)}이에요. 밑면 → 기둥 → 지붕 → 벽 순서로 떠올리며 표를 채워 봐요.</p>` : ''}
+        ${tableHTML(pr.t, pr.n, Math.min(ph, 5), animRow)}
+        ${ph >= 5 ? `<div class="answer"><div class="big">꼭짓점 ${c.v}개, 모서리 ${c.e}개, 면 ${c.f}개</div><p class="why">${nm}${eun(pr.t)} 면이 ${c.f}개인 ${faceNm(c.f)}예요.${ph === 6 && pr.n >= 13 ? ' 그림을 보고 하나씩 세기는 어렵지만, 밑면부터 차례로 떠올리면 금방 셀 수 있어요.' : ''}</p></div>` : ''}`;
+    },
+    update(step, prev) {
+      this.stop();
+      const k = Math.floor(step / 7), ph = step % 7, pr = this.probs[k], fwd = step === prev + 1 && Math.floor(prev / 7) === k;
+      this.H = houseOf(pr.t, pr.n);
+      const V = this.H.S.V, yw = yawOf(pr.n);
+      this.fit = fitOrbit([...V, ...V.map((v, i) => (i >= pr.n ? [v[0], v[1] + this.H.h * 0.7, v[2]] : v))], yw, 22, [40, 56, 520, 370], 0.92);
+      if (ph === 6) { this.view.yaw = yw; this.view.pitch = 22; }
+      if (ph === 6 && fwd) {
+        this.st = { b: 0, p: 0, r: 0, w: 0 };
+        this.cancel = tween(3200, u => { const v = u * 4; this.st = { b: clamp(v, 0, 1), p: clamp(v - 1, 0, 1), r: clamp(v - 2, 0, 1), w: clamp(v - 3, 0, 1) }; this.draw(); }, () => { this.cancel = null; });
+      } else { this.st = FULL; this.draw(); }
+      this.panel(k, pr, ph, fwd && ph >= 1 && ph <= 5 ? ph - 1 : -1);
+    }
+  };
+
+  /* =========================================================
+     마무리: 총정리 두 단계(다면체와 각뿔대 → 개수) → 문제와 답(문제마다 두 단계)
+     ========================================================= */
+  const eqRow = (y, label, items) => {             // [밑면 ?] + [기둥 ?] = 24 꼴의 상자 식
+    const BW = 118, SW = 48, tot = items.reduce((a, it) => a + (typeof it === 'string' ? SW : BW), 0);
+    let x = (600 - tot) / 2, s = tag(300, y - 18, label, 24, 'middle', '--ink-2');
+    items.forEach(it => {
+      if (typeof it === 'string') { s += num(x + SW / 2, y + 62, it, 40, 'middle'); x += SW; return; }
+      s += `<rect x="${n2(x)}" y="${y}" width="${BW}" height="94" rx="14" style="fill:var(--surface);stroke:var(${it.c});stroke-width:3"></rect>${tag(x + BW / 2, y + 29, it.lab, 22, 'middle', it.c)}`;
+      s += it.q === it.a ? num(x + BW / 2, y + 78, it.a, 40, 'middle', it.c)
+        : `<g class="hide-rev">${num(x + BW / 2, y + 78, it.q, 40, 'middle', '--ink-2')}</g><g class="rv">${num(x + BW / 2, y + 78, it.a, 40, 'middle', it.c)}</g>`;
+      x += BW;
+    });
+    return s;
+  };
+  const trio = (items, o = {}) => items.map((it, i) => {
+    const cx = [102, 300, 498][i], y = o.y || 70, h = o.h || 220;
+    const body = it.H ? houseIn(it.H, [cx - 90, y, 180, h]) : solidIn(it.S, [cx - 90, y, 180, h], { fill: colorFill });
+    return body + (it.lab ? `<g class="${o.labRv ? 'rv' : ''}">${tag(cx, y + h + 50, it.lab, 26, 'middle')}</g>` : '') + (it.sub ? `<g class="${o.subRv ? 'rv' : ''}">${tag(cx, y + h + 86, it.sub, 22, 'middle', '--accent')}</g>` : '');
+  }).join('');
+  const QZ = [
+    {
+      tag: '교과서 207쪽 문제 3', q: '다음 표의 빈칸을 알맞게 채워 보세요.',
+      fig: () => trio([{ S: mkType('prism', 7), lab: '칠각기둥' }, { S: mkType('pyr', 7), lab: '칠각뿔' }, { S: mkType('fru', 7), lab: '칠각뿔대' }]),
+      x: `<table class="mt"><thead><tr><th style="width:7.5em"></th><th>칠각기둥</th><th>칠각뿔</th><th>칠각뿔대</th></tr></thead><tbody>
+        <tr><th>밑면의 모양</th><td><span class="rvp">칠각형</span></td><td><span class="rvp">칠각형</span></td><td><span class="rvp">칠각형</span></td></tr>
+        <tr><th>옆면의 모양</th><td><span class="rvp">직사각형</span></td><td><span class="rvp">삼각형</span></td><td><span class="rvp">사다리꼴</span></td></tr>
+        <tr><th>밑면의 개수</th><td><span class="rvp">2</span></td><td><span class="rvp">1</span></td><td><span class="rvp">2</span></td></tr>
+        <tr><th>면의 개수</th><td><span class="rvp">9</span></td><td><span class="rvp">8</span></td><td><span class="rvp">9</span></td></tr></tbody></table>`,
+      ans: '면의 개수: 9, 8, 9', why: '밑면은 모두 칠각형이에요. 면의 개수는 밑면의 개수에 옆면 7개를 더해요.'
+    },
+    {
+      tag: '교과서 207쪽 문제 4', q: '다음 세 입체도형을 관찰하고, 공통점과 차이점을 이야기해 보세요.',
+      fig: () => trio([{ S: mkType('prism', 5), lab: '오각기둥', sub: '칠면체' }, { S: mkType('pyr', 6), lab: '육각뿔', sub: '칠면체' }, { S: mkType('fru', 5), lab: '오각뿔대', sub: '칠면체' }], { labRv: true, subRv: true }),
+      x: '<p class="note">면의 모양과 면의 개수를 살펴볼까요?</p>',
+      ans: '공통점: 모두 칠면체', why: '세 입체도형 모두 면이 7개인 칠면체예요. 차이점: 옆면의 모양이 각각 직사각형, 삼각형, 사다리꼴이에요. 또 육각뿔의 밑면은 1개이고, 오각기둥과 오각뿔대의 밑면은 2개예요.'
+    },
+    {
+      tag: '전개도 보고 맞히기', more: true, q: '다음 전개도로 만들어지는 입체도형의 이름을 말해 보세요.',
+      fig: () => netIn('fru', 6, [10, 30, 340, 400], 72) + `<g class="rv">${tag(372, 236, '→', 34, 'middle', '--ink-2')}${solidIn(mkType('fru', 6), [400, 130, 190, 200], { fill: colorFill })}${tag(495, 380, '육각뿔대', 26, 'middle', '--accent')}</g>`,
+      ans: '육각뿔대', why: '밑면이 모양은 같고 크기가 다른 육각형 2개이고, 옆면이 사다리꼴 6개예요.'
+    },
+    {
+      tag: '거꾸로 생각하기', more: true, q: '모서리의 개수가 24인 각기둥의 이름을 말해 보세요.',
+      fig: () => eqRow(60, '각기둥의 모서리의 개수', [{ lab: '밑면', c: '--c-arc', q: '?', a: '8' }, '+', { lab: '기둥', c: '--c-chord', q: '?', a: '8' }, '+', { lab: '지붕', c: '--c-secant', q: '?', a: '8' }, '=', '24']) +
+        `<g class="rv">${houseIn(houseOf('prism', 8), [170, 184, 260, 200])}${tag(300, 428, '팔각기둥', 26, 'middle', '--accent')}</g>`,
+      ans: '팔각기둥', why: '각기둥의 모서리는 밑면, 기둥, 지붕에 같은 개수씩 있어요. 24를 똑같이 셋으로 나누면 8이므로 밑면은 팔각형이고, 팔각기둥이에요.'
+    },
+    {
+      tag: '거꾸로 생각하기', more: true, q: '꼭짓점의 개수가 12인 각뿔의 모서리의 개수를 구해 보세요.',
+      fig: () => eqRow(64, '각뿔의 꼭짓점의 개수', [{ lab: '밑면', c: '--c-arc', q: '?', a: '11' }, '+', { lab: '지붕', c: '--c-secant', q: '1', a: '1' }, '=', '12']) +
+        `<g class="rv">${tag(300, 196, '밑면이 십일각형인 십일각뿔', 24, 'middle', '--accent')}${eqRow(264, '십일각뿔의 모서리의 개수', [{ lab: '밑면', c: '--c-arc', q: '11', a: '11' }, '+', { lab: '기둥', c: '--c-chord', q: '11', a: '11' }, '=', '22'])}</g>`,
+      ans: '22', why: '각뿔의 꼭짓점은 밑면의 꼭짓점에 꼭대기 1개를 더한 것이에요. 12 − 1 = 11이므로 밑면은 십일각형이고, 십일각뿔이에요. 모서리는 밑면 11개와 기둥 11개로 22개예요.'
+    }
+  ];
+  const scEnd = {
+    title: '마무리', nav: 7, wide: true, k: -9,
+    steps: () => 2 + QZ.length * 2,
+    dots: step => ({ n: QZ.length + 2, cur: step < 2 ? step : 2 + Math.floor((step - 2) / 2) }),
+    build() {
+      this.k = -9;
+      PANEL.innerHTML = `
+        <div class="qhead"><span id="qtag"></span><span id="qc"></span></div>
+        <h2 class="q" id="qt"></h2>
+        <div class="stack" id="qx"></div>
+        <div class="answer is-off" id="qa"><div class="big" id="qab"></div><p class="why" id="qaw"></p></div>`;
+    },
+    leave() { PANEL.classList.remove('rev'); },
+    update(step) {
+      const k = step < 2 ? -1 - step : Math.floor((step - 2) / 2), rev = step >= 2 && (step - 2) % 2 === 1;
+      const qa = $('#qa', PANEL);
+      if (k !== this.k) {
+        this.k = k;
+        qa.classList.add('no-anim'); qa.classList.add('is-off'); void qa.offsetWidth; qa.classList.remove('no-anim');
+        FIG.classList.remove('rev'); PANEL.classList.remove('rev');
+        if (k === -1) {
+          FIG.innerHTML = svgWrap(trio([{ S: mkType('prism', 5), lab: '오각기둥', sub: '칠면체' }, { S: mkType('pyr', 5), lab: '오각뿔', sub: '육면체' }, { S: mkType('fru', 5), lab: '오각뿔대', sub: '칠면체' }]), '오각기둥, 오각뿔, 오각뿔대');
+          $('#qtag', PANEL).textContent = '마무리 · 오늘 배운 것 1';
+          $('#qc', PANEL).textContent = '';
+          $('#qt', PANEL).innerHTML = '다면체와 각뿔대';
+          $('#qx', PANEL).innerHTML = `
+            <div class="prop"><span class="pl">다면체</span><p>다각형인 면으로만 둘러싸인 입체도형을 다면체라고 한다. 다면체는 둘러싸인 면의 개수에 따라 사면체, 오면체, 육면체, …라고 한다.</p></div>
+            <div class="prop"><span class="pl">각뿔대</span><p>각뿔을 밑면에 평행한 평면으로 잘라서 생기는 두 다면체 중에서 각뿔이 아닌 쪽의 입체도형을 각뿔대라고 한다. 각뿔대의 두 밑면은 서로 평행하고, 옆면은 모두 사다리꼴이다.</p></div>
+            <p class="note">사면체, 오면체, 육면체, …는 다면체를 면의 개수에 따라 나눈 것이고, 각기둥, 각뿔, 각뿔대는 다면체를 그 모양에 따라 나눈 것이에요.</p>`;
+        } else if (k === -2) {
+          FIG.innerHTML = svgWrap(trio([{ H: houseOf('prism', 5), lab: '오각기둥', sub: '10 · 15 · 7' }, { H: houseOf('pyr', 5), lab: '오각뿔', sub: '6 · 10 · 6' }, { H: houseOf('fru', 5), lab: '오각뿔대', sub: '10 · 15 · 7' }]) + tag(300, 420, '(꼭짓점 · 모서리 · 면)', 19, 'middle', '--ink-2'), '오각기둥, 오각뿔, 오각뿔대의 밑면, 기둥, 지붕');
+          $('#qtag', PANEL).textContent = '마무리 · 오늘 배운 것 2';
+          $('#qc', PANEL).textContent = '';
+          $('#qt', PANEL).innerHTML = '꼭짓점, 모서리, 면의 개수';
+          $('#qx', PANEL).innerHTML = `<table class="mt"><thead><tr><th></th><th>오각기둥</th><th>오각뿔</th><th>오각뿔대</th></tr></thead><tbody>
+              <tr><th>꼭짓점</th><td>10</td><td>6</td><td>10</td></tr><tr><th>모서리</th><td>15</td><td>10</td><td>15</td></tr><tr><th>면</th><td>7</td><td>6</td><td>7</td></tr></tbody></table>
+            <p class="kkt"><span class="cl">밑면</span> → <span class="cr">기둥</span> → <span class="cs">지붕</span> → <span class="cw">벽</span> 순서로 떠올리면 그림 없이도 셀 수 있어요.</p>`;
+        } else {
+          const it = QZ[k];
+          FIG.innerHTML = svgWrap(it.fig(), it.q);
+          $('#qtag', PANEL).textContent = `${it.more ? '더 해 보기' : '마무리 문제'} · ${it.tag}`;
+          $('#qc', PANEL).textContent = `${k + 1} / ${QZ.length}`;
+          $('#qt', PANEL).innerHTML = it.q;
+          $('#qx', PANEL).innerHTML = it.x || '';
+          $('#qab', PANEL).innerHTML = it.ans;
+          $('#qaw', PANEL).innerHTML = it.why;
+        }
+        $('#qx', PANEL).hidden = !$('#qx', PANEL).innerHTML.trim();
+        const svg = $('svg', FIG);
+        if (svg) svg.style.animation = 'enter .4s ease both';
+      }
+      qa.classList.toggle('is-off', k < 0 || !rev);
+      FIG.classList.toggle('rev', rev); PANEL.classList.toggle('rev', rev);
+    }
+  };
+
+  /* ---------- 장면 목록과 위 띠 (번호, 이름, 장면 순서) ---------- */
+  const scenes = [scDef, scParts, scRecall, scFru, scNet, scBuild, scPrac, scEnd];
+  const NAVS = [['1', '다면체', 0], ['2', '구성 요소', 1], ['3', '각기둥과 각뿔', 2], ['4', '각뿔대', 3], ['', '전개도', 4], ['5', '그림 없이 세기 - 연습', 5], ['6', '그림 없이 세기 - 실전', 6], ['', '마무리', 7]];
+
+  /* ---------- 진행 ---------- */
+  let curSi = -1;
+  function go(si, step) {
+    si = Math.max(0, Math.min(scenes.length - 1, si));
+    const sc = scenes[si];
+    step = Math.max(0, Math.min(sc.steps() - 1, step));
+    if (si !== curSi) {
+      if (curSi >= 0 && scenes[curSi].leave) scenes[curSi].leave();
+      curSi = si; state.si = si; state.step = step;
+      FIG.className = 'fig'; FIG.innerHTML = ''; PANEL.innerHTML = '';
+      STAGE.classList.toggle('wide', !!sc.wide);
+      STAGE.classList.toggle('figwide', !!sc.figwide);
+      STAGE.classList.add('instant');
+      sc.build();
+      FIG.classList.add('no-anim'); PANEL.classList.add('no-anim');
+      sc.update(step, step);
+      void FIG.offsetWidth;
+      FIG.classList.remove('no-anim'); PANEL.classList.remove('no-anim');
+      STAGE.classList.remove('enter'); void STAGE.offsetWidth; STAGE.classList.add('enter');
+      renderInk();
+    } else {
+      const prev = state.step;
+      state.step = step;
+      STAGE.classList.toggle('instant', step < prev);   // 뒤로 갈 때는 늦게 나타나기 없이 바로
+      if (prev !== step) sc.update(step, prev);
+    }
+    updateChrome();
+  }
+  const next = () => {
+    const sc = scenes[state.si];
+    if (sc.advance && sc.advance()) return;
+    if (state.step < sc.steps() - 1) go(state.si, state.step + 1);
+    else if (state.si < scenes.length - 1) go(state.si + 1, 0);
+  };
+  const prev = () => {
+    const sc = scenes[state.si];
+    if (sc.retreat && sc.retreat()) return;
+    if (state.step > 0) go(state.si, state.step - 1);
+    else if (state.si > 0) go(state.si - 1, scenes[state.si - 1].steps() - 1);
+  };
+
+  const navEl = $('#nav');
+  navEl.innerHTML = NAVS.map((n, i) => `<button type="button" data-nav="${i}" data-si="${n[2]}">${n[0] ? `<span class="n">${n[0]}</span>` : ''}${n[1]}</button>`).join('');
+  $$('button', navEl).forEach(b => b.addEventListener('click', () => go(Number(b.getAttribute('data-si')), 0)));
+
+  function updateChrome() {
+    const sc = scenes[state.si], n = sc.steps();
+    $$('button', navEl).forEach(b => {
+      if (Number(b.getAttribute('data-nav')) === sc.nav) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
+    });
+    const di = sc.dots ? sc.dots(state.step) : { n, cur: state.step };
+    $('#dots').innerHTML = Array.from({ length: di.n }, (_, i) => `<span class="dot${i <= di.cur ? ' on' : ''}${i === di.cur ? ' cur' : ''}"></span>`).join('');
+    $('#prevBtn').disabled = state.si === 0 && state.step === 0;
+    $('#nextBtn').disabled = state.si === scenes.length - 1 && state.step === n - 1;
+  }
+  $('#nextBtn').addEventListener('click', next);
+  $('#prevBtn').addEventListener('click', prev);
+
+  /* ---------- 펜 (장면마다 따로 남는다) ---------- */
+  const INK = $('#ink');
+  const inkStore = new Map();
+  let penOn = false, penVar = '--pen1', cur = null;
+  const inkKey = () => String(state.si);
+  const ptsStr = pts => pts.map(p => p.join(',')).join(' ');
+  function renderInk() {
+    const arr = inkStore.get(inkKey()) || [];
+    INK.innerHTML = arr.map(s => `<polyline points="${ptsStr(s.pts)}" style="stroke:var(${s.c})"></polyline>`).join('');
+  }
+  function undoInk() { const arr = inkStore.get(inkKey()); if (arr && arr.length) { arr.pop(); renderInk(); } }
+  const toInk = e => {
+    const r = INK.getBoundingClientRect();
+    return [Math.round((e.clientX - r.left) / (r.width || 1) * 1000), Math.round((e.clientY - r.top) / (r.height || 1) * 1000)];
+  };
+  INK.addEventListener('pointerdown', e => {
+    if (!penOn) return;
+    e.preventDefault();
+    try { INK.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+    const p = toInk(e);
+    cur = { c: penVar, pts: [p], el: document.createElementNS(NS, 'polyline') };
+    cur.el.setAttribute('points', p.join(','));
+    cur.el.style.stroke = `var(${penVar})`;
+    INK.appendChild(cur.el);
+    const arr = inkStore.get(inkKey()) || [];
+    arr.push(cur);
+    inkStore.set(inkKey(), arr);
+  });
+  INK.addEventListener('pointermove', e => {
+    if (!cur) return;
+    const p = toInk(e), last = cur.pts[cur.pts.length - 1];
+    if (Math.abs(p[0] - last[0]) + Math.abs(p[1] - last[1]) < 3) return;
+    cur.pts.push(p);
+    cur.el.setAttribute('points', ptsStr(cur.pts));
+  });
+  const endStroke = () => {
+    if (!cur) return;
+    if (cur.pts.length === 1) { cur.pts.push([cur.pts[0][0] + 1, cur.pts[0][1] + 1]); cur.el.setAttribute('points', ptsStr(cur.pts)); }
+    delete cur.el;
+    cur = null;
+  };
+  INK.addEventListener('pointerup', endStroke);
+  INK.addEventListener('pointercancel', endStroke);
+  function setPen(on) {
+    penOn = on;
+    document.body.classList.toggle('pen-on', on);
+    $('#penBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (!on) endStroke();
+  }
+  $('#penBtn').addEventListener('click', () => setPen(!penOn));
+  $('#penOff').addEventListener('click', () => setPen(false));
+  $('#penUndo').addEventListener('click', undoInk);
+  $('#penClear').addEventListener('click', () => { inkStore.set(inkKey(), []); renderInk(); });
+  $$('.pen-sw').forEach(b => b.addEventListener('click', () => {
+    penVar = b.getAttribute('data-pen');
+    $$('.pen-sw').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+
+  /* ---------- 화면 색: 종이 ↔ 칠판 ---------- */
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('lesson-theme'); if (t === 'dark' || t === 'light') root.setAttribute('data-theme', t); } catch (err) { /* 무시 */ }
+  const themeNow = () => root.getAttribute('data-theme') || (mq('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const paintTheme = () => {
+    const dark = themeNow() === 'dark';
+    $('#themeLbl').textContent = dark ? '칠판' : '종이';
+    $('#themeBtn').setAttribute('aria-label', `화면 색 바꾸기, 지금은 ${dark ? '칠판' : '종이'}`);
+  };
+  $('#themeBtn').addEventListener('click', () => {
+    const t = themeNow() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('lesson-theme', t); } catch (err) { /* 무시 */ }
+    paintTheme();
+  });
+  paintTheme();
+  const schemeMq = mq('(prefers-color-scheme: dark)');
+  if (schemeMq.addEventListener) schemeMq.addEventListener('change', paintTheme);
+
+  /* ---------- 전체 화면 ---------- */
+  const fsBtn = $('#fsBtn');
+  if (!document.fullscreenEnabled) fsBtn.hidden = true;
+  const toggleFs = () => {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else root.requestFullscreen().catch(() => {});
+  };
+  fsBtn.addEventListener('click', toggleFs);
+
+  /* ---------- 키보드 (방향키, 발표용 리모컨) ---------- */
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.defaultPrevented) return;
+    const tn = e.target && e.target.tagName ? e.target.tagName : '';
+    const k = e.key;
+    if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'Z')) { if (penOn) { e.preventDefault(); undoInk(); } return; }
+    if (e.ctrlKey || e.metaKey) return;
+    if (tn === 'TEXTAREA' || tn === 'INPUT') return;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || ((k === ' ' || k === 'Enter') && tn !== 'BUTTON')) { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); prev(); }
+    else if (k === 'p' || k === 'P' || k === 'ㅔ') setPen(!penOn);
+    else if (k === 'f' || k === 'F' || k === 'ㄹ') toggleFs();
+    else if (k === 'Escape') { if (penOn) setPen(false); }
+    else if (/^[0-9]$/.test(k)) { const nv = NAVS.find(x => x[0] === k); if (nv) go(nv[2], 0); }   // 탭 번호로 바로 가기
+  });
+
+  go(0, 0);
+})();
+</script>
+
+</body></html>

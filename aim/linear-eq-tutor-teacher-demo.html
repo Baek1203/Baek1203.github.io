@@ -1,0 +1,798 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>일차방정식 튜터 교사 화면</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="일차방정식의 활용 AI 튜터 교사 화면 — 예시 데이터">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* 레이아웃: 상단 바(학급 선택) → 탭 → 요약이 먼저, 세부가 뒤. 단계 결과는 늘 같은 네 가지 색(첫 시도·힌트 뒤·세 번째·공개)으로 읽힌다. */
+:root {
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --surface-2: #eef1f7;
+  --line: #dde2ec;
+  --ink: #161d2e;
+  --ink-2: #4a5468;
+  --ink-3: #7b8498;
+  --accent: #2456d3;
+  --accent-soft: #e7eeff;
+  --first: #12805c;  --first-soft: #e2f4ec;
+  --hint: #3f8fd1;   --hint-soft: #e5f1fb;
+  --late: #c27a0e;   --late-soft: #fdf1dc;
+  --reveal: #c3374f; --reveal-soft: #fce7eb;
+  --note-bg: #fff7e2; --note-line: #f3dfab; --note-ink: #7a5300;
+  --shadow: 0 1px 2px rgba(22, 29, 46, .05), 0 4px 14px -6px rgba(22, 29, 46, .10);
+  --font: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1320; --surface: #151c2c; --surface-2: #1c2538; --line: #273149;
+    --ink: #e8edf7; --ink-2: #aeb7ca; --ink-3: #7e889e;
+    --accent: #84a6ff; --accent-soft: rgba(132, 166, 255, .14);
+    --first: #4cd09f; --first-soft: rgba(76, 208, 159, .14);
+    --hint: #7cbcf0;  --hint-soft: rgba(124, 188, 240, .14);
+    --late: #f0b252;  --late-soft: rgba(240, 178, 82, .14);
+    --reveal: #ff7d93; --reveal-soft: rgba(255, 125, 147, .15);
+    --note-bg: rgba(240, 178, 82, .10); --note-line: rgba(240, 178, 82, .30); --note-ink: #f3c879;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px -8px rgba(0, 0, 0, .6);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1320; --surface: #151c2c; --surface-2: #1c2538; --line: #273149;
+  --ink: #e8edf7; --ink-2: #aeb7ca; --ink-3: #7e889e;
+  --accent: #84a6ff; --accent-soft: rgba(132, 166, 255, .14);
+  --first: #4cd09f; --first-soft: rgba(76, 208, 159, .14);
+  --hint: #7cbcf0;  --hint-soft: rgba(124, 188, 240, .14);
+  --late: #f0b252;  --late-soft: rgba(240, 178, 82, .14);
+  --reveal: #ff7d93; --reveal-soft: rgba(255, 125, 147, .15);
+  --note-bg: rgba(240, 178, 82, .10); --note-line: rgba(240, 178, 82, .30); --note-ink: #f3c879;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 18px -8px rgba(0, 0, 0, .6);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+@media (min-width: 720px) { .wrap { padding-left: max(28px, env(safe-area-inset-left, 0px)); padding-right: max(28px, env(safe-area-inset-right, 0px)); } }
+
+/* 상단 */
+.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; padding-block: 18px; }
+.brand { display: flex; flex-direction: column; gap: 2px; margin-right: auto; min-width: 0; }
+.brand small { font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--accent); }
+.brand h1 { font-size: 20px; font-weight: 700; letter-spacing: -.01em; }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.field { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-3); }
+select, input[type="search"] {
+  height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font-size: 14px;
+}
+.demo { display: flex; gap: 10px; align-items: baseline; margin-top: 16px; padding: 10px 14px; border-radius: 12px; background: var(--note-bg); border: 1px solid var(--note-line); color: var(--note-ink); font-size: 13.5px; }
+.demo { flex-wrap: wrap; row-gap: 2px; }
+.demo b { font-weight: 700; white-space: nowrap; }
+
+.tabs { display: flex; gap: 4px; margin-top: 18px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.tabs button {
+  flex: none; border: 0; background: transparent; cursor: pointer; padding: 10px 14px 12px; font-size: 15px; font-weight: 600; color: var(--ink-3);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+}
+.tabs button:hover { color: var(--ink); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+main { padding-block: 24px 64px; }
+.view { display: flex; flex-direction: column; gap: 20px; }
+
+/* 공통 블록 */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); min-width: 0; }
+.panel-h { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; margin-bottom: 14px; }
+.panel-h h2 { font-size: 16px; font-weight: 700; }
+.panel-h p { font-size: 13px; color: var(--ink-3); }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+@media (min-width: 960px) { .grid-2 { grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); align-items: start; } }
+
+/* 숫자 타일 */
+.kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 860px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.kpi span { font-size: 13px; color: var(--ink-3); }
+.kpi b { font-size: 28px; line-height: 1.15; font-weight: 600; letter-spacing: -.02em; }
+.kpi b small { font-size: 14px; color: var(--ink-3); font-weight: 500; margin-left: 2px; }
+.kpi em { font-style: normal; font-size: 12.5px; color: var(--ink-3); }
+
+/* 단계 결과 막대 (네 가지 색) */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.c-first { background: var(--first); } .c-hint { background: var(--hint); } .c-late { background: var(--late); } .c-reveal { background: var(--reveal); }
+.stack { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
+.stack i { display: block; height: 100%; }
+.stack.big { height: 14px; }
+
+/* 짚어 줄 것 */
+.insights { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 860px) { .insights { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.insight { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); text-align: left; cursor: pointer; transition: border-color .15s, box-shadow .15s; min-width: 0; }
+.insight:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.insight .tag { align-self: flex-start; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; }
+.insight h3 { font-size: 15px; font-weight: 600; line-height: 1.5; }
+.insight p { font-size: 13px; color: var(--ink-3); }
+.insight q { quotes: "“" "”"; font-size: 15px; color: var(--ink); }
+.insight q.eq { font-family: var(--mono); font-size: 14px; }
+.wrongs .qt { font-size: 14px; font-weight: 500; overflow-wrap: anywhere; }
+.t-reveal { background: var(--reveal-soft); color: var(--reveal); }
+.t-late { background: var(--late-soft); color: var(--late); }
+.t-hint { background: var(--hint-soft); color: var(--hint); }
+.t-first { background: var(--first-soft); color: var(--first); }
+
+/* 유형 표 */
+.table-scroll { overflow-x: auto; margin-inline: -4px; padding-inline: 4px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.types { min-width: 600px; }
+table.types td:first-child { white-space: nowrap; }
+table.students { min-width: 760px; }
+table.kill { min-width: 520px; }
+th { text-align: left; font-size: 12.5px; font-weight: 600; color: var(--ink-3); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:last-child td { border-bottom: 0; }
+td.r, th.r { text-align: right; }
+.bar { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.bar .track { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.bar .track i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.bar span { font-size: 12.5px; color: var(--ink-2); min-width: 34px; text-align: right; }
+
+/* 도움 학생 목록 */
+.help-list { display: flex; flex-direction: column; gap: 8px; }
+.help { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); border: 0; cursor: pointer; text-align: left; width: 100%; }
+.help:hover { outline: 1px solid var(--line); }
+.help b { font-weight: 600; white-space: nowrap; }
+.help span { font-size: 13px; color: var(--ink-2); }
+.help .why { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+
+/* 막히는 곳: 히트맵 */
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--surface-2); gap: 2px; }
+.seg button { border: 0; background: transparent; cursor: pointer; padding: 5px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+.heat { width: 100%; min-width: 520px; border-collapse: separate; border-spacing: 4px; font-size: 13.5px; }
+.heat th { border: 0; padding: 4px 6px; text-align: center; }
+.heat th:first-child { text-align: left; }
+.heat td { border: 0; padding: 0; }
+.heat .prob { padding: 6px 8px 6px 0; min-width: 150px; }
+.heat .prob b { font-weight: 600; display: block; line-height: 1.35; }
+.heat .prob small { font-size: 11.5px; color: var(--ink-3); }
+.heat .type td { padding: 12px 0 2px; font-size: 12.5px; font-weight: 700; color: var(--accent); letter-spacing: .02em; }
+.cell {
+  width: 100%; min-width: 64px; height: 44px; border-radius: 9px; border: 1px solid var(--line); background: var(--surface); cursor: pointer;
+  font-family: var(--mono); font-size: 13.5px; font-weight: 600; color: var(--ink);
+}
+.cell:hover { border-color: var(--ink-3); }
+.cell[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 2px var(--accent-soft); }
+.cell.na { cursor: default; color: var(--ink-3); background: transparent; border: 1px dashed var(--line); font-family: var(--font); font-weight: 500; font-size: 12px; }
+
+.detail { position: sticky; top: 16px; }
+.detail h3 { font-size: 17px; font-weight: 700; }
+.detail .sub { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+.detail .qtext { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); }
+.detail .answer { margin-top: 10px; font-size: 13.5px; color: var(--ink-2); }
+.detail .answer code { font-family: var(--mono); font-size: 13.5px; color: var(--ink); background: var(--surface-2); padding: 1px 6px; border-radius: 6px; }
+.dsec { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.dsec h4 { margin: 0; font-size: 13px; font-weight: 700; color: var(--ink-3); letter-spacing: .02em; }
+.dist { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.dist div { display: flex; flex-direction: column; gap: 2px; padding: 8px; border-radius: 10px; }
+.dist b { font-size: 18px; font-weight: 600; }
+.dist span { font-size: 11.5px; }
+.wrongs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wrongs li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); }
+.wrongs code { font-family: var(--mono); font-size: 13.5px; overflow-wrap: anywhere; }
+.wrongs small { grid-column: 1; font-size: 12.5px; color: var(--ink-3); }
+.wrongs .cnt { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-family: var(--mono); font-size: 13px; color: var(--ink-2); }
+.wrongs li.alt { border-color: var(--first-soft); background: var(--first-soft); }
+.empty { font-size: 13px; color: var(--ink-3); }
+
+/* 학생 */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.toolbar input[type="search"] { flex: 1 1 200px; min-width: 0; }
+.students td.name button { border: 0; background: transparent; padding: 0; cursor: pointer; font-weight: 600; text-align: left; color: var(--ink); }
+.students td.name button:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.students tbody tr { cursor: pointer; }
+.students tbody tr:hover td { background: var(--surface-2); }
+.mini { display: flex; height: 8px; width: 96px; border-radius: 999px; overflow: hidden; background: var(--surface-2); }
+.mini i { display: block; height: 100%; }
+
+/* 서바이벌 */
+.hist { width: 100%; height: auto; display: block; }
+.hist text { fill: var(--ink-3); font-family: var(--mono); font-size: 11px; }
+.hist .lbl { fill: var(--ink-2); font-size: 11px; }
+.hist rect.b { fill: var(--accent); }
+.hist rect.b.top { fill: var(--first); }
+.hist line { stroke: var(--line); }
+.rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rank li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--line); }
+.rank li:last-child { border-bottom: 0; }
+.rank .pos { font-family: var(--mono); color: var(--ink-3); }
+.rank .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank .sc { font-family: var(--mono); font-weight: 600; }
+
+/* 학생 상세 */
+.scrim { position: fixed; inset: 0; background: rgba(10, 14, 24, .38); z-index: 40; }
+.drawer {
+  position: fixed; z-index: 41; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--surface); border-left: 1px solid var(--line);
+  overflow-y: auto; box-shadow: -12px 0 40px -18px rgba(0, 0, 0, .35);
+  padding: calc(18px + env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) 20px;
+}
+.drawer-h { display: flex; align-items: flex-start; gap: 12px; }
+.drawer-h h2 { font-size: 20px; font-weight: 700; }
+.drawer-h p { font-size: 13px; color: var(--ink-3); }
+.close { margin-left: auto; width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 18px; line-height: 1; color: var(--ink-2); }
+.dstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
+@media (max-width: 480px) { .dstats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dstats div { padding: 10px; border-radius: 12px; background: var(--surface-2); display: flex; flex-direction: column; gap: 2px; }
+.dstats b { font-size: 18px; font-weight: 600; }
+.dstats span { font-size: 11.5px; color: var(--ink-3); }
+.ptype { margin-top: 18px; }
+.ptype h4 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--accent); }
+.prow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.prow:last-child { border-bottom: 0; }
+.prow .pt { min-width: 0; }
+.prow .pt small { display: block; font-size: 12px; color: var(--ink-3); }
+.dots { display: flex; gap: 4px; }
+.dots i { width: 14px; height: 14px; border-radius: 4px; }
+.dots i.none { background: transparent; border: 1px dashed var(--line); }
+.trail { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+.trail-item { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); font-size: 13.5px; }
+.trail-item b { font-weight: 600; }
+.trail-item .seq { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-items: center; }
+.trail-item code { font-family: var(--mono); font-size: 13px; padding: 2px 7px; border-radius: 7px; background: var(--reveal-soft); }
+.trail-item .arrow { color: var(--ink-3); }
+.trail-item .q { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+
+.foot { margin-top: 8px; font-size: 12.5px; color: var(--ink-3); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><small>일차방정식의 활용 · AI 튜터</small><h1>교사 화면</h1></div>
+    <div class="controls">
+      <label class="field" for="cls">학급
+        <select id="cls"></select>
+      </label>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="demo" role="note"><b>예시 데이터</b><span>가상의 세 학급이 지난 일주일 동안 튜터를 쓴 모습이에요. 학생 이름과 기록은 모두 지어낸 것이에요.</span></p>
+  <nav class="tabs" role="tablist" aria-label="화면" id="tabs">
+    <button type="button" role="tab" id="tab-overview" data-v="overview" aria-controls="v-overview">개요</button>
+    <button type="button" role="tab" id="tab-steps" data-v="steps" aria-controls="v-steps">막히는 곳</button>
+    <button type="button" role="tab" id="tab-students" data-v="students" aria-controls="v-students">학생</button>
+    <button type="button" role="tab" id="tab-survival" data-v="survival" aria-controls="v-survival">서바이벌</button>
+  </nav>
+  <main>
+    <section class="view" id="v-overview" role="tabpanel" aria-labelledby="tab-overview"></section>
+    <section class="view" id="v-steps" role="tabpanel" aria-labelledby="tab-steps" hidden></section>
+    <section class="view" id="v-students" role="tabpanel" aria-labelledby="tab-students" hidden></section>
+    <section class="view" id="v-survival" role="tabpanel" aria-labelledby="tab-survival" hidden></section>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden></aside>
+
+<script>
+(function () {
+  "use strict";
+  var TYPES = [{"id":"num_age","name":"수와 자릿수, 나이 문제","problems":[{"level":"하","title":"잘못 계산한 수 구하기","text":"어떤 수에 4를 더해야 할 것을 잘못해서 4를 곱했더니 구하려고 했던 수보다 29만큼 커졌다. 이때 어떤 수를 구하시오.","final":"11","steps":[{"t":"1. 미지수 정하기","e":null},{"t":"2. 방정식 세우기","e":null},{"t":"3-1. 이항하기","e":null},{"t":"3-2. x 구하기","e":null},{"t":"4. 확인하기","e":null}]},{"level":"중","title":"연속하는 세 홀수 문제","text":"연속하는 세 홀수의 합이 39일 때, 이 세 홀수 중 가장 작은 수를 구하시오.","final":"11","steps":[{"t":"1. 미지수 정하기","e":"x, x+2, x+4"},{"t":"2. 방정식 세우기","e":"x + (x+2) + (x+4) = 39"},{"t":"3. 방정식 풀기","e":"x = 11"},{"t":"4. 확인하기","e":"네"}]},{"level":"중","title":"자릿수 바꾸기 문제","text":"십의 자리 숫자가 6인 두 자리 자연수가 있다. 이 자연수의 십의 자리 숫자와 일의 자리 숫자를 바꾼 수는 처음 수보다 27만큼 작다고 할 때, 처음 수를 구하시오.","final":"63","steps":[{"t":"1. 미지수 정하기","e":"일의 자리 숫자"},{"t":"2. 방정식 세우기","e":"10x + 6 = (60 + x) - 27"},{"t":"3. 방정식 풀기","e":"x = 3"},{"t":"4. 답 구하기","e":"63"}]},{"level":"중","title":"나이 변화 문제","text":"현재 아버지의 나이는 48세이고 아들의 나이는 14세이다. 아버지의 나이가 아들의 나이의 3배가 되는 것은 몇 년 후인가?","final":"3","steps":[{"t":"1. 미지수 정하기","e":"몇 년 후 (또는 x년 후)"},{"t":"2. 방정식 세우기","e":"48 + x = 3(14 + x)"},{"t":"3. 방정식 풀기","e":"x = 3"},{"t":"4. 확인하기","e":"네"}]}]},{"id":"price_qty","name":"가격과 수량 증감 문제","problems":[{"level":"하","title":"남는 돈 비교하기","text":"슬기는 4000원을, 연지는 3000원을 가지고 있다. 슬기가 어떤 볼펜 2자루를 사고, 연지는 같은 볼펜 1자루와 400원짜리 연필 한 자루를 샀을 때 두 사람에게 남은 돈이 서로 같았다. 볼펜 한 자루의 가격을 구하시오.","final":"1400","steps":[{"t":"1. 미지수 정하기","e":null},{"t":"2. 방정식 세우기","e":null},{"t":"3-1. 괄호 풀기","e":null},{"t":"3-2. 이항하고 x 구하기","e":null},{"t":"4. 확인하기","e":null}]},{"level":"중","title":"합하여 산 물건의 개수","text":"한 개에 800원 하는 사과와 한 개에 1500원 하는 배를 합하여 16개를 사고 총 17000원을 지불하였다. 구입한 사과는 몇 개인지 구하시오.","final":"10","steps":[{"t":"1. 미지수 정하기","e":"사과의 개수"},{"t":"2. 방정식 세우기","e":"800x + 1500(16-x) = 17000"},{"t":"3. 방정식 풀기","e":"x = 10"},{"t":"4. 확인하기","e":"네"}]},{"level":"중","title":"할인하여 팔기","text":"어떤 상품의 원가에 5%의 이익을 붙여 정가를 정하였다. 이 정가에서 600원을 할인한 판매 가격이 1500원일 때, 상품의 원가를 구하시오.","final":"2000","steps":[{"t":"1. 미지수 정하기","e":"원가"},{"t":"2. 방정식 세우기","e":"1.05x - 600 = 1500"},{"t":"3. 방정식 풀기","e":"x = 2000"},{"t":"4. 확인하기","e":"네"}]},{"level":"중","title":"학생 수 증가량 비교","text":"어느 학교의 작년 전체 학생 수는 800명이었다. 올해는 작년에 비하여 남학생은 10% 증가하고, 여학생은 변화가 없어서 전체적으로 6% 증가하였다. 작년의 여학생 수를 구하시오.","final":"320","steps":[{"t":"1. 미지수 정하기","e":"800 - x"},{"t":"2. 방정식 세우기","e":"0.1(800-x) = 800 * 0.06"},{"t":"3. 방정식 풀기","e":"x = 320"},{"t":"4. 확인하기","e":"네"}]}]},{"id":"surplus_ratio","name":"과부족과 비례 문제","problems":[{"level":"하","title":"공책 나누어 주기","text":"학생들에게 공책을 나누어 주려고 한다. 한 학생에게 4권씩 나누어 주면 5권이 남고, 6권씩 나누어 주면 7권이 부족하다고 한다. 이때 학생 수는 몇 명일까요?","final":"6","steps":[{"t":"1. 미지수 정하기","e":null},{"t":"2. 방정식 세우기","e":null},{"t":"3-1. 이항하기","e":null},{"t":"3-2. x 구하기","e":null},{"t":"4. 확인하기","e":null}]},{"level":"중","title":"긴 의자 배정 문제","text":"강당에 있는 긴 의자에 학생들이 앉는데 4명씩 앉으면 9명이 앉지 못하고, 5명씩 앉으면 남는 의자는 없지만 마지막 의자에는 2명이 앉는다고 한다. 학생 수를 구하시오.","final":"57","steps":[{"t":"1. 미지수 정하기","e":"긴 의자의 개수 (또는 의자의 개수)"},{"t":"2. 방정식 세우기","e":"4x + 9 = 5(x - 1) + 2"},{"t":"3. 방정식 풀기","e":"x = 12"},{"t":"4. 답 구하기","e":"57"}]},{"level":"중","title":"비율과 전체 학생 수","text":"피타고라스 제자의 1/2은 수의 아름다움을 탐구하고, 1/4은 자연의 이치를 연구하며, 1/7은 사색에 잠겨 있다. 그 외에 여자인 제자가 3명일 때, 피타고라스 제자는 모두 몇 명인지 구하시오.","final":"28","steps":[{"t":"1. 미지수 정하기","e":"전체 제자 수"},{"t":"2. 방정식 세우기","e":"x/2 + x/4 + x/7 + 3 = x"},{"t":"3. 방정식 풀기","e":"x = 28"},{"t":"4. 확인하기","e":"네"}]}]},{"id":"geometry_work","name":"도형과 일의 양 문제","problems":[{"level":"하","title":"직사각형의 둘레","text":"가로의 길이가 세로의 길이보다 3cm 더 긴 직사각형이 있습니다. 이 직사각형의 둘레의 길이가 30cm일 때, 직사각형의 세로의 길이를 구하시오.","final":"6","steps":[{"t":"1. 미지수 정하기","e":null},{"t":"2. 방정식 세우기","e":null},{"t":"3-1. 괄호 풀기","e":null},{"t":"3-2. x 구하기","e":null},{"t":"4. 확인하기","e":null}]},{"level":"중","title":"사다리꼴의 넓이","text":"윗변의 길이가 8cm, 높이가 4cm인 사다리꼴의 넓이가 36cm²일 때, 이 사다리꼴의 아랫변의 길이를 구하시오.","final":"10","steps":[{"t":"1. 미지수 정하기","e":"아랫변의 길이"},{"t":"2. 방정식 세우기","e":"1/2 * (8 + x) * 4 = 36"},{"t":"3. 방정식 풀기","e":"x = 10"},{"t":"4. 확인하기","e":"네"}]},{"level":"중","title":"일의 양 문제","text":"어떤 일을 완성하는 데 A는 10일이 걸리고, B는 15일이 걸린다고 한다. 이 일을 두 사람이 함께 한다면 며칠 만에 완성할 수 있는지 구하시오.","final":"6","steps":[{"t":"1. 미지수 정하기","e":"x일 (또는 며칠, 걸리는 일수)"},{"t":"2. 방정식 세우기","e":"x/10 + x/15 = 1"},{"t":"3. 방정식 풀기","e":"x = 6"},{"t":"4. 답 구하기","e":"6"}]}]},{"id":"speed_1","name":"거속시 (왕복, 시간차)","problems":[{"level":"하","title":"왕복 배 타기","text":"유람선을 타고 두 지점 A, B 사이를 왕복하는 데 갈 때는 시속 20km, 올 때는 시속 30km로 운행하여 모두 1시간이 걸렸다. 두 지점 사이의 거리를 구하시오.","final":"12","steps":[{"t":"1. 미지수 정하기","e":null},{"t":"2. 방정식 세우기","e":null},{"t":"3-1. 분모 없애기","e":null},{"t":"3-2. x 구하기","e":null},{"t":"4. 확인하기","e":null}]},{"level":"중","title":"도착 시간 비교","text":"A도시에서 B도시까지 가는데 시속 300km인 KTX를 타면 시속 120km인 새마을호를 타는 것보다 30분(1/2시간) 빨리 도착한다고 한다. A, B 두 도시 사이의 거리를 구하시오.","final":"100","steps":[{"t":"1. 미지수 정하기","e":"거리"},{"t":"2. 방정식 세우기","e":"x/120 - x/300 = 1/2"},{"t":"3. 방정식 풀기","e":"x = 100"},{"t":"4. 확인하기","e":"네"}]},{"level":"중","title":"뛰다가 걷기","text":"다현이는 집에서 2.4km(2400m) 떨어진 도서관에 가는데, 처음에는 분속 240m로 뛰어가다가 중간에는 분속 120m로 걸어갔더니 총 16분이 걸렸다. 다현이가 뛰어간 거리를 구하시오.","final":"960","steps":[{"t":"1. 미지수 정하기","e":"2400-x"},{"t":"2. 방정식 세우기","e":"x/240 + (2400-x)/120 = 16"},{"t":"3. 방정식 풀기","e":"x = 960"},{"t":"4. 확인하기","e":"네"}]}]},{"id":"speed_2","name":"거속시 (마주보기, 기차)","problems":[{"level":"하","title":"호수 둘레 돌기","text":"둘레의 길이가 3000m인 호수가 있다. 형은 분속 90m, 동생은 분속 60m로 같은 출발점에서 서로 반대 방향으로 동시에 출발했다. 몇 분 후에 처음으로 만나는지 구하시오.","final":"20","steps":[{"t":"1. 미지수 정하기","e":null},{"t":"2. 방정식 세우기","e":null},{"t":"3-1. 동류항 계산하기","e":null},{"t":"3-2. x 구하기","e":null},{"t":"4. 확인하기","e":null}]},{"level":"중","title":"마주보고 걷기","text":"종찬이네 집과 찬혁이네 집 사이 거리는 1200m이다. 종찬이는 분속 60m로, 찬혁이는 분속 40m로 각자의 집에서 상대방의 집을 향해 동시에 출발했다. 두 사람은 출발한 지 몇 분 후에 만나는가?","final":"12","steps":[{"t":"1. 미지수 정하기","e":"만날 때까지 걸린 시간 (또는 x분)"},{"t":"2. 방정식 세우기","e":"60x + 40x = 1200"},{"t":"3. 방정식 풀기","e":"x = 12"},{"t":"4. 확인하기","e":"네"}]},{"level":"상","title":"기차 통과 문제 (속력 비교)","text":"일정한 속력으로 달리는 기차가 240m 길이의 다리를 완전히 통과하는 데 24초가 걸렸고, 180m 길이의 터널을 완전히 통과하는 데 20초가 걸렸다. 이 기차의 길이를 구하시오.","final":"120","steps":[{"t":"1. 미지수 정하기","e":"기차의 길이"},{"t":"2. 방정식 세우기","e":"(x+240)/24 = (x+180)/20"},{"t":"3. 방정식 풀기","e":"x = 120"},{"t":"4. 확인하기","e":"네"}]}]}];
+  var EXTRA = {"wrong":{"num_age:1:0":[["x, x+1, x+2","홀수 사이 간격을 1로 둠",4],["x+x+2+x+4","미지수와 식을 섞어 씀",1]],"num_age:1:1":[["x+x+1+x+2 = 39","앞 단계의 간격 실수가 이어짐",3],["3x = 39","+2, +4를 빠뜨림",2]],"num_age:2:0":[["처음 수","구하려는 수를 바로 x로 둠",3],["십의 자리 숫자","이미 주어진 값을 x로 둠",2]],"num_age:2:1":[["60+x = 10x+6-27","27을 빼는 쪽을 반대로 둠",3],["6x = x6 - 27","자릿값을 식으로 나타내지 못함",2]],"num_age:2:3":[["3","처음 수 대신 x를 답으로 씀",5]],"num_age:3:0":[["나이","누구의 나이인지 빠짐",4],["아버지 나이","구하는 것과 다름",2],["아들 나이","구하는 것과 다름",1]],"num_age:3:1":[["48+x = 3×14+x","괄호를 빠뜨림",4],["48 = 3(14+x)","아버지 나이도 x년 지남을 놓침",2],["3(48+x) = 14+x","3배의 방향을 반대로 둠",2]],"price_qty:1:0":[["개수","무엇의 개수인지 빠짐",3],["17000","주어진 값을 씀",1]],"price_qty:1:1":[["800x + 1500x = 17000","배의 개수도 x로 둠",4],["800x + 1500(x-16) = 17000","16-x를 x-16으로 씀",2]],"price_qty:2:0":[["정가","원가와 정가를 헷갈림",4],["판매 가격","주어진 값을 씀",1]],"price_qty:2:1":[["0.05x - 600 = 1500","이익만 식에 넣음",4],["x + 5 - 600 = 1500","5%를 5로 더함",3]],"price_qty:3:0":[["x - 800","남학생 수를 반대로 둠",3],["남학생 수","식으로 나타내지 않음",2]],"price_qty:3:1":[["0.1x = 800 × 0.06","남학생과 여학생을 바꿈",4],["0.1(800-x) = 6","6%를 사람 수로 바꾸지 않음",3]],"surplus_ratio:1:0":[["의자","무엇의 수인지 빠짐",2],["9명","주어진 값을 씀",1]],"surplus_ratio:1:1":[["4x+9 = 5x+2","마지막 의자 조건을 놓침",4],["4x-9 = 5(x-1)+2","앉지 못한 9명을 뺌",3]],"surplus_ratio:1:3":[["12","학생 수 대신 의자 수를 답으로 씀",6]],"surplus_ratio:2:0":[["제자","전체인지 빠짐",2]],"surplus_ratio:2:1":[["x/2 + x/4 + x/7 = 3","나머지 3명을 전체와 같게 둠",4],["x/2 + x/4 + x/7 + 3 = 1","전체를 1로 둠",2]],"geometry_work:1:0":[["윗변의 길이","주어진 값을 x로 둠",3],["넓이","주어진 값을 x로 둠",1]],"geometry_work:1:1":[["(8+x) × 4 = 36","1/2을 빠뜨림",5],["8x × 4 ÷ 2 = 36","더하기 대신 곱함",2]],"geometry_work:2:0":[["일의 양","일수와 일의 양을 헷갈림",3]],"geometry_work:2:1":[["10x + 15x = 1","하루 일의 양을 거꾸로 둠",4],["x/10 + x/15 = x","전체 일을 1로 두지 않음",2]],"speed_1:1:0":[["시간","무엇을 구하는지 놓침",3],["속력","주어진 값을 씀",1]],"speed_1:1:1":[["x/120 - x/300 = 30","30분을 시간 단위로 바꾸지 않음",5],["x/300 - x/120 = 1/2","느린 기차가 더 오래 걸림을 놓침",3],["300x - 120x = 1/2","거리 = 속력 × 시간과 헷갈림",2]],"speed_1:2:0":[["x - 2400","걸어간 거리를 반대로 둠",3],["2400","전체 거리를 씀",2]],"speed_1:2:1":[["240x + 120(2400-x) = 16","거리와 시간을 헷갈림",5],["x/240 + (2400-x)/120 = 960","답을 식에 넣음",1]],"speed_2:1:0":[["거리","구하는 값과 다름",3]],"speed_2:1:1":[["60x - 40x = 1200","마주 보면 거리가 더해짐을 놓침",4],["60x + 40x = 1200x","양쪽 단위를 헷갈림",1]],"speed_2:2:0":[["기차의 속력","구하는 값과 다름",3],["다리 길이","주어진 값을 씀",1]],"speed_2:2:1":[["x/24 = x/20","다리·터널 길이를 빠뜨림",4],["(x+240) × 24 = (x+180) × 20","속력 대신 곱함",3],["(x-240)/24 = (x-180)/20","'완전히 통과'를 반대로 이해함",2]]},"alt":{"num_age:1":["x-2, x, x+2","가운데 수를 x로 둠"],"num_age:3":["그때 아들의 나이","다른 대상을 x로 둠"],"price_qty:1":["배의 개수","배의 개수를 x로 둠"],"surplus_ratio:1":["학생 수","학생 수를 x로 둠"]},"q":{"num_age:1":["연속하는 홀수는 몇씩 커져요?"],"num_age:2":["자리를 바꾼 수는 어떻게 식으로 써요?"],"num_age:3":["3배가 된다는 게 무슨 뜻이에요?","x를 뭘로 해야 돼요?"],"price_qty:1":["사과랑 배를 둘 다 x로 하면 안 돼요?"],"price_qty:2":["5% 이익을 붙인다는 게 뭐예요?","원가랑 정가가 달라요?"],"price_qty:3":["10% 늘면 몇 배예요?"],"surplus_ratio:1":["마지막 의자에 2명이 앉는다는 게 무슨 뜻이에요?"],"surplus_ratio:2":["분수로 식을 세워도 돼요?"],"geometry_work:1":["사다리꼴 넓이 공식이 뭐였죠?"],"geometry_work:2":["일의 양을 왜 1로 둬요?"],"speed_1:1":["30분을 왜 1/2로 바꿔요?","거리 구하는 식이 뭐였죠?"],"speed_1:2":["분속이 뭐예요?"],"speed_2:1":["마주 보고 가면 속력을 더해요?"],"speed_2:2":["완전히 통과한다는 게 뭐예요?","기차 길이를 왜 더해요?"],"*":["미지수가 뭐예요?","이항이 뭐였죠?","왜요?"]}};
+  var COLS = ["미지수 정하기", "방정식 세우기", "방정식 풀기", "확인 · 답"];
+  var OUT = {
+    first: { label: "첫 시도에 해결", short: "첫 시도", cls: "c-first", soft: "t-first" },
+    hint: { label: "두 번째에 해결", short: "두 번째", cls: "c-hint", soft: "t-hint" },
+    late: { label: "세 번째에 해결", short: "세 번째", cls: "c-late", soft: "t-late" },
+    reveal: { label: "답 공개로 넘어감", short: "공개", cls: "c-reveal", soft: "t-reveal" }
+  };
+  var ORDER = ["first", "hint", "late", "reveal"];
+
+  /* ---------- 예시 데이터 만들기 (고정된 난수라서 열 때마다 같아요) ---------- */
+  var seed = 7317;
+  function rand() { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  function pick(a) { return a[Math.floor(rand() * a.length)]; }
+  function wpick(list) { var s = 0, i; for (i = 0; i < list.length; i++) s += list[i].w; var r = rand() * s; for (i = 0; i < list.length; i++) { r -= list[i].w; if (r <= 0) return list[i]; } return list[list.length - 1]; }
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  var FAMILY = "김이박최정강조윤장임한오서신권황안송류홍전고문양손배백허유남심노하곽성차주우구민".split("");
+  var GIVEN = ["하늘", "서준", "지우", "도윤", "하린", "민준", "서연", "예준", "지아", "시우", "수아", "주원", "하은", "건우", "윤서", "우진", "채원", "현우", "지민", "은우", "다은", "선우", "소율", "준서", "나연", "태윤", "가온", "로운", "시아", "연우", "다인", "이준", "유나", "재윤", "수빈", "도하"];
+  var CLASSES = [{ id: "1", name: "1학년 1반", n: 24 }, { id: "2", name: "1학년 2반", n: 25 }, { id: "3", name: "1학년 3반", n: 23 }];
+
+  // 문제마다 어려운 정도 (튜토리얼은 객관식이라 쉬움)
+  var MULT = { "num_age": [0.6, 0.95, 1.1, 1.0], "price_qty": [0.7, 1.0, 1.15, 1.35], "surplus_ratio": [0.7, 1.25, 1.15], "geometry_work": [0.6, 0.9, 1.2], "speed_1": [0.8, 1.4, 1.35], "speed_2": [0.7, 0.95, 1.5] };
+  var BASE = [0.34, 0.62, 0.26, 0.1];
+  var NOW = new Date();
+
+  function colOf(stepTitle) { var c = stepTitle.charAt(0); return c === "1" ? 0 : c === "2" ? 1 : c === "3" ? 2 : 3; }
+
+  // 문제·단계 목록
+  var PROBS = [];
+  TYPES.forEach(function (t, ti) {
+    t.problems.forEach(function (p, pi) {
+      var key = t.id + ":" + pi;
+      var cols = [[], [], [], []];
+      p.steps.forEach(function (s, si) { cols[colOf(s.t)].push(si); });
+      PROBS.push({ key: key, type: t, ti: ti, pi: pi, title: p.title, level: p.level, text: p.text, final: p.final, steps: p.steps, cols: cols, mult: MULT[t.id][pi], mc: p.level === "하" });
+    });
+  });
+  var PROB_BY_KEY = {}; PROBS.forEach(function (p) { PROB_BY_KEY[p.key] = p; });
+
+  function levelLabel(p) { return p.level === "하" ? "튜토리얼" : p.level === "상" ? "도전" : "실전 " + p.pi; }
+
+  function wrongAnswer(p, col) {
+    var ex = EXTRA.wrong[p.key + ":" + col];
+    var step = p.steps[p.cols[col][0]];
+    if (ex && ex.length && rand() < 0.85) { var w = wpick(ex.map(function (x) { return { a: x[0], why: x[1], w: x[2] || 1 }; })); return { a: w.a, why: w.why }; }
+    if (rand() < 0.18) return { a: pick(["모르겠어요", "잘 모르겠어요", "몰라요"]), why: "막혔다고 말함" };
+    if (col === 2) { var v = parseFloat(String(step.e || "").replace(/[^0-9.\-]/g, "")); if (!isNaN(v)) { var d = pick([-3, -2, -1, 1, 2, 3]); return { a: "x = " + (rand() < 0.3 ? -v : v + d), why: rand() < 0.5 ? "이항할 때 부호 실수" : "계산 실수" }; } }
+    if (col === 3) { if (step.e === "네") return { a: "아니요", why: "검산 계산 실수" }; return { a: String(parseFloat(p.final) + pick([-2, -1, 1, 2])), why: "계산 실수" }; }
+    return { a: col === 0 ? "x" : "x = " + p.final, why: col === 0 ? "무엇을 x로 둘지 말하지 않음" : "식 대신 답을 씀" };
+  }
+
+  var STUDENTS = [];
+  var SURVIVAL_KILL = {};
+  CLASSES.forEach(function (c, ci) {
+    for (var k = 1; k <= c.n; k++) {
+      var skill = clamp(0.25 + rand() * 0.7 + (ci === 1 ? 0.05 : ci === 2 ? -0.04 : 0), 0.15, 0.97);
+      var engage = clamp(0.35 + rand() * 0.75, 0.2, 1);
+      var st = { id: c.id + "-" + k, cls: c.id, no: k, name: pick(FAMILY) + pick(GIVEN), skill: skill, probs: {}, questions: [], runs: [], last: null };
+      if (rand() < 0.04) engage = 0.08; // 거의 안 한 학생
+      TYPES.forEach(function (t, ti) {
+        if (rand() > engage - ti * 0.07 + 0.15) return;
+        var nPractice = t.problems.length - 1;
+        var practiceDone = Math.round(clamp(engage * (0.6 + skill * 0.6) + (rand() - 0.5) * 0.5 - ti * 0.05, 0, 1) * nPractice);
+        for (var pi = 0; pi <= practiceDone; pi++) {
+          var p = PROB_BY_KEY[t.id + ":" + pi];
+          var rec = { key: p.key, cols: [] };
+          for (var col = 0; col < 4; col++) {
+            if (!p.cols[col].length) { rec.cols.push(null); continue; }
+            var pw = clamp(BASE[col] * p.mult * (1.5 - skill) * (p.mc ? 0.6 : 1), 0.02, 0.9);
+            if (p.key === "num_age:2" && col === 3) pw = clamp(0.3 * (1.4 - skill), 0.05, 0.8);
+            if (p.key === "surplus_ratio:1" && col === 3) pw = clamp(0.32 * (1.4 - skill), 0.05, 0.8);
+            var wrongs = [], outcome, alt = null;
+            if (!p.mc && col === 0 && EXTRA.alt[p.key] && rand() < 0.07 + skill * 0.08) {
+              outcome = "first"; alt = EXTRA.alt[p.key];
+            } else if (rand() >= pw) outcome = "first";
+            else {
+              wrongs.push(wrongAnswer(p, col));
+              if (rand() >= pw * 0.8) outcome = "hint";
+              else {
+                wrongs.push(wrongAnswer(p, col));
+                if (p.mc) outcome = "late";
+                else if (rand() >= pw * 0.75) outcome = "late";
+                else { outcome = "reveal"; wrongs.push(wrongAnswer(p, col)); }
+              }
+            }
+            var cell = { outcome: outcome, wrongs: wrongs, alt: alt };
+            if (!p.mc && col <= 1 && rand() < 0.08 + 0.2 * (1 - skill) * p.mult) {
+              var own = EXTRA.q[p.key] || [];
+              var qq = own.length && rand() < 0.78 ? pick(own) : pick(EXTRA.q["*"]); cell.question = qq; st.questions.push({ key: p.key, col: col, q: qq });
+            }
+            rec.cols.push(cell);
+          }
+          st.probs[p.key] = rec;
+        }
+      });
+      // 서바이벌
+      var nRuns = Object.keys(st.probs).length === 0 ? 0 : Math.floor(rand() * (1 + engage * 3.4));
+      for (var r = 0; r < nRuns; r++) {
+        var order = PROBS.slice().sort(function () { return rand() - 0.5; });
+        var score = 0, killer = null;
+        for (var i = 0; i < order.length; i++) {
+          var pp = order[i];
+          var pf = clamp(0.045 + 0.1 * Math.pow(pp.mult, 1.7) * (1.4 - skill) - r * 0.006, 0.01, 0.6);
+          if (rand() < pf) { killer = pp.key; break; }
+          score++;
+        }
+        st.runs.push({ score: score, killer: killer });
+        if (killer) SURVIVAL_KILL[c.id + "|" + killer] = (SURVIVAL_KILL[c.id + "|" + killer] || 0) + 1;
+      }
+      // 최근 활동: 지난 7일 안
+      if (Object.keys(st.probs).length) {
+        var daysAgo = Math.floor(rand() * rand() * 7);
+        var d = new Date(NOW.getTime() - daysAgo * 864e5);
+        d.setHours(daysAgo === 0 ? Math.max(8, NOW.getHours() - Math.floor(rand() * 3)) : 9 + Math.floor(rand() * 7), Math.floor(rand() * 60), 0, 0);
+        if (d > NOW) d = new Date(NOW.getTime() - 15 * 60000);
+        st.last = d;
+      }
+      STUDENTS.push(st);
+    }
+  });
+
+  /* ---------- 집계 ---------- */
+  var state = { cls: "all", view: "overview", metric: "reveal", cell: null, sort: "no", q: "" };
+  try { var savedCls = localStorage.getItem("ilchaDashCls"); if (savedCls) state.cls = savedCls; } catch (e) {}
+
+  function inClass(s) { return state.cls === "all" || s.cls === state.cls; }
+  function roster() { return STUDENTS.filter(inClass); }
+  function clsName(id) { var c = CLASSES.filter(function (x) { return x.id === id; })[0]; return c ? c.name : ""; }
+
+  function studentStats(s) {
+    var o = { first: 0, hint: 0, late: 0, reveal: 0 }, solved = 0, steps = 0;
+    Object.keys(s.probs).forEach(function (k) {
+      solved++;
+      s.probs[k].cols.forEach(function (c) { if (c && !PROB_BY_KEY[k].mc) { o[c.outcome]++; steps++; } });
+    });
+    var best = s.runs.reduce(function (m, r) { return Math.max(m, r.score); }, 0);
+    return { solved: solved, o: o, steps: steps, firstRate: steps ? o.first / steps : null, reveals: o.reveal, questions: s.questions.length, best: best, runs: s.runs.length };
+  }
+  function needsHelp(s, ss) {
+    var why = [];
+    if (ss.reveals >= 3) why.push({ t: "답 공개 " + ss.reveals + "번", c: "t-reveal" });
+    if (ss.solved > 0 && ss.firstRate !== null && ss.firstRate < 0.45) why.push({ t: "첫 시도 " + Math.round(ss.firstRate * 100) + "%", c: "t-late" });
+    if (ss.solved <= 2) why.push({ t: ss.solved ? "푼 문제 " + ss.solved + "개" : "아직 시작 전", c: "t-hint" });
+    return why;
+  }
+  function cellAgg(list, key, col) {
+    var o = { first: 0, hint: 0, late: 0, reveal: 0 }, n = 0, tries = 0, wrong = {}, alts = {}, qs = {};
+    list.forEach(function (s) {
+      var rec = s.probs[key]; if (!rec || !rec.cols[col]) return;
+      var c = rec.cols[col]; o[c.outcome]++; n++;
+      tries += c.outcome === "first" ? 1 : c.outcome === "hint" ? 2 : 3;
+      c.wrongs.forEach(function (w) { var id = w.a; if (!wrong[id]) wrong[id] = { a: w.a, why: w.why, n: 0 }; wrong[id].n++; });
+      if (c.alt) { if (!alts[c.alt[0]]) alts[c.alt[0]] = { a: c.alt[0], why: c.alt[1], n: 0 }; alts[c.alt[0]].n++; }
+      if (c.question) qs[c.question] = (qs[c.question] || 0) + 1;
+    });
+    return { o: o, n: n, avgTries: n ? tries / n : null, wrong: Object.keys(wrong).map(function (k) { return wrong[k]; }).sort(function (a, b) { return b.n - a.n; }), alts: Object.keys(alts).map(function (k) { return alts[k]; }), qs: Object.keys(qs).map(function (k) { return { q: k, n: qs[k] }; }).sort(function (a, b) { return b.n - a.n; }) };
+  }
+
+  /* ---------- 공용 그리기 ---------- */
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function pct(v) { return v == null ? "—" : Math.round(v * 100) + "%"; }
+  function stackHtml(o, big) {
+    var t = ORDER.reduce(function (s, k) { return s + o[k]; }, 0);
+    if (!t) return '<div class="stack' + (big ? " big" : "") + '"></div>';
+    return '<div class="stack' + (big ? " big" : "") + '" role="img" aria-label="' + ORDER.map(function (k) { return OUT[k].label + " " + Math.round(o[k] / t * 100) + "%"; }).join(", ") + '">' +
+      ORDER.map(function (k) { return o[k] ? '<i class="' + OUT[k].cls + '" style="width:' + (o[k] / t * 100) + '%" title="' + OUT[k].label + " " + o[k] + '"></i>' : ""; }).join("") + "</div>";
+  }
+  function legendHtml() { return '<div class="legend">' + ORDER.map(function (k) { return '<span><i class="' + OUT[k].cls + '"></i>' + OUT[k].label + "</span>"; }).join("") + "</div>"; }
+  function ago(d) {
+    if (!d) return "—";
+    var mins = Math.round((NOW - d) / 60000);
+    if (mins < 60) return mins + "분 전";
+    var days = Math.floor((new Date(NOW.getFullYear(), NOW.getMonth(), NOW.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
+    var hm = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    if (days === 0) return "오늘 " + hm;
+    if (days === 1) return "어제 " + hm;
+    return days + "일 전";
+  }
+  function probName(p) { return p.title; }
+
+  /* ---------- 개요 ---------- */
+  function renderOverview() {
+    var list = roster();
+    var stats = list.map(function (s) { return { s: s, ss: studentStats(s) }; });
+    var active = stats.filter(function (x) { return x.ss.solved > 0; });
+    var o = { first: 0, hint: 0, late: 0, reveal: 0 };
+    stats.forEach(function (x) { ORDER.forEach(function (k) { o[k] += x.ss.o[k]; }); });
+    var totalSteps = ORDER.reduce(function (s, k) { return s + o[k]; }, 0);
+    var avgSolved = active.length ? active.reduce(function (s, x) { return s + x.ss.solved; }, 0) / active.length : 0;
+    var qCount = stats.reduce(function (s, x) { return s + x.ss.questions; }, 0);
+    var bests = stats.filter(function (x) { return x.ss.runs; }).map(function (x) { return x.ss.best; }).sort(function (a, b) { return a - b; });
+    var med = bests.length ? bests[Math.floor(bests.length / 2)] : 0;
+
+    // 짚어 줄 것: 공개가 가장 많은 단계, 가장 많이 나온 오답, 가장 많이 나온 질문
+    var cells = [];
+    PROBS.forEach(function (p) { if (p.mc) return; for (var col = 0; col < 4; col++) { if (!p.cols[col].length) continue; var a = cellAgg(list, p.key, col); if (a.n >= 10) cells.push({ p: p, col: col, a: a }); } });
+    var worst = cells.slice().sort(function (x, y) { return y.a.o.reveal / y.a.n - x.a.o.reveal / x.a.n; })[0];
+    var topWrong = null;
+    cells.forEach(function (c) { c.a.wrong.forEach(function (w) { if (!/모르|몰라/.test(w.a) && (!topWrong || w.n > topWrong.w.n)) topWrong = { c: c, w: w }; }); });
+    var qAll = {};
+    list.forEach(function (s) { s.questions.forEach(function (q) { var id = q.key + "|" + q.col + "|" + q.q; qAll[id] = qAll[id] || { key: q.key, col: q.col, q: q.q, n: 0 }; qAll[id].n++; }); });
+    var topQ = Object.keys(qAll).map(function (k) { return qAll[k]; }).sort(function (a, b) { return b.n - a.n; })[0];
+
+    var insights = [];
+    if (worst) insights.push('<button type="button" class="insight" data-go="' + worst.p.key + "|" + worst.col + '"><span class="tag t-reveal">답 공개가 가장 많은 단계</span><h3>' + esc(worst.p.title) + " · " + COLS[worst.col] + '</h3><p>' + worst.a.n + "명 중 " + worst.a.o.reveal + "명(" + pct(worst.a.o.reveal / worst.a.n) + ")이 세 번 만에 답을 보고 넘어갔어요.</p></button>");
+    if (topWrong) insights.push('<button type="button" class="insight" data-go="' + topWrong.c.p.key + "|" + topWrong.c.col + '"><span class="tag t-late">가장 많이 나온 오답</span><h3><q class="eq">' + esc(topWrong.w.a) + "</q></h3><p>" + esc(topWrong.c.p.title) + " · " + COLS[topWrong.c.col] + " · " + topWrong.w.n + "번 · " + esc(topWrong.w.why) + "</p></button>");
+    if (topQ) insights.push('<button type="button" class="insight" data-go="' + topQ.key + "|" + topQ.col + '"><span class="tag t-hint">학생이 가장 많이 물은 것</span><h3><q>' + esc(topQ.q) + "</q></h3><p>" + esc(PROB_BY_KEY[topQ.key].title) + " · " + COLS[topQ.col] + " · " + topQ.n + "번</p></button>");
+
+    // 유형별 진도
+    var typeRows = TYPES.map(function (t) {
+      var tKey = t.id + ":0", nPrac = t.problems.length - 1;
+      var tutDone = list.filter(function (s) { return s.probs[tKey]; }).length;
+      var pracDone = 0, to = { first: 0, hint: 0, late: 0, reveal: 0 };
+      list.forEach(function (s) {
+        for (var pi = 1; pi <= nPrac; pi++) {
+          var rec = s.probs[t.id + ":" + pi]; if (!rec) continue; pracDone++;
+          rec.cols.forEach(function (c) { if (c) to[c.outcome]++; });
+        }
+      });
+      return '<tr><td><b>' + esc(t.name) + '</b></td>' +
+        '<td><div class="bar"><span class="track"><i style="width:' + (list.length ? tutDone / list.length * 100 : 0) + '%"></i></span><span class="num">' + pct(list.length ? tutDone / list.length : 0) + '</span></div></td>' +
+        '<td><div class="bar"><span class="track"><i style="width:' + (list.length ? pracDone / (list.length * nPrac) * 100 : 0) + '%"></i></span><span class="num">' + pct(list.length ? pracDone / (list.length * nPrac) : 0) + '</span></div></td>' +
+        '<td style="min-width:150px">' + stackHtml(to) + "</td></tr>";
+    }).join("");
+
+    var helps = stats.map(function (x) { return { s: x.s, ss: x.ss, why: needsHelp(x.s, x.ss) }; }).filter(function (x) { return x.why.length; })
+      .sort(function (a, b) { return sev(b) - sev(a); }).slice(0, 7);
+    function sev(x) { return x.ss.reveals * 2 + (x.ss.firstRate != null && x.ss.firstRate < 0.45 ? 4 : 0) + (x.ss.solved <= 2 ? 1 : 0) + x.why.length; }
+
+    $("v-overview").innerHTML =
+      '<div class="kpis">' +
+        '<div class="kpi"><span>참여한 학생</span><b class="num">' + active.length + '<small>/ ' + list.length + '명</small></b><em>한 문제라도 푼 학생</em></div>' +
+        '<div class="kpi"><span>학생당 푼 문제</span><b class="num">' + avgSolved.toFixed(1) + '<small>/ 20</small></b><em>참여한 학생 평균</em></div>' +
+        '<div class="kpi"><span>첫 시도에 해결한 단계</span><b class="num">' + pct(totalSteps ? o.first / totalSteps : null) + '</b><em>서술형 단계 ' + totalSteps + '개 중</em></div>' +
+        '<div class="kpi"><span>서바이벌 최고 기록</span><b class="num">' + med + '<small>/ 20 (중앙값)</small></b><em>학생 질문 ' + qCount + '개 · 아래 탭에서 자세히</em></div>' +
+      "</div>" +
+      '<div class="panel"><div class="panel-h"><h2>서술형 단계를 어떻게 넘어갔나</h2><p>튜터는 세 번째로 틀리면 답과 이유를 보여 주고 넘어가요.</p></div>' + stackHtml(o, true) + '<div style="margin-top:10px">' + legendHtml() + "</div></div>" +
+      '<div><div class="panel-h"><h2>오늘 짚어 줄 것</h2><p>누르면 그 단계의 오답과 질문을 볼 수 있어요.</p></div><div class="insights">' + (insights.join("") || '<p class="empty">아직 기록이 충분하지 않아요.</p>') + "</div></div>" +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-h"><h2>유형별 진도</h2><p>실전은 유형마다 2~3문제</p></div><div class="table-scroll"><table class="types"><thead><tr><th>유형</th><th>튜토리얼 완료</th><th>실전 완료</th><th>실전 단계 결과</th></tr></thead><tbody>' + typeRows + "</tbody></table></div></div>" +
+        '<div class="panel"><div class="panel-h"><h2>도움이 필요해 보이는 학생</h2><p>답 공개 3번 이상 · 첫 시도 45% 미만 · 진도 2문제 이하</p></div><div class="help-list">' +
+          (helps.length ? helps.map(function (x) {
+            return '<button type="button" class="help" data-student="' + x.s.id + '"><b>' + (state.cls === "all" ? clsName(x.s.cls).replace("1학년 ", "") + " " : "") + x.s.no + "번 " + esc(x.s.name) + '</b><span class="why">' + x.why.map(function (w) { return '<span class="chip ' + w.c + '">' + w.t + "</span>"; }).join("") + "</span></button>";
+          }).join("") : '<p class="empty">지금은 눈에 띄는 학생이 없어요.</p>') +
+        "</div></div>" +
+      "</div>";
+  }
+
+  /* ---------- 막히는 곳 ---------- */
+  function metricOf(a) {
+    if (!a || !a.n) return null;
+    if (state.metric === "reveal") return a.o.reveal / a.n;
+    if (state.metric === "first") return a.o.first / a.n;
+    return a.avgTries;
+  }
+  function cellStyle(a, mc) {
+    var v = metricOf(a); if (v == null) return "";
+    var tone, amt;
+    if (state.metric === "reveal") { tone = "--reveal"; amt = clamp(v / 0.45, 0, 1); }
+    else if (state.metric === "first") { tone = "--first"; amt = clamp((v - 0.3) / 0.7, 0, 1); }
+    else { tone = "--late"; amt = clamp((v - 1) / 1.1, 0, 1); }
+    return "background: color-mix(in srgb, var(" + tone + ") " + Math.round(amt * 58) + "%, var(--surface));";
+  }
+  function cellText(a, mc) {
+    var v = metricOf(a); if (v == null) return "—";
+    if (state.metric === "tries") return v.toFixed(1) + "번";
+    return Math.round(v * 100) + "%";
+  }
+  function renderSteps() {
+    var list = roster();
+    if (!state.cell) {
+      // 처음엔 답 공개가 가장 많은 칸을 열어 둠
+      var best = null;
+      PROBS.forEach(function (p) { if (p.mc) return; for (var col = 0; col < 4; col++) { if (!p.cols[col].length) continue; var a = cellAgg(list, p.key, col); if (a.n >= 10 && (!best || a.o.reveal / a.n > best.v)) best = { k: p.key + "|" + col, v: a.o.reveal / a.n }; } });
+      state.cell = best ? best.k : PROBS[1].key + "|1";
+    }
+    var rows = "";
+    TYPES.forEach(function (t) {
+      rows += '<tr class="type"><td colspan="5">' + esc(t.name) + "</td></tr>";
+      PROBS.filter(function (p) { return p.type === t && !p.mc; }).forEach(function (p) {
+        rows += '<tr><td class="prob"><b>' + esc(p.title) + "</b><small>" + levelLabel(p) + (p.mc ? " · 객관식" : "") + "</small></td>";
+        for (var col = 0; col < 4; col++) {
+          var key = p.key + "|" + col;
+          if (!p.cols[col].length) { rows += '<td><span class="cell na">없음</span></td>'; continue; }
+          var a = cellAgg(list, p.key, col);
+          rows += '<td><button type="button" class="cell num" data-cell="' + key + '" aria-pressed="' + (state.cell === key) + '" style="' + cellStyle(a, p.mc) + '" aria-label="' + esc(p.title) + " " + COLS[col] + " " + cellText(a, p.mc) + '">' + cellText(a, p.mc) + "</button></td>";
+        }
+        rows += "</tr>";
+      });
+    });
+    var mLabel = { reveal: "답 공개 비율", first: "첫 시도 정답률", tries: "평균 시도 횟수" };
+    $("v-steps").innerHTML =
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-h"><h2>문제 × 단계</h2><div class="seg" role="group" aria-label="보기 기준">' +
+          ["reveal", "first", "tries"].map(function (m) { return '<button type="button" data-metric="' + m + '" aria-pressed="' + (state.metric === m) + '">' + mLabel[m] + "</button>"; }).join("") +
+        '</div></div><div class="table-scroll"><table class="heat"><thead><tr><th>문제</th>' + COLS.map(function (c) { return "<th>" + c + "</th>"; }).join("") + "</tr></thead><tbody>" + rows + "</tbody></table></div>" +
+        '<p class="foot">칸을 누르면 그 단계의 결과, 자주 나온 오답, 학생 질문이 보여요. 칸이 진할수록 ' + (state.metric === "first" ? "첫 시도에 잘 풀었어요." : "더 많이 막혔어요.") + " 객관식 튜토리얼은 개요의 유형별 진도에서 볼 수 있어요.</p></div>" +
+        '<div class="panel detail" id="cellDetail"></div>' +
+      "</div>";
+    renderCellDetail();
+  }
+  function renderCellDetail() {
+    var el = $("cellDetail"); if (!el || !state.cell) return;
+    var parts = state.cell.split("|"), p = PROB_BY_KEY[parts[0]], col = Number(parts[1]);
+    var a = cellAgg(roster(), p.key, col);
+    var step = p.steps[p.cols[col][0]];
+    var expected = p.cols[col].map(function (si) { return p.steps[si]; }).filter(function (s) { return s.e; }).map(function (s) { return s.e; });
+    el.innerHTML = '<h3>' + esc(p.title) + " · " + COLS[col] + '</h3><p class="sub">' + esc(p.type.name) + " · " + levelLabel(p) + " · 푼 학생 " + a.n + "명</p>" +
+      '<p class="qtext">' + esc(p.text) + "</p>" +
+      (expected.length ? '<p class="answer">교사용 정답 <code>' + esc(expected.join(" / ")) + "</code></p>" : '<p class="answer">객관식 단계예요.</p>') +
+      '<div class="dsec"><h4>어떻게 넘어갔나</h4><div class="dist">' + ORDER.map(function (k) {
+        return '<div class="' + OUT[k].soft + '"><b class="num">' + (a.n ? Math.round(a.o[k] / a.n * 100) : 0) + "%</b><span>" + OUT[k].short + " " + a.o[k] + "명</span></div>";
+      }).join("") + "</div></div>" +
+      (a.alts.length ? '<div class="dsec"><h4>다른 풀이로 인정</h4><ul class="wrongs">' + a.alts.map(function (w) { return '<li class="alt"><code>' + esc(w.a) + "</code><small>" + esc(w.why) + '</small><span class="cnt">' + w.n + "명</span></li>"; }).join("") + "</ul></div>" : "") +
+      '<div class="dsec"><h4>자주 나온 오답</h4>' + (a.wrong.length ? '<ul class="wrongs">' + a.wrong.slice(0, 6).map(function (w) { return "<li><code>" + esc(w.a) + "</code><small>" + esc(w.why) + '</small><span class="cnt">' + w.n + "번</span></li>"; }).join("") + "</ul>" : '<p class="empty">오답이 없어요.</p>') + "</div>" +
+      '<div class="dsec"><h4>학생이 튜터에게 물은 것</h4>' + (a.qs.length ? '<ul class="wrongs">' + a.qs.map(function (q) { return '<li><span class="qt">' + esc(q.q) + '</span><small>답은 알려 주지 않고 설명이나 힌트로 답했어요.</small><span class="cnt">' + q.n + "번</span></li>"; }).join("") + "</ul>" : '<p class="empty">이 단계에서는 질문이 없었어요.</p>') + "</div>";
+  }
+
+  /* ---------- 학생 ---------- */
+  function renderStudents() {
+    var list = roster().map(function (s) { return { s: s, ss: studentStats(s) }; });
+    var q = state.q.trim();
+    if (q) list = list.filter(function (x) { return x.s.name.indexOf(q) >= 0 || String(x.s.no) === q; });
+    var sorters = {
+      no: function (a, b) { return a.s.cls.localeCompare(b.s.cls) || a.s.no - b.s.no; },
+      solved: function (a, b) { return b.ss.solved - a.ss.solved; },
+      reveal: function (a, b) { return b.ss.reveals - a.ss.reveals; },
+      first: function (a, b) { return (a.ss.firstRate == null ? 2 : a.ss.firstRate) - (b.ss.firstRate == null ? 2 : b.ss.firstRate); },
+      best: function (a, b) { return b.ss.best - a.ss.best; }
+    };
+    list.sort(sorters[state.sort]);
+    var rows = list.map(function (x) {
+      var s = x.s, ss = x.ss, help = needsHelp(s, ss);
+      return '<tr data-student="' + s.id + '">' +
+        '<td class="num">' + (state.cls === "all" ? s.cls + "-" : "") + s.no + "</td>" +
+        '<td class="name"><button type="button" data-student="' + s.id + '">' + esc(s.name) + "</button>" + (help.length ? ' <span class="chip t-reveal" title="' + help.map(function (h) { return h.t; }).join(", ") + '">도움</span>' : "") + "</td>" +
+        '<td><div class="bar"><span class="track"><i style="width:' + (ss.solved / 20 * 100) + '%"></i></span><span class="num">' + ss.solved + "</span></div></td>" +
+        '<td><div class="mini" role="img" aria-label="첫 시도 ' + ss.o.first + ", 두 번째 " + ss.o.hint + ", 세 번째 " + ss.o.late + ", 공개 " + ss.o.reveal + '">' + (ss.steps ? ORDER.map(function (k) { return ss.o[k] ? '<i class="' + OUT[k].cls + '" style="width:' + (ss.o[k] / ss.steps * 100) + '%"></i>' : ""; }).join("") : "") + "</div></td>" +
+        '<td class="r num">' + pct(ss.firstRate) + "</td>" +
+        '<td class="r num">' + ss.reveals + "</td>" +
+        '<td class="r num">' + ss.questions + "</td>" +
+        '<td class="r num">' + (ss.runs ? ss.best : "—") + "</td>" +
+        "<td>" + ago(s.last) + "</td></tr>";
+    }).join("");
+    $("v-students").innerHTML =
+      '<div class="panel"><div class="toolbar">' +
+        '<input type="search" id="studentSearch" placeholder="이름이나 번호로 찾기" aria-label="학생 찾기" value="' + esc(state.q) + '">' +
+        '<label class="field" for="studentSort">정렬 <select id="studentSort">' +
+          [["no", "번호순"], ["solved", "푼 문제 많은 순"], ["reveal", "답 공개 많은 순"], ["first", "첫 시도 정답률 낮은 순"], ["best", "서바이벌 높은 순"]].map(function (o) { return '<option value="' + o[0] + '"' + (state.sort === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") +
+        "</select></label>" + legendHtml() + "</div>" +
+        '<div class="table-scroll"><table class="students"><thead><tr><th>번호</th><th>이름</th><th>푼 문제 (/20)</th><th>단계 결과</th><th class="r">첫 시도</th><th class="r">답 공개</th><th class="r">질문</th><th class="r">서바이벌</th><th>최근 활동</th></tr></thead><tbody>' +
+        (rows || '<tr><td colspan="9" class="empty">찾는 학생이 없어요.</td></tr>') + "</tbody></table></div>" +
+        '<p class="foot">이름을 누르면 문제별 기록과 오답 흐름을 볼 수 있어요.</p></div>';
+  }
+
+  /* ---------- 서바이벌 ---------- */
+  function renderSurvival() {
+    var list = roster().map(function (s) { return { s: s, ss: studentStats(s) }; }).filter(function (x) { return x.ss.runs; });
+    var hist = []; for (var i = 0; i <= 20; i++) hist.push(0);
+    list.forEach(function (x) { hist[x.ss.best]++; });
+    var maxH = Math.max.apply(null, hist.concat([1]));
+    var W = 640, H = 220, padL = 28, padB = 26, padT = 14, bw = (W - padL - 8) / 21;
+    var ticks = []; var stepT = maxH > 8 ? Math.ceil(maxH / 4) : 2; for (var tv = 0; tv <= maxH; tv += stepT) ticks.push(tv);
+    var svg = '<svg class="hist" viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="최고 기록별 학생 수">' +
+      ticks.map(function (tv) { var y = H - padB - tv / maxH * (H - padB - padT); return '<line x1="' + padL + '" x2="' + (W - 4) + '" y1="' + y + '" y2="' + y + '"></line><text x="' + (padL - 6) + '" y="' + (y + 4) + '" text-anchor="end">' + tv + "</text>"; }).join("") +
+      hist.map(function (v, i) {
+        var h = v / maxH * (H - padB - padT), x = padL + 4 + i * bw, y = H - padB - h;
+        return (v ? '<rect class="b' + (i === 20 ? " top" : "") + '" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (bw - 4).toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3"><title>' + i + "점: " + v + "명</title></rect>" : "") +
+          (i % 2 === 0 ? '<text class="lbl" x="' + (x + (bw - 4) / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + i + "</text>" : "");
+      }).join("") + "</svg>";
+    var ranked = list.slice().sort(function (a, b) { return b.ss.best - a.ss.best || a.ss.runs - b.ss.runs; }).slice(0, 10);
+    var kills = {};
+    Object.keys(SURVIVAL_KILL).forEach(function (k) { var parts = k.split("|"); if (state.cls !== "all" && parts[0] !== state.cls) return; kills[parts[1]] = (kills[parts[1]] || 0) + SURVIVAL_KILL[k]; });
+    var killList = Object.keys(kills).map(function (k) { return { p: PROB_BY_KEY[k], n: kills[k] }; }).sort(function (a, b) { return b.n - a.n; }).slice(0, 6);
+    var totalRuns = list.reduce(function (s, x) { return s + x.ss.runs; }, 0);
+    $("v-survival").innerHTML =
+      '<div class="kpis">' +
+        '<div class="kpi"><span>도전한 학생</span><b class="num">' + list.length + '<small>명</small></b><em>모두 ' + totalRuns + "번 도전</em></div>" +
+        '<div class="kpi"><span>20문제 모두 통과</span><b class="num">' + hist[20] + '<small>명</small></b><em>단 한 번도 틀리지 않음</em></div>' +
+        '<div class="kpi"><span>최고 기록 중앙값</span><b class="num">' + (list.length ? list.map(function (x) { return x.ss.best; }).sort(function (a, b) { return a - b; })[Math.floor(list.length / 2)] : 0) + '<small>/ 20</small></b><em>학생마다 가장 좋은 기록</em></div>' +
+        '<div class="kpi"><span>탈락을 가장 많이 부른 문제</span><b style="font-size:17px;line-height:1.4">' + (killList[0] ? esc(killList[0].p.title) : "—") + '</b><em>' + (killList[0] ? killList[0].n + "번" : "") + "</em></div>" +
+      "</div>" +
+      '<div class="grid-2">' +
+        '<div class="panel"><div class="panel-h"><h2>최고 기록 분포</h2><p>학생마다 가장 좋은 기록 하나</p></div>' + svg + "</div>" +
+        '<div class="panel"><div class="panel-h"><h2>순위 10</h2><p>같은 점수면 적게 도전한 학생이 위</p></div><ol class="rank">' +
+          ranked.map(function (x, i) { return '<li><span class="pos">' + (i + 1) + '</span><span class="who">' + (state.cls === "all" ? clsName(x.s.cls).replace("1학년 ", "") + " " : "") + esc(x.s.name) + '</span><span class="sc">' + x.ss.best + "점</span></li>"; }).join("") +
+        "</ol></div>" +
+      "</div>" +
+      '<div class="panel"><div class="panel-h"><h2>탈락을 부른 문제</h2><p>서바이벌에서 틀려 끝난 문제 · 수업에서 다시 다뤄 볼 후보</p></div><div class="table-scroll"><table class="kill"><thead><tr><th>문제</th><th>유형</th><th class="r">탈락</th><th>막대</th></tr></thead><tbody>' +
+        killList.map(function (k) { return "<tr><td><b>" + esc(k.p.title) + "</b></td><td>" + esc(k.p.type.name) + '</td><td class="r num">' + k.n + '</td><td style="min-width:140px"><div class="bar"><span class="track"><i style="width:' + (k.n / killList[0].n * 100) + '%;background:var(--reveal)"></i></span></div></td></tr>'; }).join("") +
+      "</tbody></table></div></div>";
+  }
+
+  /* ---------- 학생 상세 ---------- */
+  var lastFocus = null;
+  function openStudent(id) {
+    var s = STUDENTS.filter(function (x) { return x.id === id; })[0]; if (!s) return;
+    var ss = studentStats(s);
+    var byType = TYPES.map(function (t) {
+      var rows = PROBS.filter(function (p) { return p.type === t; }).map(function (p) {
+        var rec = s.probs[p.key];
+        var dots = [0, 1, 2, 3].map(function (col) {
+          if (!p.cols[col].length) return "";
+          var c = rec && rec.cols[col];
+          return c ? '<i class="' + OUT[c.outcome].cls + '" title="' + COLS[col] + ": " + OUT[c.outcome].label + '"></i>' : '<i class="none" title="' + COLS[col] + ': 아직"></i>';
+        }).join("");
+        return '<div class="prow"><span class="pt">' + esc(p.title) + "<small>" + levelLabel(p) + (rec ? "" : " · 아직 안 풂") + '</small></span><span class="dots">' + dots + "</span></div>";
+      }).join("");
+      return '<div class="ptype"><h4>' + esc(t.name) + "</h4>" + rows + "</div>";
+    }).join("");
+    var trails = [];
+    Object.keys(s.probs).forEach(function (k) {
+      var p = PROB_BY_KEY[k]; if (p.mc) return;
+      s.probs[k].cols.forEach(function (c, col) {
+        if (!c) return;
+        if (c.outcome === "reveal" || c.outcome === "late" || c.question || c.alt) trails.push({ p: p, col: col, c: c });
+      });
+    });
+    trails.sort(function (a, b) { return (b.c.outcome === "reveal") - (a.c.outcome === "reveal"); });
+    var trailHtml = trails.slice(0, 8).map(function (x) {
+      var seq = x.c.wrongs.map(function (w) { return "<code>" + esc(w.a) + "</code>"; }).join('<span class="arrow">→</span>');
+      var end = x.c.outcome === "reveal" ? '<span class="chip t-reveal">답 공개</span>' : x.c.outcome === "late" ? '<span class="chip t-late">세 번째에 해결</span>' : x.c.alt ? '<span class="chip t-first">다른 풀이로 인정</span>' : '<span class="chip t-first">' + OUT[x.c.outcome].label + "</span>";
+      return '<div class="trail-item"><b>' + esc(x.p.title) + "</b> · " + COLS[x.col] +
+        '<div class="seq">' + (x.c.alt ? "<code style=\"background:var(--first-soft)\">" + esc(x.c.alt[0]) + "</code>" : seq + (seq ? '<span class="arrow">→</span>' : "")) + end + "</div>" +
+        (x.c.question ? '<p class="q">튜터에게 물은 것: “' + esc(x.c.question) + "”</p>" : "") + "</div>";
+    }).join("");
+    $("drawer").innerHTML =
+      '<div class="drawer-h"><div><h2 id="drawer-title">' + s.no + "번 " + esc(s.name) + "</h2><p>" + clsName(s.cls) + " · 최근 활동 " + ago(s.last) + '</p></div><button type="button" class="close" id="drawerClose" aria-label="닫기">×</button></div>' +
+      '<div class="dstats"><div><b class="num">' + ss.solved + '</b><span>푼 문제 / 20</span></div><div><b class="num">' + pct(ss.firstRate) + '</b><span>첫 시도 정답</span></div><div><b class="num">' + ss.reveals + '</b><span>답 공개</span></div><div><b class="num">' + (ss.runs ? ss.best : "—") + '</b><span>서바이벌 최고</span></div></div>' +
+      '<div style="margin-top:14px">' + legendHtml() + "</div>" +
+      byType +
+      '<div class="trail"><h4 style="margin:0;font-size:13px;color:var(--ink-3)">눈여겨볼 대화 흐름</h4>' + (trailHtml || '<p class="empty">막힌 단계 없이 잘 풀었어요.</p>') + "</div>";
+    lastFocus = document.activeElement;
+    $("drawer").hidden = false; $("scrim").hidden = false;
+    $("drawer").scrollTop = 0;
+    $("drawerClose").focus();
+  }
+  function closeStudent() {
+    $("drawer").hidden = true; $("scrim").hidden = true;
+    if (lastFocus && lastFocus.focus) try { lastFocus.focus(); } catch (e) {}
+  }
+
+  /* ---------- 화면 전환과 이벤트 ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  var VIEWS = ["overview", "steps", "students", "survival"];
+  function render() {
+    VIEWS.forEach(function (v) {
+      $("v-" + v).hidden = v !== state.view;
+      $("tab-" + v).setAttribute("aria-selected", v === state.view ? "true" : "false");
+      $("tab-" + v).tabIndex = v === state.view ? 0 : -1;
+    });
+    if (state.view === "overview") renderOverview();
+    if (state.view === "steps") renderSteps();
+    if (state.view === "students") renderStudents();
+    if (state.view === "survival") renderSurvival();
+  }
+  function go(view) {
+    if (VIEWS.indexOf(view) < 0) view = "overview";
+    state.view = view;
+    try { if (location.hash !== "#" + view) history.replaceState(null, "", "#" + view); } catch (e) {}
+    render();
+  }
+
+  $("cls").innerHTML = '<option value="all">전체 학급</option>' + CLASSES.map(function (c) { return '<option value="' + c.id + '">' + c.name + "</option>"; }).join("");
+  if (state.cls !== "all" && !CLASSES.some(function (c) { return c.id === state.cls; })) state.cls = "all";
+  $("cls").value = state.cls;
+  $("cls").addEventListener("change", function (e) {
+    state.cls = e.target.value; state.cell = null;
+    try { localStorage.setItem("ilchaDashCls", state.cls); } catch (err) {}
+    render();
+  });
+  $("tabs").addEventListener("click", function (e) { var b = e.target.closest("button[data-v]"); if (b) go(b.dataset.v); });
+  $("tabs").addEventListener("keydown", function (e) {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    var i = VIEWS.indexOf(state.view) + (e.key === "ArrowRight" ? 1 : -1);
+    go(VIEWS[(i + VIEWS.length) % VIEWS.length]); $("tab-" + state.view).focus();
+  });
+  document.addEventListener("click", function (e) {
+    var s = e.target.closest("[data-student]"); if (s) { openStudent(s.dataset.student); return; }
+    var g = e.target.closest("[data-go]"); if (g) { state.cell = g.dataset.go; go("steps"); return; }
+    var c = e.target.closest("button[data-cell]");
+    if (c) {
+      state.cell = c.dataset.cell;
+      document.querySelectorAll("button[data-cell]").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.cell === state.cell ? "true" : "false"); });
+      renderCellDetail();
+      if (window.innerWidth < 960) $("cellDetail").scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    var m = e.target.closest("button[data-metric]"); if (m) { state.metric = m.dataset.metric; renderSteps(); return; }
+  });
+  document.addEventListener("input", function (e) {
+    if (e.target.id === "studentSearch") { state.q = e.target.value; var pos = e.target.selectionStart; renderStudents(); var inp = $("studentSearch"); inp.focus(); try { inp.setSelectionRange(pos, pos); } catch (err) {} }
+  });
+  document.addEventListener("change", function (e) { if (e.target.id === "studentSort") { state.sort = e.target.value; renderStudents(); } });
+  $("scrim").addEventListener("click", closeStudent);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !$("drawer").hidden) closeStudent(); });
+  document.addEventListener("click", function (e) { if (e.target.id === "drawerClose") closeStudent(); });
+
+  var h = (location.hash || "").replace("#", "");
+  go(VIEWS.indexOf(h) >= 0 ? h : "overview");
+})();
+</script>
+
+</body></html>

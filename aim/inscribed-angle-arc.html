@@ -1,0 +1,1237 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!--
+  원주각의 크기와 호의 길이 수업 화면 (전자칠판용) — 안내/03_수업화면_기본틀.html을 복사해 장면만 바꿈 (틀과 엔진은 원주각의 뜻과 기본 성질 수업 화면과 같음)
+  흐름: 0 선수학습 확인(중심각과 호의 길이, 원주각과 중심각)
+        → 1 탐구 활동(교과서 185쪽: ① 삼각자의 같은 각을 옮겨 가며 원주각 두 개 그리기 → ② 한 원주각을 떼어 내어 옮기기 → ③ 두 호를 포개기)
+        → 2 원주각과 호의 길이(호 → 중심각 → 원주각, 거꾸로도 → 정리 → 정비례)
+        → 3~6 예제 → 문제 세트(같은 길이의 호 / 정비례 / 중심각과 함께 / 보조선 긋기). 교과서 186~187쪽 문제와 지도서 보충 문제
+  이 화면의 색 (그림과 글에서 같은 대상은 같은 색)
+    원주각 = 주황(--c-chord), 중심각 = 초록(--c-center), 호 = 파랑(--c-arc), 포개는 호 CD = 청록(--c-arc2), 보조선 = 보라 점선(--c-secant)
+  문제 그림은 HOGIL_FIGS(아래 스크립트)에서 그린다. 학습지도 같은 그림 정의로 그린다.
+-->
+<title>원주각과 호의 길이</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Noto+Serif+KR:wght@700;900&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap">
+<style>
+/* ---------- 색: 종이(밝은 화면) ---------- */
+:root{
+  --bg:#f4f6f9;--surface:#ffffff;--surface-2:#e8edf4;--ink:#15202b;--ink-2:#4b5664;--line:#c8d0da;--ghost:#b8c1cc;
+  --accent:#1c4f8c;--on-accent:#ffffff;
+  /* 수학 색: 그림과 글에서 같은 대상은 같은 색 */
+  --c-arc:#1f63c6;--c-arc2:#0a7f9f;--c-chord:#c9510f;--c-secant:#7442c0;--c-center:#12804f;
+  --hi:#f2b705;--hl:rgba(242,183,5,.17);
+  --fill-sec:rgba(31,99,198,.16);--fill-sec2:rgba(31,99,198,.30);--fill-mov:rgba(10,127,159,.24);--fill-tri:rgba(201,81,15,.16);
+  --fill-cen:rgba(18,128,79,.16);--fill-cen2:rgba(18,128,79,.34);--fill-ins:rgba(201,81,15,.42);
+  --ok:#12804f;--no:#c62828;
+  --fill-paper:rgba(244,162,58,.26);--paper-solid:#f4e0c7;--tool:rgba(31,99,198,.12);
+  --pen1:#d62f2f;--pen2:#1f63c6;--pen3:#12804f;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* ---------- 색: 칠판(어두운 화면) ---------- */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+    --accent:#ffd66b;--on-accent:#1b2a26;
+    --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+    --hi:#ffe27a;--hl:rgba(255,226,122,.13);
+    --fill-sec:rgba(130,188,255,.18);--fill-sec2:rgba(130,188,255,.34);--fill-mov:rgba(111,219,233,.24);--fill-tri:rgba(255,173,107,.2);
+    --fill-cen:rgba(134,227,171,.2);--fill-cen2:rgba(134,227,171,.38);--fill-ins:rgba(255,173,107,.45);
+    --ok:#86e3ab;--no:#ff8f8f;
+    --fill-paper:rgba(255,190,110,.17);--paper-solid:#424332;--tool:rgba(130,188,255,.15);
+    --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b2a26;--surface:#213530;--surface-2:#2a413a;--ink:#f0f3ec;--ink-2:#b9c6be;--line:#3e554d;--ghost:#5a716a;
+  --accent:#ffd66b;--on-accent:#1b2a26;
+  --c-arc:#82bcff;--c-arc2:#6fdbe9;--c-chord:#ffad6b;--c-secant:#caa6ff;--c-center:#86e3ab;
+  --hi:#ffe27a;--hl:rgba(255,226,122,.13);
+  --fill-sec:rgba(130,188,255,.18);--fill-sec2:rgba(130,188,255,.34);--fill-mov:rgba(111,219,233,.24);--fill-tri:rgba(255,173,107,.2);
+  --fill-cen:rgba(134,227,171,.2);--fill-cen2:rgba(134,227,171,.38);--fill-ins:rgba(255,173,107,.45);
+  --ok:#86e3ab;--no:#ff8f8f;
+  --fill-paper:rgba(255,190,110,.17);--paper-solid:#424332;--tool:rgba(130,188,255,.15);
+  --pen1:#ff9b9b;--pen2:#86c2ff;--pen3:#9bf0bd;
+  color-scheme:dark;
+}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;font-size:clamp(15px,.95vw + .7vh,32px);line-height:1.45;-webkit-font-smoothing:antialiased;overflow:hidden;word-break:keep-all;overflow-wrap:break-word}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+i{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+
+/* ---------- 틀: 위 띠 · 무대 · 아래 띠 ---------- */
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto}
+.top{display:flex;align-items:center;gap:.8em;padding:.4em 1em;background:var(--surface);border-bottom:1px solid var(--line);min-width:0}
+.brand{font-family:'Noto Serif KR',serif;font-weight:900;font-size:.95em;white-space:nowrap}
+.nav{display:flex;gap:.25em;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav>:first-child{margin-left:auto}
+.nav>:last-child{margin-right:auto}
+.nav button{display:inline-flex;align-items:center;gap:.35em;border:0;background:transparent;border-radius:.55em;padding:.3em .75em;min-height:44px;font-size:.78em;font-weight:600;color:var(--ink-2);white-space:nowrap}
+.nav button .n{font-family:'Noto Serif KR',serif;font-weight:900}
+.nav button:hover{background:var(--surface-2)}
+.nav button[aria-current="step"]{background:var(--accent);color:var(--on-accent)}
+.tools{display:flex;gap:.35em}
+.tool{display:inline-flex;align-items:center;gap:.35em;border:1px solid var(--line);background:var(--surface);border-radius:.55em;padding:.25em .65em;min-height:44px;font-size:.7em;font-weight:600;white-space:nowrap}
+.tool:hover{background:var(--surface-2)}
+.tool[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ico{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+.stage{position:relative;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:2.4vw;padding:2vh 2.8vw;min-height:0}
+.stage.wide{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr)}      /* 설명이 긴 장면 */
+.stage.figwide{grid-template-columns:minmax(0,1.6fr) minmax(0,.78fr)}  /* 그림이 주인공인 장면 */
+.fig{position:relative;min-height:0;min-width:0;display:flex;align-items:center;justify-content:center}
+.fig>svg{display:block;width:100%;height:100%;overflow:visible}
+.fig svg *{pointer-events:none}
+.fig svg .grab{pointer-events:auto;cursor:grab;touch-action:none}
+.panel{min-height:0;min-width:0;display:flex;flex-direction:column;justify-content:center;justify-content:safe center;gap:.65em;overflow-y:auto;padding:.2em}
+.stage.enter .fig,.stage.enter .panel{animation:enter .45s ease both}
+@keyframes enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.bottom{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:1em;padding:.45em 1em;background:var(--surface);border-top:1px solid var(--line)}
+.navbtn{display:inline-flex;align-items:center;gap:.35em;border:1.5px solid var(--line);background:var(--surface);border-radius:.7em;padding:.35em 1.1em;min-height:52px;font-size:.9em;font-weight:700}
+.navbtn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.navbtn:disabled{opacity:.35;cursor:default}
+.progress{display:flex;justify-content:center;min-width:0}
+.dots{display:flex;gap:.45em;align-items:center;min-height:.9em;flex-wrap:wrap;justify-content:center}
+.dot{width:.55em;height:.55em;border-radius:50%;background:var(--line);transition:transform .25s,background .25s}
+.dot.on{background:var(--accent)}
+.dot.cur{transform:scale(1.4)}
+
+/* ---------- 단계 표시 ---------- */
+.is-off{opacity:0 !important;pointer-events:none !important}
+[data-show],[data-hide],[data-only],[data-ph]{transition:opacity .45s ease}
+[data-late]:not(.is-off){transition-delay:1.15s}
+[data-late2]:not(.is-off){transition-delay:2.7s}
+[data-late3]:not(.is-off){transition-delay:4.2s}
+[data-collapse].is-off{display:none}
+[data-collapse]:not(.is-off){animation:enter .4s ease both}
+[data-collapse][data-late]:not(.is-off){animation-delay:1.15s}
+.instant [data-late]:not(.is-off),.instant [data-late2]:not(.is-off),.instant [data-late3]:not(.is-off){transition-delay:0s !important;animation-delay:0s !important}
+.no-anim,.no-anim *{transition:none !important}
+
+/* ---------- 설명 칸의 글 ---------- */
+.q{margin:0;font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.5em;line-height:1.3;letter-spacing:-.01em;text-wrap:balance}
+.sub{margin:0;color:var(--ink-2);font-size:.92em;text-wrap:pretty}
+.say{margin:0;font-size:1.05em;line-height:1.65;text-wrap:pretty}
+.ask{margin:0;font-size:1.12em;font-weight:700;line-height:1.6;text-wrap:pretty}
+.eq2{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.25em;line-height:1.5}
+.note{margin:0;font-size:.88em;line-height:1.6;color:var(--ink-2);text-wrap:pretty}
+.stack{display:flex;flex-direction:column;gap:.5em}
+.nw{white-space:nowrap}
+.given{display:inline-block;background:var(--surface-2);border-radius:.45em;padding:.12em .6em;font-weight:600}
+/* 분수, 색 글자 */
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-size:.88em;line-height:1.12;margin:0 .12em}
+.fr>span{padding:0 .2em}
+.fr>span:first-child{border-bottom:.09em solid currentColor}
+.ca{color:var(--accent)}.cn{color:var(--c-center)}.cw{color:var(--c-arc2)}.cl{color:var(--c-arc)}.cr{color:var(--c-chord)}
+/* 식 상자, 성질 상자, 답 상자, 핵심 상자 */
+.fbox{border:2px solid var(--accent);border-radius:.8em;padding:.45em .9em;display:flex;flex-direction:column;gap:.05em}
+.fbox .pl,.prop .pl{font-weight:800;font-size:.85em;color:var(--accent)}
+.fm{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.32em;line-height:1.65}
+.fm-s{font-size:1.14em;line-height:1.8}
+.fm .dim{color:var(--ink-2);font-weight:400}
+.prop{border:2px solid var(--accent);border-radius:.8em;padding:.5em .9em;display:flex;flex-direction:column;gap:.15em}
+.prop p{margin:0;font-size:1.05em;text-wrap:pretty}
+.answer{background:var(--surface-2);border-radius:.8em;padding:.6em .9em;display:flex;flex-direction:column;gap:.25em}
+.answer .big{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.6em;line-height:1.3;color:var(--accent)}
+.answer .why{margin:0;font-size:1.02em;line-height:1.8;text-wrap:pretty}
+.kkey{display:flex;flex-direction:column;gap:.15em;margin-top:.2em}
+.kkt{margin:0;font-weight:800;font-size:1.12em;line-height:1.5;text-wrap:balance;color:var(--accent)}
+.kkey .say{font-size:1em;line-height:1.6}
+/* 식의 한 부분 아래에 이름 붙이기 */
+.kbr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:top;line-height:1.5}
+.kbr .kbe{padding:0 .12em .08em;border-bottom:.12em solid var(--c-arc);border-radius:0 0 .4em .4em}
+.kbr .kbl{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:.6em;font-weight:800;line-height:1.4;color:var(--c-arc);white-space:nowrap}
+/* 표 */
+.mt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.92em}
+.mt th,.mt td{border:1.5px solid var(--line);padding:.35em .4em;text-align:center}
+.mt thead th{background:var(--surface-2);font-weight:700}
+.mt tbody th{text-align:left;font-weight:700;background:var(--surface)}
+/* 복습 문제 */
+.qhead{display:flex;justify-content:space-between;align-items:baseline;gap:1em;font-weight:700;color:var(--ink-2);font-size:.85em}
+.ox circle,.ox path{fill:none;stroke:var(--ghost);stroke-width:30;stroke-linecap:round;transition:stroke .4s,opacity .4s}
+.fig.rev .ox.ok circle,.fig.rev .ox.ok path{stroke:var(--accent)}
+.fig.rev .ox:not(.ok){opacity:.2}
+.fig .rv{opacity:0;transition:opacity .45s ease}
+.fig.rev .rv{opacity:1}
+.fig .hide-rev{transition:opacity .45s ease}
+.fig.rev .hide-rev{opacity:0}
+
+/* ---------- 그림 ---------- */
+.base{fill:none;stroke:var(--ink);stroke-width:3.5}
+.guide{fill:none;stroke:var(--ink-2);stroke-width:3}
+.ghost{opacity:.4}
+.f-ink{fill:var(--ink)}
+.rd{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.lbl{font-family:'Noto Serif KR',Georgia,serif;font-weight:700;fill:var(--ink)}                     /* 점 이름 A, B, O */
+.tag{font-family:'IBM Plex Sans KR','Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-weight:700;fill:var(--ink)}  /* 한글 이름표 */
+.num{font-family:'STIX Two Text','Times New Roman',serif;font-weight:600;fill:var(--ink)}           /* 수, 단위 */
+.var{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic;font-weight:600;fill:var(--ink)}  /* 문자 r, l, x */
+.vi{font-family:'STIX Two Text','Times New Roman',serif;font-style:italic}
+.is-dim{opacity:.15}
+@keyframes pulse{0%,100%{stroke-width:10px}50%{stroke-width:17px}}
+.pulse{animation:pulse 1.3s ease-in-out infinite}
+
+/* ---------- 원과 현, 원과 접선에서 가져온 것 ---------- */
+.cs{color:var(--c-secant)}
+.ov{display:inline-block;border-top:.075em solid currentColor;line-height:1;padding-top:.07em}  /* 선분의 길이 AB̅ */
+.nb{display:inline-block}
+.ph-off{opacity:0 !important}
+[data-collapse].ph-off{display:none}
+.pf{display:flex;flex-direction:column}
+.pfl{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:.8em;align-items:baseline;border-radius:.45em;padding:0 .35em;margin:0 -.35em;transition:background .35s ease,opacity .45s ease}
+.pfl.now{background:var(--hl)}
+.pfl .mk{font-family:'STIX Two Text','Times New Roman',serif;font-size:1.05em;color:var(--ink-2);white-space:nowrap}
+.prob{border:1.5px solid var(--line);border-radius:.8em;padding:.5em .9em;display:flex;flex-direction:column;gap:.15em}
+.prob .pl{font-weight:800;font-size:.85em;color:var(--accent)}
+.prob p{margin:0;font-size:1.05em;text-wrap:pretty}
+.answer .fm2{margin:0;font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700;font-size:1.1em;line-height:1.85}
+.qlist{margin:0;font-size:.95em;line-height:1.7;color:var(--ink-2)}
+.qlist b{font-family:'Noto Serif KR',serif;color:var(--ink);margin-right:.4em}
+.handle{fill:var(--accent);stroke:var(--surface);stroke-width:4}
+.handle-ring,.ping{fill:none;stroke:var(--accent);stroke-width:3;transform-box:fill-box;transform-origin:center;animation:ring 1.8s ease-out infinite}
+@keyframes ring{from{transform:scale(1);opacity:.8}to{transform:scale(2.3);opacity:0}}
+.hit{fill:transparent}
+
+/* ---------- 원주각에서 더한 것 ---------- */
+.cases{display:flex;gap:.4em;flex-wrap:wrap}
+.cases button{display:inline-flex;align-items:center;gap:.3em;min-height:44px;border:1.5px solid var(--line);background:var(--surface);border-radius:.6em;padding:.1em .8em;font-size:.78em;font-weight:700;color:var(--ink-2)}
+.cases button .n{font-family:'Noto Serif KR',serif;font-weight:900}
+.cases button[aria-current="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.og{transition:opacity .45s ease}
+.stg:not(.is-off){transition-delay:var(--d,0s)}
+.instant .stg:not(.is-off){transition-delay:0s !important}
+.ind{padding-left:3.2em}
+.sl{display:flex;flex-direction:column;gap:.35em}
+.sl p{margin:0;font-size:1.02em;line-height:1.6}
+.qm{color:var(--ink-2)}
+#qaw:empty{display:none}
+.eq2.lg{font-size:1.5em}
+.mt.cnt{width:auto;min-width:60%;font-size:1em}
+.mt.cnt th{padding-right:1.2em}
+.sl b{font-family:'Noto Serif KR',serif;font-weight:900;color:var(--accent);margin-right:.35em}
+
+/* ---------- 원주각과 호의 길이에서 더한 것 ---------- */
+.q.tall{line-height:1.55}
+.arcsym{position:relative;display:inline-block;padding-top:.3em;font-family:'Noto Serif KR',serif;font-weight:700;line-height:1;white-space:nowrap}
+.arcsym svg{position:absolute;left:.04em;top:0;width:calc(100% - .08em);height:.38em;overflow:visible}
+.arcsym path{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.fm .arcsym,.fm2 .arcsym,.eq2 .arcsym,.big .arcsym,.mt .arcsym{font-family:inherit;font-weight:inherit}
+.chain{display:flex;align-items:center;gap:.35em;flex-wrap:wrap}
+.chain .cb{border:2px solid var(--line);border-radius:.6em;padding:.25em .65em;font-weight:700;background:var(--surface);transition:opacity .45s ease}
+.chain .cb.cn{border-color:var(--c-center)}.chain .cb.cr{border-color:var(--c-chord)}
+.chain .ar{font-family:'STIX Two Text','Times New Roman',serif;font-weight:700;font-size:1.4em;line-height:1;color:var(--accent);transition:opacity .45s ease}
+.thc{align-items:center}
+.thc .thl{font-size:.78em;font-weight:700;color:var(--ink-2);margin-right:.2em}
+.stps{display:flex;flex-direction:column;gap:.3em}
+.stp{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:.65em;align-items:start;border-radius:.55em;padding:.3em .5em;margin:0 -.5em;transition:background .35s ease}
+.stp.now{background:var(--hl)}
+.stp .sp{grid-row:span 2;margin-top:.05em;font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.15em;line-height:1.3;color:var(--accent)}
+.stp p{margin:0;grid-column:2;font-size:1.02em;line-height:1.55;text-wrap:pretty}
+.stp .res{font-weight:800;color:var(--accent)}
+.mt.prt{font-size:.95em}.mt.prt th{width:27%}
+.mt.prt td{font-family:'STIX Two Text','Times New Roman','Noto Serif KR',serif;font-weight:700}
+
+/* ---------- 펜 ---------- */
+.ink{position:absolute;inset:0;width:100%;height:100%;z-index:5;pointer-events:none}
+.pen-on .ink{pointer-events:auto;cursor:crosshair;touch-action:none}
+.ink polyline{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.penbar{position:absolute;top:.6em;right:.8em;z-index:6;display:none;align-items:center;gap:.35em;background:var(--surface);border:1px solid var(--line);border-radius:.8em;padding:.3em .4em;box-shadow:0 6px 18px rgba(0,0,0,.14)}
+.pen-on .penbar{display:flex}
+.pen-sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--surface);background:var(--sw);box-shadow:0 0 0 2px var(--line)}
+.pen-sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.pbtn{min-height:44px;border:1px solid var(--line);border-radius:.55em;background:var(--surface);padding:0 .7em;font-size:.7em;font-weight:600;white-space:nowrap}
+
+@media (max-width:860px){
+  body{overflow:auto}
+  .app{height:auto;min-height:100%}
+  .brand,.tool span{display:none}
+  .stage,.stage.wide,.stage.figwide{grid-template-columns:minmax(0,1fr);padding:1.5vh 4vw}
+  .fig{height:46vh}
+  .panel{overflow:visible;justify-content:flex-start}
+  .penbar{flex-wrap:wrap;max-width:calc(100% - 1.6em)}
+}
+</style>
+<div class="app">
+  <header class="top">
+    <div class="brand">원주각과 호의 길이</div>
+    <nav class="nav" id="nav" aria-label="수업 흐름"></nav>
+    <div class="tools">
+      <button type="button" class="tool" id="penBtn" aria-pressed="false" aria-label="펜"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1-4L16 5l3 3L8 19z"></path><path d="M14 7l3 3"></path></svg><span>펜</span></button>
+      <button type="button" class="tool" id="themeBtn" aria-label="화면 색 바꾸기"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"></circle><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"></path></svg><span id="themeLbl">종이</span></button>
+      <button type="button" class="tool" id="fsBtn" aria-label="전체 화면"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg><span>전체 화면</span></button>
+    </div>
+  </header>
+  <main class="stage" id="stage">
+    <div class="fig" id="fig"></div>
+    <div class="panel" id="panel"></div>
+    <svg class="ink" id="ink" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="penbar" role="toolbar" aria-label="펜 도구">
+      <button type="button" class="pen-sw" data-pen="--pen1" aria-pressed="true" aria-label="빨강 펜" style="--sw:var(--pen1)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen2" aria-pressed="false" aria-label="파랑 펜" style="--sw:var(--pen2)"></button>
+      <button type="button" class="pen-sw" data-pen="--pen3" aria-pressed="false" aria-label="초록 펜" style="--sw:var(--pen3)"></button>
+      <button type="button" class="pbtn" id="penUndo">되돌리기</button>
+      <button type="button" class="pbtn" id="penClear">모두 지우기</button>
+      <button type="button" class="pbtn" id="penOff">펜 끄기</button>
+    </div>
+  </main>
+  <footer class="bottom">
+    <button type="button" class="navbtn" id="prevBtn"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>이전</button>
+    <div class="progress"><div class="dots" id="dots"></div></div>
+    <button type="button" class="navbtn primary" id="nextBtn">다음<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg></button>
+  </footer>
+</div>
+<script>
+(() => {
+  'use strict';
+  document.documentElement.lang = 'ko';
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const mq = q => (window.matchMedia ? window.matchMedia(q) : { matches: false });
+  const RM = false;   // 수업용 움직임은 기기의 '동작 줄이기' 설정과 상관없이 항상 보여 준다
+  const NS = 'http://www.w3.org/2000/svg';
+  const FIG = $('#fig'), PANEL = $('#panel'), STAGE = $('#stage');
+  const state = { si: 0, step: 0 };
+
+  /* ---------- 기하 (각은 도, 시계 반대 방향, 0°는 오른쪽) ---------- */
+  const rad = d => d * Math.PI / 180;
+  const n2 = v => Math.round(v * 100) / 100;
+  const lerp = (a, b, u) => a + (b - a) * u;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const P = (cx, cy, r, d) => [n2(cx + r * Math.cos(rad(d))), n2(cy - r * Math.sin(rad(d)))];
+  const spanOf = (a1, a2, ccw) => { const s = ccw ? a2 - a1 : a1 - a2; return ((s % 360) + 360) % 360; };
+  const arcD = (cx, cy, r, a1, a2, ccw = true) => {
+    const p = P(cx, cy, r, a1), q = P(cx, cy, r, a2);
+    return `M ${p[0]} ${p[1]} A ${n2(r)} ${n2(r)} 0 ${spanOf(a1, a2, ccw) > 180 ? 1 : 0} ${ccw ? 0 : 1} ${q[0]} ${q[1]}`;
+  };
+  const sectorD = (cx, cy, r, a1, a2) => {
+    const p = P(cx, cy, r, a1), q = P(cx, cy, r, a2);
+    return `M ${n2(cx)} ${n2(cy)} L ${p[0]} ${p[1]} A ${n2(r)} ${n2(r)} 0 ${spanOf(a1, a2, true) > 180 ? 1 : 0} 0 ${q[0]} ${q[1]} Z`;
+  };
+  const seg = (p, q) => `M ${n2(p[0])} ${n2(p[1])} L ${n2(q[0])} ${n2(q[1])}`;
+  const ease = u => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+
+  /* ---------- 원과 현, 원과 접선에서 가져온 기하 ---------- */
+  const deg = r => r * 180 / Math.PI;
+  const vadd = (p, q) => [p[0] + q[0], p[1] + q[1]];
+  const vsub = (p, q) => [p[0] - q[0], p[1] - q[1]];
+  const vmul = (p, k) => [p[0] * k, p[1] * k];
+  const vunit = p => { const L = Math.hypot(p[0], p[1]) || 1; return [p[0] / L, p[1] / L]; };
+  const vmid = (p, q) => [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
+  const U = d => [Math.cos(rad(d)), -Math.sin(rad(d))];                 // 각 d 방향의 단위 벡터(그림 좌표)
+  const angOf = (C, p) => deg(Math.atan2(C[1] - p[1], p[0] - C[0]));   // 점 C에서 본 점 p의 각
+  const pt = p => `${n2(p[0])} ${n2(p[1])}`;
+  const polyD = (...ps) => 'M ' + ps.map(pt).join(' L ') + ' Z';
+  const rightD = (M, u, v, s = 16) => {                                 // 직각 표시: 꼭짓점 M, 두 변의 방향 u, v
+    const p1 = vadd(M, vmul(u, s)), p2 = vadd(p1, vmul(v, s)), p3 = vadd(M, vmul(v, s));
+    return `M ${pt(p1)} L ${pt(p2)} L ${pt(p3)}`;
+  };
+  const tickD = (p, q, n = 1, h = 11, gap = 8) => {                       // 같은 길이 표시(선분 가운데에 n개)
+    const m = vmid(p, q), t = vunit(vsub(q, p)), nr = [-t[1], t[0]];
+    let d = '';
+    for (let i = 0; i < n; i++) { const c = vadd(m, vmul(t, (i - (n - 1) / 2) * gap)); d += seg(vadd(c, vmul(nr, -h)), vadd(c, vmul(nr, h))) + ' '; }
+    return d.trim();
+  };
+
+  /* ---------- SVG 조각 ---------- */
+  const svgWrap = (body, label, w = 600, h = 460) => `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
+  const stroke = (d, c, w, extra = '') => `<path d="${d}" class="rd" style="stroke:var(${c});stroke-width:${w}" ${extra}></path>`;
+  const dot = (p, r = 7) => `<circle cx="${n2(p[0])}" cy="${n2(p[1])}" r="${r}" class="f-ink"></circle>`;
+  const txt = cls => (x, y, t, s, a = 'start', c = '', extra = '') =>
+    `<text x="${n2(x)}" y="${n2(y)}" class="${cls}" font-size="${s}" text-anchor="${a}"${c ? ` style="fill:var(${c})"` : ''} ${extra}>${t}</text>`;
+  const lbl = txt('lbl'), tag = txt('tag'), num = txt('num'), vr = txt('var');
+  const baseCircle = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" class="base"></circle>`;
+  const IT = ch => `<tspan class="vi">${ch}</tspan>`;          // 그림 속 기울인 문자
+  const setXY = (el, p) => { if (el) { el.setAttribute('x', n2(p[0])); el.setAttribute('y', n2(p[1])); } };
+  const vis = (el, on) => { if (el) el.style.display = on ? '' : 'none'; };
+  const toSvgOf = svg => e => {
+    try { const m = svg.getScreenCTM(); if (!m) return null; const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const q = p.matrixTransform(m.inverse()); return [q.x, q.y]; }
+    catch (err) { return null; }
+  };
+
+  /* ---------- 설명 칸의 수식 조각 ---------- */
+  const I = ch => `<i>${ch}</i>`;
+  const X_ = I('x'), Y_ = I('y');
+  const FR = (a, b, cls = '') => `<span class="fr${cls ? ' ' + cls : ''}"><span>${a}</span><span>${b}</span></span>`;
+  const HALF = FR(1, 2);
+  const OV = s => `<span class="ov">${s}</span>`;                                   // 선분의 길이 AB̅
+  const AP = s => `<span class="cr nb">∠${s}</span>`;                                // 원주각(주황)
+  const AO = s => `<span class="cn nb">∠${s}</span>`;                                // 중심각(초록)
+
+  /* ---------- 원주각에서 더한 기하 ---------- */
+  const mod = (x, m = 360) => ((x % m) + m) % m;
+  const K = (cx, cy, R) => ({ cx, cy, R, O: [cx, cy], at: a => P(cx, cy, R, a), out: (a, k = 30) => P(cx, cy, R + k, a) });
+  const inner = (V, p, q) => {                       // 꼭짓점 V에서 V→p, V→q가 이루는 180° 이하의 각: [시작 각, 끝 각, 크기]
+    let a1 = angOf(V, p), a2 = angOf(V, q);
+    if (spanOf(a1, a2, true) > 180) { const t = a1; a1 = a2; a2 = t; }
+    return [a1, a2, spanOf(a1, a2, true)];
+  };
+  const angArc = (V, p, q, r) => { const [a1, a2] = inner(V, p, q); return arcD(V[0], V[1], r, a1, a2); };
+  const wedgeD = (V, p, q, r) => { const [a1, a2] = inner(V, p, q); return sectorD(V[0], V[1], r, a1, a2); };
+  const bisPt = (V, p, q, d) => { const [a1, , s] = inner(V, p, q); return vadd(V, vmul(U(a1 + s / 2), d)); };
+  // 각 표시: 옅은 칠 + 호. two = 두 겹 호, w = 굵기, fill = 칠 색, extra = <g>에 붙일 속성
+  const mark = (V, p, q, r, c, o = {}) => `<g ${o.extra || ''}><path d="${wedgeD(V, p, q, r)}" style="fill:var(${o.fill || (c === '--c-center' ? '--fill-cen' : '--fill-tri')})"></path>${stroke(angArc(V, p, q, r), c, o.w || 4)}${o.two ? stroke(angArc(V, p, q, r + 9), c, o.w || 4) : ''}</g>`;
+  const ptName = (k, a, t, s = 32, d = 30) => lbl(...k.out(a, d), t, s, 'middle', '', `dy="${Math.round(s * 0.36)}"`);
+  const regionD = (Pp, k, a1, a2) => { const A = k.at(a1), B = k.at(a2); return `M ${pt(Pp)} L ${pt(A)} A ${k.R} ${k.R} 0 ${spanOf(a1, a2, true) > 180 ? 1 : 0} 0 ${pt(B)} Z`; };
+  const distSeg = (c, p, q) => {                    // 점 c에서 선분 pq까지의 거리
+    const v = vsub(q, p), L2 = v[0] * v[0] + v[1] * v[1] || 1, u = clamp(((c[0] - p[0]) * v[0] + (c[1] - p[1]) * v[1]) / L2, 0, 1);
+    return Math.hypot(c[0] - p[0] - u * v[0], c[1] - p[1] - u * v[1]);
+  };
+  const hl = (p, q, extra = '') => stroke(seg(p, q), '--hi', 20, `opacity=".32" ${extra}`);
+
+  /* ---------- 단계 엔진 ---------- */
+  function drawIn(el, ms = 900) {                  // 선이 그려지며 나타나기
+    if (RM || !el || typeof el.getTotalLength !== 'function') return;
+    let len = 0;
+    try { len = el.getTotalLength(); } catch (e) { return; }
+    if (!(len > 0)) return;
+    clearTimeout(el._dt);
+    el.style.transition = 'none';
+    el.style.strokeDasharray = `${len} ${len}`;
+    el.style.strokeDashoffset = `${len}`;
+    el.getBoundingClientRect();
+    el.style.transition = `stroke-dashoffset ${ms}ms ease-in-out, opacity .45s ease`;
+    el.style.strokeDashoffset = '0';
+    el._dt = setTimeout(() => { el.style.transition = ''; el.style.strokeDasharray = ''; el.style.strokeDashoffset = ''; }, ms + 80);
+  }
+  const drawAll = root => {
+    if (!root) return;
+    if (root.hasAttribute('data-draw')) drawIn(root);
+    $$('[data-draw]', root).forEach(x => drawIn(x));
+  };
+  function applyStep(root, step, prev) {
+    $$('[data-show],[data-hide],[data-only]', root).forEach(el => {
+      const s = el.getAttribute('data-show'), h = el.getAttribute('data-hide'), o = el.getAttribute('data-only');
+      let vis = true;
+      if (s !== null && step < Number(s)) vis = false;
+      if (h !== null && step >= Number(h)) vis = false;
+      if (o !== null && !o.split(',').map(Number).includes(step)) vis = false;
+      const wasOff = el.classList.contains('is-off');
+      el.classList.toggle('is-off', !vis);
+      if (vis && wasOff && step > prev) drawAll(el);
+    });
+  }
+  function tween(ms, fn, done) {                   // 0→1로 움직이기. 돌려받은 함수를 부르면 멈춘다
+    if (RM || !(ms > 0)) { fn(1); if (done) done(); return () => {}; }
+    let alive = true, fin = false, wd = 0;
+    const t0 = performance.now();
+    const finish = () => { if (!alive || fin) return; fin = true; clearTimeout(wd); fn(1); if (done) done(); };
+    const tick = now => {
+      if (!alive || fin) return;
+      const u = Math.min(1, Math.max(0, (now - t0) / ms));
+      if (u >= 1) { finish(); return; }
+      fn(ease(u));
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+    wd = setTimeout(finish, ms + 700);           // 화면이 잠시 멈춰도 끝 상태로 마무리
+    return () => { alive = false; clearTimeout(wd); };
+  }
+
+  /* ---------- 한 단계 안의 마디 움직임 (원과 접선 수업 화면과 같음) ----------
+     PH[단계] = 마디 수, MS[단계] = 마디마다 걸리는 시간(ms), drawT(단계, t)는 t = 0(단계 시작) ~ 마디 수(끝)의 모습을 그린다.
+     단계에 앞에서 들어오면 첫 마디만 움직이고 멈추며, 그다음 '다음'마다 한 마디씩 움직인다.
+     움직이는 중에 '다음'을 누르면 그 마디를 바로 끝낸다. 첫 마디에서의 '이전'은 앞 단계로 간다. */
+  const PHASE = {
+    ph: 0, goal: null, cancel: null,
+    nPh(step) { return (this.PH && this.PH[step]) || 0; },
+    phStop() { if (this.cancel) { this.cancel(); this.cancel = null; } this.goal = null; },
+    phPaint() {
+      const st = state.step, done = this.ph;
+      $$('[data-ph]', STAGE).forEach(el => {
+        const [s, k] = el.getAttribute('data-ph').split(':').map(Number);
+        el.classList.toggle('ph-off', !(st > s || (st === s && done >= k)));
+      });
+    },
+    phSettle(ph) { this.phStop(); this.ph = ph; this.drawT(state.step, ph); this.phPaint(); },
+    phPlay(to) {
+      const from = this.ph, step = state.step, ms = this.MS[step][to - 1];
+      this.phStop(); this.goal = to;
+      this.cancel = tween(ms, u => this.drawT(step, from + (to - from) * u), () => { this.cancel = null; this.goal = null; this.ph = to; this.phPaint(); });
+    },
+    advance() {
+      const n = this.nPh(state.step);
+      if (!n) return false;
+      if (this.goal !== null) { this.phSettle(this.goal); return true; }   // 움직이는 중이면 그 마디를 바로 끝낸다
+      if (this.ph < n) { this.phPlay(this.ph + 1); return true; }
+      return false;
+    },
+    retreat() {
+      const n = this.nPh(state.step);
+      if (!n) return false;
+      const at = this.goal !== null ? this.goal : this.ph;
+      if (at >= 2) { this.phSettle(at - 1); return true; }
+      return false;                                                        // 첫 마디에서는 앞 단계로
+    },
+    phEnter(step, prev) {
+      const n = this.nPh(step);
+      if (n && step === prev + 1) { this.phSettle(0); this.phPlay(1); }
+      else this.phSettle(n);
+    },
+    phReset() { this.phStop(); this.ph = 0; }
+  };
+  const markNow = step => $$('[data-now]', PANEL).forEach(el => el.classList.toggle('now', el.getAttribute('data-now').split(',').map(Number).includes(step)));
+  // 단계마다 그림 묶음의 진하기를 정한다: tbl[단계] = { id: 진하기 }, 적지 않은 묶음은 1
+  const paintOp = (tbl, step) => { const m = tbl[step] || {}; $$('.og', FIG).forEach(el => { el.style.opacity = m[el.id] != null ? m[el.id] : 1; }); };
+
+
+  const nd = x => ((x % 360) + 540) % 360 - 180;                          // 각을 -180 ~ 180으로
+  const vlerp = (p, q, u) => [lerp(p[0], q[0], u), lerp(p[1], q[1], u)];
+
+  /* ---------- 문제 그림 (학습지와 같은 정의) ---------- */
+  /* 원주각의 크기와 호의 길이 — 문제 그림 (수업 화면과 학습지가 같은 그림을 쓴다)
+     각은 도, 0°는 오른쪽, 시계 반대 방향. 점은 원 위의 각으로 적고, 'O'는 원의 중심.
+     글자 속 {x}, {a}, {b}는 기울인 문자로 바꾼다.
+     rv = 답에서 더하는 것(보조선, 각 표시), xv = 답에서 '?'(x) 자리에 들어갈 값 */
+  const HOGIL_FIGS = (() => {
+    const S = {};
+    // 예제 1 (1) 길이가 같은 호 → 크기가 같은 원주각
+    S.e1a = { pts: { P: 125, A: 190, B: 260, Q: 60, C: 295, D: 5 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'C'], ['Q', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '35°', lp: [-0.36, 0.1], lead: true }, { v: 'Q', a: 'C', b: 'D', t: '{x}°', x: '35°', lp: [0.32, 0.1], lead: true }],
+      dims: [{ a: 'A', b: 'B', t: '5 cm' }, { a: 'C', b: 'D', t: '5 cm' }] };
+    // 예제 1 (2) 크기가 같은 원주각 → 길이가 같은 호
+    S.e1b = { pts: { P: 125, A: 188, B: 268, Q: 55, C: 298, D: 18 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'C'], ['Q', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '40°', lp: [-0.36, 0.1], lead: true }, { v: 'Q', a: 'C', b: 'D', t: '40°', lp: [0.32, 0.08], lead: true }],
+      dims: [{ a: 'A', b: 'B', t: '7 cm' }, { a: 'C', b: 'D', t: '{x} cm', x: '7 cm' }] };
+    // 교과서 186쪽 1 (1)
+    S.p11 = { pts: { A: 140, B: 230, C: 255, D: 345, P: 25, Q: 95 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'C'], ['Q', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '45°', d: 0.56 }, { v: 'Q', a: 'C', b: 'D', t: '{x}°', x: '45°', d: 0.5 }],
+      dims: [{ a: 'A', b: 'B', t: '8 cm' }, { a: 'C', b: 'D', t: '8 cm' }] };
+    // 보충 문제
+    S.sup = { pts: { A: 120, B: 220, C: 320, D: 0 },
+      segs: [['A', 'B'], ['A', 'D'], ['B', 'D'], ['D', 'C']],
+      marks: [{ v: 'A', a: 'B', b: 'D', t: '{x}°', x: '70°' }, { v: 'B', a: 'A', b: 'D', t: '60°' }, { v: 'D', a: 'B', b: 'C', t: '50°', d: 0.5 }],
+      dims: [{ a: 'A', b: 'B', t: '3 cm' }, { a: 'B', b: 'C', t: '3 cm' }],
+      rv: { marks: [{ v: 'D', a: 'A', b: 'B', t: '50°', r: 0.3, d: 0.52, c: 'arc' }] } };
+    // 예제 2 (1) 호의 길이가 2배 → 원주각의 크기도 2배
+    S.e2a = { pts: { P: 180, A: 280, B: 330, C: 70 },
+      segs: [['P', 'A'], ['P', 'B'], ['P', 'C']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '25°', r: 0.26, lp: [-0.1, 0.5], lead: true }, { v: 'P', a: 'B', b: 'C', t: '{x}°', x: '50°', r: 0.2, two: true, d: 0.42 }],
+      dims: [{ a: 'A', b: 'B', t: '3 cm' }, { a: 'B', b: 'C', t: '6 cm', kP: 1.12, daP: 8 }] };
+    // 예제 2 (2) 원주각의 크기가 3배 → 호의 길이도 3배
+    S.e2b = { pts: { P: 175, A: 270, B: 310, C: 70 },
+      segs: [['P', 'A'], ['P', 'B'], ['P', 'C']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '20°', r: 0.28, lp: [-0.1, 0.5], lead: true }, { v: 'P', a: 'B', b: 'C', t: '60°', r: 0.2, two: true, d: 0.42 }],
+      dims: [{ a: 'A', b: 'B', t: '4 cm' }, { a: 'B', b: 'C', t: '{x} cm', x: '12 cm', kP: 1.12, daP: 8 }] };
+    // 교과서 186쪽 1 (2)
+    S.p12 = { pts: { P: 165, A: 240, B: 290, C: 80 },
+      segs: [['P', 'A'], ['P', 'B'], ['P', 'C']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '25°', r: 0.26, lp: [-0.1, 0.52], lead: true }, { v: 'P', a: 'B', b: 'C', t: '75°', r: 0.2, two: true, d: 0.42 }],
+      dims: [{ a: 'A', b: 'B', t: '5 cm' }, { a: 'B', b: 'C', t: '{x} cm', x: '15 cm', kP: 1.12, daP: 8 }] };
+    // 교과서 187쪽 3 (1)
+    S.p31 = { pts: { P: 120, A: 220, B: 270, Q: 165, C: 315, D: 55 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'C'], ['Q', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '25°', r: 0.24, lp: [0.27, 0.15], lead: true }, { v: 'Q', a: 'C', b: 'D', t: '50°', r: 0.2, lp: [-0.32, 0.3], lead: true }],
+      dims: [{ a: 'A', b: 'B', t: '{x}', x: '3' }, { a: 'C', b: 'D', t: '6' }] };
+    // 교과서 187쪽 3 (2)
+    S.p32 = { pts: { A: 185, B: 243, C: 359, P: 100, Q: 70 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'A'], ['Q', 'C']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '29°', r: 0.24, lp: [-0.36, 0.02], lead: true }, { v: 'Q', a: 'A', b: 'C', t: '{x}°', x: '87°', r: 0.2, d: 0.4 }],
+      dims: [{ a: 'A', b: 'B', t: '5' }, { a: 'B', b: 'C', t: '10' }] };
+    // 교과서 187쪽 3 (3)
+    S.p33 = { pts: { P: 92, A: 150, B: 190, C: 310, D: 30 },
+      segs: [['P', 'A'], ['P', 'B'], ['P', 'C'], ['P', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '20°', r: 0.3, lp: [-0.42, -0.08], lead: true }, { v: 'P', a: 'B', b: 'D', t: '{x}°', x: '100°', r: 0.17, d: 0.36 }],
+      dims: [{ a: 'A', b: 'B', t: '2' }, { a: 'B', b: 'C', t: '6' }, { a: 'C', b: 'D', t: '4' }] };
+    // 현의 길이는 정비례하지 않는다 (주의)
+    S.chord = { pts: { A: 200, B: 270, C: 340 },
+      segs: [['A', 'B'], ['B', 'C'], ['A', 'C']],
+      ticks: [{ at: 235 }, { at: 305 }] };
+    // 교과서 186쪽 예제
+    S.ex = { O: true, pts: { A: 220, B: 280, C: 340, P: 128, Q: 88 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'A'], ['Q', 'C'], ['O', 'B'], ['O', 'C']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '30°', r: 0.22, lp: [-0.3, 0.12], lead: true }, { v: 'Q', a: 'A', b: 'C', t: '{a}', r: 0.17, d: 0.34, da: -14 }, { v: 'O', a: 'B', b: 'C', t: '{b}', c: 'center', r: 0.15, d: 0.3 }],
+      ticks: [{ at: 250 }, { at: 310 }], Olab: [-0.13, -0.08],
+      rvStep: 2, rv: { segs: [['Q', 'B']], marks: [{ v: 'Q', a: 'B', b: 'C', t: '30°', r: 0.3, d: 0.5, c: 'arc' }] } };
+    // 교과서 186쪽 2 (1)
+    S.p21 = { O: true, pts: { A: 152, B: 216, C: 280, P: 20 },
+      segs: [['P', 'A'], ['P', 'C'], ['O', 'B'], ['O', 'C']],
+      marks: [{ v: 'O', a: 'B', b: 'C', t: '64°', c: 'center', r: 0.16, d: 0.36 }, { v: 'P', a: 'A', b: 'C', t: '{x}°', x: '64°', r: 0.17, d: 0.33, da: 8 }],
+      dims: [{ a: 'A', b: 'B', t: '5 cm' }, { a: 'B', b: 'C', t: '5 cm' }], Olab: [0.1, -0.13],
+      rv: { segs: [['P', 'B']], marks: [{ v: 'P', a: 'B', b: 'C', t: '32°', r: 0.38, d: 0.64, dP: 0.84, c: 'arc' }] } };
+    // 교과서 186쪽 2 (2)
+    S.p22 = { O: true, pts: { C: 88, B: 352, A: 256, P: 150 },
+      segs: [['P', 'C'], ['P', 'A'], ['O', 'A'], ['O', 'B']],
+      marks: [{ v: 'P', a: 'A', b: 'C', t: '96°', r: 0.18, d: 0.38 }, { v: 'O', a: 'A', b: 'B', t: '{x}°', x: '96°', c: 'center', r: 0.15, d: 0.34 }],
+      dims: [{ a: 'B', b: 'C', t: '7 cm' }, { a: 'A', b: 'B', t: '7 cm' }], Olab: [-0.02, -0.2],
+      rv: { segs: [['P', 'B']], marks: [{ v: 'P', a: 'A', b: 'B', t: '48°', r: 0.3, d: 0.5, dP: 0.78, c: 'arc' }] } };
+    // 교과서 187쪽 3 (4) — 보조선 긋기의 예제
+    S.p34 = { pts: { A: 215, B: 305, C: 335, P: 150, Q: 92 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'A'], ['Q', 'C']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '45°', r: 0.2, d: 0.5 }, { v: 'Q', a: 'A', b: 'C', t: '60°', r: 0.17, d: 0.36 }],
+      dims: [{ a: 'A', b: 'B', t: '3' }, { a: 'B', b: 'C', t: '{x}', x: '1' }],
+      rv: { segs: [['Q', 'B']], marks: [{ v: 'Q', a: 'A', b: 'B', t: '45°', r: 0.3, d: 0.52, c: 'arc' }, { v: 'Q', a: 'B', b: 'C', t: '15°', r: 0.44, lp: [0.5, 0.42], lead: true, c: 'arc2' }] } };
+    // 교과서 187쪽 3 (5)
+    S.p35 = { O: true, pts: { A: 180, D: 0, B: 240, C: 300, P: 75 },
+      segs: [['A', 'D'], ['P', 'A'], ['P', 'B'], ['P', 'C'], ['P', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '{x}°', x: '30°', r: 0.2, d: 0.42 }],
+      dims: [{ a: 'A', b: 'B', t: '4' }, { a: 'B', b: 'C', t: '4' }, { a: 'C', b: 'D', t: '4' }], Olab: [0.1, 0.17],
+      rv: { right: [{ v: 'P', a: 'A', b: 'D' }] } };
+    // 교과서 187쪽 3 (6)
+    S.p36 = { O: true, pts: { A: 180, C: 0, P: 108, B: 300 },
+      segs: [['A', 'C'], ['P', 'A'], ['P', 'B']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '60°', r: 0.2, d: 0.42 }],
+      dims: [{ a: 'B', b: 'C', t: '3' }, { a: 'A', b: 'B', t: '{x}', x: '6' }], Olab: [-0.12, 0.16],
+      rv: { segs: [['P', 'C']], right: [{ v: 'P', a: 'A', b: 'C' }], marks: [{ v: 'P', a: 'B', b: 'C', t: '30°', r: 0.3, d: 0.52, c: 'arc' }] } };
+
+    // 학습지 2절: 길이가 같은 두 호, 중심각과 원주각
+    S.rel = { O: true, pts: { A: 200, B: 280, C: 320, D: 40, P: 130, Q: 92 },
+      segs: [['P', 'A'], ['P', 'B'], ['Q', 'C'], ['Q', 'D'], ['O', 'A'], ['O', 'B'], ['O', 'C'], ['O', 'D']],
+      marks: [{ v: 'P', a: 'A', b: 'B', t: '', r: 0.22 }, { v: 'Q', a: 'C', b: 'D', t: '', r: 0.22 }, { v: 'O', a: 'A', b: 'B', t: '', c: 'center', r: 0.2 }, { v: 'O', a: 'C', b: 'D', t: '', c: 'center', r: 0.2 }],
+      ticks: [{ at: 240 }, { at: 0 }], Olab: [-0.13, -0.24] };
+
+    /* ---------- 그리기 ---------- */
+    const r2 = v => Math.round(v * 100) / 100;
+    const rad = d => d * Math.PI / 180;
+    const deg = r => r * 180 / Math.PI;
+    const span = (a1, a2) => (((a2 - a1) % 360) + 360) % 360;
+    // 화면용(CSS 변수, 크기는 반지름에 비례)과 인쇄용(고정 색, 글자는 px 고정)
+    const COL_S = { center: 'c-center', arc: 'c-arc', arc2: 'c-arc2', sec: 'c-secant', ink2: 'ink-2', ink: 'ink', accent: 'accent', chord: 'c-chord' };
+    const FILL_S = { center: 'fill-cen', arc: 'fill-sec', arc2: 'fill-mov', chord: 'fill-tri', sec: 'fill-sec' };
+    const MODES = {
+      screen: { lbl: R => Math.min(32, 0.19 * R), num: R => Math.min(28, 0.165 * R), k: 0.17, wBase: 3.5, wSeg: 3.5, wMark: 4.5, wDim: 2.4, wTick: 3, dot: 6.5, two: 8, dash: '10 8',
+        color: c => `var(--${COL_S[c] || 'c-chord'})`, fill: c => `var(--${FILL_S[c] || 'fill-tri'})`,
+        font: { lbl: "font-family:'Noto Serif KR',Georgia,serif;font-weight:700", num: "font-family:'STIX Two Text','Times New Roman',serif;font-weight:600" } },
+      print: { lbl: () => 12.5, num: () => 12, k: 0.26, wBase: 1.4, wSeg: 1.2, wMark: 1, wDim: 0.8, wTick: 1, dot: 2.1, two: 2.6, dash: '3 2.4',
+        color: c => (c === 'red' || c === 'accent' ? '#c62828' : c === 'ink2' ? '#5a5a5a' : '#1f1f1f'),
+        fill: c => (c === 'center' ? '#dce6f2' : c === 'red' ? '#f6d4d4' : '#efd9c3'),
+        font: { lbl: "font-family:'Noto Serif KR',serif;font-weight:700", num: "font-family:'STIX Two Text','Times New Roman',serif" } }
+    };
+    function draw(spec, o) {
+      const mode = o.mode || 'screen', scr = mode === 'screen', M = MODES[mode], cx = o.cx, cy = o.cy, R = o.R, ans = !!o.ans;
+      const pick = (obj, key) => (obj ? (!scr && obj[key + 'P'] !== undefined ? obj[key + 'P'] : obj[key]) : undefined);
+      const at = (a, r = R) => [cx + r * Math.cos(rad(a)), cy - r * Math.sin(rad(a))];
+      const PT = n => (n === 'O' ? [cx, cy] : at(spec.pts[n]));
+      const fs = M.lbl(R), ns = M.num(R);
+      const it = s => s.replace(/\{([a-z])\}/g, scr ? '<tspan class="vi">$1</tspan>' : '<tspan font-style="italic">$1</tspan>');
+      const line = (p, q, c, w, extra = '') => `<path d="M ${r2(p[0])} ${r2(p[1])} L ${r2(q[0])} ${r2(q[1])}" fill="none" stroke="${M.color(c)}" stroke-width="${w}" stroke-linecap="round" ${extra}></path>`;
+      const text = (p, s, size, kind, c = 'ink', extra = '', anchor = 'middle') => `<text x="${r2(p[0])}" y="${r2(p[1])}" font-size="${r2(size)}" text-anchor="${anchor}" dy="${r2(size * 0.36)}" style="${M.font[kind]};fill:${M.color(c)}" ${extra}>${it(s)}</text>`;
+      const angOf = (V, p) => deg(Math.atan2(V[1] - p[1], p[0] - V[0]));
+      const inner = (V, p, q) => { let a1 = angOf(V, p), a2 = angOf(V, q); if (span(a1, a2) > 180) { const t = a1; a1 = a2; a2 = t; } return [a1, span(a1, a2)]; };
+      const arcPath = (C, r, a1, s) => { const p = [C[0] + r * Math.cos(rad(a1)), C[1] - r * Math.sin(rad(a1))], q = [C[0] + r * Math.cos(rad(a1 + s)), C[1] - r * Math.sin(rad(a1 + s))]; return `M ${r2(p[0])} ${r2(p[1])} A ${r2(r)} ${r2(r)} 0 ${s > 180 ? 1 : 0} 0 ${r2(q[0])} ${r2(q[1])}`; };
+      const markSvg = (m, c0) => {
+        const V = PT(m.v), p = PT(m.a), q = PT(m.b), [a1, s] = inner(V, p, q), c = c0 || m.c || 'chord';
+        const rr = (pick(m, 'r') || 0.2) * R * (scr ? 1 : 1.12);
+        const wedge = `M ${r2(V[0])} ${r2(V[1])} L ${arcPath(V, rr, a1, s).slice(2)} Z`;
+        let g = `<path d="${wedge}" fill="${M.fill(c)}" stroke="none"></path><path d="${arcPath(V, rr, a1, s)}" fill="none" stroke="${M.color(c)}" stroke-width="${M.wMark}"></path>`;
+        if (m.two) g += `<path d="${arcPath(V, rr + M.two, a1, s)}" fill="none" stroke="${M.color(c)}" stroke-width="${M.wMark}"></path>`;
+        const lp0 = pick(m, 'lp');
+        if (lp0) {
+          const L = [V[0] + lp0[0] * R, V[1] + lp0[1] * R], mid = a1 + s / 2, T = [V[0] + (rr + (m.two ? M.two : 0)) * Math.cos(rad(mid)), V[1] - (rr + (m.two ? M.two : 0)) * Math.sin(rad(mid))];
+          if (pick(m, 'lead')) {
+            // 교과서처럼 휘어진 짧은 화살표로 글자와 각을 잇는다(곧은 선은 각의 변을 늘인 것처럼 보인다)
+            const u = [T[0] - L[0], T[1] - L[1]], n = Math.hypot(...u) || 1, gap = M.num(R) * 0.9;
+            if (n > gap + 2) {
+              const S0 = [L[0] + u[0] / n * gap, L[1] + u[1] / n * gap], E = T, mx = (S0[0] + E[0]) / 2, my = (S0[1] + E[1]) / 2;
+              let nx = -(E[1] - S0[1]), ny = E[0] - S0[0];
+              const nl = Math.hypot(nx, ny) || 1; nx /= nl; ny /= nl;
+              if ((mx + nx - V[0]) ** 2 + (my + ny - V[1]) ** 2 < (mx - nx - V[0]) ** 2 + (my - ny - V[1]) ** 2) { nx = -nx; ny = -ny; }   // 꼭짓점에서 먼 쪽으로 휜다
+              const bow = Math.hypot(E[0] - S0[0], E[1] - S0[1]) * 0.42, Cq = [mx + nx * bow, my + ny * bow];
+              const col = scr ? 'ink2' : 'ink2', w = scr ? 2.2 : 0.75, ah = scr ? 9 : 3.2;
+              const tx = E[0] - Cq[0], ty = E[1] - Cq[1], tl = Math.hypot(tx, ty) || 1, ux = tx / tl, uy = ty / tl;
+              const h1 = [E[0] - ux * ah - uy * ah * 0.55, E[1] - uy * ah + ux * ah * 0.55], h2 = [E[0] - ux * ah + uy * ah * 0.55, E[1] - uy * ah - ux * ah * 0.55];
+              g += `<path d="M ${r2(S0[0])} ${r2(S0[1])} Q ${r2(Cq[0])} ${r2(Cq[1])} ${r2(E[0])} ${r2(E[1])}" fill="none" stroke="${M.color(col)}" stroke-width="${w}" stroke-linecap="round"></path>`;
+              g += `<path d="M ${r2(h1[0])} ${r2(h1[1])} L ${r2(E[0])} ${r2(E[1])} L ${r2(h2[0])} ${r2(h2[1])}" fill="none" stroke="${M.color(col)}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"></path>`;
+            }
+          }
+          return { g, lp: L };
+        }
+        const d = (pick(m, 'd') || 0.4) * R, da = pick(m, 'da') || 0, mid = a1 + s / 2 + da;
+        return { g, lp: [V[0] + d * Math.cos(rad(mid)), V[1] - d * Math.sin(rad(mid))] };
+      };
+      const rightSvg = (rt, c) => {
+        const V = PT(rt.v), u = [PT(rt.a)[0] - V[0], PT(rt.a)[1] - V[1]], v = [PT(rt.b)[0] - V[0], PT(rt.b)[1] - V[1]];
+        const nu = Math.hypot(...u), nv = Math.hypot(...v), s = (scr ? 0.13 : 0.17) * R;
+        const p1 = [V[0] + u[0] / nu * s, V[1] + u[1] / nu * s], p3 = [V[0] + v[0] / nv * s, V[1] + v[1] / nv * s], p2 = [p1[0] + v[0] / nv * s, p1[1] + v[1] / nv * s];
+        return `<path d="M ${r2(p1[0])} ${r2(p1[1])} L ${r2(p2[0])} ${r2(p2[1])} L ${r2(p3[0])} ${r2(p3[1])}" fill="none" stroke="${M.color(c)}" stroke-width="${scr ? 3 : 1}"></path>`;
+      };
+      const RV = spec.rvStep || 1;
+      let base = '', marks = '', labels = '', rv = '';
+      base += `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${r2(R)}" fill="none" stroke="${M.color('ink')}" stroke-width="${M.wBase}"></circle>`;
+      (spec.segs || []).forEach(([p, q]) => { base += line(PT(p), PT(q), 'ink', p === 'O' || q === 'O' ? M.wSeg * 0.86 : M.wSeg); });
+      (spec.ticks || []).forEach(t => { base += line(at(t.at, R * 0.92), at(t.at, R * 1.08), 'ink', M.wTick); });
+      // 호의 길이 표시: 바깥 호 + 양 끝 짧은 선 + 글자(왼쪽·오른쪽에서는 바깥으로 붙여 쓴다)
+      const dimEnd = {};
+      (spec.dims || []).forEach(dm => {
+        const a1 = spec.pts[dm.a], s = span(a1, spec.pts[dm.b]), rd = R * 1.1;
+        dimEnd[dm.a] = (dimEnd[dm.a] || 0) | 1; dimEnd[dm.b] = (dimEnd[dm.b] || 0) | 2;
+        base += `<path d="${arcPath([cx, cy], rd, a1 + 2, s - 4)}" fill="none" stroke="${M.color('ink2')}" stroke-width="${M.wDim}"></path>`;
+        base += line(at(a1, R * 1.03), at(a1, R * 1.16), 'ink2', M.wDim) + line(at(a1 + s, R * 1.03), at(a1 + s, R * 1.16), 'ink2', M.wDim);
+        const mid = a1 + s / 2 + (pick(dm, 'da') || 0), cs = Math.cos(rad(mid));
+        const anchor = cs > 0.42 ? 'start' : cs < -0.42 ? 'end' : 'middle';
+        const kl = pick(dm, 'k') || (anchor === 'middle' ? (scr ? 1.27 : 1.33) : (scr ? 1.18 : 1.2));
+        const lp = at(mid, R * kl);
+        if (dm.x && ans) labels += text(lp, dm.x, ns, 'num', 'red', 'font-weight="700"', anchor);
+        else if (dm.x && scr) labels += `<g data-hide="${RV}">${text(lp, dm.t, ns * 1.08, 'num', 'ink', '', anchor)}</g><g data-show="${RV}">${text(lp, dm.x, ns, 'num', 'accent', '', anchor)}</g>`;
+        else labels += text(lp, dm.t, dm.t.length <= 3 && dm.t.includes('{') ? ns * 1.08 : ns, 'num', 'ink', '', anchor);
+      });
+      (spec.marks || []).forEach(m => {
+        const { g, lp } = markSvg(m);
+        marks += g;
+        const tc = scr ? (m.c === 'center' ? 'center' : 'chord') : 'ink';
+        const big = m.t.startsWith('{') && m.t.length <= 4 ? 1.12 : 1;
+        if (m.x && ans) labels += text(lp, m.x, ns, 'num', 'red', 'font-weight="700"');
+        else if (m.x && scr) labels += `<g data-hide="${RV}">${text(lp, m.t, ns * big, 'num', tc)}</g><g data-show="${RV}">${text(lp, m.x, ns, 'num', 'accent')}</g>`;
+        else labels += text(lp, m.t, ns * big, 'num', tc);
+      });
+      if (spec.rv && (ans || scr)) {
+        let g = '';
+        (spec.rv.segs || []).forEach(([p, q]) => { g += line(PT(p), PT(q), scr ? 'sec' : 'red', M.wSeg, `stroke-dasharray="${M.dash}"`); });
+        (spec.rv.right || []).forEach(rt => { g += rightSvg(rt, scr ? 'sec' : 'red'); });
+        (spec.rv.marks || []).forEach(m => {
+          const c = scr ? m.c || 'arc' : 'red', { g: mg, lp } = markSvg(m, c);
+          g += mg + text(lp, m.t, ns * (scr ? 0.92 : 1), 'num', c, scr ? '' : 'font-weight="700"');
+        });
+        rv = scr ? `<g data-show="${RV}">${g}</g>` : g;
+      }
+      let dots = '';
+      Object.keys(spec.pts).forEach(n => {
+        const p = PT(n), ov = pick(spec, 'lab') && pick(spec, 'lab')[n] ? pick(spec, 'lab')[n] : {};
+        dots += `<circle cx="${r2(p[0])}" cy="${r2(p[1])}" r="${M.dot}" fill="${M.color('ink')}"></circle>`;
+        // 호의 길이 표시 끝에 있는 점은 이름을 짧은 선 옆으로 비켜 둔다
+        const e = dimEnd[n] || 0;
+        const k = ov.k != null ? ov.k : M.k + (e ? (scr ? 0.12 : 0.13) : 0);
+        const lp = at(spec.pts[n] + (ov.da || 0), R * (1 + k));
+        labels += text([lp[0] + (ov.dx || 0) * R, lp[1] + (ov.dy || 0) * R], n, fs, 'lbl');
+      });
+      if (spec.O) {
+        dots += `<circle cx="${r2(cx)}" cy="${r2(cy)}" r="${M.dot}" fill="${M.color('ink')}"></circle>`;
+        const ol = pick(spec, 'Olab') || [0.12, -0.1];
+        labels += text([cx + ol[0] * R, cy + ol[1] * R], 'O', fs * (scr ? 0.92 : 1), 'lbl');
+      }
+      return marks + base + rv + dots + labels;
+    }
+    return { S, draw };
+  })();
+
+  /* ---------- 원주각의 크기와 호의 길이에서 더한 조각 ---------- */
+  const arcsym = (t, c = '') =>
+    `<span class="arcsym" role="img" aria-label="호 ${t}"${c ? ` style="color:var(${c})"` : ''}>${t}<svg viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true"><path d="M4 22 Q50 -8 96 22"></path></svg></span>`;
+  const A_ = arcsym;
+  const FIGS = HOGIL_FIGS;
+  const one = (k, o = {}) => svgWrap(FIGS.draw(FIGS.S[k], Object.assign({ cx: 300, cy: 230, R: 150 }, o)), o.label || '문제 그림');
+  const two = (k1, k2, r1 = 1, r2 = 2) => svgWrap(
+    tag(28, 44, '(1)', 28, 'start', '--ink-2') + tag(328, 44, '(2)', 28, 'start', '--ink-2') +
+    FIGS.draw(FIGS.S[k1], { cx: 150, cy: 250, R: 108, rvStep: r1 }) + FIGS.draw(FIGS.S[k2], { cx: 452, cy: 250, R: 108, rvStep: r2 }), '예제 그림 (1), (2)');
+  const arcTick = (k, a, n = 1, c = '--ink') => {      // 같은 길이의 호 표시(원을 가로지르는 짧은 선)
+    let d = '';
+    for (let i = 0; i < n; i++) { const b = a + (i - (n - 1) / 2) * 3; d += seg(P(k.cx, k.cy, k.R * 0.91, b), P(k.cx, k.cy, k.R * 1.09, b)) + ' '; }
+    return stroke(d.trim(), c, 3.5);
+  };
+
+  /* =========================================================
+     0. 선수학습 확인 (답이 드러나지 않게 묻고, 다음 단계에서 드러낸다)
+     0~1 중심각의 크기가 같은 두 호의 길이 → 같다 / 2~3 중심각의 크기가 2배이면 호의 길이는? → 2배(정비례)
+     4~5 같은 호에 대한 원주각과 중심각 → ∠APB = ½∠AOB
+     ========================================================= */
+  const K0 = K(300, 228, 160);
+  const scPre = {
+    title: '선수학습 확인', nav: 0, steps: () => 6,
+    build() {
+      const k = K0, O = k.O;
+      const A1 = k.at(205), B1 = k.at(275), C1 = k.at(335), D1 = k.at(45);
+      const A2 = k.at(230), B2 = k.at(275), C2 = k.at(320);
+      const A3 = k.at(225), B3 = k.at(315), P3 = k.at(105);
+      FIG.innerHTML = svgWrap(`
+        <g data-only="0,1">
+          <path d="${sectorD(k.cx, k.cy, k.R, 205, 275)}" style="fill:var(--fill-sec)"></path><path d="${sectorD(k.cx, k.cy, k.R, 335, 45)}" style="fill:var(--fill-sec)"></path>
+          ${mark(O, A1, B1, 44, '--c-center', { w: 4.5 })}${mark(O, C1, D1, 44, '--c-center', { w: 4.5 })}
+          ${baseCircle(k.cx, k.cy, k.R)}
+          ${stroke(arcD(k.cx, k.cy, k.R, 205, 275), '--c-arc', 9)}${stroke(arcD(k.cx, k.cy, k.R, 335, 45), '--c-arc', 9)}
+          ${[A1, B1, C1, D1].map(p => stroke(seg(O, p), '--ink', 3.5)).join('')}
+          <g data-only="0">${num(...k.out(240, 38), '?', 34, 'middle', '--c-arc', 'dy="12"')}${num(...k.out(10, 38), '?', 34, 'middle', '--c-arc', 'dy="12"')}</g>
+          <g data-show="1">${arcTick(k, 240)}${arcTick(k, 10)}</g>
+          ${dot(O, 7)}${lbl(300, 206, 'O', 30, 'middle')}
+        </g>
+        <g data-only="2,3">
+          ${mark(O, A2, C2, 66, '--c-center', { w: 4.5, fill: '--fill-cen2' })}${mark(O, A2, B2, 40, '--c-center', { w: 4.5 })}
+          ${baseCircle(k.cx, k.cy, k.R)}
+          ${stroke(arcD(k.cx, k.cy, k.R, 230, 275), '--c-arc', 9)}
+          <g data-only="2">${stroke(arcD(k.cx, k.cy, k.R, 275, 320), '--c-arc', 9)}</g>
+          <g data-show="3">${stroke(arcD(k.cx, k.cy, k.R, 275, 320), '--c-arc2', 9)}${arcTick(k, 252.5)}${arcTick(k, 297.5)}</g>
+          ${[A2, B2, C2].map(p => stroke(seg(O, p), '--ink', 3.5)).join('')}
+          ${dot(O, 7)}${dot(A2, 7)}${dot(B2, 7)}${dot(C2, 7)}
+          ${ptName(k, 230, 'A')}${ptName(k, 275, 'B')}${ptName(k, 320, 'C')}${lbl(300, 206, 'O', 30, 'middle')}
+        </g>
+        <g data-only="4,5">
+          ${mark(O, A3, B3, 40, '--c-center', { w: 4.5 })}${mark(P3, A3, B3, 44, '--c-chord', { w: 4.5 })}
+          ${baseCircle(k.cx, k.cy, k.R)}
+          ${stroke(arcD(k.cx, k.cy, k.R, 225, 315), '--c-arc', 9)}
+          ${stroke(seg(P3, A3), '--c-chord', 4)}${stroke(seg(P3, B3), '--c-chord', 4)}${stroke(seg(O, A3), '--ink', 3.5)}${stroke(seg(O, B3), '--ink', 3.5)}
+          ${dot(O, 7)}${dot(A3, 7)}${dot(B3, 7)}${dot(P3, 7)}
+          ${ptName(k, 225, 'A')}${ptName(k, 315, 'B')}${ptName(k, 105, 'P')}${lbl(284, 236, 'O', 30, 'end')}
+        </g>`, '중심각과 호, 원주각과 중심각');
+      PANEL.innerHTML = `
+        <h2 class="q" data-only="0,1" data-collapse>한 원에서 중심각의 크기가 같은 두 호의 길이는 어떨까?</h2>
+        <div class="answer" data-only="1" data-collapse><div class="big">같다</div></div>
+        <h2 class="q" data-only="2,3" data-collapse>중심각의 크기가 2배가 되면 호의 길이는 어떻게 될까?</h2>
+        <div class="answer" data-only="3" data-collapse><div class="big">2배가 된다</div><p class="why">호의 길이는 중심각의 크기에 정비례한다.</p></div>
+        <h2 class="q" data-only="4,5" data-collapse>${AP('APB')}와 ${AO('AOB')} 사이에는 어떤 관계가 있을까?</h2>
+        <div class="answer" data-only="5" data-collapse><div class="big">${AP('APB')} = ${HALF}${AO('AOB')}</div></div>`;
+    },
+    update(step, prev) { applyStep(FIG, step, prev); applyStep(PANEL, step, prev); }
+  };
+
+  /* =========================================================
+     1. 탐구 활동 (교과서 185쪽 — 색종이 대신 화면에서)
+     0 색종이 → 1 ① 같은 각을 옮겨 가며 원주각 두 개 그리기(마디 2: ∠APB → ∠CQD)
+     → 2 ② ∠APB를 떼어 내어 옮기기(마디 1: 오리는 선 → 들어 올리기) → 3 ③ 호 AB를 호 CD에 포개기(마디 1) → 4 추측
+     삼각자의 각(30°, 45°, 60°)을 고르면 처음부터 다시 한다.
+     ========================================================= */
+  const KA = K(300, 224, 150);
+  const ACT = { P: 330, Q: 30, mid: { 30: [232, 106], 45: [232, 106], 60: [250, 102] }, lift: [44, 36], liftRot: -10 };   // mid: 각마다 호 AB, 호 CD의 가운데 각
+  const scAct = Object.assign({}, PHASE, {
+    title: '탐구 활동', nav: 1, steps: () => 5, PH: { 1: 2, 2: 1, 3: 1 }, MS: { 1: [2000, 2200], 2: [1900], 3: [2000] },
+    th: 45, cutLen: 0,
+    geo() {
+      const k = KA, th = this.th, [ab, cd] = ACT.mid[th], g = { th, ab, cd };
+      g.A = k.at(ab - th); g.B = k.at(ab + th); g.C = k.at(cd + th); g.D = k.at(cd - th);
+      g.P = k.at(ACT.P); g.Q = k.at(ACT.Q);
+      g.M0 = k.at(ab); g.M1 = k.at(cd); g.rot = cd - ab;
+      g.sP = inner(g.P, g.A, g.B)[0]; g.sQ = inner(g.Q, g.D, g.C)[0];
+      return g;
+    },
+    tool(V, s1) {                                      // 삼각자: 꼭짓점 V에서 s1 방향 변과 s1+θ 방향 변, 직각은 s1 쪽 변 위
+      const R = KA.R, th = this.th, L = Math.min(1.35 * R, 1.6 * R * Math.cos(rad(th)));
+      const W = vadd(V, vmul(U(s1), L)), X = vadd(V, vmul(U(s1 + th), L / Math.cos(rad(th))));
+      const a = Math.hypot(...vsub(W, X)), b = Math.hypot(...vsub(V, X)), c = L, I0 = vmul(vadd(vadd(vmul(V, a), vmul(W, b)), vmul(X, c)), 1 / (a + b + c));
+      const sh = p => vadd(I0, vmul(vsub(p, I0), 0.5));
+      return { d: `${polyD(V, W, X)} ${polyD(sh(V), sh(W), sh(X))}`, lp: vadd(V, vmul(U(s1 + th / 2), 0.62 * R)) };
+    },
+    build() {
+      const k = KA, g = this.geo();
+      this.phReset(); this.g = g;
+      const piece = `M ${pt(g.P)} L ${pt(g.A)} A ${k.R} ${k.R} 0 0 0 ${pt(g.B)} Z`;
+      FIG.innerHTML = svgWrap(`
+        <circle cx="${k.cx}" cy="${k.cy}" r="${k.R}" style="fill:var(--fill-paper)"></circle>
+        ${baseCircle(k.cx, k.cy, k.R)}
+        <path id="aHole" d="${piece}" style="fill:var(--bg);stroke:var(--ghost);stroke-width:2;stroke-dasharray:6 6;display:none"></path>
+        <path id="aCD" class="rd" d="${arcD(k.cx, k.cy, k.R, g.cd - this.th, g.cd + this.th)}" style="stroke:var(--c-arc2);stroke-width:9;opacity:0"></path>
+        <path id="aAB" class="rd" d="${arcD(k.cx, k.cy, k.R, g.ab - this.th, g.ab + this.th)}" style="stroke:var(--c-arc);stroke-width:9;opacity:0"></path>
+        <g id="aMQ" style="opacity:0">${mark(g.Q, g.D, g.C, 44, '--c-chord', { w: 4.5 })}</g>
+        <path id="aQC" class="rd" d="" style="stroke:var(--c-chord);stroke-width:4"></path><path id="aQD" class="rd" d="" style="stroke:var(--c-chord);stroke-width:4"></path>
+        <g id="aPc">
+          <path d="${piece}" id="aPf" style="fill:var(--paper-solid);opacity:0"></path>
+          <g id="aMP" style="opacity:0">${mark(g.P, g.A, g.B, 44, '--c-chord', { w: 4.5 })}</g>
+          <path id="aPA" class="rd" d="" style="stroke:var(--c-chord);stroke-width:4"></path><path id="aPB" class="rd" d="" style="stroke:var(--c-chord);stroke-width:4"></path>
+          <path id="aArcP" class="rd" d="${arcD(k.cx, k.cy, k.R, g.ab - this.th, g.ab + this.th)}" style="stroke:var(--c-arc);stroke-width:7;opacity:0"></path>
+          <path id="aCut" d="${piece}" style="fill:none;stroke:var(--ink);stroke-width:2.5;stroke-dasharray:0 4000;stroke-linejoin:round"></path>
+          <g id="aPl">${lbl(0, 0, 'P', 30, 'middle', '', 'id="aLP" dy="11"')}${lbl(0, 0, 'A', 30, 'middle', '', 'id="aLA" dy="11"')}${lbl(0, 0, 'B', 30, 'middle', '', 'id="aLB" dy="11"')}</g>
+        </g>
+        ${dot(k.O, 6)}
+        ${ptName(k, g.cd + this.th, 'C')}${ptName(k, g.cd - this.th, 'D')}${ptName(k, ACT.Q, 'Q')}
+        <g id="aDots"></g>
+        <g id="aTool"><path id="aToolP" d="" style="fill:var(--tool);fill-rule:evenodd;stroke:var(--c-arc);stroke-width:2.5;stroke-linejoin:round"></path>
+          <text id="aToolT" class="num" x="0" y="0" font-size="24" text-anchor="middle" dy="8" style="fill:var(--c-arc)">${this.th}°</text></g>`,
+        '원 모양의 색종이 위에 삼각자로 크기가 같은 원주각 두 개를 그리고, 한 원주각을 떼어 내어 호를 포개는 그림');
+      const chip = t => `<button type="button" data-th="${t}" aria-current="${t === this.th ? 'true' : 'false'}">${t}°</button>`;
+      PANEL.innerHTML = `
+        <h2 class="q">크기가 같은 원주각에 대한 호의 길이는 어떨까?</h2>
+        <div class="cases thc" role="group" aria-label="삼각자의 각 고르기"><span class="thl">삼각자의 각</span>${chip(30)}${chip(45)}${chip(60)}</div>
+        <div class="stps">
+          <div class="stp" data-now="1"><span class="sp">①</span><p>크기가 같은 각을 옮겨 가며 원주각 ${AP('APB')}, ${AP('CQD')}를 그려요.</p></div>
+          <div class="stp" data-now="2"><span class="sp">②</span><p>${AP('APB')}를 떼어 내어 옮겨요.</p></div>
+          <div class="stp" data-now="3"><span class="sp">③</span><p>호 AB를 호 CD에 포개어 봐요.</p>
+            <p class="res" data-show="3" data-collapse data-ph="3:1">완전히 포개어진다.</p></div>
+        </div>
+        <p class="kkt" data-show="4" data-collapse>크기가 같은 원주각에 대한 호의 길이는 같다.</p>`;
+      $$('.thc button', PANEL).forEach(b => b.addEventListener('click', () => {
+        this.th = Number(b.getAttribute('data-th'));
+        curSi = -1; go(state.si, 0);                    // 고른 각으로 처음부터
+      }));
+      this.cutLen = $('#aCut', FIG).getTotalLength();
+      this.drawT(0, 0);
+    },
+    leave() { this.phStop(); },
+    drawT(step, t) {
+      const F = id => $(id, FIG), k = KA, g = this.g;
+      if (!F('#aTool')) return;
+      // ① 원주각 그리기: 삼각자가 들어와 점 P에서 그리고(마디 1), 원을 따라 점 Q로 옮겨 가서 그린다(마디 2)
+      const pose0 = { V: [650, 330], s: g.sP + 18 };
+      let V = null, s = 0;
+      if (step === 1) {
+        if (t <= 1) { const u = ease(clamp(t / 0.55, 0, 1)); V = vlerp(pose0.V, g.P, u); s = lerp(pose0.s, g.sP, u); }
+        else { const u = ease(clamp((t - 1) / 0.55, 0, 1)); V = k.at(lerp(ACT.P, ACT.Q + 360, u)); s = g.sP + nd(g.sQ - g.sP) * u; }
+      }
+      const tl = F('#aTool');
+      if (V) { const T = this.tool(V, s); F('#aToolP').setAttribute('d', T.d); setXY(F('#aToolT'), T.lp); tl.style.display = ''; }
+      else tl.style.display = 'none';
+      const uP = step > 1 ? 1 : step === 1 ? clamp((Math.min(t, 1) - 0.55) / 0.4, 0, 1) : 0;
+      const uQ = step > 1 ? 1 : step === 1 ? clamp((t - 1.55) / 0.4, 0, 1) : 0;
+      F('#aPA').setAttribute('d', uP > 0 ? seg(g.P, vlerp(g.P, g.A, uP)) : '');
+      F('#aPB').setAttribute('d', uP > 0 ? seg(g.P, vlerp(g.P, g.B, uP)) : '');
+      F('#aQC').setAttribute('d', uQ > 0 ? seg(g.Q, vlerp(g.Q, g.C, uQ)) : '');
+      F('#aQD').setAttribute('d', uQ > 0 ? seg(g.Q, vlerp(g.Q, g.D, uQ)) : '');
+      F('#aMP').style.opacity = uP >= 1 ? 1 : 0; F('#aMQ').style.opacity = uQ >= 1 ? 1 : 0;
+      F('#aCD').style.opacity = uQ >= 1 ? 1 : 0;
+      // ② 오리는 선 → 들어 올리기, ③ 호 CD에 포개기
+      const uCut = step > 2 ? 1 : step === 2 ? clamp(t / 0.45, 0, 1) : 0;
+      const uLift = step > 2 ? 1 : step === 2 ? ease(clamp((t - 0.45) / 0.55, 0, 1)) : 0;
+      const uMove = step > 3 ? 1 : step === 3 ? ease(clamp(t, 0, 1)) : 0;
+      F('#aCut').style.strokeDasharray = uCut > 0 && uMove < 1 ? `${n2(this.cutLen * uCut)} 4000` : '0 4000';
+      F('#aHole').style.display = uLift > 0 ? '' : 'none';
+      F('#aPf').style.opacity = uLift > 0 ? 1 : 0; F('#aArcP').style.opacity = uLift > 0 ? 1 : 0;
+      F('#aAB').style.opacity = uP >= 1 && uLift <= 0 ? 1 : 0;
+      const Mlift = vadd(g.M0, ACT.lift);
+      const rho = uMove > 0 ? lerp(ACT.liftRot, g.rot, uMove) : ACT.liftRot * uLift;
+      const Mc = uMove > 0 ? vlerp(Mlift, g.M1, uMove) : vlerp(g.M0, Mlift, uLift);
+      F('#aPc').setAttribute('transform', `translate(${pt(Mc)}) rotate(${n2(-rho)}) translate(${n2(-g.M0[0])} ${n2(-g.M0[1])})`);
+      F('#aPc').style.filter = uLift > 0 && uMove < 1 ? 'drop-shadow(0 6px 8px rgba(0,0,0,.22))' : '';
+      F('#aCD').classList.toggle('pulse', step >= 3 && uMove >= 1);
+      // 조각에 붙은 이름(P, A, B)은 돌아가도 바로 서게, 조각과 함께 옮긴다
+      const rot = p => vadd(Mc, (() => { const v = vsub(p, g.M0), c = Math.cos(rad(rho)), sn = Math.sin(rad(rho)); return [v[0] * c + v[1] * sn, -v[0] * sn + v[1] * c]; })());
+      const outOf = (p, d) => vadd(p, vmul(vunit(vsub(p, k.O)), d));
+      const back = p => { const v = vsub(p, Mc), c = Math.cos(rad(rho)), sn = Math.sin(rad(rho)); return vadd(g.M0, [v[0] * c - v[1] * sn, v[0] * sn + v[1] * c]); };
+      [['#aLP', g.P], ['#aLA', g.A], ['#aLB', g.B]].forEach(([id, p]) => {
+        const q = rot(p), lp = (uMove >= 1) ? vadd(q, vmul(vunit(vsub(q, k.O)), -34)) : outOf(q, 30);
+        setXY(F(id), back(lp));
+        F(id).setAttribute('transform', `rotate(${n2(rho)} ${n2(back(lp)[0])} ${n2(back(lp)[1])})`);
+      });
+      F('#aDots').innerHTML = [g.C, g.D, g.Q].map(p => dot(p, 6)).join('') + (uLift > 0 ? '' : [g.P, g.A, g.B].map(p => dot(p, 6)).join(''));
+    },
+    update(step, prev) {
+      applyStep(FIG, step, prev); applyStep(PANEL, step, prev); markNow(step);
+      $$('.thc button', PANEL).forEach(b => b.setAttribute('aria-current', Number(b.getAttribute('data-th')) === this.th ? 'true' : 'false'));
+      this.phEnter(step, prev);
+    }
+  });
+
+
+  /* =========================================================
+     2. 원주각과 호의 길이 (교과서 185쪽 본문과 정리, 참고: 정비례)
+     0 길이가 같은 두 호에 대한 원주각은? → 1 중심각의 크기가 같다 → 2 원주각의 크기가 같다 → 3 거꾸로도 → 4 정리
+     5 호의 길이가 2배, 3배이면? → 6 정비례
+     ========================================================= */
+  const K2 = K(300, 228, 160);
+  const scRel = {
+    title: '원주각과 호의 길이', nav: 2, wide: true, steps: () => 7,
+    build() {
+      const k = K2, O = k.O, A = k.at(200), B = k.at(280), C = k.at(320), D = k.at(40), Pp = k.at(130), Q = k.at(92);
+      const P5 = k.at(150), pts5 = [255, 295, 335, 15].map(a => k.at(a)), [A5, B5, C5, D5] = pts5;
+      FIG.innerHTML = svgWrap(`
+        <g data-hide="5">
+          <g data-show="1">${mark(O, A, B, 40, '--c-center', { w: 4.5 })}${mark(O, C, D, 40, '--c-center', { w: 4.5 })}</g>
+          ${mark(Pp, A, B, 44, '--c-chord', { w: 4.5 })}${mark(Q, C, D, 44, '--c-chord', { w: 4.5 })}
+          ${baseCircle(k.cx, k.cy, k.R)}
+          ${stroke(arcD(k.cx, k.cy, k.R, 200, 280), '--c-arc', 9)}${stroke(arcD(k.cx, k.cy, k.R, 320, 40), '--c-arc', 9)}
+          ${arcTick(k, 240)}${arcTick(k, 0)}
+          ${stroke(seg(Pp, A), '--c-chord', 4)}${stroke(seg(Pp, B), '--c-chord', 4)}${stroke(seg(Q, C), '--c-chord', 4)}${stroke(seg(Q, D), '--c-chord', 4)}
+          <g data-show="1">${[A, B, C, D].map(p => stroke(seg(O, p), '--ink', 3.5, 'data-draw')).join('')}</g>
+          ${dot(O, 7)}${[A, B, C, D, Pp, Q].map(p => dot(p, 7)).join('')}
+          ${ptName(k, 200, 'A')}${ptName(k, 280, 'B')}${ptName(k, 320, 'C')}${ptName(k, 40, 'D')}${ptName(k, 130, 'P')}${ptName(k, 92, 'Q')}
+          ${lbl(300, 206, 'O', 30, 'middle')}
+        </g>
+        <g data-show="5">
+          ${mark(P5, A5, B5, 92, '--c-chord', { w: 4.5 })}${mark(P5, B5, C5, 92, '--c-arc2', { w: 4.5, fill: '--fill-mov' })}${mark(P5, C5, D5, 92, '--c-chord', { w: 4.5 })}
+          ${baseCircle(k.cx, k.cy, k.R)}
+          ${stroke(arcD(k.cx, k.cy, k.R, 255, 295), '--c-arc', 9)}
+          <g data-show="6">${stroke(arcD(k.cx, k.cy, k.R, 295, 335), '--c-arc', 9)}${stroke(arcD(k.cx, k.cy, k.R, 335, 15), '--c-arc', 9)}</g>
+          ${[275, 315, 355].map(a => arcTick(k, a)).join('')}
+          ${pts5.map(p => stroke(seg(P5, p), '--ink', 3.5)).join('')}
+          ${dot(O, 6)}${[P5, ...pts5].map(p => dot(p, 7)).join('')}
+          ${ptName(k, 150, 'P')}${ptName(k, 255, 'A')}${ptName(k, 295, 'B')}${ptName(k, 335, 'C')}${ptName(k, 15, 'D')}
+        </g>`, '길이가 같은 두 호에 대한 원주각과 중심각, 길이가 같은 세 호에 대한 원주각');
+      PANEL.innerHTML = `
+        <h2 class="q" data-hide="5" data-collapse>길이가 같은 두 호에 대한 원주각의 크기는 어떨까?</h2>
+        <div class="chain" data-show="1" data-hide="4" data-collapse>
+          <span class="cb">호의 길이가 같다</span>
+          <span class="ar"><span data-hide="3" data-collapse>⇒</span><span data-show="3" data-collapse>⇔</span></span>
+          <span class="cb cn">중심각의 크기가 같다</span>
+          <span class="ar" data-show="2"><span data-hide="3" data-collapse>⇒</span><span data-show="3" data-collapse>⇔</span></span>
+          <span class="cb cr" data-show="2">원주각의 크기가 같다</span>
+        </div>
+        <p class="eq2" data-only="2,3" data-collapse>${AP('APB')} = ${HALF}${AO('AOB')} = ${HALF}${AO('COD')} = ${AP('CQD')}</p>
+        <p class="ask" data-only="3" data-collapse>거꾸로도 성립한다.</p>
+        <div class="prop" data-only="4" data-collapse><span class="pl">원주각의 크기와 호의 길이</span>
+          <p>한 원에서</p>
+          <p>① 길이가 같은 호에 대한 원주각의 크기는 같다.</p>
+          <p>② 크기가 같은 원주각에 대한 호의 길이는 같다.</p></div>
+        <h2 class="q" data-show="5" data-collapse>호의 길이가 2배, 3배가 되면 원주각의 크기는 어떻게 될까?</h2>
+        <table class="mt prt" data-show="6" data-collapse>
+          <tbody><tr><th>호의 길이</th><td>${A_('AB')}</td><td>${A_('AC')} = 2${A_('AB')}</td><td>${A_('AD')} = 3${A_('AB')}</td></tr>
+                 <tr><th>원주각의 크기</th><td>${AP('APB')}</td><td>${AP('APC')} = 2${AP('APB')}</td><td>${AP('APD')} = 3${AP('APB')}</td></tr></tbody>
+        </table>
+        <p class="kkt" data-show="6" data-collapse>한 원에서 호의 길이와 그 호에 대한 원주각의 크기는 서로 정비례한다.</p>`;
+    },
+    update(step, prev) { applyStep(FIG, step, prev); applyStep(PANEL, step, prev); }
+  };
+
+  /* =========================================================
+     3~6. 예제 → 문제 세트 (학습지 3~6과 같은 순서)
+     세트마다 예제(문제 → 풀이) 다음에 문제(문제 → 답). 아래 띠의 점은 문항 수만큼.
+     ========================================================= */
+  const fbox = (label, lines, show) => `<div class="fbox" data-show="${show}" data-collapse><span class="pl">${label}</span>${lines.map(l => `<p class="fm fm-s">${l}</p>`).join('')}</div>`;
+  const ansBox = (lines, big) => `<div class="answer" data-show="1" data-collapse>${lines.map(l => `<p class="fm2">${l}</p>`).join('')}<div class="big">${big}</div></div>`;
+  const AN = s => `∠${s}`;
+  const T3 = FR(1, 3);
+  const SETS = {
+    s3: [
+      { tag: '예제 1', n: 3, fig: () => two('e1a', 'e1b'), q: `다음 그림에서 ${X_}의 값을 구해 보세요.`,
+        body: fbox('(1)', [`${A_('AB')} = ${A_('CD')}이므로 <span class="nb">${AN('CQD')} = ${AN('APB')} = 35°</span>`, `따라서 ${X_} = 35`], 1) +
+              fbox('(2)', [`${AN('APB')} = ${AN('CQD')}이므로 <span class="nb">${A_('CD')} = ${A_('AB')} = 7 cm</span>`, `따라서 ${X_} = 7`], 2) },
+      { tag: '문제 1 · 교과서 186쪽 1 (1)', n: 2, fig: () => one('p11'), q: `${X_}의 값을 구해 보세요.`,
+        body: ansBox([`${A_('AB')} = ${A_('CD')}이므로 <span class="nb">${AN('CQD')} = ${AN('APB')}</span>`], `${X_} = 45`) },
+      { tag: '문제 2 · 보충 문제', n: 2, fig: () => one('sup'), q: `${X_}의 값을 구해 보세요.`,
+        body: ansBox([`${A_('AB')} = ${A_('BC')}이므로 <span class="nb">${AN('ADB')} = ${AN('BDC')} = 50°</span>`, `△ABD에서 <span class="nb">${AN('BAD')} = 180° − (60° + 50°) = 70°</span>`], `${X_} = 70`) }
+    ],
+    s4: [
+      { tag: '예제 2', n: 3, fig: () => two('e2a', 'e2b'), q: `다음 그림에서 ${X_}의 값을 구해 보세요.`,
+        body: fbox('(1)', [`${A_('BC')} = 2${A_('AB')}이므로`, `<span class="nb">${AN('BPC')} = 2${AN('APB')} = 2 × 25° = 50°</span>`, `따라서 ${X_} = 50`], 1) +
+              fbox('(2)', [`${AN('BPC')} = 3${AN('APB')}이므로`, `<span class="nb">${A_('BC')} = 3${A_('AB')} = 3 × 4 = 12 (cm)</span>`, `따라서 ${X_} = 12`], 2) },
+      { tag: '문제 3 · 교과서 186쪽 1 (2)', n: 2, fig: () => one('p12'), q: `${X_}의 값을 구해 보세요.`,
+        body: ansBox([`${AN('BPC')} = 3${AN('APB')}이므로 <span class="nb">${A_('BC')} = 3${A_('AB')}</span>`], `${X_} = 3 × 5 = 15`) },
+      { tag: '문제 4 · 교과서 187쪽 3 (1)', n: 2, fig: () => one('p31'), q: `${X_}의 값을 구해 보세요.`,
+        body: ansBox([`${AN('APB')} = ${HALF}${AN('CQD')}이므로 <span class="nb">${A_('AB')} = ${HALF}${A_('CD')}</span>`], `${X_} = ${HALF} × 6 = 3`) },
+      { tag: '문제 5 · 교과서 187쪽 3 (2)', n: 2, fig: () => one('p32'), q: `${X_}의 값을 구해 보세요.`,
+        body: ansBox([`<span class="nb">${A_('AC')} = 5 + 10 = 15</span>이므로 <span class="nb">${A_('AC')} = 3${A_('AB')}</span>`, `<span class="nb">${AN('AQC')} = 3${AN('APB')}</span>`], `${X_} = 3 × 29 = 87`) },
+      { tag: '문제 6 · 교과서 187쪽 3 (3)', n: 2, fig: () => one('p33'), q: `${X_}의 값을 구해 보세요.`,
+        body: ansBox([`<span class="nb">${A_('BD')} = 6 + 4 = 10</span>이므로 <span class="nb">${A_('BD')} = 5${A_('AB')}</span>`, `<span class="nb">${AN('BPD')} = 5${AN('APB')}</span>`], `${X_} = 5 × 20 = 100`) },
+      { tag: '주의', n: 2, fig: () => chordFig(), q: `${A_('AB')} = ${A_('BC')}이면 ${A_('AC')} = 2${A_('AB')}이다. 현의 길이도 <span class="nb">${OV('AC')} = 2${OV('AB')}</span>일까?`, tall: true,
+        body: `<div class="answer" data-show="1" data-collapse><div class="big">아니다</div><p class="fm2">△ABC에서 <span class="nb">${OV('AC')} &lt; ${OV('AB')} + ${OV('BC')} = 2${OV('AB')}</span></p><p class="why">현의 길이는 호의 길이에 정비례하지 않는다.</p></div>` }
+    ],
+    s5: [
+      { tag: '예제 3 · 교과서 186쪽', n: 3, fig: () => one('ex', { cy: 236, R: 160 }), q: `${A_('AB')} = ${A_('BC')}일 때, ∠${I('a')}와 ∠${I('b')}의 크기를 각각 구해 보세요.`, tall: true,
+        body: fbox(`∠${I('a')}`, [`${A_('AC')} = 2${A_('AB')}이므로`, `<span class="nb">∠${I('a')} = 2${AN('APB')} = 2 × 30° = 60°</span>`], 1) +
+              fbox(`∠${I('b')}`, [`${A_('AB')} = ${A_('BC')}이므로 <span class="nb">${AN('BQC')} = ${AN('APB')} = 30°</span>`, `원주각의 크기는 중심각의 크기의 ${HALF}이므로`, `<span class="nb">∠${I('b')} = 2${AN('BQC')} = 2 × 30° = 60°</span>`], 2) },
+      { tag: '문제 7 · 교과서 186쪽 2 (1)', n: 2, fig: () => one('p21'), q: `원 O에서 ${X_}의 값을 구해 보세요.`,
+        body: ansBox([`${OV('BP')}를 그으면 <span class="nb">${AN('BPC')} = ${HALF}${AN('BOC')} = 32°</span>`, `${A_('AC')} = 2${A_('BC')}이므로 <span class="nb">${AN('APC')} = 2${AN('BPC')}</span>`], `${X_} = 2 × 32 = 64`) },
+      { tag: '문제 8 · 교과서 186쪽 2 (2)', n: 2, fig: () => one('p22'), q: `원 O에서 ${X_}의 값을 구해 보세요.`,
+        body: ansBox([`${OV('BP')}를 그으면 ${A_('AB')} = ${HALF}${A_('AC')}이므로`, `<span class="nb">${AN('APB')} = ${HALF}${AN('APC')} = 48°</span>`, `<span class="nb">${AN('AOB')} = 2${AN('APB')}</span>`], `${X_} = 2 × 48 = 96`) }
+    ],
+    s6: [
+      { tag: '예제 4 · 교과서 187쪽 3 (4)', n: 2, fig: () => one('p34'), q: `${X_}의 값을 구해 보세요.`,
+        body: fbox('보조선 긋기', [`${OV('BQ')}를 그으면 <span class="nb">${AN('AQB')} = ${AN('APB')} = 45°</span>`, `<span class="nb">${AN('BQC')} = ${AN('AQC')} − ${AN('AQB')}</span> <span class="nb">= 60° − 45° = 15°</span>`, `${AN('BQC')} = ${T3}${AN('AQB')}이므로 <span class="nb">${A_('BC')} = ${T3}${A_('AB')} = ${T3} × 3 = 1</span>`, `따라서 ${X_} = 1`], 1) },
+      { tag: '문제 9 · 교과서 187쪽 3 (5)', n: 2, fig: () => one('p35'), q: `${OV('AD')}가 원 O의 지름일 때, ${X_}의 값을 구해 보세요.`, tall: true,
+        body: ansBox([`반원에 대한 원주각이므로 <span class="nb">${AN('APD')} = 90°</span>`, `${A_('AB')} = ${T3}${A_('AD')}이므로 <span class="nb">${AN('APB')} = ${T3}${AN('APD')}</span>`], `${X_} = ${T3} × 90 = 30`) },
+      { tag: '문제 10 · 교과서 187쪽 3 (6)', n: 2, fig: () => one('p36'), q: `${OV('AC')}가 원 O의 지름일 때, ${X_}의 값을 구해 보세요.`, tall: true,
+        body: ansBox([`${OV('CP')}를 그으면 <span class="nb">${AN('APC')} = 90°</span>`, `<span class="nb">${AN('BPC')} = 90° − 60° = 30°</span>`, `${AN('APB')} = 2${AN('BPC')}이므로 <span class="nb">${A_('AB')} = 2${A_('BC')}</span>`], `${X_} = 2 × 3 = 6`) }
+    ]
+  };
+  // 주의: 현의 길이는 호의 길이에 정비례하지 않는다 — 현 AB 두 개를 이어 현 AC와 견준다
+  function chordFig() {
+    const k = K(300, 200, 165), s = FIGS.S.chord, A = k.at(s.pts.A), B = k.at(s.pts.B), C = k.at(s.pts.C);
+    const u = vunit(vsub(C, A)), nrm = [u[1], -u[0]], L = Math.hypot(...vsub(B, A)), off = vmul(nrm, 44);
+    const a0 = vadd(A, off), a1 = vadd(a0, vmul(u, L)), a2 = vadd(a1, vmul(u, L));
+    return svgWrap(FIGS.draw(s, { cx: k.cx, cy: k.cy, R: k.R }) + `
+      <g data-show="1">
+        ${stroke(seg(a0, a1), '--c-chord', 8)}${stroke(seg(a1, a2), '--c-arc2', 8)}
+        ${stroke(seg(vadd(a0, vmul(nrm, 10)), vadd(a0, vmul(nrm, -10))), '--ink', 3)}${stroke(seg(vadd(a2, vmul(nrm, 10)), vadd(a2, vmul(nrm, -10))), '--ink', 3)}
+        ${stroke(seg(vadd(C, off), C), '--ink-2', 2.5, 'stroke-dasharray="6 6"')}
+        ${lbl(...vadd(vmid(a0, a1), vmul(nrm, 26)), 'AB', 24, 'middle', '--c-chord', 'dy="8" text-decoration="overline"')}${lbl(...vadd(vmid(a1, a2), vmul(nrm, 26)), 'BC', 24, 'middle', '--c-arc2', 'dy="8" text-decoration="overline"')}
+      </g>`, '호 AB와 호 BC의 길이가 같은 원에서 현 AB, BC, AC');
+  }
+  const mkSet = (title, nav, items) => {
+    const off = []; let tot = 0;
+    items.forEach(it => { off.push(tot); tot += it.n; });
+    const loc = st => { let k = items.length - 1; while (k > 0 && st < off[k]) k--; return [k, st - off[k]]; };
+    return {
+      title, nav, k: -1, steps: () => tot,
+      dots: st => ({ n: items.length, cur: loc(st)[0] }),
+      build() { this.k = -1; },
+      update(step, prev) {
+        const [k, l] = loc(step), [pk, pl] = loc(prev), it = items[k];
+        if (k !== this.k) {
+          this.k = k;
+          FIG.innerHTML = it.fig();
+          PANEL.innerHTML = `<div class="qhead"><span>${it.tag}</span><span>${k + 1} / ${items.length}</span></div>
+            <h2 class="q${it.tall ? ' tall' : ''}">${it.q}</h2>${it.body}`;
+          FIG.classList.add('no-anim'); PANEL.classList.add('no-anim');
+          applyStep(FIG, l, l); applyStep(PANEL, l, l);
+          void FIG.offsetWidth;
+          FIG.classList.remove('no-anim'); PANEL.classList.remove('no-anim');
+          const svg = $('svg', FIG);
+          if (svg && k !== pk) svg.style.animation = 'enter .4s ease both';
+        } else {
+          const from = pk === k ? pl : l;
+          applyStep(FIG, l, from); applyStep(PANEL, l, from);
+        }
+      }
+    };
+  };
+  const scS3 = mkSet('같은 길이의 호', 3, SETS.s3);
+  const scS4 = mkSet('정비례', 4, SETS.s4);
+  const scS5 = mkSet('중심각과 함께', 5, SETS.s5);
+  const scS6 = mkSet('보조선 긋기', 6, SETS.s6);
+
+  /* ---------- 장면 목록과 위 띠 (번호, 이름, 장면 순서) ---------- */
+  const scenes = [scPre, scAct, scRel, scS3, scS4, scS5, scS6];
+  const NAVS = [['0', '선수학습 확인', 0], ['1', '탐구 활동', 1], ['2', '원주각과 호의 길이', 2], ['3', '같은 길이의 호', 3], ['4', '정비례', 4], ['5', '중심각과 함께', 5], ['6', '보조선 긋기', 6]];
+
+  /* ---------- 진행 ---------- */
+  let curSi = -1;
+  function go(si, step) {
+    si = Math.max(0, Math.min(scenes.length - 1, si));
+    const sc = scenes[si];
+    step = Math.max(0, Math.min(sc.steps() - 1, step));
+    if (si !== curSi) {
+      if (curSi >= 0 && scenes[curSi].leave) scenes[curSi].leave();
+      curSi = si; state.si = si; state.step = step;
+      FIG.className = 'fig'; FIG.innerHTML = ''; PANEL.innerHTML = '';
+      STAGE.classList.toggle('wide', !!sc.wide);
+      STAGE.classList.toggle('figwide', !!sc.figwide);
+      STAGE.classList.add('instant');
+      sc.build();
+      FIG.classList.add('no-anim'); PANEL.classList.add('no-anim');
+      sc.update(step, step);
+      void FIG.offsetWidth;
+      FIG.classList.remove('no-anim'); PANEL.classList.remove('no-anim');
+      STAGE.classList.remove('enter'); void STAGE.offsetWidth; STAGE.classList.add('enter');
+      renderInk();
+    } else {
+      const prev = state.step;
+      state.step = step;
+      STAGE.classList.toggle('instant', step < prev);   // 뒤로 갈 때는 늦게 나타나기 없이 바로
+      if (prev !== step) sc.update(step, prev);
+    }
+    updateChrome();
+  }
+  const next = () => {
+    const sc = scenes[state.si];
+    if (sc.advance && sc.advance()) return;
+    if (state.step < sc.steps() - 1) go(state.si, state.step + 1);
+    else if (state.si < scenes.length - 1) go(state.si + 1, 0);
+  };
+  const prev = () => {
+    const sc = scenes[state.si];
+    if (sc.retreat && sc.retreat()) return;
+    if (state.step > 0) go(state.si, state.step - 1);
+    else if (state.si > 0) go(state.si - 1, scenes[state.si - 1].steps() - 1);
+  };
+
+  const navEl = $('#nav');
+  navEl.innerHTML = NAVS.map((n, i) => `<button type="button" data-nav="${i}" data-si="${n[2]}">${n[0] ? `<span class="n">${n[0]}</span>` : ''}${n[1]}</button>`).join('');
+  $$('button', navEl).forEach(b => b.addEventListener('click', () => go(Number(b.getAttribute('data-si')), 0)));
+
+  function updateChrome() {
+    const sc = scenes[state.si], n = sc.steps();
+    $$('button', navEl).forEach(b => {
+      if (Number(b.getAttribute('data-nav')) === sc.nav) b.setAttribute('aria-current', 'step');
+      else b.removeAttribute('aria-current');
+    });
+    const di = sc.dots ? sc.dots(state.step) : { n, cur: state.step };
+    $('#dots').innerHTML = Array.from({ length: di.n }, (_, i) => `<span class="dot${i <= di.cur ? ' on' : ''}${i === di.cur ? ' cur' : ''}"></span>`).join('');
+    $('#prevBtn').disabled = state.si === 0 && state.step === 0;
+    $('#nextBtn').disabled = state.si === scenes.length - 1 && state.step === n - 1;
+  }
+  $('#nextBtn').addEventListener('click', next);
+  $('#prevBtn').addEventListener('click', prev);
+
+  /* ---------- 펜 (장면마다 따로 남는다) ---------- */
+  const INK = $('#ink');
+  const inkStore = new Map();
+  let penOn = false, penVar = '--pen1', cur = null;
+  const inkKey = () => String(state.si);
+  const ptsStr = pts => pts.map(p => p.join(',')).join(' ');
+  function renderInk() {
+    const arr = inkStore.get(inkKey()) || [];
+    INK.innerHTML = arr.map(s => `<polyline points="${ptsStr(s.pts)}" style="stroke:var(${s.c})"></polyline>`).join('');
+  }
+  function undoInk() { const arr = inkStore.get(inkKey()); if (arr && arr.length) { arr.pop(); renderInk(); } }
+  const toInk = e => {
+    const r = INK.getBoundingClientRect();
+    return [Math.round((e.clientX - r.left) / (r.width || 1) * 1000), Math.round((e.clientY - r.top) / (r.height || 1) * 1000)];
+  };
+  INK.addEventListener('pointerdown', e => {
+    if (!penOn) return;
+    e.preventDefault();
+    try { INK.setPointerCapture(e.pointerId); } catch (err) { /* 무시 */ }
+    const p = toInk(e);
+    cur = { c: penVar, pts: [p], el: document.createElementNS(NS, 'polyline') };
+    cur.el.setAttribute('points', p.join(','));
+    cur.el.style.stroke = `var(${penVar})`;
+    INK.appendChild(cur.el);
+    const arr = inkStore.get(inkKey()) || [];
+    arr.push(cur);
+    inkStore.set(inkKey(), arr);
+  });
+  INK.addEventListener('pointermove', e => {
+    if (!cur) return;
+    const p = toInk(e), last = cur.pts[cur.pts.length - 1];
+    if (Math.abs(p[0] - last[0]) + Math.abs(p[1] - last[1]) < 3) return;
+    cur.pts.push(p);
+    cur.el.setAttribute('points', ptsStr(cur.pts));
+  });
+  const endStroke = () => {
+    if (!cur) return;
+    if (cur.pts.length === 1) { cur.pts.push([cur.pts[0][0] + 1, cur.pts[0][1] + 1]); cur.el.setAttribute('points', ptsStr(cur.pts)); }
+    delete cur.el;
+    cur = null;
+  };
+  INK.addEventListener('pointerup', endStroke);
+  INK.addEventListener('pointercancel', endStroke);
+  function setPen(on) {
+    penOn = on;
+    document.body.classList.toggle('pen-on', on);
+    $('#penBtn').setAttribute('aria-pressed', on ? 'true' : 'false');
+    if (!on) endStroke();
+  }
+  $('#penBtn').addEventListener('click', () => setPen(!penOn));
+  $('#penOff').addEventListener('click', () => setPen(false));
+  $('#penUndo').addEventListener('click', undoInk);
+  $('#penClear').addEventListener('click', () => { inkStore.set(inkKey(), []); renderInk(); });
+  $$('.pen-sw').forEach(b => b.addEventListener('click', () => {
+    penVar = b.getAttribute('data-pen');
+    $$('.pen-sw').forEach(x => x.setAttribute('aria-pressed', x === b ? 'true' : 'false'));
+  }));
+
+  /* ---------- 화면 색: 종이 ↔ 칠판 ---------- */
+  const root = document.documentElement;
+  try { const t = localStorage.getItem('lesson-theme'); if (t === 'dark' || t === 'light') root.setAttribute('data-theme', t); } catch (err) { /* 무시 */ }
+  const themeNow = () => root.getAttribute('data-theme') || (mq('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const paintTheme = () => {
+    const dark = themeNow() === 'dark';
+    $('#themeLbl').textContent = dark ? '칠판' : '종이';
+    $('#themeBtn').setAttribute('aria-label', `화면 색 바꾸기, 지금은 ${dark ? '칠판' : '종이'}`);
+  };
+  $('#themeBtn').addEventListener('click', () => {
+    const t = themeNow() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', t);
+    try { localStorage.setItem('lesson-theme', t); } catch (err) { /* 무시 */ }
+    paintTheme();
+  });
+  paintTheme();
+  const schemeMq = mq('(prefers-color-scheme: dark)');
+  if (schemeMq.addEventListener) schemeMq.addEventListener('change', paintTheme);
+
+  /* ---------- 전체 화면 ---------- */
+  const fsBtn = $('#fsBtn');
+  if (!document.fullscreenEnabled) fsBtn.hidden = true;
+  const toggleFs = () => {
+    if (!document.fullscreenEnabled) return;
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else root.requestFullscreen().catch(() => {});
+  };
+  fsBtn.addEventListener('click', toggleFs);
+
+  /* ---------- 키보드 (방향키, 발표용 리모컨) ---------- */
+  document.addEventListener('keydown', e => {
+    if (e.altKey || e.defaultPrevented) return;
+    const tn = e.target && e.target.tagName ? e.target.tagName : '';
+    const k = e.key;
+    if ((e.ctrlKey || e.metaKey) && (k === 'z' || k === 'Z')) { if (penOn) { e.preventDefault(); undoInk(); } return; }
+    if (e.ctrlKey || e.metaKey) return;
+    if (tn === 'TEXTAREA' || tn === 'INPUT') return;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || ((k === ' ' || k === 'Enter') && tn !== 'BUTTON')) { e.preventDefault(); next(); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); prev(); }
+    else if (k === 'p' || k === 'P' || k === 'ㅔ') setPen(!penOn);
+    else if (k === 'f' || k === 'F' || k === 'ㄹ') toggleFs();
+    else if (k === 'Escape') { if (penOn) setPen(false); }
+    else if (/^[0-9]$/.test(k)) { const nv = NAVS.find(x => x[0] === k); if (nv) go(nv[2], 0); }   // 탭 번호로 바로 가기
+  });
+
+  go(0, 0);
+})();
+</script>
+
+</body></html>

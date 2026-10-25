@@ -1,0 +1,998 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>고른다면체 도감</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Noto+Serif:ital@0;1&family=Noto+Sans+KR:wght@400;500;600&family=Noto+Serif+KR:wght@400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  color-scheme: light;
+  --color-paper: #f5f5f5;
+  --color-paper-2: #ececec;
+  --color-card: #ffffff;
+  --color-ink: #2d3142;
+  --color-muted: #4f5d75;
+  --color-soft: #5a6580;
+  --color-rule: rgba(45,49,66,0.12);
+  --color-rule-solid: rgba(79,93,117,0.25);
+  --color-accent: #bf4520;
+  --color-accent-tint: rgba(191,69,32,0.08);
+  --color-link: #2e5aa8;
+  --font-sans: 'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', 'Noto Serif', 'Noto Serif KR', 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, Menlo, monospace;
+}
+body {
+  font-family: var(--font-sans);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  min-height: 100vh;
+  padding-block: 3rem;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.container { max-width: 1280px; margin: 0 auto; }
+
+.header { margin-bottom: 2rem; }
+.header-eyebrow, .sec-eyebrow {
+  font-family: var(--font-mono); font-size: 0.66rem; font-weight: 500;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-muted);
+  margin-bottom: 0.75rem;
+}
+h1 {
+  font-family: var(--font-serif); font-size: clamp(1.75rem, 3vw + 1rem, 2.5rem);
+  font-weight: 400; letter-spacing: -0.02em; line-height: 1.15; color: var(--color-ink);
+  margin-bottom: 0.6rem; text-wrap: balance;
+}
+.subtitle { font-size: 1rem; line-height: 1.65; color: var(--color-muted); max-width: 60ch; }
+
+.diagram-container { width: 100%; overflow-x: auto; }
+.diagram-container svg { width: 100%; min-width: 1280px; display: block; }
+.diagram-container a { cursor: pointer; }
+.diagram-container a:hover rect:nth-of-type(2) { stroke: var(--color-ink); }
+.diagram-container a:focus-visible { outline: 2px solid var(--color-link); outline-offset: 2px; }
+.scroll-hint { display: none; font-size: 0.8rem; color: var(--color-soft); margin-bottom: 0.75rem; }
+@media (max-width: 1320px) { .scroll-hint { display: block; } }
+@media print {
+  .diagram-container { overflow-x: visible; }
+  .diagram-container svg { min-width: 0; }
+}
+
+.guide {
+  margin: 2.5rem 0 0.5rem; padding: 1rem 1.25rem; border: 1px solid var(--color-rule);
+  border-radius: 6px; background: var(--color-card); display: flex; flex-wrap: wrap; gap: 0.5rem 2rem;
+  font-size: 0.875rem; line-height: 1.6; color: var(--color-muted);
+}
+.guide b { color: var(--color-ink); font-weight: 600; }
+.guide code { font-family: var(--font-mono); color: var(--color-ink); }
+
+.sec { margin-top: 3rem; scroll-margin-top: 1.5rem; }
+.sec-head { border-top: 1px solid var(--color-rule-solid); padding-top: 1.25rem; margin-bottom: 1.25rem; display: grid; gap: 0.25rem; }
+.sec-eyebrow { margin-bottom: 0.25rem; }
+.sec-eyebrow .no { color: var(--color-ink); }
+.sec-accent .sec-eyebrow .no { color: var(--color-accent); }
+h2 { font-size: 1.375rem; font-weight: 600; letter-spacing: -0.01em; color: var(--color-ink); text-wrap: balance; }
+h2 .count { font-size: 0.95rem; font-weight: 500; color: var(--color-muted); margin-left: 0.35rem; }
+.sec-accent h2 .count { color: var(--color-accent); }
+.sec-desc { font-size: 0.9375rem; line-height: 1.65; color: var(--color-muted); max-width: 64ch; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+.card {
+  background: var(--color-card); border: 1px solid var(--color-rule); border-radius: 6px;
+  padding: 0.75rem 0.875rem 0.875rem; display: flex; flex-direction: column; gap: 0.4rem; min-width: 0;
+}
+.sec-accent .card { border-color: rgba(191,69,32,0.35); }
+.card .pic { width: 100%; max-width: 132px; aspect-ratio: 1; align-self: center; display: block; margin-bottom: 0.25rem; }
+.card h3 { font-size: 0.9375rem; font-weight: 600; letter-spacing: -0.005em; color: var(--color-ink); line-height: 1.35; word-break: keep-all; }
+.faces { list-style: none; display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; font-size: 0.8125rem; color: var(--color-muted); }
+.faces li { display: inline-flex; align-items: center; gap: 0.3rem; white-space: nowrap; }
+.faces i { width: 9px; height: 9px; border-radius: 2px; border: 0.5px solid rgba(45,49,66,0.6); display: inline-block; }
+.vc { font-size: 0.8125rem; color: var(--color-muted); line-height: 1.5; }
+.vc span { color: var(--color-soft); }
+.vc code { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--color-ink); letter-spacing: 0.02em; }
+.vc.kr { color: var(--color-ink); word-break: keep-all; }
+.vef { margin-top: auto; padding-top: 0.45rem; border-top: 1px solid rgba(45,49,66,0.08); font-size: 0.75rem; color: var(--color-soft); }
+.more {
+  border: 1px dashed var(--color-rule-solid); border-radius: 6px; display: flex; align-items: center; justify-content: center;
+  padding: 1rem; min-height: 120px; text-align: center; font-size: 0.875rem; color: var(--color-soft); line-height: 1.5; word-break: keep-all;
+}
+
+.footer {
+  margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid rgba(45,49,66,0.10);
+  font-size: 0.75rem; color: var(--color-soft); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; line-height: 1.6;
+}
+.footer .mono { font-family: var(--font-mono); letter-spacing: 0.06em; }
+
+.sec { margin-top: 3.5rem; scroll-margin-top: 1.5rem; }
+.sec-head { margin-bottom: 1.5rem; }
+.lead { font-size: 0.9375rem; line-height: 1.7; color: var(--color-muted); max-width: 66ch; margin-top: 1.25rem; }
+.lead b { color: var(--color-ink); font-weight: 600; }
+
+.ops { display: grid; grid-template-columns: repeat(auto-fit, minmax(196px, 1fr)); gap: 1rem; }
+.op { background: var(--color-card); border: 1px solid var(--color-rule); border-radius: 6px; padding: 0.75rem 1rem 1rem; display: flex; flex-direction: column; gap: 0.3rem; min-width: 0; color: inherit; text-decoration: none; }
+.op:hover { border-color: var(--color-muted); }
+.op:hover .op-go { color: var(--color-accent); }
+.op-go { margin-top: auto; padding-top: 0.4rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--color-link); }
+.cta { display: flex; align-items: center; justify-content: space-between; gap: 1rem 1.5rem; flex-wrap: wrap; margin-top: 2rem; padding: 1rem 1.25rem; background: var(--color-card); border: 1px solid var(--color-ink); border-radius: 6px; color: var(--color-ink); text-decoration: none; }
+.cta:hover { background: var(--color-accent-tint); }
+.cta b { display: block; font-size: 1.05rem; font-weight: 600; margin-bottom: 0.15rem; }
+.cta span { font-size: 0.875rem; color: var(--color-muted); line-height: 1.6; }
+.cta .go { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 0.06em; color: var(--color-accent); white-space: nowrap; }
+.diagram-container a:focus-visible { outline: 2px solid var(--color-link); }
+.op-pic { width: 100%; max-width: 150px; aspect-ratio: 1; align-self: center; display: block; }
+.op-no { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.18em; color: var(--color-soft); margin-top: 0.25rem; }
+.op h3 { font-size: 1rem; font-weight: 600; color: var(--color-ink); }
+.op-res { font-size: 0.8125rem; color: var(--color-ink); }
+.op-desc { font-size: 0.8125rem; line-height: 1.6; color: var(--color-muted); }
+.op-note { font-size: 0.8125rem; color: var(--color-soft); margin-top: 0.75rem; }
+.op-note .dash { display: inline-block; width: 22px; border-top: 1.5px dashed var(--color-muted); vertical-align: middle; margin-right: 0.35rem; }
+
+.tbl-wrap { width: 100%; overflow-x: auto; }
+table.sum { border-collapse: collapse; width: 100%; min-width: 760px; background: var(--color-card); border: 1px solid var(--color-rule); border-radius: 6px; font-size: 0.875rem; }
+table.sum th, table.sum td { border-bottom: 1px solid rgba(45,49,66,0.08); padding: 0.6rem 0.9rem; text-align: left; vertical-align: middle; }
+table.sum thead th { font-size: 0.8125rem; font-weight: 600; color: var(--color-muted); background: var(--color-paper-2); }
+table.sum tbody th { font-weight: 600; color: var(--color-ink); white-space: nowrap; width: 8.5rem; }
+table.sum tbody tr:last-child th, table.sum tbody tr:last-child td { border-bottom: none; }
+table.sum td { color: var(--color-ink); }
+.it { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0.15rem 1.1rem 0.15rem 0; white-space: nowrap; color: inherit; text-decoration: none; border-radius: 4px; }
+.it:hover span { color: var(--color-link); text-decoration: underline; text-underline-offset: 3px; }
+.it svg { width: 44px; height: 44px; flex: none; }
+.it.plat > span { font-weight: 600; }
+.it.dup > span { color: var(--color-muted); }
+.it sup { color: var(--color-muted); margin-left: 1px; }
+.tbl-note { font-size: 0.8125rem; color: var(--color-soft); margin-top: 0.6rem; }
+</style>
+<div class="container">
+  <header class="header">
+    <p class="header-eyebrow">Convex uniform polyhedra · family tree</p>
+    <h1>고른다면체 도감</h1>
+    <p class="subtitle">모든 면이 정다각형이고 모든 꼭짓점의 모양이 같은 볼록 다면체를, 정다면체를 깎거나 비틀어 만드는 계통으로 정리했다.</p>
+    <a class="cta" href="sim.html#cube"><div><b>깎아 보고 세어 보기</b><span>정다면체를 직접 깎거나 비틀어 보고, 면·모서리·꼭짓점을 눌러 가며 세어 본다. 아래 그림의 칸을 눌러도 열린다.</span></div><span class="go">열기 →</span></a>
+  </header>
+
+  <section class="sec" id="overview">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no">00</span> OVERVIEW</p>
+      <h2>한눈에 보기 <span class="count">정다면체 5개에서 시작</span></h2>
+      <p class="sec-desc">정다면체 다섯 개를 짝끼리 묶으면 세 계열이 된다. 각 계열의 정다면체를 깎거나 비틀면 준정다면체 13개가 모두 나온다. 정육면체와 정팔면체에서는 각기둥과 엇각기둥도 이어진다. 아래 칸을 누르면 해당 계열로 가고, 정다면체 그림을 누르면 깎아 보는 화면이 열린다.</p>
+    </div>
+    <p class="scroll-hint">그림이 화면보다 넓으면 옆으로 밀어서 볼 수 있습니다.</p><div class="diagram-container">
+<svg viewBox="0 0 1280 476" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="uni-map-title uni-map-desc"><title id="uni-map-title">정다면체 다섯 개와 거기서 나오는 볼록 고른다면체</title><desc id="uni-map-desc">정다면체 다섯 개를 짝끼리 묶고, 정사면체에서 준정다면체 1개, 정육면체·정팔면체에서 준정다면체 6개와 각기둥·엇각기둥, 정십이면체·정이십면체에서 준정다면체 6개가 나오는 것을 보여 주는 그림.</desc><defs><marker id="uni-map-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker></defs><rect width="100%" height="100%" fill="#f5f5f5"/><path d="M160 224V288" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-map-arrow)"/><path d="M416 224V256M640 224V256M416 256H640" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M416 256V288" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-map-arrow)"/><path d="M640 256V288" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-map-arrow)"/><path d="M896 224V256M1120 224V256M896 256H1120" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M1008 256V288" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-map-arrow)"/><path d="M496 136H560" stroke="#4f5d75" stroke-width="1" fill="none" stroke-dasharray="5,4"/><path d="M976 136H1040" stroke="#4f5d75" stroke-width="1" fill="none" stroke-dasharray="5,4"/><text x="528" y="126" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">짝</text><text x="1008" y="126" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">짝</text><a href="sim.html#tetra" aria-label="정사면체 깎아 보고 세어 보기"><rect x="80" y="48" width="160" height="176" rx="6" fill="#f5f5f5"/><rect x="80" y="48" width="160" height="176" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(104.0 56)"><path d="M19 63.8L46.6 85.9L56 6Z" fill="#d6b376"/>
+<path d="M46.6 85.9L102.4 68.3L56 6Z" fill="#ac9163"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M19 63.8L46.6 85.9L56 6Z"/><path d="M46.6 85.9L102.4 68.3L56 6Z"/></g></g><text x="160.0" y="188" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정사면체</text><text x="160.0" y="209" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정삼각형</text></a><a href="sim.html#cube" aria-label="정육면체 깎아 보고 세어 보기"><rect x="336" y="48" width="160" height="176" rx="6" fill="#f5f5f5"/><rect x="336" y="48" width="160" height="176" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(360.0 56)"><path d="M45 99.2L97 88L97 32.3L45 43.5Z" fill="#5f7187"/>
+<path d="M15 79.7L45 99.2L45 43.5L15 24Z" fill="#6e859f"/>
+<path d="M45 43.5L97 32.3L67 12.8L15 24Z" fill="#7790ae"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M45 99.2L97 88L97 32.3L45 43.5Z"/><path d="M15 79.7L45 99.2L45 43.5L15 24Z"/><path d="M45 43.5L97 32.3L67 12.8L15 24Z"/></g></g><text x="416.0" y="188" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정육면체</text><text x="416.0" y="209" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정사각형</text></a><a href="sim.html#octa" aria-label="정팔면체 깎아 보고 세어 보기"><rect x="560" y="48" width="160" height="176" rx="6" fill="#f5f5f5"/><rect x="560" y="48" width="160" height="176" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(584.0 56)"><path d="M56 105.5L78 70.6L8.9 62.8Z" fill="#a0875d"/>
+<path d="M56 105.5L103.1 49.2L78 70.6Z" fill="#a0875d"/>
+<path d="M78 70.6L103.1 49.2L56 6.5Z" fill="#ad9263"/>
+<path d="M8.9 62.8L78 70.6L56 6.5Z" fill="#dfba7a"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M56 105.5L78 70.6L8.9 62.8Z"/><path d="M56 105.5L103.1 49.2L78 70.6Z"/><path d="M78 70.6L103.1 49.2L56 6.5Z"/><path d="M8.9 62.8L78 70.6L56 6.5Z"/></g></g><text x="640.0" y="188" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정팔면체</text><text x="640.0" y="209" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정삼각형</text></a><a href="sim.html#dodeca" aria-label="정십이면체 깎아 보고 세어 보기"><rect x="816" y="48" width="160" height="176" rx="6" fill="#f5f5f5"/><rect x="816" y="48" width="160" height="176" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(840.0 56)"><path d="M4.9 65.2L14.7 57.1L30.5 23.5L30.5 10.8L14.7 36.6Z" fill="#8fa084"/>
+<path d="M46.2 105.1L81.5 101.2L97.3 75.4L71.8 63.4L40.2 81.8Z" fill="#707b68"/>
+<path d="M24.4 94.8L46.2 105.1L40.2 81.8L14.7 57.1L4.9 65.2Z" fill="#76826d"/>
+<path d="M71.8 63.4L65.8 27.4L30.5 23.5L14.7 57.1L40.2 81.8Z" fill="#92a386"/>
+<path d="M97.3 75.4L107.1 46.8L87.6 17.2L65.8 27.4L71.8 63.4Z" fill="#78856f"/>
+<path d="M30.5 23.5L65.8 27.4L87.6 17.2L65.8 6.9L30.5 10.8Z" fill="#91a286"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M4.9 65.2L14.7 57.1L30.5 23.5L30.5 10.8L14.7 36.6Z"/><path d="M46.2 105.1L81.5 101.2L97.3 75.4L71.8 63.4L40.2 81.8Z"/><path d="M24.4 94.8L46.2 105.1L40.2 81.8L14.7 57.1L4.9 65.2Z"/><path d="M71.8 63.4L65.8 27.4L30.5 23.5L14.7 57.1L40.2 81.8Z"/><path d="M97.3 75.4L107.1 46.8L87.6 17.2L65.8 27.4L71.8 63.4Z"/><path d="M30.5 23.5L65.8 27.4L87.6 17.2L65.8 6.9L30.5 10.8Z"/></g></g><text x="896.0" y="188" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정십이면체</text><text x="896.0" y="209" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정오각형</text></a><a href="sim.html#icosa" aria-label="정이십면체 깎아 보고 세어 보기"><rect x="1040" y="48" width="160" height="176" rx="6" fill="#f5f5f5"/><rect x="1040" y="48" width="160" height="176" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(1064.0 56)"><path d="M66.4 25.9L106.2 49.7L76.6 9.3Z" fill="#b49867"/>
+<path d="M35.4 102.7L22.7 58.7L5.8 62.3Z" fill="#b19565"/>
+<path d="M106.2 49.7L72.8 80.2L87 97.1Z" fill="#a0875d"/>
+<path d="M35.4 102.7L72.8 80.2L22.7 58.7Z" fill="#ae9364"/>
+<path d="M87 97.1L72.8 80.2L35.4 102.7Z" fill="#a0875d"/>
+<path d="M66.4 25.9L72.8 80.2L106.2 49.7Z" fill="#b09465"/>
+<path d="M22.7 58.7L72.8 80.2L66.4 25.9Z" fill="#ccab72"/>
+<path d="M66.4 25.9L76.6 9.3L25 14.9Z" fill="#d5b376"/>
+<path d="M25 14.9L22.7 58.7L66.4 25.9Z" fill="#e7c17e"/>
+<path d="M5.8 62.3L22.7 58.7L25 14.9Z" fill="#d3b175"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M66.4 25.9L106.2 49.7L76.6 9.3Z"/><path d="M35.4 102.7L22.7 58.7L5.8 62.3Z"/><path d="M106.2 49.7L72.8 80.2L87 97.1Z"/><path d="M35.4 102.7L72.8 80.2L22.7 58.7Z"/><path d="M87 97.1L72.8 80.2L35.4 102.7Z"/><path d="M66.4 25.9L72.8 80.2L106.2 49.7Z"/><path d="M22.7 58.7L72.8 80.2L66.4 25.9Z"/><path d="M66.4 25.9L76.6 9.3L25 14.9Z"/><path d="M25 14.9L22.7 58.7L66.4 25.9Z"/><path d="M5.8 62.3L22.7 58.7L25 14.9Z"/></g></g><text x="1120.0" y="188" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정이십면체</text><text x="1120.0" y="209" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정삼각형</text></a><a href="#fam-tetra"><rect x="60" y="288" width="200" height="88" rx="6" fill="#f5f5f5"/><rect x="60" y="288" width="200" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(68 300)"><path d="M20.3 36L12.4 50.4L34.1 53.9Z" fill="#ae9364"/>
+<path d="M26.2 13.4L45.7 8.7L24.1 5.2Z" fill="#d6b377"/>
+<path d="M24.1 5.2L16.2 19.7L10.4 42.3L12.4 50.4L20.3 36L26.2 13.4Z" fill="#9a8cad"/>
+<path d="M34.1 53.9L53.6 49.2L59.5 26.6L45.7 8.7L26.2 13.4L20.3 36Z" fill="#867a96"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M20.3 36L12.4 50.4L34.1 53.9Z"/><path d="M26.2 13.4L45.7 8.7L24.1 5.2Z"/><path d="M24.1 5.2L16.2 19.7L10.4 42.3L12.4 50.4L20.3 36L26.2 13.4Z"/><path d="M34.1 53.9L53.6 49.2L59.5 26.6L45.7 8.7L26.2 13.4L20.3 36Z"/></g></g><rect x="140" y="300" width="20" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/><text x="150.0" y="309" fill="#5a6580" font-size="7" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">01</text><text x="140" y="338" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">준정다면체 1개</text><text x="140" y="358" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎거나 비틀어 만든다</text></a><a href="#fam-cube"><rect x="316" y="288" width="200" height="88" rx="6" fill="#f5f5f5"/><rect x="316" y="288" width="200" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(324 300)"><path d="M59.1 27.7L54.7 31.5L54.7 42.9L59.1 39Z" fill="#5d6e83"/>
+<path d="M16.8 45.5L28.1 46.9L28.1 35.6L16.8 34.1Z" fill="#6c839d"/>
+<path d="M21.1 57.6L32.4 59.1L35.9 53.8L28.1 46.9L16.8 45.5L13.3 50.8Z" fill="#786e86"/>
+<path d="M8.4 47L16.2 53.9L21.1 57.6L13.3 50.8Z" fill="#5d6e83"/>
+<path d="M47.8 10.1L43.5 14L46.9 24.7L54.7 31.5L59.1 27.7L55.6 17Z" fill="#827791"/>
+<path d="M55.6 44.4L59.1 39L54.7 42.9L46.9 52.1L43.5 57.4L47.8 53.6Z" fill="#786e86"/>
+<path d="M35.9 53.8L46.9 52.1L54.7 42.9L54.7 31.5L46.9 24.7L35.9 26.4L28.1 35.6L28.1 46.9Z" fill="#93705f"/>
+<path d="M43.5 57.4L46.9 52.1L35.9 53.8L32.4 59.1Z" fill="#5d6e83"/>
+<path d="M8.4 47L13.3 50.8L16.8 45.5L16.8 34.1L13.3 23.4L8.4 19.6L4.9 25L4.9 36.3Z" fill="#aa7f6b"/>
+<path d="M13.3 23.4L16.8 34.1L28.1 35.6L35.9 26.4L32.4 15.7L21.1 14.2Z" fill="#a394b8"/>
+<path d="M32.4 15.7L35.9 26.4L46.9 24.7L43.5 14Z" fill="#728aa6"/>
+<path d="M16.2 10.4L21.1 14.2L32.4 15.7L43.5 14L47.8 10.1L42.9 6.4L31.6 4.9L20.5 6.6Z" fill="#b98973"/>
+<path d="M13.3 23.4L21.1 14.2L16.2 10.4L8.4 19.6Z" fill="#7d98b8"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M59.1 27.7L54.7 31.5L54.7 42.9L59.1 39Z"/><path d="M16.8 45.5L28.1 46.9L28.1 35.6L16.8 34.1Z"/><path d="M21.1 57.6L32.4 59.1L35.9 53.8L28.1 46.9L16.8 45.5L13.3 50.8Z"/><path d="M8.4 47L16.2 53.9L21.1 57.6L13.3 50.8Z"/><path d="M47.8 10.1L43.5 14L46.9 24.7L54.7 31.5L59.1 27.7L55.6 17Z"/><path d="M55.6 44.4L59.1 39L54.7 42.9L46.9 52.1L43.5 57.4L47.8 53.6Z"/><path d="M35.9 53.8L46.9 52.1L54.7 42.9L54.7 31.5L46.9 24.7L35.9 26.4L28.1 35.6L28.1 46.9Z"/><path d="M43.5 57.4L46.9 52.1L35.9 53.8L32.4 59.1Z"/><path d="M8.4 47L13.3 50.8L16.8 45.5L16.8 34.1L13.3 23.4L8.4 19.6L4.9 25L4.9 36.3Z"/><path d="M13.3 23.4L16.8 34.1L28.1 35.6L35.9 26.4L32.4 15.7L21.1 14.2Z"/><path d="M32.4 15.7L35.9 26.4L46.9 24.7L43.5 14Z"/><path d="M16.2 10.4L21.1 14.2L32.4 15.7L43.5 14L47.8 10.1L42.9 6.4L31.6 4.9L20.5 6.6Z"/><path d="M13.3 23.4L21.1 14.2L16.2 10.4L8.4 19.6Z"/></g></g><rect x="396" y="300" width="20" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/><text x="406.0" y="309" fill="#5a6580" font-size="7" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">02</text><text x="396" y="338" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">준정다면체 6개</text><text x="396" y="358" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎거나 비틀어 만든다</text></a><a href="#fam-prism"><rect x="540" y="288" width="200" height="88" rx="6" fill="#f5f5f5"/><rect x="540" y="288" width="200" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(548 300)"><path d="M15.8 26.3L44.1 27.5L55.6 17L34.5 9.3L9.9 15Z" fill="#93a487"/>
+<path d="M55.6 42.9L55.6 17L44.1 27.5L44.1 53.5Z" fill="#5d6e83"/>
+<path d="M15.8 52.3L44.1 53.5L44.1 27.5L15.8 26.3Z" fill="#687c95"/>
+<path d="M15.8 52.3L15.8 26.3L9.9 15L9.9 41Z" fill="#6c829c"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M15.8 26.3L44.1 27.5L55.6 17L34.5 9.3L9.9 15Z"/><path d="M55.6 42.9L55.6 17L44.1 27.5L44.1 53.5Z"/><path d="M15.8 52.3L44.1 53.5L44.1 27.5L15.8 26.3Z"/><path d="M15.8 52.3L15.8 26.3L9.9 15L9.9 41Z"/></g></g><rect x="620" y="300" width="20" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/><text x="630.0" y="309" fill="#5a6580" font-size="7" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">04</text><text x="620" y="338" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">각기둥·엇각기둥</text><text x="620" y="358" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">밑면을 바꿔 만든다</text></a><a href="#fam-dodeca"><rect x="908" y="288" width="200" height="88" rx="6" fill="#f5f5f5"/><rect x="908" y="288" width="200" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(916 300)"><path d="M4.5 32.6L6.8 35L10.4 33.1L14.1 27.6L16.4 20.7L16.4 14.9L14.1 12.5L10.4 14.4L6.8 19.9L4.5 26.8Z" fill="#6ba1a2"/>
+<path d="M45.3 56.3L51.3 52L55 46.5L55 42L51.3 40.1L45.3 41.5L39.4 45.8L35.7 51.3L35.7 55.9L39.4 57.8Z" fill="#547879"/>
+<path d="M20.1 29.1L22.4 36.1L28.3 40.4L35.7 40.4L41.6 36.1L43.9 29.1L41.6 22.1L35.7 17.8L28.3 17.8L22.4 22.1Z" fill="#66999a"/>
+<path d="M24.6 45.8L28.3 40.4L22.4 36.1L18.7 41.5Z" fill="#6c829c"/>
+<path d="M18.7 41.5L12.7 40.1L9 42L9 46.5L12.7 52L18.7 56.3L24.6 57.8L28.3 55.9L28.3 51.3L24.6 45.8Z" fill="#577f7f"/>
+<path d="M28.3 55.9L35.7 55.9L35.7 51.3L28.3 51.3Z" fill="#5d6e83"/>
+<path d="M28.3 51.3L35.7 51.3L39.4 45.8L35.7 40.4L28.3 40.4L24.6 45.8Z" fill="#827791"/>
+<path d="M49.9 27.6L53.6 33.1L57.2 35L59.5 32.6L59.5 26.8L57.2 19.9L53.6 14.4L49.9 12.5L47.6 14.9L47.6 20.7Z" fill="#557c7c"/>
+<path d="M12.7 12L10.4 14.4L14.1 12.5L20.1 8.2L22.4 5.8L18.7 7.7Z" fill="#9f91b3"/>
+<path d="M35.7 4.3L28.3 4.3L22.4 5.8L20.1 8.2L22.4 10.6L28.3 12.1L35.7 12.1L41.6 10.6L43.9 8.2L41.6 5.8Z" fill="#699e9f"/>
+<path d="M4.5 32.6L4.5 37.2L6.8 44.1L9 46.5L9 42L6.8 35Z" fill="#897d99"/>
+<path d="M22.4 22.1L16.4 20.7L14.1 27.6L20.1 29.1Z" fill="#7b95b5"/>
+<path d="M51.3 52L53.6 49.6L57.2 44.1L55 46.5Z" fill="#5d6e83"/>
+<path d="M49.9 27.6L43.9 29.1L41.6 36.1L45.3 41.5L51.3 40.1L53.6 33.1Z" fill="#80758f"/>
+<path d="M53.6 33.1L51.3 40.1L55 42L57.2 35Z" fill="#5d6e83"/>
+<path d="M47.6 20.7L41.6 22.1L43.9 29.1L49.9 27.6Z" fill="#6a8099"/>
+<path d="M28.3 17.8L28.3 12.1L22.4 10.6L16.4 14.9L16.4 20.7L22.4 22.1Z" fill="#a999be"/>
+<path d="M6.8 35L9 42L12.7 40.1L10.4 33.1Z" fill="#6f86a1"/>
+<path d="M39.4 57.8L35.7 59.7L41.6 58.2L45.3 56.3Z" fill="#5d6e83"/>
+<path d="M28.3 59.7L24.6 57.8L18.7 56.3L22.4 58.2Z" fill="#5d6e83"/>
+<path d="M35.7 17.8L35.7 12.1L28.3 12.1L28.3 17.8Z" fill="#7a94b3"/>
+<path d="M43.9 8.2L49.9 12.5L53.6 14.4L51.3 12L45.3 7.7L41.6 5.8Z" fill="#857994"/>
+<path d="M41.6 10.6L47.6 14.9L49.9 12.5L43.9 8.2Z" fill="#6c829c"/>
+<path d="M39.4 45.8L45.3 41.5L41.6 36.1L35.7 40.4Z" fill="#63778d"/>
+<path d="M10.4 49.6L12.7 52L9 46.5L6.8 44.1Z" fill="#5e7085"/>
+<path d="M14.1 12.5L16.4 14.9L22.4 10.6L20.1 8.2Z" fill="#7d98b8"/>
+<path d="M59.5 37.2L59.5 32.6L57.2 35L55 42L55 46.5L57.2 44.1Z" fill="#786e86"/>
+<path d="M35.7 55.9L28.3 55.9L24.6 57.8L28.3 59.7L35.7 59.7L39.4 57.8Z" fill="#786e86"/>
+<path d="M47.6 14.9L41.6 10.6L35.7 12.1L35.7 17.8L41.6 22.1L47.6 20.7Z" fill="#9789a9"/>
+<path d="M20.1 29.1L14.1 27.6L10.4 33.1L12.7 40.1L18.7 41.5L22.4 36.1Z" fill="#998cac"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M4.5 32.6L6.8 35L10.4 33.1L14.1 27.6L16.4 20.7L16.4 14.9L14.1 12.5L10.4 14.4L6.8 19.9L4.5 26.8Z"/><path d="M45.3 56.3L51.3 52L55 46.5L55 42L51.3 40.1L45.3 41.5L39.4 45.8L35.7 51.3L35.7 55.9L39.4 57.8Z"/><path d="M20.1 29.1L22.4 36.1L28.3 40.4L35.7 40.4L41.6 36.1L43.9 29.1L41.6 22.1L35.7 17.8L28.3 17.8L22.4 22.1Z"/><path d="M24.6 45.8L28.3 40.4L22.4 36.1L18.7 41.5Z"/><path d="M18.7 41.5L12.7 40.1L9 42L9 46.5L12.7 52L18.7 56.3L24.6 57.8L28.3 55.9L28.3 51.3L24.6 45.8Z"/><path d="M28.3 55.9L35.7 55.9L35.7 51.3L28.3 51.3Z"/><path d="M28.3 51.3L35.7 51.3L39.4 45.8L35.7 40.4L28.3 40.4L24.6 45.8Z"/><path d="M49.9 27.6L53.6 33.1L57.2 35L59.5 32.6L59.5 26.8L57.2 19.9L53.6 14.4L49.9 12.5L47.6 14.9L47.6 20.7Z"/><path d="M12.7 12L10.4 14.4L14.1 12.5L20.1 8.2L22.4 5.8L18.7 7.7Z"/><path d="M35.7 4.3L28.3 4.3L22.4 5.8L20.1 8.2L22.4 10.6L28.3 12.1L35.7 12.1L41.6 10.6L43.9 8.2L41.6 5.8Z"/><path d="M4.5 32.6L4.5 37.2L6.8 44.1L9 46.5L9 42L6.8 35Z"/><path d="M22.4 22.1L16.4 20.7L14.1 27.6L20.1 29.1Z"/><path d="M51.3 52L53.6 49.6L57.2 44.1L55 46.5Z"/><path d="M49.9 27.6L43.9 29.1L41.6 36.1L45.3 41.5L51.3 40.1L53.6 33.1Z"/><path d="M53.6 33.1L51.3 40.1L55 42L57.2 35Z"/><path d="M47.6 20.7L41.6 22.1L43.9 29.1L49.9 27.6Z"/><path d="M28.3 17.8L28.3 12.1L22.4 10.6L16.4 14.9L16.4 20.7L22.4 22.1Z"/><path d="M6.8 35L9 42L12.7 40.1L10.4 33.1Z"/><path d="M39.4 57.8L35.7 59.7L41.6 58.2L45.3 56.3Z"/><path d="M28.3 59.7L24.6 57.8L18.7 56.3L22.4 58.2Z"/><path d="M35.7 17.8L35.7 12.1L28.3 12.1L28.3 17.8Z"/><path d="M43.9 8.2L49.9 12.5L53.6 14.4L51.3 12L45.3 7.7L41.6 5.8Z"/><path d="M41.6 10.6L47.6 14.9L49.9 12.5L43.9 8.2Z"/><path d="M39.4 45.8L45.3 41.5L41.6 36.1L35.7 40.4Z"/><path d="M10.4 49.6L12.7 52L9 46.5L6.8 44.1Z"/><path d="M14.1 12.5L16.4 14.9L22.4 10.6L20.1 8.2Z"/><path d="M59.5 37.2L59.5 32.6L57.2 35L55 42L55 46.5L57.2 44.1Z"/><path d="M35.7 55.9L28.3 55.9L24.6 57.8L28.3 59.7L35.7 59.7L39.4 57.8Z"/><path d="M47.6 14.9L41.6 10.6L35.7 12.1L35.7 17.8L41.6 22.1L47.6 20.7Z"/><path d="M20.1 29.1L14.1 27.6L10.4 33.1L12.7 40.1L18.7 41.5L22.4 36.1Z"/></g></g><rect x="988" y="300" width="20" height="12" rx="2" fill="transparent" stroke="rgba(45,49,66,0.22)" stroke-width="0.8"/><text x="998.0" y="309" fill="#5a6580" font-size="7" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle" letter-spacing="0.08em">03</text><text x="988" y="338" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">준정다면체 6개</text><text x="988" y="358" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎거나 비틀어 만든다</text></a><path d="M64 437H86" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4"/><text x="94" y="442" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">짝: 면의 한가운데를 이으면 서로가 생긴다 (정사면체는 자기 자신과 짝)</text><path d="M540.4 437H562.4" stroke="#4f5d75" stroke-width="1" marker-end="url(#uni-map-arrow)"/><text x="570.4" y="442" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">여기서 나오는 도형</text><rect x="704.8" y="432" width="14" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="724.8" y="442" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text></svg>
+</div>
+  </section>
+  <section class="sec" id="ops">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no"></span> HOW TO CUT</p>
+      <h2>깎는 방법 다섯 가지 <span class="count">정육면체로 보기</span></h2>
+      <p class="sec-desc">점선은 원래 정육면체다. 같은 방법으로 다른 정다면체도 깎을 수 있다. 카드를 누르면 깎는 모습을 볼 수 있다.</p>
+    </div>
+    <div class="ops"><a class="op" href="sim.html#cube-t">
+        <svg class="op-pic" viewBox="0 0 140 140" aria-hidden="true" focusable="false"><path d="M19.5 99.2L83.5 85.4M83.5 85.4L120.5 109.3M83.5 85.4L83.5 16.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round" opacity="0.35"/>
+<path d="M109.7 33.8L101.7 44.9L120.5 60.9Z" fill="#ab9062"/>
+<path d="M45.7 47.6L56.5 74.7L75.2 50.6Z" fill="#dab778"/>
+<path d="M38.3 26.6L19.5 50.7L30.3 37.7Z" fill="#d2b075"/>
+<path d="M56.5 103.1L45.7 116.1L75.2 119.1Z" fill="#a0875d"/>
+<path d="M38.3 26.6L30.3 37.7L45.7 47.6L75.2 50.6L101.7 44.9L109.7 33.8L94.3 23.9L64.8 20.9Z" fill="#ba8a73"/>
+<path d="M19.5 79.1L30.3 106.2L45.7 116.1L56.5 103.1L56.5 74.7L45.7 47.6L30.3 37.7L19.5 50.7Z" fill="#aa7f6b"/>
+<path d="M101.7 113.4L120.5 89.3L120.5 60.9L101.7 44.9L75.2 50.6L56.5 74.7L56.5 103.1L75.2 119.1Z" fill="#8f6d5d"/>
+<g fill="none" stroke="#2d3142" stroke-width="1.3" stroke-linejoin="round"><path d="M109.7 33.8L101.7 44.9L120.5 60.9Z"/><path d="M45.7 47.6L56.5 74.7L75.2 50.6Z"/><path d="M38.3 26.6L19.5 50.7L30.3 37.7Z"/><path d="M56.5 103.1L45.7 116.1L75.2 119.1Z"/><path d="M38.3 26.6L30.3 37.7L45.7 47.6L75.2 50.6L101.7 44.9L109.7 33.8L94.3 23.9L64.8 20.9Z"/><path d="M19.5 79.1L30.3 106.2L45.7 116.1L56.5 103.1L56.5 74.7L45.7 47.6L30.3 37.7L19.5 50.7Z"/><path d="M101.7 113.4L120.5 89.3L120.5 60.9L101.7 44.9L75.2 50.6L56.5 74.7L56.5 103.1L75.2 119.1Z"/></g>
+<path d="M19.5 99.2L56.5 123.2M19.5 99.2L19.5 30.7M56.5 123.2L56.5 54.6M56.5 123.2L120.5 109.3M19.5 30.7L56.5 54.6M19.5 30.7L83.5 16.8M56.5 54.6L120.5 40.8M120.5 109.3L120.5 40.8M83.5 16.8L120.5 40.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round"/></svg>
+        <p class="op-no">01</p>
+        <h3>꼭짓점 깎기</h3>
+        <p class="op-res">정육면체 → 깎은 정육면체</p>
+        <p class="op-desc">꼭짓점을 조금씩 잘라 낸다. 잘린 자리에 새 면이 생기고, 원래 면은 변의 개수가 두 배인 정다각형이 된다.</p>
+        <p class="op-go">깎아 보기 →</p>
+      </a><a class="op" href="sim.html#cube-r">
+        <svg class="op-pic" viewBox="0 0 140 140" aria-hidden="true" focusable="false"><path d="M19.5 99.2L83.5 85.4M83.5 85.4L120.5 109.3M83.5 85.4L83.5 16.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round" opacity="0.35"/>
+<path d="M88.5 116.2L56.5 88.9L38 111.2Z" fill="#a0875d"/>
+<path d="M120.5 75.1L102 28.8L88.5 47.7Z" fill="#ab9062"/>
+<path d="M56.5 88.9L88.5 47.7L38 42.7Z" fill="#dab778"/>
+<path d="M38 42.7L51.5 23.8L19.5 64.9Z" fill="#d2b075"/>
+<path d="M88.5 116.2L120.5 75.1L88.5 47.7L56.5 88.9Z" fill="#5f7187"/>
+<path d="M88.5 47.7L102 28.8L51.5 23.8L38 42.7Z" fill="#7790ae"/>
+<path d="M38 111.2L56.5 88.9L38 42.7L19.5 64.9Z" fill="#6e859f"/>
+<g fill="none" stroke="#2d3142" stroke-width="1.3" stroke-linejoin="round"><path d="M88.5 116.2L56.5 88.9L38 111.2Z"/><path d="M120.5 75.1L102 28.8L88.5 47.7Z"/><path d="M56.5 88.9L88.5 47.7L38 42.7Z"/><path d="M38 42.7L51.5 23.8L19.5 64.9Z"/><path d="M88.5 116.2L120.5 75.1L88.5 47.7L56.5 88.9Z"/><path d="M88.5 47.7L102 28.8L51.5 23.8L38 42.7Z"/><path d="M38 111.2L56.5 88.9L38 42.7L19.5 64.9Z"/></g>
+<path d="M19.5 99.2L56.5 123.2M19.5 99.2L19.5 30.7M56.5 123.2L56.5 54.6M56.5 123.2L120.5 109.3M19.5 30.7L56.5 54.6M19.5 30.7L83.5 16.8M56.5 54.6L120.5 40.8M120.5 109.3L120.5 40.8M83.5 16.8L120.5 40.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round"/></svg>
+        <p class="op-no">02</p>
+        <h3>끝까지 깎기</h3>
+        <p class="op-res">정육면체 → 육팔면체</p>
+        <p class="op-desc">모서리의 한가운데에 닿을 때까지 꼭짓점을 잘라 낸다. 원래 면은 작아지고, 꼭짓점 자리에 새 면이 생긴다.</p>
+        <p class="op-go">깎아 보기 →</p>
+      </a><a class="op" href="sim.html#cube-c">
+        <svg class="op-pic" viewBox="0 0 140 140" aria-hidden="true" focusable="false"><path d="M19.5 99.2L83.5 85.4M83.5 85.4L120.5 109.3M83.5 85.4L83.5 16.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round" opacity="0.35"/>
+<path d="M90.9 37.8L101.7 64.9L109.7 53.9Z" fill="#ab9062"/>
+<path d="M45.7 96.1L64.4 112.1L75.2 99Z" fill="#a0875d"/>
+<path d="M38.3 46.7L30.3 57.8L49.1 33.6Z" fill="#d2b075"/>
+<path d="M64.4 43.6L45.7 67.7L75.2 70.7Z" fill="#dab778"/>
+<path d="M109.7 53.9L101.7 64.9L101.7 93.3L109.7 82.2Z" fill="#5d6e83"/>
+<path d="M75.2 99L101.7 93.3L101.7 64.9L75.2 70.7Z" fill="#5f7187"/>
+<path d="M75.2 99L75.2 70.7L45.7 67.7L45.7 96.1Z" fill="#6a8099"/>
+<path d="M64.4 112.1L90.9 106.4L101.7 93.3L75.2 99Z" fill="#5d6e83"/>
+<path d="M45.7 96.1L45.7 67.7L30.3 57.8L30.3 86.1Z" fill="#6e859f"/>
+<path d="M49.1 102.2L64.4 112.1L45.7 96.1L30.3 86.1Z" fill="#5d6e83"/>
+<path d="M75.2 70.7L101.7 64.9L90.9 37.8L64.4 43.6Z" fill="#7088a3"/>
+<path d="M30.3 57.8L45.7 67.7L64.4 43.6L49.1 33.6Z" fill="#7e99b9"/>
+<path d="M64.4 43.6L90.9 37.8L75.6 27.9L49.1 33.6Z" fill="#7790ae"/>
+<g fill="none" stroke="#2d3142" stroke-width="1.3" stroke-linejoin="round"><path d="M90.9 37.8L101.7 64.9L109.7 53.9Z"/><path d="M45.7 96.1L64.4 112.1L75.2 99Z"/><path d="M38.3 46.7L30.3 57.8L49.1 33.6Z"/><path d="M64.4 43.6L45.7 67.7L75.2 70.7Z"/><path d="M109.7 53.9L101.7 64.9L101.7 93.3L109.7 82.2Z"/><path d="M75.2 99L101.7 93.3L101.7 64.9L75.2 70.7Z"/><path d="M75.2 99L75.2 70.7L45.7 67.7L45.7 96.1Z"/><path d="M64.4 112.1L90.9 106.4L101.7 93.3L75.2 99Z"/><path d="M45.7 96.1L45.7 67.7L30.3 57.8L30.3 86.1Z"/><path d="M49.1 102.2L64.4 112.1L45.7 96.1L30.3 86.1Z"/><path d="M75.2 70.7L101.7 64.9L90.9 37.8L64.4 43.6Z"/><path d="M30.3 57.8L45.7 67.7L64.4 43.6L49.1 33.6Z"/><path d="M64.4 43.6L90.9 37.8L75.6 27.9L49.1 33.6Z"/></g>
+<path d="M19.5 99.2L56.5 123.2M19.5 99.2L19.5 30.7M56.5 123.2L56.5 54.6M56.5 123.2L120.5 109.3M19.5 30.7L56.5 54.6M19.5 30.7L83.5 16.8M56.5 54.6L120.5 40.8M120.5 109.3L120.5 40.8M83.5 16.8L120.5 40.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round"/></svg>
+        <p class="op-no">03</p>
+        <h3>모서리 깎기</h3>
+        <p class="op-res">정육면체 → 마름모육팔면체</p>
+        <p class="op-desc">모서리를 깎아 그 자리에 정사각형을 만든다. 꼭짓점 자리에도 새 면이 생긴다.</p>
+        <p class="op-go">깎아 보기 →</p>
+      </a><a class="op" href="sim.html#cube-o">
+        <svg class="op-pic" viewBox="0 0 140 140" aria-hidden="true" focusable="false"><path d="M19.5 99.2L83.5 85.4M83.5 85.4L120.5 109.3M83.5 85.4L83.5 16.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round" opacity="0.35"/>
+<path d="M113.7 61.7L108.7 68.7L108.7 86.6L113.7 79.6Z" fill="#5d6e83"/>
+<path d="M49.7 93.4L68.3 95.3L68.3 77.4L49.7 75.5Z" fill="#6a8099"/>
+<path d="M54.6 111.8L73.3 113.6L80.1 105.4L68.3 95.3L49.7 93.4L42.8 101.7Z" fill="#786e86"/>
+<path d="M33.2 95.4L45 105.5L54.6 111.8L42.8 101.7Z" fill="#5d6e83"/>
+<path d="M95 34.5L90 41.5L96.8 58.6L108.7 68.7L113.7 61.7L106.8 44.6Z" fill="#80758f"/>
+<path d="M80.1 105.4L96.8 101.8L108.7 86.6L108.7 68.7L96.8 58.6L80.1 62.2L68.3 77.4L68.3 95.3Z" fill="#8f6d5d"/>
+<path d="M90 110L96.8 101.8L80.1 105.4L73.3 113.6Z" fill="#5d6e83"/>
+<path d="M33.2 95.4L42.8 101.7L49.7 93.4L49.7 75.5L42.8 58.4L33.2 52.2L26.3 60.4L26.3 78.3Z" fill="#aa7f6b"/>
+<path d="M42.8 58.4L49.7 75.5L68.3 77.4L80.1 62.2L73.3 45.1L54.6 43.2Z" fill="#a192b5"/>
+<path d="M73.3 45.1L80.1 62.2L96.8 58.6L90 41.5Z" fill="#7088a3"/>
+<path d="M45 37L50 30L43.2 38.2L31.3 53.4L26.3 60.4L33.2 52.2Z" fill="#9b8dae"/>
+<path d="M45 37L54.6 43.2L73.3 45.1L90 41.5L95 34.5L85.4 28.2L66.7 26.4L50 30Z" fill="#ba8a73"/>
+<path d="M42.8 58.4L54.6 43.2L45 37L33.2 52.2Z" fill="#7e99b9"/>
+<g fill="none" stroke="#2d3142" stroke-width="1.3" stroke-linejoin="round"><path d="M113.7 61.7L108.7 68.7L108.7 86.6L113.7 79.6Z"/><path d="M49.7 93.4L68.3 95.3L68.3 77.4L49.7 75.5Z"/><path d="M54.6 111.8L73.3 113.6L80.1 105.4L68.3 95.3L49.7 93.4L42.8 101.7Z"/><path d="M33.2 95.4L45 105.5L54.6 111.8L42.8 101.7Z"/><path d="M95 34.5L90 41.5L96.8 58.6L108.7 68.7L113.7 61.7L106.8 44.6Z"/><path d="M80.1 105.4L96.8 101.8L108.7 86.6L108.7 68.7L96.8 58.6L80.1 62.2L68.3 77.4L68.3 95.3Z"/><path d="M90 110L96.8 101.8L80.1 105.4L73.3 113.6Z"/><path d="M33.2 95.4L42.8 101.7L49.7 93.4L49.7 75.5L42.8 58.4L33.2 52.2L26.3 60.4L26.3 78.3Z"/><path d="M42.8 58.4L49.7 75.5L68.3 77.4L80.1 62.2L73.3 45.1L54.6 43.2Z"/><path d="M73.3 45.1L80.1 62.2L96.8 58.6L90 41.5Z"/><path d="M45 37L50 30L43.2 38.2L31.3 53.4L26.3 60.4L33.2 52.2Z"/><path d="M45 37L54.6 43.2L73.3 45.1L90 41.5L95 34.5L85.4 28.2L66.7 26.4L50 30Z"/><path d="M42.8 58.4L54.6 43.2L45 37L33.2 52.2Z"/></g>
+<path d="M19.5 99.2L56.5 123.2M19.5 99.2L19.5 30.7M56.5 123.2L56.5 54.6M56.5 123.2L120.5 109.3M19.5 30.7L56.5 54.6M19.5 30.7L83.5 16.8M56.5 54.6L120.5 40.8M120.5 109.3L120.5 40.8M83.5 16.8L120.5 40.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round"/></svg>
+        <p class="op-no">04</p>
+        <h3>모두 깎기</h3>
+        <p class="op-res">정육면체 → 깎은 육팔면체</p>
+        <p class="op-desc">꼭짓점과 모서리를 함께 깎는다. 원래 면은 변의 개수가 두 배가 되고, 모서리 자리에는 정사각형이 생긴다.</p>
+        <p class="op-go">깎아 보기 →</p>
+      </a><a class="op" href="sim.html#cube-s">
+        <svg class="op-pic" viewBox="0 0 140 140" aria-hidden="true" focusable="false"><path d="M19.5 99.2L83.5 85.4M83.5 85.4L120.5 109.3M83.5 85.4L83.5 16.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round" opacity="0.35"/>
+<path d="M105.9 88.4L112 59.5L97.9 61.3Z" fill="#a0875d"/>
+<path d="M112 59.5L92.9 35.5L97.9 61.3Z" fill="#ab9062"/>
+<path d="M107.5 85.2L112 59.5L105.9 88.4Z" fill="#a0875d"/>
+<path d="M58.1 111.6L89.5 108.7L79 102.7Z" fill="#a0875d"/>
+<path d="M79 102.7L89.5 108.7L105.9 88.4Z" fill="#a0875d"/>
+<path d="M70.6 44.3L43.5 61.8L71.1 75.6Z" fill="#dab778"/>
+<path d="M47.1 36L43.5 61.8L70.6 44.3Z" fill="#e7c17e"/>
+<path d="M71.1 75.6L97.9 61.3L70.6 44.3Z" fill="#c9a970"/>
+<path d="M97.9 61.3L92.9 35.5L70.6 44.3Z" fill="#c7a76f"/>
+<path d="M28 60.3L43.5 61.8L47.1 36Z" fill="#e0bb7b"/>
+<path d="M47.1 36L42.1 41.4L28 60.3Z" fill="#d2b075"/>
+<path d="M71.1 75.6L48 93.6L79 102.7Z" fill="#af9464"/>
+<path d="M71.1 75.6L43.5 61.8L48 93.6Z" fill="#caa971"/>
+<path d="M79 102.7L48 93.6L58.1 111.6Z" fill="#a0875d"/>
+<path d="M58.1 111.6L48 93.6L32.5 92Z" fill="#a0875d"/>
+<path d="M79 102.7L105.9 88.4L97.9 61.3L71.1 75.6Z" fill="#5f7187"/>
+<path d="M70.6 44.3L92.9 35.5L69.4 27.2L47.1 36Z" fill="#7790ae"/>
+<path d="M48 93.6L43.5 61.8L28 60.3L32.5 92Z" fill="#6e859f"/>
+<g fill="none" stroke="#2d3142" stroke-width="1.3" stroke-linejoin="round"><path d="M105.9 88.4L112 59.5L97.9 61.3Z"/><path d="M112 59.5L92.9 35.5L97.9 61.3Z"/><path d="M107.5 85.2L112 59.5L105.9 88.4Z"/><path d="M58.1 111.6L89.5 108.7L79 102.7Z"/><path d="M79 102.7L89.5 108.7L105.9 88.4Z"/><path d="M70.6 44.3L43.5 61.8L71.1 75.6Z"/><path d="M47.1 36L43.5 61.8L70.6 44.3Z"/><path d="M71.1 75.6L97.9 61.3L70.6 44.3Z"/><path d="M97.9 61.3L92.9 35.5L70.6 44.3Z"/><path d="M28 60.3L43.5 61.8L47.1 36Z"/><path d="M47.1 36L42.1 41.4L28 60.3Z"/><path d="M71.1 75.6L48 93.6L79 102.7Z"/><path d="M71.1 75.6L43.5 61.8L48 93.6Z"/><path d="M79 102.7L48 93.6L58.1 111.6Z"/><path d="M58.1 111.6L48 93.6L32.5 92Z"/><path d="M79 102.7L105.9 88.4L97.9 61.3L71.1 75.6Z"/><path d="M70.6 44.3L92.9 35.5L69.4 27.2L47.1 36Z"/><path d="M48 93.6L43.5 61.8L28 60.3L32.5 92Z"/></g>
+<path d="M19.5 99.2L56.5 123.2M19.5 99.2L19.5 30.7M56.5 123.2L56.5 54.6M56.5 123.2L120.5 109.3M19.5 30.7L56.5 54.6M19.5 30.7L83.5 16.8M56.5 54.6L120.5 40.8M120.5 109.3L120.5 40.8M83.5 16.8L120.5 40.8" fill="none" stroke="#2d3142" stroke-width="1.08" stroke-dasharray="3.5 2.5" stroke-linecap="round"/></svg>
+        <p class="op-no">05</p>
+        <h3>비틀기</h3>
+        <p class="op-res">정육면체 → 다듬은 육면체</p>
+        <p class="op-desc">면을 하나씩 떼어 내 조금 비튼 뒤, 벌어진 틈을 정삼각형으로 채운다.</p>
+        <p class="op-go">깎아 보기 →</p>
+      </a></div>
+  </section>
+  <section class="sec" id="fam-tetra">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no">01</span> TETRAHEDRAL</p>
+      <h2>정사면체 계열 <span class="count">준정다면체 1개</span></h2>
+      <p class="sec-desc">정사면체를 깎아서 새로 생기는 준정다면체는 깎은 정사면체 하나뿐이다. 나머지 방법으로 깎으면 정팔면체, 육팔면체, 깎은 정팔면체, 정이십면체처럼 다른 계열에 있는 도형이 된다. 칸을 누르면 직접 깎아 보고 세어 볼 수 있다.</p>
+    </div>
+    <p class="scroll-hint">그림이 화면보다 넓으면 옆으로 밀어서 볼 수 있습니다.</p><div class="diagram-container">
+<svg viewBox="0 0 1280 796" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="uni-tetra-title uni-tetra-desc"><title id="uni-tetra-title">정사면체 계열</title><desc id="uni-tetra-desc">정사면체 하나에서 꼭짓점 깎기, 끝까지 깎기, 모서리 깎기, 모두 깎기, 비틀기로 깎은 정사면체, 정팔면체, 육팔면체, 깎은 정팔면체, 정이십면체가 나오는 계통도.</desc><defs><marker id="uni-tetra-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker></defs><rect width="100%" height="100%" fill="#f5f5f5"/><path d="M40 148H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 260H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 372H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 484H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 596H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M576 120H596V652.0" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M596 204.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-tetra-arrow)"/><path d="M596 316.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-tetra-arrow)"/><path d="M596 428.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-tetra-arrow)"/><path d="M596 540.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-tetra-arrow)"/><path d="M596 652.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-tetra-arrow)"/><text x="56" y="96.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text><a href="sim.html#tetra" aria-label="정사면체 깎아 보고 세어 보기"><rect x="296" y="48" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="296" y="48" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(304 56)"><path d="M13.2 40.8L30.2 54.4L36 5.2Z" fill="#d6b376"/>
+<path d="M30.2 54.4L64.5 43.5L36 5.2Z" fill="#ac9163"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M13.2 40.8L30.2 54.4L36 5.2Z"/><path d="M30.2 54.4L64.5 43.5L36 5.2Z"/></g></g><text x="388" y="80" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정사면체</text><text x="388" y="98" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3</text><polygon points="394.5,109.8 388.9,119.5 400.1,119.5" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="208.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">꼭짓점 깎기</text><a href="sim.html#tetra-t" aria-label="깎은 정사면체 깎아 보고 세어 보기"><rect x="616" y="160" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="160" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 168)"><path d="M22.7 40.5L13.6 57.1L38.4 61Z" fill="#ae9364"/>
+<path d="M29.3 14.7L51.7 9.4L27 5.4Z" fill="#d6b377"/>
+<path d="M27 5.4L17.9 21.9L11.3 47.8L13.6 57.1L22.7 40.5L29.3 14.7Z" fill="#9a8cad"/>
+<path d="M38.4 61L60.7 55.6L67.4 29.8L51.7 9.4L29.3 14.7L22.7 40.5Z" fill="#867a96"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M22.7 40.5L13.6 57.1L38.4 61Z"/><path d="M29.3 14.7L51.7 9.4L27 5.4Z"/><path d="M27 5.4L17.9 21.9L11.3 47.8L13.6 57.1L22.7 40.5L29.3 14.7Z"/><path d="M38.4 61L60.7 55.6L67.4 29.8L51.7 9.4L29.3 14.7L22.7 40.5Z"/></g></g><text x="708" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 정사면체</text><text x="708" y="210" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·6·6</text><polygon points="714.5,221.8 708.9,231.6 720.1,231.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="731.2,221.4 728.0,227.0 731.2,232.6 737.8,232.6 741.0,227.0 737.8,221.4" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="320.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">끝까지 깎기</text><a href="sim.html#tetra-r" aria-label="정팔면체 깎아 보고 세어 보기"><rect x="616" y="272" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="272" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(624 280)"><path d="M36 66.4L49.5 45L7 40.2Z" fill="#a0875d"/>
+<path d="M36 66.4L65 31.8L49.5 45Z" fill="#a0875d"/>
+<path d="M49.5 45L65 31.8L36 5.6Z" fill="#ad9263"/>
+<path d="M7 40.2L49.5 45L36 5.6Z" fill="#dfba7a"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M36 66.4L49.5 45L7 40.2Z"/><path d="M36 66.4L65 31.8L49.5 45Z"/><path d="M49.5 45L65 31.8L36 5.6Z"/><path d="M7 40.2L49.5 45L36 5.6Z"/></g></g><text x="708" y="304" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정팔면체</text><text x="708" y="322" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3·3</text><polygon points="714.5,333.8 708.9,343.6 720.1,343.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="432.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">모서리 깎기</text><a href="sim.html#tetra-c" aria-label="육팔면체 깎아 보고 세어 보기"><rect x="616" y="384" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="384" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 392)"><path d="M24.5 46.2L45.2 21.8L15.3 17.9Z" fill="#deba7a"/>
+<path d="M15.3 60.4L45.2 64.3L24.5 46.2Z" fill="#a0875d"/>
+<path d="M45.2 64.3L56.7 54.1L65.9 39.9Z" fill="#a0875d"/>
+<path d="M45.2 21.8L65.9 39.9L56.7 11.6Z" fill="#ad9263"/>
+<path d="M24.5 46.2L45.2 64.3L65.9 39.9L45.2 21.8Z" fill="#62748b"/>
+<path d="M6.1 32.1L15.3 60.4L24.5 46.2L15.3 17.9Z" fill="#6e859f"/>
+<path d="M15.3 17.9L45.2 21.8L56.7 11.6L26.8 7.7Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M24.5 46.2L45.2 21.8L15.3 17.9Z"/><path d="M15.3 60.4L45.2 64.3L24.5 46.2Z"/><path d="M45.2 64.3L56.7 54.1L65.9 39.9Z"/><path d="M45.2 21.8L65.9 39.9L56.7 11.6Z"/><path d="M24.5 46.2L45.2 64.3L65.9 39.9L45.2 21.8Z"/><path d="M6.1 32.1L15.3 60.4L24.5 46.2L15.3 17.9Z"/><path d="M15.3 17.9L45.2 21.8L56.7 11.6L26.8 7.7Z"/></g></g><text x="708" y="416" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">육팔면체</text><text x="708" y="434" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·4·3·4</text><polygon points="714.5,445.8 708.9,455.6 720.1,455.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="729.9,446.4 729.9,455.6 739.1,455.6 739.1,446.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="544.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">모두 깎기</text><a href="sim.html#tetra-o" aria-label="깎은 정팔면체 깎아 보고 세어 보기"><rect x="616" y="496" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="496" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 504)"><path d="M30.2 4.6L22.9 11.1L41.8 13.6L49.1 7.1Z" fill="#7790ad"/>
+<path d="M41.8 67.4L49.1 60.9L62.1 45.5L68 36.5L60.7 43L47.6 58.4Z" fill="#786e86"/>
+<path d="M47.6 31.5L60.7 43L68 36.5L62.1 18.6L49.1 7.1L41.8 13.6Z" fill="#827791"/>
+<path d="M47.6 31.5L34.6 46.9L47.6 58.4L60.7 43Z" fill="#62748b"/>
+<path d="M41.8 13.6L22.9 11.1L9.9 26.5L15.7 44.5L34.6 46.9L47.6 31.5Z" fill="#a394b8"/>
+<path d="M47.6 58.4L34.6 46.9L15.7 44.5L9.9 53.4L22.9 64.9L41.8 67.4Z" fill="#786e86"/>
+<path d="M9.9 53.4L15.7 44.5L9.9 26.5L4 35.5Z" fill="#6e859f"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M30.2 4.6L22.9 11.1L41.8 13.6L49.1 7.1Z"/><path d="M41.8 67.4L49.1 60.9L62.1 45.5L68 36.5L60.7 43L47.6 58.4Z"/><path d="M47.6 31.5L60.7 43L68 36.5L62.1 18.6L49.1 7.1L41.8 13.6Z"/><path d="M47.6 31.5L34.6 46.9L47.6 58.4L60.7 43Z"/><path d="M41.8 13.6L22.9 11.1L9.9 26.5L15.7 44.5L34.6 46.9L47.6 31.5Z"/><path d="M47.6 58.4L34.6 46.9L15.7 44.5L9.9 53.4L22.9 64.9L41.8 67.4Z"/><path d="M9.9 53.4L15.7 44.5L9.9 26.5L4 35.5Z"/></g></g><text x="708" y="528" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 정팔면체</text><text x="708" y="546" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">4·6·6</text><polygon points="709.9,558.4 709.9,567.6 719.1,567.6 719.1,558.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="731.2,557.4 728.0,563.0 731.2,568.6 737.8,568.6 741.0,563.0 737.8,557.4" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="656.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">비틀기</text><a href="sim.html#tetra-s" aria-label="정이십면체 깎아 보고 세어 보기"><rect x="616" y="608" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="608" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(624 616)"><path d="M42.4 17.5L66.9 32.1L48.7 7.3Z" fill="#b49867"/>
+<path d="M23.3 64.7L15.5 37.6L5.1 39.9Z" fill="#b19565"/>
+<path d="M66.9 32.1L46.4 50.9L55.1 61.3Z" fill="#a0875d"/>
+<path d="M23.3 64.7L46.4 50.9L15.5 37.6Z" fill="#ae9364"/>
+<path d="M55.1 61.3L46.4 50.9L23.3 64.7Z" fill="#a0875d"/>
+<path d="M42.4 17.5L46.4 50.9L66.9 32.1Z" fill="#b09465"/>
+<path d="M15.5 37.6L46.4 50.9L42.4 17.5Z" fill="#ccab72"/>
+<path d="M42.4 17.5L48.7 7.3L16.9 10.7Z" fill="#d5b376"/>
+<path d="M16.9 10.7L15.5 37.6L42.4 17.5Z" fill="#e7c17e"/>
+<path d="M5.1 39.9L15.5 37.6L16.9 10.7Z" fill="#d3b175"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M42.4 17.5L66.9 32.1L48.7 7.3Z"/><path d="M23.3 64.7L15.5 37.6L5.1 39.9Z"/><path d="M66.9 32.1L46.4 50.9L55.1 61.3Z"/><path d="M23.3 64.7L46.4 50.9L15.5 37.6Z"/><path d="M55.1 61.3L46.4 50.9L23.3 64.7Z"/><path d="M42.4 17.5L46.4 50.9L66.9 32.1Z"/><path d="M15.5 37.6L46.4 50.9L42.4 17.5Z"/><path d="M42.4 17.5L48.7 7.3L16.9 10.7Z"/><path d="M16.9 10.7L15.5 37.6L42.4 17.5Z"/><path d="M5.1 39.9L15.5 37.6L16.9 10.7Z"/></g></g><text x="708" y="640" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정이십면체</text><text x="708" y="658" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3·3·3</text><polygon points="714.5,669.8 708.9,679.5 720.1,679.5" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="936" y="208.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정사면체 계열에만 있는 준정다면체</text><text x="936" y="320.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">02 계열의 정다면체</text><text x="936" y="422.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">02 계열에서는</text><text x="936" y="442.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정육면체·정팔면체를 끝까지 깎아 만든다</text><text x="936" y="534.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">02 계열에서는</text><text x="936" y="554.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정팔면체의 꼭짓점을 깎아 만든다</text><text x="936" y="656.0" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">03 계열의 정다면체</text><text x="64" y="754" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">면의 모양</text><rect x="135.2" y="744" width="14" height="10" rx="2" fill="#c9a25e" stroke="#2d3142" stroke-width="0.6"/><text x="155.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정삼각형</text><rect x="227.2" y="744" width="14" height="10" rx="2" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.6"/><text x="247.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정사각형</text><rect x="319.2" y="744" width="14" height="10" rx="2" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.6"/><text x="339.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정육각형</text><path d="M411.2 749H433.2" stroke="#4f5d75" stroke-width="1" marker-end="url(#uni-tetra-arrow)"/><text x="441.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎거나 비틀어 만든다</text><rect x="587.6" y="744" width="14" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="607.6" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text></svg>
+</div>
+  </section>
+  <section class="sec" id="fam-cube">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no">02</span> OCTAHEDRAL</p>
+      <h2>정육면체·정팔면체 계열 <span class="count">준정다면체 6개</span></h2>
+      <p class="sec-desc">짝인 정육면체와 정팔면체는 꼭짓점을 조금 깎으면 서로 다른 도형이 되지만, 끝까지 깎거나 모서리를 깎거나 비틀면 같은 도형이 된다. 칸을 누르면 둘을 나란히 깎아 볼 수 있다.</p>
+    </div>
+    <p class="scroll-hint">그림이 화면보다 넓으면 옆으로 밀어서 볼 수 있습니다.</p><div class="diagram-container">
+<svg viewBox="0 0 1280 796" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="uni-cube-title uni-cube-desc"><title id="uni-cube-title">정육면체·정팔면체 계열</title><desc id="uni-cube-desc">짝인 정육면체와 정팔면체에서 깎은 정육면체, 깎은 정팔면체가 나오고, 둘 다에서 육팔면체, 마름모육팔면체, 깎은 육팔면체, 다듬은 육면체가 나오는 계통도.</desc><defs><marker id="uni-cube-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker></defs><rect width="100%" height="100%" fill="#f5f5f5"/><path d="M40 148H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 260H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 372H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 484H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 596H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M576 120H596V652.0" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M596 316.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M596 428.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M596 540.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M596 652.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M436 136V160" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M1076 136V160" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M936 120H916V652.0" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M916 316.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M916 428.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M916 540.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M916 652.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-cube-arrow)"/><path d="M576 92H936" stroke="#4f5d75" stroke-width="1" fill="none" stroke-dasharray="5,4"/><rect x="624.0" y="68" width="264.0" height="16" fill="#f5f5f5"/><text x="756" y="80" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">짝: 면의 한가운데를 이으면 서로가 생긴다</text><text x="56" y="96.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text><a href="sim.html#cube" aria-label="정육면체 깎아 보고 세어 보기"><rect x="296" y="48" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="296" y="48" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(304 56)"><path d="M29.2 62.6L61.2 55.7L61.2 21.4L29.2 28.3Z" fill="#5f7187"/>
+<path d="M10.8 50.6L29.2 62.6L29.2 28.3L10.8 16.3Z" fill="#6e859f"/>
+<path d="M29.2 28.3L61.2 21.4L42.8 9.4L10.8 16.3Z" fill="#7790ae"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M29.2 62.6L61.2 55.7L61.2 21.4L29.2 28.3Z"/><path d="M10.8 50.6L29.2 62.6L29.2 28.3L10.8 16.3Z"/><path d="M29.2 28.3L61.2 21.4L42.8 9.4L10.8 16.3Z"/></g></g><text x="388" y="80" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정육면체</text><text x="388" y="98" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">4·4·4</text><polygon points="389.9,110.4 389.9,119.6 399.1,119.6 399.1,110.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><a href="sim.html#octa" aria-label="정팔면체 깎아 보고 세어 보기"><rect x="936" y="48" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="936" y="48" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(944 56)"><path d="M36 66.4L49.5 45L7 40.2Z" fill="#a0875d"/>
+<path d="M36 66.4L65 31.8L49.5 45Z" fill="#a0875d"/>
+<path d="M49.5 45L65 31.8L36 5.6Z" fill="#ad9263"/>
+<path d="M7 40.2L49.5 45L36 5.6Z" fill="#dfba7a"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M36 66.4L49.5 45L7 40.2Z"/><path d="M36 66.4L65 31.8L49.5 45Z"/><path d="M49.5 45L65 31.8L36 5.6Z"/><path d="M7 40.2L49.5 45L36 5.6Z"/></g></g><text x="1028" y="80" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정팔면체</text><text x="1028" y="98" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3·3</text><polygon points="1034.5,109.8 1028.9,119.5 1040.1,119.5" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="208.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">꼭짓점 깎기</text><a href="sim.html#cube-t" aria-label="깎은 정육면체 깎아 보고 세어 보기"><rect x="296" y="160" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="296" y="160" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(304 168)"><path d="M19.8 62.2L36.6 64.4L25 54.3Z" fill="#a0875d"/>
+<path d="M59.5 56.2L64.7 48.2L53 61.9Z" fill="#a0875d"/>
+<path d="M36.6 23.6L19.8 21.4L25 37.4Z" fill="#deba7a"/>
+<path d="M64.7 31.3L59.5 15.4L53 21.1Z" fill="#ad9263"/>
+<path d="M12.5 15.8L7.3 23.8L7.3 40.7L12.5 56.6L19.8 62.2L25 54.3L25 37.4L19.8 21.4Z" fill="#aa7f6b"/>
+<path d="M36.6 23.6L25 37.4L25 54.3L36.6 64.4L53 61.9L64.7 48.2L64.7 31.3L53 21.1Z" fill="#93705f"/>
+<path d="M52.2 9.8L35.4 7.6L19 10.1L12.5 15.8L19.8 21.4L36.6 23.6L53 21.1L59.5 15.4Z" fill="#b98973"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M19.8 62.2L36.6 64.4L25 54.3Z"/><path d="M59.5 56.2L64.7 48.2L53 61.9Z"/><path d="M36.6 23.6L19.8 21.4L25 37.4Z"/><path d="M64.7 31.3L59.5 15.4L53 21.1Z"/><path d="M12.5 15.8L7.3 23.8L7.3 40.7L12.5 56.6L19.8 62.2L25 54.3L25 37.4L19.8 21.4Z"/><path d="M36.6 23.6L25 37.4L25 54.3L36.6 64.4L53 61.9L64.7 48.2L64.7 31.3L53 21.1Z"/><path d="M52.2 9.8L35.4 7.6L19 10.1L12.5 15.8L19.8 21.4L36.6 23.6L53 21.1L59.5 15.4Z"/></g></g><text x="388" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 정육면체</text><text x="388" y="210" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·8·8</text><polygon points="394.5,221.8 388.9,231.6 400.1,231.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="412.0,221.0 408.5,224.5 408.5,229.5 412.0,233.0 417.0,233.0 420.5,229.5 420.5,224.5 417.0,221.0" fill="#a8735a" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><a href="sim.html#cube-t" aria-label="깎은 정팔면체 깎아 보고 세어 보기"><rect x="936" y="160" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="936" y="160" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(944 168)"><path d="M30.2 4.6L22.9 11.1L41.8 13.6L49.1 7.1Z" fill="#7790ad"/>
+<path d="M41.8 67.4L49.1 60.9L62.1 45.5L68 36.5L60.7 43L47.6 58.4Z" fill="#786e86"/>
+<path d="M47.6 31.5L60.7 43L68 36.5L62.1 18.6L49.1 7.1L41.8 13.6Z" fill="#827791"/>
+<path d="M47.6 31.5L34.6 46.9L47.6 58.4L60.7 43Z" fill="#62748b"/>
+<path d="M41.8 13.6L22.9 11.1L9.9 26.5L15.7 44.5L34.6 46.9L47.6 31.5Z" fill="#a394b8"/>
+<path d="M47.6 58.4L34.6 46.9L15.7 44.5L9.9 53.4L22.9 64.9L41.8 67.4Z" fill="#786e86"/>
+<path d="M9.9 53.4L15.7 44.5L9.9 26.5L4 35.5Z" fill="#6e859f"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M30.2 4.6L22.9 11.1L41.8 13.6L49.1 7.1Z"/><path d="M41.8 67.4L49.1 60.9L62.1 45.5L68 36.5L60.7 43L47.6 58.4Z"/><path d="M47.6 31.5L60.7 43L68 36.5L62.1 18.6L49.1 7.1L41.8 13.6Z"/><path d="M47.6 31.5L34.6 46.9L47.6 58.4L60.7 43Z"/><path d="M41.8 13.6L22.9 11.1L9.9 26.5L15.7 44.5L34.6 46.9L47.6 31.5Z"/><path d="M47.6 58.4L34.6 46.9L15.7 44.5L9.9 53.4L22.9 64.9L41.8 67.4Z"/><path d="M9.9 53.4L15.7 44.5L9.9 26.5L4 35.5Z"/></g></g><text x="1028" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 정팔면체</text><text x="1028" y="210" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">4·6·6</text><polygon points="1029.9,222.4 1029.9,231.6 1039.1,231.6 1039.1,222.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="1051.2,221.4 1048.0,227.0 1051.2,232.6 1057.8,232.6 1061.0,227.0 1057.8,221.4" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="320.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">끝까지 깎기</text><a href="sim.html#cube-r" aria-label="육팔면체 깎아 보고 세어 보기"><rect x="616" y="272" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="272" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 280)"><path d="M24.5 46.2L45.2 21.8L15.3 17.9Z" fill="#deba7a"/>
+<path d="M15.3 60.4L45.2 64.3L24.5 46.2Z" fill="#a0875d"/>
+<path d="M45.2 64.3L56.7 54.1L65.9 39.9Z" fill="#a0875d"/>
+<path d="M45.2 21.8L65.9 39.9L56.7 11.6Z" fill="#ad9263"/>
+<path d="M24.5 46.2L45.2 64.3L65.9 39.9L45.2 21.8Z" fill="#62748b"/>
+<path d="M6.1 32.1L15.3 60.4L24.5 46.2L15.3 17.9Z" fill="#6e859f"/>
+<path d="M15.3 17.9L45.2 21.8L56.7 11.6L26.8 7.7Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M24.5 46.2L45.2 21.8L15.3 17.9Z"/><path d="M15.3 60.4L45.2 64.3L24.5 46.2Z"/><path d="M45.2 64.3L56.7 54.1L65.9 39.9Z"/><path d="M45.2 21.8L65.9 39.9L56.7 11.6Z"/><path d="M24.5 46.2L45.2 64.3L65.9 39.9L45.2 21.8Z"/><path d="M6.1 32.1L15.3 60.4L24.5 46.2L15.3 17.9Z"/><path d="M15.3 17.9L45.2 21.8L56.7 11.6L26.8 7.7Z"/></g></g><text x="708" y="304" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">육팔면체</text><text x="708" y="322" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·4·3·4</text><polygon points="714.5,333.8 708.9,343.6 720.1,343.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="729.9,334.4 729.9,343.6 739.1,343.6 739.1,334.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="432.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">모서리 깎기</text><a href="sim.html#cube-c" aria-label="마름모육팔면체 깎아 보고 세어 보기"><rect x="616" y="384" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="384" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 392)"><path d="M47.2 59.8L30.2 67.1L51.1 63.9Z" fill="#a0875d"/>
+<path d="M65.9 25L62 42.4L65.9 46.5Z" fill="#a0875d"/>
+<path d="M15.4 32.7L15.4 54.2L32.5 46.9Z" fill="#c4a56e"/>
+<path d="M51.1 12L30.2 15.2L47.2 29.4Z" fill="#d3b075"/>
+<path d="M65.9 46.5L62 42.4L47.2 59.8L51.1 63.9Z" fill="#5d6e83"/>
+<path d="M6.1 47L20.9 60L30.2 67.1L15.4 54.2Z" fill="#5d6e83"/>
+<path d="M32.5 46.9L47.2 59.8L62 42.4L47.2 29.4Z" fill="#62748b"/>
+<path d="M32.5 46.9L47.2 29.4L30.2 15.2L15.4 32.7Z" fill="#7790ae"/>
+<path d="M15.4 54.2L30.2 67.1L47.2 59.8L32.5 46.9Z" fill="#5d6f83"/>
+<path d="M15.4 32.7L30.2 15.2L20.9 8.1L6.1 25.5Z" fill="#7d98b8"/>
+<path d="M6.1 47L15.4 54.2L15.4 32.7L6.1 25.5Z" fill="#6e859f"/>
+<path d="M47.2 29.4L62 42.4L65.9 25L51.1 12Z" fill="#63778e"/>
+<path d="M20.9 8.1L30.2 15.2L51.1 12L41.8 4.9Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M47.2 59.8L30.2 67.1L51.1 63.9Z"/><path d="M65.9 25L62 42.4L65.9 46.5Z"/><path d="M15.4 32.7L15.4 54.2L32.5 46.9Z"/><path d="M51.1 12L30.2 15.2L47.2 29.4Z"/><path d="M65.9 46.5L62 42.4L47.2 59.8L51.1 63.9Z"/><path d="M6.1 47L20.9 60L30.2 67.1L15.4 54.2Z"/><path d="M32.5 46.9L47.2 59.8L62 42.4L47.2 29.4Z"/><path d="M32.5 46.9L47.2 29.4L30.2 15.2L15.4 32.7Z"/><path d="M15.4 54.2L30.2 67.1L47.2 59.8L32.5 46.9Z"/><path d="M15.4 32.7L30.2 15.2L20.9 8.1L6.1 25.5Z"/><path d="M6.1 47L15.4 54.2L15.4 32.7L6.1 25.5Z"/><path d="M47.2 29.4L62 42.4L65.9 25L51.1 12Z"/><path d="M20.9 8.1L30.2 15.2L51.1 12L41.8 4.9Z"/></g></g><text x="708" y="416" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">마름모육팔면체</text><text x="708" y="434" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·4·4·4</text><polygon points="714.5,445.8 708.9,455.6 720.1,455.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="729.9,446.4 729.9,455.6 739.1,455.6 739.1,446.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="544.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">모두 깎기</text><a href="sim.html#cube-o" aria-label="깎은 육팔면체 깎아 보고 세어 보기"><rect x="616" y="496" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="496" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 504)"><path d="M66.9 31L62 35.5L62 48.4L66.9 44Z" fill="#5d6e83"/>
+<path d="M18.6 51.4L31.5 53.1L31.5 40.1L18.6 38.4Z" fill="#6c839d"/>
+<path d="M23.6 65.3L36.5 67L40.4 60.9L31.5 53.1L18.6 51.4L14.7 57.5Z" fill="#786e86"/>
+<path d="M9 53.2L18 61L23.6 65.3L14.7 57.5Z" fill="#5d6e83"/>
+<path d="M54 11L49.1 15.4L53.1 27.6L62 35.5L66.9 31L63 18.8Z" fill="#827791"/>
+<path d="M63 50.1L66.9 44L62 48.4L53.1 59L49.1 65.1L54 60.7Z" fill="#786e86"/>
+<path d="M40.4 60.9L53.1 59L62 48.4L62 35.5L53.1 27.6L40.4 29.6L31.5 40.1L31.5 53.1Z" fill="#93705f"/>
+<path d="M49.1 65.1L53.1 59L40.4 60.9L36.5 67Z" fill="#5d6e83"/>
+<path d="M9 53.2L14.7 57.5L18.6 51.4L18.6 38.4L14.7 26.2L9 21.9L5.1 28L5.1 41Z" fill="#aa7f6b"/>
+<path d="M14.7 26.2L18.6 38.4L31.5 40.1L40.4 29.6L36.5 17.3L23.6 15.6Z" fill="#a394b8"/>
+<path d="M36.5 17.3L40.4 29.6L53.1 27.6L49.1 15.4Z" fill="#728aa6"/>
+<path d="M18 11.3L23.6 15.6L36.5 17.3L49.1 15.4L54 11L48.4 6.7L35.5 5L22.9 6.9Z" fill="#b98973"/>
+<path d="M14.7 26.2L23.6 15.6L18 11.3L9 21.9Z" fill="#7d98b8"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M66.9 31L62 35.5L62 48.4L66.9 44Z"/><path d="M18.6 51.4L31.5 53.1L31.5 40.1L18.6 38.4Z"/><path d="M23.6 65.3L36.5 67L40.4 60.9L31.5 53.1L18.6 51.4L14.7 57.5Z"/><path d="M9 53.2L18 61L23.6 65.3L14.7 57.5Z"/><path d="M54 11L49.1 15.4L53.1 27.6L62 35.5L66.9 31L63 18.8Z"/><path d="M63 50.1L66.9 44L62 48.4L53.1 59L49.1 65.1L54 60.7Z"/><path d="M40.4 60.9L53.1 59L62 48.4L62 35.5L53.1 27.6L40.4 29.6L31.5 40.1L31.5 53.1Z"/><path d="M49.1 65.1L53.1 59L40.4 60.9L36.5 67Z"/><path d="M9 53.2L14.7 57.5L18.6 51.4L18.6 38.4L14.7 26.2L9 21.9L5.1 28L5.1 41Z"/><path d="M14.7 26.2L18.6 38.4L31.5 40.1L40.4 29.6L36.5 17.3L23.6 15.6Z"/><path d="M36.5 17.3L40.4 29.6L53.1 27.6L49.1 15.4Z"/><path d="M18 11.3L23.6 15.6L36.5 17.3L49.1 15.4L54 11L48.4 6.7L35.5 5L22.9 6.9Z"/><path d="M14.7 26.2L23.6 15.6L18 11.3L9 21.9Z"/></g></g><text x="708" y="528" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 육팔면체</text><text x="708" y="546" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">4·6·8</text><polygon points="709.9,558.4 709.9,567.6 719.1,567.6 719.1,558.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="731.2,557.4 728.0,563.0 731.2,568.6 737.8,568.6 741.0,563.0 737.8,557.4" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="752.0,557.0 748.5,560.5 748.5,565.5 752.0,569.0 757.0,569.0 760.5,565.5 760.5,560.5 757.0,557.0" fill="#a8735a" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="656.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">비틀기</text><a href="sim.html#cube-s" aria-label="다듬은 육면체 깎아 보고 세어 보기"><rect x="616" y="608" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="608" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 616)"><path d="M39.7 59.5L49.4 65.1L60.6 50Z" fill="#a0875d"/>
+<path d="M49.4 65.1L64.1 48.6L60.6 50Z" fill="#a0875d"/>
+<path d="M39.7 59.5L17.2 52L25.8 66.1Z" fill="#a0875d"/>
+<path d="M25.8 66.1L17.2 52L7.9 51.2Z" fill="#a1885d"/>
+<path d="M25.8 66.1L49.4 65.1L39.7 59.5Z" fill="#a0875d"/>
+<path d="M14.4 28.4L17.2 52L33.6 39Z" fill="#ceac72"/>
+<path d="M33.6 39L17.2 52L39.7 59.5Z" fill="#b39766"/>
+<path d="M66.9 29.3L52.8 10.9L54.4 29.5Z" fill="#ad9263"/>
+<path d="M57.6 15.8L52.8 10.9L66.9 29.3Z" fill="#a2895e"/>
+<path d="M54.4 29.5L60.6 50L66.9 29.3Z" fill="#a0875d"/>
+<path d="M60.6 50L64.1 48.6L66.9 29.3Z" fill="#a0875d"/>
+<path d="M5.1 27.6L14.4 28.4L19.2 10Z" fill="#deb97a"/>
+<path d="M54.4 29.5L34.7 16.2L33.6 39Z" fill="#cead73"/>
+<path d="M54.4 29.5L52.8 10.9L34.7 16.2Z" fill="#caa971"/>
+<path d="M33.6 39L34.7 16.2L14.4 28.4Z" fill="#deba7a"/>
+<path d="M14.4 28.4L34.7 16.2L19.2 10Z" fill="#e7c17e"/>
+<path d="M33.6 39L39.7 59.5L60.6 50L54.4 29.5Z" fill="#62748b"/>
+<path d="M5.1 27.6L7.9 51.2L17.2 52L14.4 28.4Z" fill="#6e859f"/>
+<path d="M34.7 16.2L52.8 10.9L37.3 4.7L19.2 10Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M39.7 59.5L49.4 65.1L60.6 50Z"/><path d="M49.4 65.1L64.1 48.6L60.6 50Z"/><path d="M39.7 59.5L17.2 52L25.8 66.1Z"/><path d="M25.8 66.1L17.2 52L7.9 51.2Z"/><path d="M25.8 66.1L49.4 65.1L39.7 59.5Z"/><path d="M14.4 28.4L17.2 52L33.6 39Z"/><path d="M33.6 39L17.2 52L39.7 59.5Z"/><path d="M66.9 29.3L52.8 10.9L54.4 29.5Z"/><path d="M57.6 15.8L52.8 10.9L66.9 29.3Z"/><path d="M54.4 29.5L60.6 50L66.9 29.3Z"/><path d="M60.6 50L64.1 48.6L66.9 29.3Z"/><path d="M5.1 27.6L14.4 28.4L19.2 10Z"/><path d="M54.4 29.5L34.7 16.2L33.6 39Z"/><path d="M54.4 29.5L52.8 10.9L34.7 16.2Z"/><path d="M33.6 39L34.7 16.2L14.4 28.4Z"/><path d="M14.4 28.4L34.7 16.2L19.2 10Z"/><path d="M33.6 39L39.7 59.5L60.6 50L54.4 29.5Z"/><path d="M5.1 27.6L7.9 51.2L17.2 52L14.4 28.4Z"/><path d="M34.7 16.2L52.8 10.9L37.3 4.7L19.2 10Z"/></g></g><text x="708" y="640" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">다듬은 육면체</text><text x="708" y="658" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3·3·4</text><polygon points="714.5,669.8 708.9,679.5 720.1,679.5" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="729.9,670.4 729.9,679.6 739.1,679.6 739.1,670.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="64" y="754" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">면의 모양</text><rect x="135.2" y="744" width="14" height="10" rx="2" fill="#c9a25e" stroke="#2d3142" stroke-width="0.6"/><text x="155.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정삼각형</text><rect x="227.2" y="744" width="14" height="10" rx="2" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.6"/><text x="247.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정사각형</text><rect x="319.2" y="744" width="14" height="10" rx="2" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.6"/><text x="339.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정육각형</text><rect x="411.2" y="744" width="14" height="10" rx="2" fill="#a8735a" stroke="#2d3142" stroke-width="0.6"/><text x="431.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정팔각형</text><path d="M503.2 749H525.2" stroke="#4f5d75" stroke-width="1" marker-end="url(#uni-cube-arrow)"/><text x="533.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎거나 비틀어 만든다</text><path d="M679.6 749H701.6" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4"/><text x="709.6" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">짝</text><rect x="745.6" y="744" width="14" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="765.6" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text></svg>
+</div>
+  </section>
+  <section class="sec" id="fam-dodeca">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no">03</span> ICOSAHEDRAL</p>
+      <h2>정십이면체·정이십면체 계열 <span class="count">준정다면체 6개</span></h2>
+      <p class="sec-desc">정십이면체와 정이십면체도 같은 방식으로 준정다면체 6개를 만든다. 깎은 정이십면체는 축구공 모양이다. 칸을 누르면 직접 깎아 볼 수 있다.</p>
+    </div>
+    <p class="scroll-hint">그림이 화면보다 넓으면 옆으로 밀어서 볼 수 있습니다.</p><div class="diagram-container">
+<svg viewBox="0 0 1280 796" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="uni-dodeca-title uni-dodeca-desc"><title id="uni-dodeca-title">정십이면체·정이십면체 계열</title><desc id="uni-dodeca-desc">짝인 정십이면체와 정이십면체에서 깎은 정십이면체, 깎은 정이십면체가 나오고, 둘 다에서 십이이십면체, 마름모십이이십면체, 깎은 십이이십면체, 다듬은 십이면체가 나오는 계통도.</desc><defs><marker id="uni-dodeca-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker></defs><rect width="100%" height="100%" fill="#f5f5f5"/><path d="M40 148H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 260H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 372H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 484H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M40 596H1240" stroke="rgba(45,49,66,0.08)" stroke-width="1"/><path d="M576 120H596V652.0" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M596 316.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M596 428.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M596 540.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M596 652.0H616" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M436 136V160" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M1076 136V160" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M936 120H916V652.0" stroke="#4f5d75" stroke-width="1" fill="none"/><path d="M916 316.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M916 428.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M916 540.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M916 652.0H896" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-dodeca-arrow)"/><path d="M576 92H936" stroke="#4f5d75" stroke-width="1" fill="none" stroke-dasharray="5,4"/><rect x="624.0" y="68" width="264.0" height="16" fill="#f5f5f5"/><text x="756" y="80" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">짝: 면의 한가운데를 이으면 서로가 생긴다</text><text x="56" y="96.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text><a href="sim.html#dodeca" aria-label="정십이면체 깎아 보고 세어 보기"><rect x="296" y="48" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="296" y="48" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(304 56)"><path d="M4.6 41.6L10.6 36.7L20.3 16L20.3 8.2L10.6 24Z" fill="#8fa084"/>
+<path d="M30 66.2L51.7 63.8L61.4 48L45.7 40.6L26.3 51.9Z" fill="#707b68"/>
+<path d="M16.6 59.9L30 66.2L26.3 51.9L10.6 36.7L4.6 41.6Z" fill="#76826d"/>
+<path d="M45.7 40.6L42 18.4L20.3 16L10.6 36.7L26.3 51.9Z" fill="#92a386"/>
+<path d="M61.4 48L67.4 30.4L55.4 12.1L42 18.4L45.7 40.6Z" fill="#78856f"/>
+<path d="M20.3 16L42 18.4L55.4 12.1L42 5.8L20.3 8.2Z" fill="#91a286"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M4.6 41.6L10.6 36.7L20.3 16L20.3 8.2L10.6 24Z"/><path d="M30 66.2L51.7 63.8L61.4 48L45.7 40.6L26.3 51.9Z"/><path d="M16.6 59.9L30 66.2L26.3 51.9L10.6 36.7L4.6 41.6Z"/><path d="M45.7 40.6L42 18.4L20.3 16L10.6 36.7L26.3 51.9Z"/><path d="M61.4 48L67.4 30.4L55.4 12.1L42 18.4L45.7 40.6Z"/><path d="M20.3 16L42 18.4L55.4 12.1L42 5.8L20.3 8.2Z"/></g></g><text x="388" y="80" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정십이면체</text><text x="388" y="98" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">5·5·5</text><polygon points="394.5,108.5 388.3,113.0 390.7,120.3 398.3,120.3 400.7,113.0" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><a href="sim.html#icosa" aria-label="정이십면체 깎아 보고 세어 보기"><rect x="936" y="48" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="936" y="48" width="280" height="88" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><g transform="translate(944 56)"><path d="M42.4 17.5L66.9 32.1L48.7 7.3Z" fill="#b49867"/>
+<path d="M23.3 64.7L15.5 37.6L5.1 39.9Z" fill="#b19565"/>
+<path d="M66.9 32.1L46.4 50.9L55.1 61.3Z" fill="#a0875d"/>
+<path d="M23.3 64.7L46.4 50.9L15.5 37.6Z" fill="#ae9364"/>
+<path d="M55.1 61.3L46.4 50.9L23.3 64.7Z" fill="#a0875d"/>
+<path d="M42.4 17.5L46.4 50.9L66.9 32.1Z" fill="#b09465"/>
+<path d="M15.5 37.6L46.4 50.9L42.4 17.5Z" fill="#ccab72"/>
+<path d="M42.4 17.5L48.7 7.3L16.9 10.7Z" fill="#d5b376"/>
+<path d="M16.9 10.7L15.5 37.6L42.4 17.5Z" fill="#e7c17e"/>
+<path d="M5.1 39.9L15.5 37.6L16.9 10.7Z" fill="#d3b175"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M42.4 17.5L66.9 32.1L48.7 7.3Z"/><path d="M23.3 64.7L15.5 37.6L5.1 39.9Z"/><path d="M66.9 32.1L46.4 50.9L55.1 61.3Z"/><path d="M23.3 64.7L46.4 50.9L15.5 37.6Z"/><path d="M55.1 61.3L46.4 50.9L23.3 64.7Z"/><path d="M42.4 17.5L46.4 50.9L66.9 32.1Z"/><path d="M15.5 37.6L46.4 50.9L42.4 17.5Z"/><path d="M42.4 17.5L48.7 7.3L16.9 10.7Z"/><path d="M16.9 10.7L15.5 37.6L42.4 17.5Z"/><path d="M5.1 39.9L15.5 37.6L16.9 10.7Z"/></g></g><text x="1028" y="80" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정이십면체</text><text x="1028" y="98" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3·3·3</text><polygon points="1034.5,109.8 1028.9,119.5 1040.1,119.5" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="208.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">꼭짓점 깎기</text><a href="sim.html#dodeca-t" aria-label="깎은 정십이면체 깎아 보고 세어 보기"><rect x="296" y="160" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="296" y="160" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(304 168)"><path d="M30.6 49.4L21.9 43.1L13.2 40.9L7.8 43.7L7.8 50.4L13.2 58.4L21.9 64.7L30.6 66.9L36 64.1L36 57.4Z" fill="#577f7f"/>
+<path d="M21.9 22.8L18.6 32.9L21.9 43.1L30.6 49.4L41.4 49.4L50.1 43.1L53.4 32.9L50.1 22.8L41.4 16.5L30.6 16.5Z" fill="#66999a"/>
+<path d="M36 57.4L41.4 49.4L30.6 49.4Z" fill="#ad9263"/>
+<path d="M58.8 58.4L64.2 50.4L64.2 43.7L58.8 40.9L50.1 43.1L41.4 49.4L36 57.4L36 64.1L41.4 66.9L50.1 64.7Z" fill="#547879"/>
+<path d="M36 64.1L30.6 66.9L41.4 66.9Z" fill="#a0875d"/>
+<path d="M50.1 7.3L41.4 5.1L30.6 5.1L21.9 7.3L18.6 10.8L21.9 14.3L30.6 16.5L41.4 16.5L50.1 14.3L53.4 10.8Z" fill="#699e9f"/>
+<path d="M4.5 40.2L7.8 50.4L7.8 43.7Z" fill="#b79a68"/>
+<path d="M58.8 40.9L64.2 43.7L67.5 40.2L67.5 31.8L64.2 21.6L58.8 13.6L53.4 10.8L50.1 14.3L50.1 22.8L53.4 32.9Z" fill="#557c7c"/>
+<path d="M53.4 10.8L58.8 13.6L50.1 7.3Z" fill="#b29665"/>
+<path d="M50.1 14.3L41.4 16.5L50.1 22.8Z" fill="#ccab72"/>
+<path d="M53.4 32.9L50.1 43.1L58.8 40.9Z" fill="#ab9162"/>
+<path d="M67.5 40.2L64.2 43.7L64.2 50.4Z" fill="#a0875d"/>
+<path d="M13.2 13.6L18.6 10.8L21.9 7.3Z" fill="#d8b577"/>
+<path d="M7.8 43.7L13.2 40.9L18.6 32.9L21.9 22.8L21.9 14.3L18.6 10.8L13.2 13.6L7.8 21.6L4.5 31.8L4.5 40.2Z" fill="#6ba1a2"/>
+<path d="M30.6 16.5L21.9 14.3L21.9 22.8Z" fill="#e7c07e"/>
+<path d="M18.6 32.9L13.2 40.9L21.9 43.1Z" fill="#d0ae73"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M30.6 49.4L21.9 43.1L13.2 40.9L7.8 43.7L7.8 50.4L13.2 58.4L21.9 64.7L30.6 66.9L36 64.1L36 57.4Z"/><path d="M21.9 22.8L18.6 32.9L21.9 43.1L30.6 49.4L41.4 49.4L50.1 43.1L53.4 32.9L50.1 22.8L41.4 16.5L30.6 16.5Z"/><path d="M36 57.4L41.4 49.4L30.6 49.4Z"/><path d="M58.8 58.4L64.2 50.4L64.2 43.7L58.8 40.9L50.1 43.1L41.4 49.4L36 57.4L36 64.1L41.4 66.9L50.1 64.7Z"/><path d="M36 64.1L30.6 66.9L41.4 66.9Z"/><path d="M50.1 7.3L41.4 5.1L30.6 5.1L21.9 7.3L18.6 10.8L21.9 14.3L30.6 16.5L41.4 16.5L50.1 14.3L53.4 10.8Z"/><path d="M4.5 40.2L7.8 50.4L7.8 43.7Z"/><path d="M58.8 40.9L64.2 43.7L67.5 40.2L67.5 31.8L64.2 21.6L58.8 13.6L53.4 10.8L50.1 14.3L50.1 22.8L53.4 32.9Z"/><path d="M53.4 10.8L58.8 13.6L50.1 7.3Z"/><path d="M50.1 14.3L41.4 16.5L50.1 22.8Z"/><path d="M53.4 32.9L50.1 43.1L58.8 40.9Z"/><path d="M67.5 40.2L64.2 43.7L64.2 50.4Z"/><path d="M13.2 13.6L18.6 10.8L21.9 7.3Z"/><path d="M7.8 43.7L13.2 40.9L18.6 32.9L21.9 22.8L21.9 14.3L18.6 10.8L13.2 13.6L7.8 21.6L4.5 31.8L4.5 40.2Z"/><path d="M30.6 16.5L21.9 14.3L21.9 22.8Z"/><path d="M18.6 32.9L13.2 40.9L21.9 43.1Z"/></g></g><text x="388" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 정십이면체</text><text x="388" y="210" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·10·10</text><polygon points="394.5,221.8 388.9,231.6 400.1,231.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="412.5,220.8 409.2,223.2 408.0,227.0 409.2,230.8 412.5,233.2 416.5,233.2 419.8,230.8 421.0,227.0 419.8,223.2 416.5,220.8" fill="#4f8a8b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><a href="sim.html#dodeca-t" aria-label="깎은 정이십면체 깎아 보고 세어 보기"><rect x="936" y="160" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="936" y="160" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(944 168)"><path d="M64.8 45.6L57.2 49.2L50.4 59.5L53.8 62.3L62.7 53.7Z" fill="#707b68"/>
+<path d="M51.7 40.2L57.2 49.2L64.8 45.6L66.9 33L61.4 24.1L53.8 27.7Z" fill="#796f87"/>
+<path d="M51.7 40.2L53.8 27.7L42.8 21.3L33.9 29.9L39.4 41.6Z" fill="#86957c"/>
+<path d="M61.4 24.1L66.9 33L66.9 28.6L61.4 16.9L58 14.1Z" fill="#707b68"/>
+<path d="M58 14.1L47 7.8L39.4 11.3L42.8 21.3L53.8 27.7L61.4 24.1Z" fill="#9184a2"/>
+<path d="M27.1 5.5L27.1 10L39.4 11.3L47 7.8L39.4 4.2Z" fill="#91a286"/>
+<path d="M20.3 50.5L14.8 38.8L7.2 35.3L5.1 43.4L10.6 55.1L18.2 58.6Z" fill="#8b7f9b"/>
+<path d="M39.4 41.6L32.6 51.9L38.1 60.8L50.4 59.5L57.2 49.2L51.7 40.2Z" fill="#7b7189"/>
+<path d="M7.2 26.4L5.1 39L5.1 43.4L7.2 35.3L9.3 22.7L9.3 18.3Z" fill="#9386a5"/>
+<path d="M33.9 29.9L21.6 28.5L14.8 38.8L20.3 50.5L32.6 51.9L39.4 41.6Z" fill="#9688a8"/>
+<path d="M14 57.9L25 64.2L32.6 67.8L29.2 65L18.2 58.6L10.6 55.1Z" fill="#786e86"/>
+<path d="M44.9 66.5L53.8 62.3L50.4 59.5L38.1 60.8L29.2 65L32.6 67.8Z" fill="#786e86"/>
+<path d="M18.2 58.6L29.2 65L38.1 60.8L32.6 51.9L20.3 50.5Z" fill="#737f6b"/>
+<path d="M9.3 18.3L9.3 22.7L18.2 18.6L27.1 10L27.1 5.5L18.2 9.7Z" fill="#a495b9"/>
+<path d="M18.2 18.6L9.3 22.7L7.2 35.3L14.8 38.8L21.6 28.5Z" fill="#96a88a"/>
+<path d="M21.6 28.5L33.9 29.9L42.8 21.3L39.4 11.3L27.1 10L18.2 18.6Z" fill="#a697bb"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M64.8 45.6L57.2 49.2L50.4 59.5L53.8 62.3L62.7 53.7Z"/><path d="M51.7 40.2L57.2 49.2L64.8 45.6L66.9 33L61.4 24.1L53.8 27.7Z"/><path d="M51.7 40.2L53.8 27.7L42.8 21.3L33.9 29.9L39.4 41.6Z"/><path d="M61.4 24.1L66.9 33L66.9 28.6L61.4 16.9L58 14.1Z"/><path d="M58 14.1L47 7.8L39.4 11.3L42.8 21.3L53.8 27.7L61.4 24.1Z"/><path d="M27.1 5.5L27.1 10L39.4 11.3L47 7.8L39.4 4.2Z"/><path d="M20.3 50.5L14.8 38.8L7.2 35.3L5.1 43.4L10.6 55.1L18.2 58.6Z"/><path d="M39.4 41.6L32.6 51.9L38.1 60.8L50.4 59.5L57.2 49.2L51.7 40.2Z"/><path d="M7.2 26.4L5.1 39L5.1 43.4L7.2 35.3L9.3 22.7L9.3 18.3Z"/><path d="M33.9 29.9L21.6 28.5L14.8 38.8L20.3 50.5L32.6 51.9L39.4 41.6Z"/><path d="M14 57.9L25 64.2L32.6 67.8L29.2 65L18.2 58.6L10.6 55.1Z"/><path d="M44.9 66.5L53.8 62.3L50.4 59.5L38.1 60.8L29.2 65L32.6 67.8Z"/><path d="M18.2 58.6L29.2 65L38.1 60.8L32.6 51.9L20.3 50.5Z"/><path d="M9.3 18.3L9.3 22.7L18.2 18.6L27.1 10L27.1 5.5L18.2 9.7Z"/><path d="M18.2 18.6L9.3 22.7L7.2 35.3L14.8 38.8L21.6 28.5Z"/><path d="M21.6 28.5L33.9 29.9L42.8 21.3L39.4 11.3L27.1 10L18.2 18.6Z"/></g></g><text x="1028" y="192" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 정이십면체</text><text x="1028" y="210" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">5·6·6</text><polygon points="1034.5,220.5 1028.3,225.0 1030.7,232.3 1038.3,232.3 1040.7,225.0" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="1051.2,221.4 1048.0,227.0 1051.2,232.6 1057.8,232.6 1061.0,227.0 1057.8,221.4" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="320.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">끝까지 깎기</text><a href="sim.html#dodeca-r" aria-label="십이이십면체 깎아 보고 세어 보기"><rect x="616" y="272" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="272" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 280)"><path d="M54.8 44.9L44.4 29L36 46.9Z" fill="#b79a68"/>
+<path d="M30.8 15.9L44.4 29L49.6 13.8Z" fill="#d4b276"/>
+<path d="M22.4 65L41.2 67.1L27.6 60.7Z" fill="#a0875d"/>
+<path d="M17.2 44.9L27.6 60.7L36 46.9Z" fill="#b59867"/>
+<path d="M58 57.3L41.2 67.1L52.8 61.6Z" fill="#a0875d"/>
+<path d="M54.8 44.9L58 57.3L66.4 39.4Z" fill="#a0875d"/>
+<path d="M66.4 39.4L66.4 32.6L63.2 20.2Z" fill="#a0875d"/>
+<path d="M49.6 7L49.6 13.8L63.2 20.2Z" fill="#b69967"/>
+<path d="M14 25.7L5.6 39.4L17.2 44.9Z" fill="#d1af74"/>
+<path d="M19.2 10.4L14 25.7L30.8 15.9Z" fill="#e7c17e"/>
+<path d="M27.6 60.7L17.2 44.9L5.6 39.4L8.8 51.8L22.4 65Z" fill="#76826d"/>
+<path d="M36 46.9L27.6 60.7L41.2 67.1L58 57.3L54.8 44.9Z" fill="#707b68"/>
+<path d="M63.2 20.2L49.6 13.8L44.4 29L54.8 44.9L66.4 39.4Z" fill="#78856f"/>
+<path d="M49.6 13.8L49.6 7L30.8 4.9L19.2 10.4L30.8 15.9Z" fill="#91a286"/>
+<path d="M17.2 44.9L36 46.9L44.4 29L30.8 15.9L14 25.7Z" fill="#92a386"/>
+<path d="M14 14.7L5.6 32.6L5.6 39.4L14 25.7L19.2 10.4Z" fill="#8fa084"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M54.8 44.9L44.4 29L36 46.9Z"/><path d="M30.8 15.9L44.4 29L49.6 13.8Z"/><path d="M22.4 65L41.2 67.1L27.6 60.7Z"/><path d="M17.2 44.9L27.6 60.7L36 46.9Z"/><path d="M58 57.3L41.2 67.1L52.8 61.6Z"/><path d="M54.8 44.9L58 57.3L66.4 39.4Z"/><path d="M66.4 39.4L66.4 32.6L63.2 20.2Z"/><path d="M49.6 7L49.6 13.8L63.2 20.2Z"/><path d="M14 25.7L5.6 39.4L17.2 44.9Z"/><path d="M19.2 10.4L14 25.7L30.8 15.9Z"/><path d="M27.6 60.7L17.2 44.9L5.6 39.4L8.8 51.8L22.4 65Z"/><path d="M36 46.9L27.6 60.7L41.2 67.1L58 57.3L54.8 44.9Z"/><path d="M63.2 20.2L49.6 13.8L44.4 29L54.8 44.9L66.4 39.4Z"/><path d="M49.6 13.8L49.6 7L30.8 4.9L19.2 10.4L30.8 15.9Z"/><path d="M17.2 44.9L36 46.9L44.4 29L30.8 15.9L14 25.7Z"/><path d="M14 14.7L5.6 32.6L5.6 39.4L14 25.7L19.2 10.4Z"/></g></g><text x="708" y="304" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">십이이십면체</text><text x="708" y="322" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·5·3·5</text><polygon points="714.5,333.8 708.9,343.6 720.1,343.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="734.5,332.5 728.3,337.0 730.7,344.3 738.3,344.3 740.7,337.0" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="432.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">모서리 깎기</text><a href="sim.html#dodeca-c" aria-label="마름모십이이십면체 깎아 보고 세어 보기"><rect x="616" y="384" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="384" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 392)"><path d="M28.1 11.4L42.4 11.7L47.8 7.2L36.9 4L24.7 6.6Z" fill="#91a286"/>
+<path d="M24.7 6.6L12.9 14.7L16.3 19.4L28.1 11.4Z" fill="#7d98b8"/>
+<path d="M12.9 14.7L24.7 6.6L18.3 10.1Z" fill="#d6b376"/>
+<path d="M27.2 64.1L35.1 68L41.5 64.4Z" fill="#a0875d"/>
+<path d="M41.5 64.4L53.7 61.9L60.7 51.4L52.8 47.5L40.9 55.5Z" fill="#707b68"/>
+<path d="M41.5 64.4L35.1 68L47.3 65.4L53.7 61.9Z" fill="#5d6e83"/>
+<path d="M12.9 56.1L16.3 60.9L9 50L5.6 45.3Z" fill="#5e6f84"/>
+<path d="M9 50L16.3 60.9L27.2 64.1L26.6 55.2L15.4 46.5Z" fill="#76826d"/>
+<path d="M5.9 25.2L5 36.4L11.4 32.9L16.3 19.4L12.9 14.7Z" fill="#93a487"/>
+<path d="M41.5 23L27.2 22.6L22.3 36L33.6 44.7L45.5 36.6Z" fill="#8e9f83"/>
+<path d="M16.3 19.4L27.2 22.6L28.1 11.4Z" fill="#e7c17e"/>
+<path d="M33.6 44.7L40.9 55.5L52.8 47.5L45.5 36.6Z" fill="#64788f"/>
+<path d="M15.4 46.5L22.3 36L11.4 32.9Z" fill="#d0af74"/>
+<path d="M59.1 15.9L55.7 11.1L47.8 7.2Z" fill="#b29766"/>
+<path d="M59.1 15.9L47.8 7.2L42.4 11.7L53.7 20.4Z" fill="#6d839e"/>
+<path d="M45.5 36.6L52.8 47.5L57.7 34.1Z" fill="#ae9364"/>
+<path d="M45.5 36.6L57.7 34.1L53.7 20.4L41.5 23Z" fill="#6c829b"/>
+<path d="M53.7 20.4L57.7 34.1L65.5 38L66.4 26.7L59.1 15.9Z" fill="#74806b"/>
+<path d="M26.6 55.2L33.6 44.7L22.3 36L15.4 46.5Z" fill="#6d839d"/>
+<path d="M5 36.4L5.6 45.3L9 50Z" fill="#b69967"/>
+<path d="M15.4 46.5L11.4 32.9L5 36.4L9 50Z" fill="#6f85a0"/>
+<path d="M42.4 11.7L41.5 23L53.7 20.4Z" fill="#cead72"/>
+<path d="M28.1 11.4L27.2 22.6L41.5 23L42.4 11.7Z" fill="#7b95b4"/>
+<path d="M40.9 55.5L33.6 44.7L26.6 55.2Z" fill="#af9464"/>
+<path d="M40.9 55.5L26.6 55.2L27.2 64.1L41.5 64.4Z" fill="#5d6e83"/>
+<path d="M65.5 38L60.7 51.4L66.1 46.8Z" fill="#a0875d"/>
+<path d="M66.1 46.8L60.7 51.4L53.7 61.9L59.1 57.3Z" fill="#5d6e83"/>
+<path d="M67 35.6L66.4 26.7L65.5 38L66.1 46.8Z" fill="#5d6e83"/>
+<path d="M24.2 64.8L35.1 68L27.2 64.1L16.3 60.9Z" fill="#5d6e83"/>
+<path d="M16.3 19.4L11.4 32.9L22.3 36L27.2 22.6Z" fill="#7b96b5"/>
+<path d="M57.7 34.1L52.8 47.5L60.7 51.4L65.5 38Z" fill="#5d6e83"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M28.1 11.4L42.4 11.7L47.8 7.2L36.9 4L24.7 6.6Z"/><path d="M24.7 6.6L12.9 14.7L16.3 19.4L28.1 11.4Z"/><path d="M12.9 14.7L24.7 6.6L18.3 10.1Z"/><path d="M27.2 64.1L35.1 68L41.5 64.4Z"/><path d="M41.5 64.4L53.7 61.9L60.7 51.4L52.8 47.5L40.9 55.5Z"/><path d="M41.5 64.4L35.1 68L47.3 65.4L53.7 61.9Z"/><path d="M12.9 56.1L16.3 60.9L9 50L5.6 45.3Z"/><path d="M9 50L16.3 60.9L27.2 64.1L26.6 55.2L15.4 46.5Z"/><path d="M5.9 25.2L5 36.4L11.4 32.9L16.3 19.4L12.9 14.7Z"/><path d="M41.5 23L27.2 22.6L22.3 36L33.6 44.7L45.5 36.6Z"/><path d="M16.3 19.4L27.2 22.6L28.1 11.4Z"/><path d="M33.6 44.7L40.9 55.5L52.8 47.5L45.5 36.6Z"/><path d="M15.4 46.5L22.3 36L11.4 32.9Z"/><path d="M59.1 15.9L55.7 11.1L47.8 7.2Z"/><path d="M59.1 15.9L47.8 7.2L42.4 11.7L53.7 20.4Z"/><path d="M45.5 36.6L52.8 47.5L57.7 34.1Z"/><path d="M45.5 36.6L57.7 34.1L53.7 20.4L41.5 23Z"/><path d="M53.7 20.4L57.7 34.1L65.5 38L66.4 26.7L59.1 15.9Z"/><path d="M26.6 55.2L33.6 44.7L22.3 36L15.4 46.5Z"/><path d="M5 36.4L5.6 45.3L9 50Z"/><path d="M15.4 46.5L11.4 32.9L5 36.4L9 50Z"/><path d="M42.4 11.7L41.5 23L53.7 20.4Z"/><path d="M28.1 11.4L27.2 22.6L41.5 23L42.4 11.7Z"/><path d="M40.9 55.5L33.6 44.7L26.6 55.2Z"/><path d="M40.9 55.5L26.6 55.2L27.2 64.1L41.5 64.4Z"/><path d="M65.5 38L60.7 51.4L66.1 46.8Z"/><path d="M66.1 46.8L60.7 51.4L53.7 61.9L59.1 57.3Z"/><path d="M67 35.6L66.4 26.7L65.5 38L66.1 46.8Z"/><path d="M24.2 64.8L35.1 68L27.2 64.1L16.3 60.9Z"/><path d="M16.3 19.4L11.4 32.9L22.3 36L27.2 22.6Z"/><path d="M57.7 34.1L52.8 47.5L60.7 51.4L65.5 38Z"/></g></g><text x="708" y="416" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">마름모십이이십면체</text><text x="708" y="434" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·4·5·4</text><polygon points="714.5,445.8 708.9,455.6 720.1,455.6" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="729.9,446.4 729.9,455.6 739.1,455.6 739.1,446.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="754.5,444.5 748.3,449.0 750.7,456.3 758.3,456.3 760.7,449.0" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="544.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">모두 깎기</text><a href="sim.html#dodeca-o" aria-label="깎은 십이이십면체 깎아 보고 세어 보기"><rect x="616" y="496" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="496" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 504)"><path d="M4.6 36.7L7.2 39.4L11.4 37.3L15.6 31L18.2 23L18.2 16.4L15.6 13.7L11.4 15.9L7.2 22.1L4.6 30.1Z" fill="#6ba1a2"/>
+<path d="M51.2 63.8L58 58.9L62.2 52.6L62.2 47.4L58 45.2L51.2 46.9L44.4 51.8L40.2 58.1L40.2 63.3L44.4 65.5Z" fill="#547879"/>
+<path d="M22.4 32.7L25 40.6L31.8 45.6L40.2 45.6L47 40.6L49.6 32.7L47 24.7L40.2 19.8L31.8 19.8L25 24.7Z" fill="#66999a"/>
+<path d="M27.6 51.8L31.8 45.6L25 40.6L20.8 46.9Z" fill="#6c829c"/>
+<path d="M20.8 46.9L14 45.2L9.8 47.4L9.8 52.6L14 58.9L20.8 63.8L27.6 65.5L31.8 63.3L31.8 58.1L27.6 51.8Z" fill="#577f7f"/>
+<path d="M31.8 63.3L40.2 63.3L40.2 58.1L31.8 58.1Z" fill="#5d6e83"/>
+<path d="M31.8 58.1L40.2 58.1L44.4 51.8L40.2 45.6L31.8 45.6L27.6 51.8Z" fill="#827791"/>
+<path d="M56.4 31L60.6 37.3L64.8 39.4L67.4 36.7L67.4 30.1L64.8 22.1L60.6 15.9L56.4 13.7L53.8 16.4L53.8 23Z" fill="#557c7c"/>
+<path d="M14 13.1L11.4 15.9L15.6 13.7L22.4 8.8L25 6.1L20.8 8.2Z" fill="#9f91b3"/>
+<path d="M40.2 4.4L31.8 4.4L25 6.1L22.4 8.8L25 11.5L31.8 13.2L40.2 13.2L47 11.5L49.6 8.8L47 6.1Z" fill="#699e9f"/>
+<path d="M4.6 36.7L4.6 41.9L7.2 49.9L9.8 52.6L9.8 47.4L7.2 39.4Z" fill="#897d99"/>
+<path d="M25 24.7L18.2 23L15.6 31L22.4 32.7Z" fill="#7b95b5"/>
+<path d="M58 58.9L60.6 56.1L64.8 49.9L62.2 52.6Z" fill="#5d6e83"/>
+<path d="M56.4 31L49.6 32.7L47 40.6L51.2 46.9L58 45.2L60.6 37.3Z" fill="#80758f"/>
+<path d="M60.6 37.3L58 45.2L62.2 47.4L64.8 39.4Z" fill="#5d6e83"/>
+<path d="M53.8 23L47 24.7L49.6 32.7L56.4 31Z" fill="#6a8099"/>
+<path d="M31.8 19.8L31.8 13.2L25 11.5L18.2 16.4L18.2 23L25 24.7Z" fill="#a999be"/>
+<path d="M7.2 39.4L9.8 47.4L14 45.2L11.4 37.3Z" fill="#6f86a1"/>
+<path d="M44.4 65.5L40.2 67.6L47 65.9L51.2 63.8Z" fill="#5d6e83"/>
+<path d="M31.8 67.6L27.6 65.5L20.8 63.8L25 65.9Z" fill="#5d6e83"/>
+<path d="M40.2 19.8L40.2 13.2L31.8 13.2L31.8 19.8Z" fill="#7a94b3"/>
+<path d="M49.6 8.8L56.4 13.7L60.6 15.9L58 13.1L51.2 8.2L47 6.1Z" fill="#857994"/>
+<path d="M47 11.5L53.8 16.4L56.4 13.7L49.6 8.8Z" fill="#6c829c"/>
+<path d="M44.4 51.8L51.2 46.9L47 40.6L40.2 45.6Z" fill="#63778d"/>
+<path d="M11.4 56.1L14 58.9L9.8 52.6L7.2 49.9Z" fill="#5e7085"/>
+<path d="M15.6 13.7L18.2 16.4L25 11.5L22.4 8.8Z" fill="#7d98b8"/>
+<path d="M67.4 41.9L67.4 36.7L64.8 39.4L62.2 47.4L62.2 52.6L64.8 49.9Z" fill="#786e86"/>
+<path d="M40.2 63.3L31.8 63.3L27.6 65.5L31.8 67.6L40.2 67.6L44.4 65.5Z" fill="#786e86"/>
+<path d="M53.8 16.4L47 11.5L40.2 13.2L40.2 19.8L47 24.7L53.8 23Z" fill="#9789a9"/>
+<path d="M22.4 32.7L15.6 31L11.4 37.3L14 45.2L20.8 46.9L25 40.6Z" fill="#998cac"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M4.6 36.7L7.2 39.4L11.4 37.3L15.6 31L18.2 23L18.2 16.4L15.6 13.7L11.4 15.9L7.2 22.1L4.6 30.1Z"/><path d="M51.2 63.8L58 58.9L62.2 52.6L62.2 47.4L58 45.2L51.2 46.9L44.4 51.8L40.2 58.1L40.2 63.3L44.4 65.5Z"/><path d="M22.4 32.7L25 40.6L31.8 45.6L40.2 45.6L47 40.6L49.6 32.7L47 24.7L40.2 19.8L31.8 19.8L25 24.7Z"/><path d="M27.6 51.8L31.8 45.6L25 40.6L20.8 46.9Z"/><path d="M20.8 46.9L14 45.2L9.8 47.4L9.8 52.6L14 58.9L20.8 63.8L27.6 65.5L31.8 63.3L31.8 58.1L27.6 51.8Z"/><path d="M31.8 63.3L40.2 63.3L40.2 58.1L31.8 58.1Z"/><path d="M31.8 58.1L40.2 58.1L44.4 51.8L40.2 45.6L31.8 45.6L27.6 51.8Z"/><path d="M56.4 31L60.6 37.3L64.8 39.4L67.4 36.7L67.4 30.1L64.8 22.1L60.6 15.9L56.4 13.7L53.8 16.4L53.8 23Z"/><path d="M14 13.1L11.4 15.9L15.6 13.7L22.4 8.8L25 6.1L20.8 8.2Z"/><path d="M40.2 4.4L31.8 4.4L25 6.1L22.4 8.8L25 11.5L31.8 13.2L40.2 13.2L47 11.5L49.6 8.8L47 6.1Z"/><path d="M4.6 36.7L4.6 41.9L7.2 49.9L9.8 52.6L9.8 47.4L7.2 39.4Z"/><path d="M25 24.7L18.2 23L15.6 31L22.4 32.7Z"/><path d="M58 58.9L60.6 56.1L64.8 49.9L62.2 52.6Z"/><path d="M56.4 31L49.6 32.7L47 40.6L51.2 46.9L58 45.2L60.6 37.3Z"/><path d="M60.6 37.3L58 45.2L62.2 47.4L64.8 39.4Z"/><path d="M53.8 23L47 24.7L49.6 32.7L56.4 31Z"/><path d="M31.8 19.8L31.8 13.2L25 11.5L18.2 16.4L18.2 23L25 24.7Z"/><path d="M7.2 39.4L9.8 47.4L14 45.2L11.4 37.3Z"/><path d="M44.4 65.5L40.2 67.6L47 65.9L51.2 63.8Z"/><path d="M31.8 67.6L27.6 65.5L20.8 63.8L25 65.9Z"/><path d="M40.2 19.8L40.2 13.2L31.8 13.2L31.8 19.8Z"/><path d="M49.6 8.8L56.4 13.7L60.6 15.9L58 13.1L51.2 8.2L47 6.1Z"/><path d="M47 11.5L53.8 16.4L56.4 13.7L49.6 8.8Z"/><path d="M44.4 51.8L51.2 46.9L47 40.6L40.2 45.6Z"/><path d="M11.4 56.1L14 58.9L9.8 52.6L7.2 49.9Z"/><path d="M15.6 13.7L18.2 16.4L25 11.5L22.4 8.8Z"/><path d="M67.4 41.9L67.4 36.7L64.8 39.4L62.2 47.4L62.2 52.6L64.8 49.9Z"/><path d="M40.2 63.3L31.8 63.3L27.6 65.5L31.8 67.6L40.2 67.6L44.4 65.5Z"/><path d="M53.8 16.4L47 11.5L40.2 13.2L40.2 19.8L47 24.7L53.8 23Z"/><path d="M22.4 32.7L15.6 31L11.4 37.3L14 45.2L20.8 46.9L25 40.6Z"/></g></g><text x="708" y="528" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎은 십이이십면체</text><text x="708" y="546" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">4·6·10</text><polygon points="709.9,558.4 709.9,567.6 719.1,567.6 719.1,558.4" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="731.2,557.4 728.0,563.0 731.2,568.6 737.8,568.6 741.0,563.0 737.8,557.4" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="752.5,556.8 749.2,559.2 748.0,563.0 749.2,566.8 752.5,569.2 756.5,569.2 759.8,566.8 761.0,563.0 759.8,559.2 756.5,556.8" fill="#4f8a8b" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="56" y="656.0" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">비틀기</text><a href="sim.html#dodeca-s" aria-label="다듬은 십이면체 깎아 보고 세어 보기"><rect x="616" y="608" width="280" height="88" rx="6" fill="#f5f5f5"/><rect x="616" y="608" width="280" height="88" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(624 616)"><path d="M18.7 51.7L32.3 57.5L28.9 44.6Z" fill="#b59867"/>
+<path d="M14.9 15.5L19.9 23L27.7 11.6Z" fill="#e7c17e"/>
+<path d="M6.9 49.4L8.6 43.6L4.2 35Z" fill="#ba9d69"/>
+<path d="M44.3 66.9L37.8 65.5L29.5 67.3Z" fill="#a0875d"/>
+<path d="M6.9 49.4L16 61L23.3 62.5L18.7 51.7L8.6 43.6Z" fill="#76826d"/>
+<path d="M23.3 62.5L32.3 57.5L18.7 51.7Z" fill="#a78e61"/>
+<path d="M37.8 65.5L32.3 57.5L23.3 62.5Z" fill="#a0875d"/>
+<path d="M29.5 67.3L37.8 65.5L23.3 62.5Z" fill="#a0875d"/>
+<path d="M32.3 57.5L43.1 48.7L28.9 44.6Z" fill="#b19665"/>
+<path d="M37.8 65.5L52.1 61.6L55.3 51.2L43.1 48.7L32.3 57.5Z" fill="#707b68"/>
+<path d="M28.9 44.6L43.1 48.7L39.7 34.6Z" fill="#bd9f6b"/>
+<path d="M18.7 51.7L28.9 44.6L16.7 37.5Z" fill="#c5a56e"/>
+<path d="M8.6 43.6L18.7 51.7L16.7 37.5Z" fill="#c5a56e"/>
+<path d="M19.9 23L16.7 37.5L28.9 44.6L39.7 34.6L34.2 21.2Z" fill="#92a386"/>
+<path d="M44.3 66.9L57.1 59.8L52.1 61.6Z" fill="#a0875d"/>
+<path d="M52.1 61.6L37.8 65.5L44.3 66.9Z" fill="#a0875d"/>
+<path d="M19.9 23L34.2 21.2L27.7 11.6Z" fill="#e5bf7d"/>
+<path d="M27.7 11.6L34.2 21.2L42.5 12.1Z" fill="#dfbb7b"/>
+<path d="M42.5 12.1L34.2 21.2L48.7 23.9Z" fill="#d4b276"/>
+<path d="M34.2 21.2L39.7 34.6L48.7 23.9Z" fill="#d0ae73"/>
+<path d="M24.4 6.7L27.7 11.6L42.5 12.1L48.3 7.4L37.1 4.1Z" fill="#91a286"/>
+<path d="M48.3 7.4L59.9 14.8L50.2 8.3Z" fill="#b19565"/>
+<path d="M59.9 14.8L65.1 26.5L66 26.2Z" fill="#a0875d"/>
+<path d="M56 16.7L48.7 23.9L53.3 38L63.4 39.6L65.1 26.5Z" fill="#78856f"/>
+<path d="M43.1 48.7L55.3 51.2L53.3 38Z" fill="#a68c60"/>
+<path d="M39.7 34.6L53.3 38L48.7 23.9Z" fill="#bfa16c"/>
+<path d="M39.7 34.6L43.1 48.7L53.3 38Z" fill="#b79a68"/>
+<path d="M56 16.7L65.1 26.5L59.9 14.8Z" fill="#a98f61"/>
+<path d="M48.3 7.4L56 16.7L59.9 14.8Z" fill="#b69967"/>
+<path d="M42.5 12.1L56 16.7L48.3 7.4Z" fill="#c6a66f"/>
+<path d="M48.7 23.9L56 16.7L42.5 12.1Z" fill="#c8a870"/>
+<path d="M62.8 51.8L55.3 51.2L52.1 61.6Z" fill="#a0875d"/>
+<path d="M57.1 59.8L62.8 51.8L52.1 61.6Z" fill="#a0875d"/>
+<path d="M6.8 25.4L4.2 35L9.2 28.9L14.9 15.5L13.4 13.4Z" fill="#8fa084"/>
+<path d="M29.5 67.3L23.3 62.5L16 61Z" fill="#a0875d"/>
+<path d="M9.2 28.9L19.9 23L14.9 15.5Z" fill="#e3be7c"/>
+<path d="M16.7 37.5L19.9 23L9.2 28.9Z" fill="#ddb97a"/>
+<path d="M4.2 35L8.6 43.6L9.2 28.9Z" fill="#cbaa71"/>
+<path d="M9.2 28.9L8.6 43.6L16.7 37.5Z" fill="#d1af74"/>
+<path d="M53.3 38L55.3 51.2L63.4 39.6Z" fill="#a0875d"/>
+<path d="M63.4 39.6L55.3 51.2L62.8 51.8Z" fill="#a0875d"/>
+<path d="M66 26.2L65.1 26.5L67.8 39Z" fill="#a0875d"/>
+<path d="M65.1 26.5L63.4 39.6L67.8 39Z" fill="#a0875d"/>
+<path d="M63.4 39.6L62.8 51.8L67.8 39Z" fill="#a0875d"/>
+<path d="M14.9 15.5L27.7 11.6L24.4 6.7Z" fill="#e3be7d"/>
+<path d="M13.4 13.4L14.9 15.5L24.4 6.7Z" fill="#dcb879"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.65" stroke-linejoin="round"><path d="M18.7 51.7L32.3 57.5L28.9 44.6Z"/><path d="M14.9 15.5L19.9 23L27.7 11.6Z"/><path d="M6.9 49.4L8.6 43.6L4.2 35Z"/><path d="M44.3 66.9L37.8 65.5L29.5 67.3Z"/><path d="M6.9 49.4L16 61L23.3 62.5L18.7 51.7L8.6 43.6Z"/><path d="M23.3 62.5L32.3 57.5L18.7 51.7Z"/><path d="M37.8 65.5L32.3 57.5L23.3 62.5Z"/><path d="M29.5 67.3L37.8 65.5L23.3 62.5Z"/><path d="M32.3 57.5L43.1 48.7L28.9 44.6Z"/><path d="M37.8 65.5L52.1 61.6L55.3 51.2L43.1 48.7L32.3 57.5Z"/><path d="M28.9 44.6L43.1 48.7L39.7 34.6Z"/><path d="M18.7 51.7L28.9 44.6L16.7 37.5Z"/><path d="M8.6 43.6L18.7 51.7L16.7 37.5Z"/><path d="M19.9 23L16.7 37.5L28.9 44.6L39.7 34.6L34.2 21.2Z"/><path d="M44.3 66.9L57.1 59.8L52.1 61.6Z"/><path d="M52.1 61.6L37.8 65.5L44.3 66.9Z"/><path d="M19.9 23L34.2 21.2L27.7 11.6Z"/><path d="M27.7 11.6L34.2 21.2L42.5 12.1Z"/><path d="M42.5 12.1L34.2 21.2L48.7 23.9Z"/><path d="M34.2 21.2L39.7 34.6L48.7 23.9Z"/><path d="M24.4 6.7L27.7 11.6L42.5 12.1L48.3 7.4L37.1 4.1Z"/><path d="M48.3 7.4L59.9 14.8L50.2 8.3Z"/><path d="M59.9 14.8L65.1 26.5L66 26.2Z"/><path d="M56 16.7L48.7 23.9L53.3 38L63.4 39.6L65.1 26.5Z"/><path d="M43.1 48.7L55.3 51.2L53.3 38Z"/><path d="M39.7 34.6L53.3 38L48.7 23.9Z"/><path d="M39.7 34.6L43.1 48.7L53.3 38Z"/><path d="M56 16.7L65.1 26.5L59.9 14.8Z"/><path d="M48.3 7.4L56 16.7L59.9 14.8Z"/><path d="M42.5 12.1L56 16.7L48.3 7.4Z"/><path d="M48.7 23.9L56 16.7L42.5 12.1Z"/><path d="M62.8 51.8L55.3 51.2L52.1 61.6Z"/><path d="M57.1 59.8L62.8 51.8L52.1 61.6Z"/><path d="M6.8 25.4L4.2 35L9.2 28.9L14.9 15.5L13.4 13.4Z"/><path d="M29.5 67.3L23.3 62.5L16 61Z"/><path d="M9.2 28.9L19.9 23L14.9 15.5Z"/><path d="M16.7 37.5L19.9 23L9.2 28.9Z"/><path d="M4.2 35L8.6 43.6L9.2 28.9Z"/><path d="M9.2 28.9L8.6 43.6L16.7 37.5Z"/><path d="M53.3 38L55.3 51.2L63.4 39.6Z"/><path d="M63.4 39.6L55.3 51.2L62.8 51.8Z"/><path d="M66 26.2L65.1 26.5L67.8 39Z"/><path d="M65.1 26.5L63.4 39.6L67.8 39Z"/><path d="M63.4 39.6L62.8 51.8L67.8 39Z"/><path d="M14.9 15.5L27.7 11.6L24.4 6.7Z"/><path d="M13.4 13.4L14.9 15.5L24.4 6.7Z"/></g></g><text x="708" y="640" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">다듬은 십이면체</text><text x="708" y="658" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="start">3·3·3·3·5</text><polygon points="714.5,669.8 708.9,679.5 720.1,679.5" fill="#c9a25e" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/><polygon points="734.5,668.5 728.3,673.0 730.7,680.3 738.3,680.3 740.7,673.0" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.7" stroke-linejoin="round"/></a><text x="64" y="754" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">면의 모양</text><rect x="135.2" y="744" width="14" height="10" rx="2" fill="#c9a25e" stroke="#2d3142" stroke-width="0.6"/><text x="155.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정삼각형</text><rect x="227.2" y="744" width="14" height="10" rx="2" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.6"/><text x="247.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정사각형</text><rect x="319.2" y="744" width="14" height="10" rx="2" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.6"/><text x="339.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정오각형</text><rect x="411.2" y="744" width="14" height="10" rx="2" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.6"/><text x="431.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정육각형</text><rect x="503.2" y="744" width="14" height="10" rx="2" fill="#4f8a8b" stroke="#2d3142" stroke-width="0.6"/><text x="523.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정십각형</text><path d="M595.2 749H617.2" stroke="#4f5d75" stroke-width="1" marker-end="url(#uni-dodeca-arrow)"/><text x="625.2" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">깎거나 비틀어 만든다</text><path d="M771.6 749H793.6" stroke="#4f5d75" stroke-width="1" stroke-dasharray="5,4"/><text x="801.6" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">짝</text><rect x="837.6" y="744" width="14" height="10" rx="2" fill="#ffffff" stroke="#2d3142" stroke-width="1"/><text x="857.6" y="754" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체</text></svg>
+</div>
+  </section>
+  <section class="sec" id="fam-prism">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no">04</span> PRISMS</p>
+      <h2>각기둥·엇각기둥 <span class="count">무수히 많음</span></h2>
+      <p class="sec-desc">정육면체는 옆면이 정사각형인 정사각기둥이고, 정팔면체는 옆면이 정삼각형인 정삼각엇각기둥이다. 밑면을 다른 정다각형으로 바꾸면 각기둥과 엇각기둥이 끝없이 생긴다. 칸을 누르면 돌려 보며 세어 볼 수 있다.</p>
+    </div>
+    <p class="scroll-hint">그림이 화면보다 넓으면 옆으로 밀어서 볼 수 있습니다.</p><div class="diagram-container">
+<svg viewBox="0 0 1280 564" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="uni-prism-title uni-prism-desc"><title id="uni-prism-title">각기둥과 엇각기둥</title><desc id="uni-prism-desc">정육면체는 정사각기둥, 정팔면체는 정삼각엇각기둥이다. 밑면을 정삼각형, 정사각형, 정오각형, 정육각형으로 바꾸어 가며 각기둥과 엇각기둥이 끝없이 이어지는 그림.</desc><defs><marker id="uni-prism-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker></defs><rect width="100%" height="100%" fill="#f5f5f5"/><text x="330" y="64" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정삼각형 밑면</text><text x="534" y="64" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정사각형 밑면</text><text x="738" y="64" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정오각형 밑면</text><text x="942" y="64" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정육각형 밑면</text><text x="1136" y="64" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">…</text><path d="M420 176H444" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M624 176H648" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M828 176H852" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M1032 176H1056" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M420 376H444" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M624 376H648" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M828 376H852" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><path d="M1032 376H1056" stroke="#4f5d75" stroke-width="1" fill="none" marker-end="url(#uni-prism-arrow)"/><text x="56" y="170" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">각기둥</text><text x="56" y="190" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">옆면이 정사각형</text><a href="sim.html#prism-3" aria-label="정삼각기둥 깎아 보고 세어 보기"><rect x="240" y="88" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="240" y="88" width="180" height="176" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(274.0 96)"><path d="M62.8 44.1L86.1 14.1L19.1 19.6Z" fill="#dab778"/>
+<path d="M62.8 104.2L86.1 74.2L86.1 14.1L62.8 44.1Z" fill="#5d6e83"/>
+<path d="M19.1 79.7L62.8 104.2L62.8 44.1L19.1 19.6Z" fill="#6c829c"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M62.8 44.1L86.1 14.1L19.1 19.6Z"/><path d="M62.8 104.2L86.1 74.2L86.1 14.1L62.8 44.1Z"/><path d="M19.1 79.7L62.8 104.2L62.8 44.1L19.1 19.6Z"/></g></g><text x="330.0" y="228" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정삼각기둥</text><text x="330.0" y="248" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle">3·4·4</text></a><a href="sim.html#prism-4" aria-label="정육면체 깎아 보고 세어 보기"><rect x="444" y="88" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="444" y="88" width="180" height="176" rx="6" fill="rgba(191,69,32,0.06)" stroke="#bf4520" stroke-width="1"/><g transform="translate(478.0 96)"><path d="M64.8 45.5L97.5 25L47.2 11.7L14.5 32.2Z" fill="#7891af"/>
+<path d="M97.5 79.8L97.5 25L64.8 45.5L64.8 100.3Z" fill="#5d6e83"/>
+<path d="M64.8 100.3L64.8 45.5L14.5 32.2L14.5 87Z" fill="#6c839d"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M64.8 45.5L97.5 25L47.2 11.7L14.5 32.2Z"/><path d="M97.5 79.8L97.5 25L64.8 45.5L64.8 100.3Z"/><path d="M64.8 100.3L64.8 45.5L14.5 32.2L14.5 87Z"/></g></g><text x="534.0" y="228" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정육면체</text><text x="534.0" y="249" fill="#bf4520" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">= 정사각기둥</text></a><a href="sim.html#prism-5" aria-label="정오각기둥 깎아 보고 세어 보기"><rect x="648" y="88" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="648" y="88" width="180" height="176" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(682.0 96)"><path d="M26 45.5L78.4 47.7L99.8 28.1L60.7 13.8L15 24.5Z" fill="#93a487"/>
+<path d="M99.8 76.3L99.8 28.1L78.4 47.7L78.4 95.9Z" fill="#5d6e83"/>
+<path d="M26 93.6L78.4 95.9L78.4 47.7L26 45.5Z" fill="#687c95"/>
+<path d="M26 93.6L26 45.5L15 24.5L15 72.7Z" fill="#6c829c"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M26 45.5L78.4 47.7L99.8 28.1L60.7 13.8L15 24.5Z"/><path d="M99.8 76.3L99.8 28.1L78.4 47.7L78.4 95.9Z"/><path d="M26 93.6L78.4 95.9L78.4 47.7L26 45.5Z"/><path d="M26 93.6L26 45.5L15 24.5L15 72.7Z"/></g></g><text x="738.0" y="228" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정오각기둥</text><text x="738.0" y="248" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle">4·4·5</text></a><a href="sim.html#prism-6" aria-label="정육각기둥 깎아 보고 세어 보기"><rect x="852" y="88" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="852" y="88" width="180" height="176" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(886.0 96)"><path d="M10.5 38.7L41.6 52.7L87.1 48.8L101.5 30.8L70.4 16.8L24.9 20.7Z" fill="#9f91b3"/>
+<path d="M10.5 81.2L41.6 95.2L41.6 52.7L10.5 38.7Z" fill="#6e849e"/>
+<path d="M101.5 73.3L101.5 30.8L87.1 48.8L87.1 91.3Z" fill="#5d6e83"/>
+<path d="M41.6 95.2L87.1 91.3L87.1 48.8L41.6 52.7Z" fill="#63778d"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M10.5 38.7L41.6 52.7L87.1 48.8L101.5 30.8L70.4 16.8L24.9 20.7Z"/><path d="M10.5 81.2L41.6 95.2L41.6 52.7L10.5 38.7Z"/><path d="M101.5 73.3L101.5 30.8L87.1 48.8L87.1 91.3Z"/><path d="M41.6 95.2L87.1 91.3L87.1 48.8L41.6 52.7Z"/></g></g><text x="942.0" y="228" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정육각기둥</text><text x="942.0" y="248" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle">4·4·6</text></a><text x="1136" y="170" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정칠각기둥,</text><text x="1136" y="190" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정팔각기둥, …</text><text x="56" y="370" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">엇각기둥</text><text x="56" y="390" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">옆면이 정삼각형</text><a href="sim.html#anti-3" aria-label="정팔면체 깎아 보고 세어 보기"><rect x="240" y="288" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="240" y="288" width="180" height="176" rx="6" fill="rgba(191,69,32,0.06)" stroke="#bf4520" stroke-width="1"/><g transform="translate(274.0 296)"><path d="M84.4 96.3L42.9 45L14.5 87Z" fill="#a88e61"/>
+<path d="M84.4 96.3L97.5 25L42.9 45Z" fill="#ad9263"/>
+<path d="M42.9 45L97.5 25L27.6 15.7Z" fill="#d9b578"/>
+<path d="M14.5 87L42.9 45L27.6 15.7Z" fill="#d3b075"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M84.4 96.3L42.9 45L14.5 87Z"/><path d="M84.4 96.3L97.5 25L42.9 45Z"/><path d="M42.9 45L97.5 25L27.6 15.7Z"/><path d="M14.5 87L42.9 45L27.6 15.7Z"/></g></g><text x="330.0" y="428" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정팔면체</text><text x="330.0" y="449" fill="#bf4520" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">= 정삼각엇각기둥</text></a><a href="sim.html#anti-4" aria-label="정사각엇각기둥 깎아 보고 세어 보기"><rect x="444" y="288" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="444" y="288" width="180" height="176" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(478.0 296)"><path d="M93.5 90.2L99.7 27.9L65.3 49.5Z" fill="#a0885d"/>
+<path d="M31.7 95.5L65.3 49.5L12.3 35.5Z" fill="#cfad73"/>
+<path d="M31.7 95.5L12.3 35.5L18.5 70.4Z" fill="#b19665"/>
+<path d="M93.5 90.2L65.3 49.5L31.7 95.5Z" fill="#a1895e"/>
+<path d="M12.3 35.5L65.3 49.5L99.7 27.9L46.7 13.9Z" fill="#7891af"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M93.5 90.2L99.7 27.9L65.3 49.5Z"/><path d="M31.7 95.5L65.3 49.5L12.3 35.5Z"/><path d="M31.7 95.5L12.3 35.5L18.5 70.4Z"/><path d="M93.5 90.2L65.3 49.5L31.7 95.5Z"/><path d="M12.3 35.5L65.3 49.5L99.7 27.9L46.7 13.9Z"/></g></g><text x="534.0" y="428" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정사각엇각기둥</text><text x="534.0" y="448" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle">3·3·3·4</text></a><a href="sim.html#anti-5" aria-label="정오각엇각기둥 깎아 보고 세어 보기"><rect x="648" y="288" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="648" y="288" width="180" height="176" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(682.0 296)"><path d="M51.1 96.1L24.9 48.8L10.5 81.2Z" fill="#b79a68"/>
+<path d="M10.5 81.2L24.9 48.8L13.5 27.1Z" fill="#cbaa71"/>
+<path d="M98.5 84.9L79.3 51.1L51.1 96.1Z" fill="#a0875d"/>
+<path d="M98.5 84.9L101.5 30.8L79.3 51.1Z" fill="#a0875d"/>
+<path d="M51.1 96.1L79.3 51.1L24.9 48.8Z" fill="#c1a26d"/>
+<path d="M24.9 48.8L79.3 51.1L101.5 30.8L60.9 15.9L13.5 27.1Z" fill="#93a487"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M51.1 96.1L24.9 48.8L10.5 81.2Z"/><path d="M10.5 81.2L24.9 48.8L13.5 27.1Z"/><path d="M98.5 84.9L79.3 51.1L51.1 96.1Z"/><path d="M98.5 84.9L101.5 30.8L79.3 51.1Z"/><path d="M51.1 96.1L79.3 51.1L24.9 48.8Z"/><path d="M24.9 48.8L79.3 51.1L101.5 30.8L60.9 15.9L13.5 27.1Z"/></g></g><text x="738.0" y="428" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정오각엇각기둥</text><text x="738.0" y="448" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle">3·3·3·5</text></a><a href="sim.html#anti-6" aria-label="정육각엇각기둥 깎아 보고 세어 보기"><rect x="852" y="288" width="180" height="176" rx="6" fill="#f5f5f5"/><rect x="852" y="288" width="180" height="176" rx="6" fill="#ffffff" stroke="rgba(45,49,66,0.30)" stroke-width="1"/><g transform="translate(886.0 296)"><path d="M20.5 87.7L9.2 41.4L10.5 68.7Z" fill="#b69a68"/>
+<path d="M101.5 80.7L102.8 33.3L88 51.8Z" fill="#a0875d"/>
+<path d="M101.5 80.7L88 51.8L65.9 93.7Z" fill="#a0875d"/>
+<path d="M65.9 93.7L41.2 55.8L20.5 87.7Z" fill="#b39766"/>
+<path d="M20.5 87.7L41.2 55.8L9.2 41.4Z" fill="#cdab72"/>
+<path d="M65.9 93.7L88 51.8L41.2 55.8Z" fill="#b59967"/>
+<path d="M9.2 41.4L41.2 55.8L88 51.8L102.8 33.3L70.8 18.8L24 22.9Z" fill="#9f91b3"/>
+<g fill="none" stroke="#2d3142" stroke-width="1" stroke-linejoin="round"><path d="M20.5 87.7L9.2 41.4L10.5 68.7Z"/><path d="M101.5 80.7L102.8 33.3L88 51.8Z"/><path d="M101.5 80.7L88 51.8L65.9 93.7Z"/><path d="M65.9 93.7L41.2 55.8L20.5 87.7Z"/><path d="M20.5 87.7L41.2 55.8L9.2 41.4Z"/><path d="M65.9 93.7L88 51.8L41.2 55.8Z"/><path d="M9.2 41.4L41.2 55.8L88 51.8L102.8 33.3L70.8 18.8L24 22.9Z"/></g></g><text x="942.0" y="428" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정육각엇각기둥</text><text x="942.0" y="448" fill="#4f5d75" font-size="9" font-weight="400" font-family="'Geist Mono', ui-monospace, Menlo, monospace" text-anchor="middle">3·3·3·6</text></a><text x="1136" y="370" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정칠각엇각기둥,</text><text x="1136" y="390" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="middle">정팔각엇각기둥, …</text><text x="64" y="522" fill="#2d3142" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">면의 모양</text><rect x="135.2" y="512" width="14" height="10" rx="2" fill="#c9a25e" stroke="#2d3142" stroke-width="0.6"/><text x="155.2" y="522" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정삼각형</text><rect x="227.2" y="512" width="14" height="10" rx="2" fill="#5e7a9b" stroke="#2d3142" stroke-width="0.6"/><text x="247.2" y="522" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정사각형</text><rect x="319.2" y="512" width="14" height="10" rx="2" fill="#7c8f6f" stroke="#2d3142" stroke-width="0.6"/><text x="339.2" y="522" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정오각형</text><rect x="411.2" y="512" width="14" height="10" rx="2" fill="#8a7aa0" stroke="#2d3142" stroke-width="0.6"/><text x="431.2" y="522" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정육각형</text><path d="M503.2 517H525.2" stroke="#4f5d75" stroke-width="1" marker-end="url(#uni-prism-arrow)"/><text x="533.2" y="522" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">밑면의 변이 하나 늘어난다</text><rect x="710.8" y="512" width="14" height="10" rx="2" fill="rgba(191,69,32,0.06)" stroke="#bf4520" stroke-width="1"/><text x="730.8" y="522" fill="#4f5d75" font-size="12" font-weight="500" font-family="'Geist', 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif" text-anchor="start">정다면체이기도 하다</text></svg>
+</div>
+  </section>
+  <section class="sec" id="summary">
+    <div class="sec-head">
+      <p class="sec-eyebrow"><span class="no">05</span> SUMMARY</p>
+      <h2>한 장 정리 <span class="count">5 + 13</span></h2>
+      <p class="sec-desc">깎는 방법과 계열을 표로 모았다. 굵은 글씨는 정다면체다.</p>
+    </div>
+    <div class="tbl-wrap"><table class="sum"><thead><tr><th scope="col">깎는 방법</th><th scope="col">정사면체에서</th><th scope="col">정육면체·정팔면체에서</th><th scope="col">정십이면체·정이십면체에서</th></tr></thead><tbody><tr><th scope="row">정다면체</th><td><a class="it plat" href="sim.html#tetra"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M9.2 24.7L18.8 32.4L22 4.7Z" fill="#d6b376"/>
+<path d="M18.8 32.4L38 26.2L22 4.7Z" fill="#ac9163"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M9.2 24.7L18.8 32.4L22 4.7Z"/><path d="M18.8 32.4L38 26.2L22 4.7Z"/></g></svg><span>정사면체</span></a></td><td><a class="it plat" href="sim.html#cube"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M18.2 37L36.2 33.1L36.2 13.8L18.2 17.7Z" fill="#5f7187"/>
+<path d="M7.8 30.2L18.2 37L18.2 17.7L7.8 10.9Z" fill="#6e859f"/>
+<path d="M18.2 17.7L36.2 13.8L25.8 7L7.8 10.9Z" fill="#7790ae"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M18.2 37L36.2 33.1L36.2 13.8L18.2 17.7Z"/><path d="M7.8 30.2L18.2 37L18.2 17.7L7.8 10.9Z"/><path d="M18.2 17.7L36.2 13.8L25.8 7L7.8 10.9Z"/></g></svg><span>정육면체</span></a><a class="it plat" href="sim.html#octa"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M22 39.1L29.6 27L5.7 24.4Z" fill="#a0875d"/>
+<path d="M22 39.1L38.3 19.6L29.6 27Z" fill="#a0875d"/>
+<path d="M29.6 27L38.3 19.6L22 4.9Z" fill="#ad9263"/>
+<path d="M5.7 24.4L29.6 27L22 4.9Z" fill="#dfba7a"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M22 39.1L29.6 27L5.7 24.4Z"/><path d="M22 39.1L38.3 19.6L29.6 27Z"/><path d="M29.6 27L38.3 19.6L22 4.9Z"/><path d="M5.7 24.4L29.6 27L22 4.9Z"/></g></svg><span>정팔면체</span></a></td><td><a class="it plat" href="sim.html#dodeca"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M4.3 25.2L7.7 22.4L13.2 10.8L13.2 6.4L7.7 15.3Z" fill="#8fa084"/>
+<path d="M18.6 39L30.8 37.6L36.3 28.7L27.5 24.6L16.5 30.9Z" fill="#707b68"/>
+<path d="M11.1 35.4L18.6 39L16.5 30.9L7.7 22.4L4.3 25.2Z" fill="#76826d"/>
+<path d="M27.5 24.6L25.4 12.1L13.2 10.8L7.7 22.4L16.5 30.9Z" fill="#92a386"/>
+<path d="M36.3 28.7L39.7 18.8L32.9 8.6L25.4 12.1L27.5 24.6Z" fill="#78856f"/>
+<path d="M13.2 10.8L25.4 12.1L32.9 8.6L25.4 5L13.2 6.4Z" fill="#91a286"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M4.3 25.2L7.7 22.4L13.2 10.8L13.2 6.4L7.7 15.3Z"/><path d="M18.6 39L30.8 37.6L36.3 28.7L27.5 24.6L16.5 30.9Z"/><path d="M11.1 35.4L18.6 39L16.5 30.9L7.7 22.4L4.3 25.2Z"/><path d="M27.5 24.6L25.4 12.1L13.2 10.8L7.7 22.4L16.5 30.9Z"/><path d="M36.3 28.7L39.7 18.8L32.9 8.6L25.4 12.1L27.5 24.6Z"/><path d="M13.2 10.8L25.4 12.1L32.9 8.6L25.4 5L13.2 6.4Z"/></g></svg><span>정십이면체</span></a><a class="it plat" href="sim.html#icosa"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M25.6 11.6L39.4 19.8L29.1 5.8Z" fill="#b49867"/>
+<path d="M14.9 38.2L10.5 22.9L4.6 24.2Z" fill="#b19565"/>
+<path d="M39.4 19.8L27.8 30.4L32.7 36.2Z" fill="#a0875d"/>
+<path d="M14.9 38.2L27.8 30.4L10.5 22.9Z" fill="#ae9364"/>
+<path d="M32.7 36.2L27.8 30.4L14.9 38.2Z" fill="#a0875d"/>
+<path d="M25.6 11.6L27.8 30.4L39.4 19.8Z" fill="#b09465"/>
+<path d="M10.5 22.9L27.8 30.4L25.6 11.6Z" fill="#ccab72"/>
+<path d="M25.6 11.6L29.1 5.8L11.3 7.8Z" fill="#d5b376"/>
+<path d="M11.3 7.8L10.5 22.9L25.6 11.6Z" fill="#e7c17e"/>
+<path d="M4.6 24.2L10.5 22.9L11.3 7.8Z" fill="#d3b175"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M25.6 11.6L39.4 19.8L29.1 5.8Z"/><path d="M14.9 38.2L10.5 22.9L4.6 24.2Z"/><path d="M39.4 19.8L27.8 30.4L32.7 36.2Z"/><path d="M14.9 38.2L27.8 30.4L10.5 22.9Z"/><path d="M32.7 36.2L27.8 30.4L14.9 38.2Z"/><path d="M25.6 11.6L27.8 30.4L39.4 19.8Z"/><path d="M10.5 22.9L27.8 30.4L25.6 11.6Z"/><path d="M25.6 11.6L29.1 5.8L11.3 7.8Z"/><path d="M11.3 7.8L10.5 22.9L25.6 11.6Z"/><path d="M4.6 24.2L10.5 22.9L11.3 7.8Z"/></g></svg><span>정이십면체</span></a></td></tr><tr><th scope="row">꼭짓점 깎기</th><td><a class="it" href="sim.html#tetra-t"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M14.5 24.5L9.4 33.8L23.3 36.1Z" fill="#ae9364"/>
+<path d="M18.3 10L30.8 7L16.9 4.8Z" fill="#d6b377"/>
+<path d="M16.9 4.8L11.8 14.1L8.1 28.6L9.4 33.8L14.5 24.5L18.3 10Z" fill="#9a8cad"/>
+<path d="M23.3 36.1L35.9 33.1L39.7 18.5L30.8 7L18.3 10L14.5 24.5Z" fill="#867a96"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M14.5 24.5L9.4 33.8L23.3 36.1Z"/><path d="M18.3 10L30.8 7L16.9 4.8Z"/><path d="M16.9 4.8L11.8 14.1L8.1 28.6L9.4 33.8L14.5 24.5L18.3 10Z"/><path d="M23.3 36.1L35.9 33.1L39.7 18.5L30.8 7L18.3 10L14.5 24.5Z"/></g></svg><span>깎은 정사면체</span></a></td><td><a class="it" href="sim.html#cube-t"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M12.9 36.8L22.3 38L15.8 32.3Z" fill="#a0875d"/>
+<path d="M35.2 33.4L38.1 28.9L31.6 36.6Z" fill="#a0875d"/>
+<path d="M22.3 15L12.9 13.8L15.8 22.8Z" fill="#deba7a"/>
+<path d="M38.1 19.4L35.2 10.4L31.6 13.6Z" fill="#ad9263"/>
+<path d="M8.8 10.6L5.9 15.1L5.9 24.6L8.8 33.6L12.9 36.8L15.8 32.3L15.8 22.8L12.9 13.8Z" fill="#aa7f6b"/>
+<path d="M22.3 15L15.8 22.8L15.8 32.3L22.3 38L31.6 36.6L38.1 28.9L38.1 19.4L31.6 13.6Z" fill="#93705f"/>
+<path d="M31.1 7.2L21.7 6L12.4 7.4L8.8 10.6L12.9 13.8L22.3 15L31.6 13.6L35.2 10.4Z" fill="#b98973"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M12.9 36.8L22.3 38L15.8 32.3Z"/><path d="M35.2 33.4L38.1 28.9L31.6 36.6Z"/><path d="M22.3 15L12.9 13.8L15.8 22.8Z"/><path d="M38.1 19.4L35.2 10.4L31.6 13.6Z"/><path d="M8.8 10.6L5.9 15.1L5.9 24.6L8.8 33.6L12.9 36.8L15.8 32.3L15.8 22.8L12.9 13.8Z"/><path d="M22.3 15L15.8 22.8L15.8 32.3L22.3 38L31.6 36.6L38.1 28.9L38.1 19.4L31.6 13.6Z"/><path d="M31.1 7.2L21.7 6L12.4 7.4L8.8 10.6L12.9 13.8L22.3 15L31.6 13.6L35.2 10.4Z"/></g></svg><span>깎은 정육면체</span></a><a class="it" href="sim.html#cube-t"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M18.7 4.4L14.6 8L25.3 9.4L29.4 5.8Z" fill="#7790ad"/>
+<path d="M25.3 39.6L29.4 36L36.7 27.3L40 22.3L35.9 25.9L28.5 34.6Z" fill="#786e86"/>
+<path d="M28.5 19.5L35.9 25.9L40 22.3L36.7 12.2L29.4 5.8L25.3 9.4Z" fill="#827791"/>
+<path d="M28.5 19.5L21.2 28.2L28.5 34.6L35.9 25.9Z" fill="#62748b"/>
+<path d="M25.3 9.4L14.6 8L7.3 16.7L10.6 26.8L21.2 28.2L28.5 19.5Z" fill="#a394b8"/>
+<path d="M28.5 34.6L21.2 28.2L10.6 26.8L7.3 31.8L14.6 38.2L25.3 39.6Z" fill="#786e86"/>
+<path d="M7.3 31.8L10.6 26.8L7.3 16.7L4 21.7Z" fill="#6e859f"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M18.7 4.4L14.6 8L25.3 9.4L29.4 5.8Z"/><path d="M25.3 39.6L29.4 36L36.7 27.3L40 22.3L35.9 25.9L28.5 34.6Z"/><path d="M28.5 19.5L35.9 25.9L40 22.3L36.7 12.2L29.4 5.8L25.3 9.4Z"/><path d="M28.5 19.5L21.2 28.2L28.5 34.6L35.9 25.9Z"/><path d="M25.3 9.4L14.6 8L7.3 16.7L10.6 26.8L21.2 28.2L28.5 19.5Z"/><path d="M28.5 34.6L21.2 28.2L10.6 26.8L7.3 31.8L14.6 38.2L25.3 39.6Z"/><path d="M7.3 31.8L10.6 26.8L7.3 16.7L4 21.7Z"/></g></svg><span>깎은 정팔면체</span></a></td><td><a class="it" href="sim.html#dodeca-t"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M19 29.5L14.1 26L9.2 24.8L6.1 26.4L6.1 30.1L9.2 34.6L14.1 38.2L19 39.4L22 37.8L22 34Z" fill="#577f7f"/>
+<path d="M14.1 14.5L12.2 20.3L14.1 26L19 29.5L25 29.5L29.9 26L31.8 20.3L29.9 14.5L25 11L19 11Z" fill="#66999a"/>
+<path d="M22 34L25 29.5L19 29.5Z" fill="#ad9263"/>
+<path d="M34.8 34.6L37.9 30.1L37.9 26.4L34.8 24.8L29.9 26L25 29.5L22 34L22 37.8L25 39.4L29.9 38.2Z" fill="#547879"/>
+<path d="M22 37.8L19 39.4L25 39.4Z" fill="#a0875d"/>
+<path d="M29.9 5.8L25 4.6L19 4.6L14.1 5.8L12.2 7.8L14.1 9.8L19 11L25 11L29.9 9.8L31.8 7.8Z" fill="#699e9f"/>
+<path d="M4.3 24.4L6.1 30.1L6.1 26.4Z" fill="#b79a68"/>
+<path d="M34.8 24.8L37.9 26.4L39.7 24.4L39.7 19.6L37.9 13.9L34.8 9.4L31.8 7.8L29.9 9.8L29.9 14.5L31.8 20.3Z" fill="#557c7c"/>
+<path d="M31.8 7.8L34.8 9.4L29.9 5.8Z" fill="#b29665"/>
+<path d="M29.9 9.8L25 11L29.9 14.5Z" fill="#ccab72"/>
+<path d="M31.8 20.3L29.9 26L34.8 24.8Z" fill="#ab9162"/>
+<path d="M39.7 24.4L37.9 26.4L37.9 30.1Z" fill="#a0875d"/>
+<path d="M9.2 9.4L12.2 7.8L14.1 5.8Z" fill="#d8b577"/>
+<path d="M6.1 26.4L9.2 24.8L12.2 20.3L14.1 14.5L14.1 9.8L12.2 7.8L9.2 9.4L6.1 13.9L4.3 19.6L4.3 24.4Z" fill="#6ba1a2"/>
+<path d="M19 11L14.1 9.8L14.1 14.5Z" fill="#e7c07e"/>
+<path d="M12.2 20.3L9.2 24.8L14.1 26Z" fill="#d0ae73"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M19 29.5L14.1 26L9.2 24.8L6.1 26.4L6.1 30.1L9.2 34.6L14.1 38.2L19 39.4L22 37.8L22 34Z"/><path d="M14.1 14.5L12.2 20.3L14.1 26L19 29.5L25 29.5L29.9 26L31.8 20.3L29.9 14.5L25 11L19 11Z"/><path d="M22 34L25 29.5L19 29.5Z"/><path d="M34.8 34.6L37.9 30.1L37.9 26.4L34.8 24.8L29.9 26L25 29.5L22 34L22 37.8L25 39.4L29.9 38.2Z"/><path d="M22 37.8L19 39.4L25 39.4Z"/><path d="M29.9 5.8L25 4.6L19 4.6L14.1 5.8L12.2 7.8L14.1 9.8L19 11L25 11L29.9 9.8L31.8 7.8Z"/><path d="M4.3 24.4L6.1 30.1L6.1 26.4Z"/><path d="M34.8 24.8L37.9 26.4L39.7 24.4L39.7 19.6L37.9 13.9L34.8 9.4L31.8 7.8L29.9 9.8L29.9 14.5L31.8 20.3Z"/><path d="M31.8 7.8L34.8 9.4L29.9 5.8Z"/><path d="M29.9 9.8L25 11L29.9 14.5Z"/><path d="M31.8 20.3L29.9 26L34.8 24.8Z"/><path d="M39.7 24.4L37.9 26.4L37.9 30.1Z"/><path d="M9.2 9.4L12.2 7.8L14.1 5.8Z"/><path d="M6.1 26.4L9.2 24.8L12.2 20.3L14.1 14.5L14.1 9.8L12.2 7.8L9.2 9.4L6.1 13.9L4.3 19.6L4.3 24.4Z"/><path d="M19 11L14.1 9.8L14.1 14.5Z"/><path d="M12.2 20.3L9.2 24.8L14.1 26Z"/></g></svg><span>깎은 정십이면체</span></a><a class="it" href="sim.html#dodeca-t"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M38.2 27.4L33.9 29.4L30.1 35.2L32 36.8L37 32Z" fill="#707b68"/>
+<path d="M30.8 24.4L33.9 29.4L38.2 27.4L39.4 20.3L36.3 15.3L32 17.3Z" fill="#796f87"/>
+<path d="M30.8 24.4L32 17.3L25.8 13.7L20.8 18.6L23.9 25.1Z" fill="#86957c"/>
+<path d="M36.3 15.3L39.4 20.3L39.4 17.9L36.3 11.3L34.4 9.7Z" fill="#707b68"/>
+<path d="M34.4 9.7L28.2 6.1L23.9 8.1L25.8 13.7L32 17.3L36.3 15.3Z" fill="#9184a2"/>
+<path d="M17 4.9L17 7.4L23.9 8.1L28.2 6.1L23.9 4.1Z" fill="#91a286"/>
+<path d="M13.2 30.2L10.1 23.6L5.8 21.6L4.6 26.1L7.7 32.7L12 34.7Z" fill="#8b7f9b"/>
+<path d="M23.9 25.1L20.1 30.9L23.2 36L30.1 35.2L33.9 29.4L30.8 24.4Z" fill="#7b7189"/>
+<path d="M5.8 16.6L4.6 23.7L4.6 26.1L5.8 21.6L7 14.5L7 12Z" fill="#9386a5"/>
+<path d="M20.8 18.6L13.9 17.8L10.1 23.6L13.2 30.2L20.1 30.9L23.9 25.1Z" fill="#9688a8"/>
+<path d="M9.6 34.3L15.8 37.9L20.1 39.9L18.2 38.3L12 34.7L7.7 32.7Z" fill="#786e86"/>
+<path d="M27 39.1L32 36.8L30.1 35.2L23.2 36L18.2 38.3L20.1 39.9Z" fill="#786e86"/>
+<path d="M12 34.7L18.2 38.3L23.2 36L20.1 30.9L13.2 30.2Z" fill="#737f6b"/>
+<path d="M7 12L7 14.5L12 12.2L17 7.4L17 4.9L12 7.2Z" fill="#a495b9"/>
+<path d="M12 12.2L7 14.5L5.8 21.6L10.1 23.6L13.9 17.8Z" fill="#96a88a"/>
+<path d="M13.9 17.8L20.8 18.6L25.8 13.7L23.9 8.1L17 7.4L12 12.2Z" fill="#a697bb"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M38.2 27.4L33.9 29.4L30.1 35.2L32 36.8L37 32Z"/><path d="M30.8 24.4L33.9 29.4L38.2 27.4L39.4 20.3L36.3 15.3L32 17.3Z"/><path d="M30.8 24.4L32 17.3L25.8 13.7L20.8 18.6L23.9 25.1Z"/><path d="M36.3 15.3L39.4 20.3L39.4 17.9L36.3 11.3L34.4 9.7Z"/><path d="M34.4 9.7L28.2 6.1L23.9 8.1L25.8 13.7L32 17.3L36.3 15.3Z"/><path d="M17 4.9L17 7.4L23.9 8.1L28.2 6.1L23.9 4.1Z"/><path d="M13.2 30.2L10.1 23.6L5.8 21.6L4.6 26.1L7.7 32.7L12 34.7Z"/><path d="M23.9 25.1L20.1 30.9L23.2 36L30.1 35.2L33.9 29.4L30.8 24.4Z"/><path d="M5.8 16.6L4.6 23.7L4.6 26.1L5.8 21.6L7 14.5L7 12Z"/><path d="M20.8 18.6L13.9 17.8L10.1 23.6L13.2 30.2L20.1 30.9L23.9 25.1Z"/><path d="M9.6 34.3L15.8 37.9L20.1 39.9L18.2 38.3L12 34.7L7.7 32.7Z"/><path d="M27 39.1L32 36.8L30.1 35.2L23.2 36L18.2 38.3L20.1 39.9Z"/><path d="M12 34.7L18.2 38.3L23.2 36L20.1 30.9L13.2 30.2Z"/><path d="M7 12L7 14.5L12 12.2L17 7.4L17 4.9L12 7.2Z"/><path d="M12 12.2L7 14.5L5.8 21.6L10.1 23.6L13.9 17.8Z"/><path d="M13.9 17.8L20.8 18.6L25.8 13.7L23.9 8.1L17 7.4L12 12.2Z"/></g></svg><span>깎은 정이십면체</span></a></td></tr><tr><th scope="row">끝까지 깎기</th><td><a class="it plat dup" href="sim.html#tetra-r"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M22 39.1L29.6 27L5.7 24.4Z" fill="#a0875d"/>
+<path d="M22 39.1L38.3 19.6L29.6 27Z" fill="#a0875d"/>
+<path d="M29.6 27L38.3 19.6L22 4.9Z" fill="#ad9263"/>
+<path d="M5.7 24.4L29.6 27L22 4.9Z" fill="#dfba7a"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M22 39.1L29.6 27L5.7 24.4Z"/><path d="M22 39.1L38.3 19.6L29.6 27Z"/><path d="M29.6 27L38.3 19.6L22 4.9Z"/><path d="M5.7 24.4L29.6 27L22 4.9Z"/></g></svg><span>정팔면체<sup>*</sup></span></a></td><td><a class="it" href="sim.html#cube-r"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M15.5 27.7L27.2 14L10.4 11.8Z" fill="#deba7a"/>
+<path d="M10.4 35.7L27.2 37.9L15.5 27.7Z" fill="#a0875d"/>
+<path d="M27.2 37.9L33.6 32.2L38.8 24.2Z" fill="#a0875d"/>
+<path d="M27.2 14L38.8 24.2L33.6 8.3Z" fill="#ad9263"/>
+<path d="M15.5 27.7L27.2 37.9L38.8 24.2L27.2 14Z" fill="#62748b"/>
+<path d="M5.2 19.8L10.4 35.7L15.5 27.7L10.4 11.8Z" fill="#6e859f"/>
+<path d="M10.4 11.8L27.2 14L33.6 8.3L16.8 6.1Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M15.5 27.7L27.2 14L10.4 11.8Z"/><path d="M10.4 35.7L27.2 37.9L15.5 27.7Z"/><path d="M27.2 37.9L33.6 32.2L38.8 24.2Z"/><path d="M27.2 14L38.8 24.2L33.6 8.3Z"/><path d="M15.5 27.7L27.2 37.9L38.8 24.2L27.2 14Z"/><path d="M5.2 19.8L10.4 35.7L15.5 27.7L10.4 11.8Z"/><path d="M10.4 11.8L27.2 14L33.6 8.3L16.8 6.1Z"/></g></svg><span>육팔면체</span></a></td><td><a class="it" href="sim.html#dodeca-r"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M32.6 27L26.7 18.1L22 28.2Z" fill="#b79a68"/>
+<path d="M19.1 10.7L26.7 18.1L29.7 9.5Z" fill="#d4b276"/>
+<path d="M14.3 38.3L24.9 39.5L17.3 35.9Z" fill="#a0875d"/>
+<path d="M11.4 27L17.3 35.9L22 28.2Z" fill="#b59867"/>
+<path d="M34.4 34L24.9 39.5L31.5 36.4Z" fill="#a0875d"/>
+<path d="M32.6 27L34.4 34L39.1 23.9Z" fill="#a0875d"/>
+<path d="M39.1 23.9L39.1 20.1L37.3 13.1Z" fill="#a0875d"/>
+<path d="M29.7 5.7L29.7 9.5L37.3 13.1Z" fill="#b69967"/>
+<path d="M9.6 16.2L4.9 23.9L11.4 27Z" fill="#d1af74"/>
+<path d="M12.5 7.6L9.6 16.2L19.1 10.7Z" fill="#e7c17e"/>
+<path d="M17.3 35.9L11.4 27L4.9 23.9L6.7 30.9L14.3 38.3Z" fill="#76826d"/>
+<path d="M22 28.2L17.3 35.9L24.9 39.5L34.4 34L32.6 27Z" fill="#707b68"/>
+<path d="M37.3 13.1L29.7 9.5L26.7 18.1L32.6 27L39.1 23.9Z" fill="#78856f"/>
+<path d="M29.7 9.5L29.7 5.7L19.1 4.5L12.5 7.6L19.1 10.7Z" fill="#91a286"/>
+<path d="M11.4 27L22 28.2L26.7 18.1L19.1 10.7L9.6 16.2Z" fill="#92a386"/>
+<path d="M9.6 10L4.9 20.1L4.9 23.9L9.6 16.2L12.5 7.6Z" fill="#8fa084"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M32.6 27L26.7 18.1L22 28.2Z"/><path d="M19.1 10.7L26.7 18.1L29.7 9.5Z"/><path d="M14.3 38.3L24.9 39.5L17.3 35.9Z"/><path d="M11.4 27L17.3 35.9L22 28.2Z"/><path d="M34.4 34L24.9 39.5L31.5 36.4Z"/><path d="M32.6 27L34.4 34L39.1 23.9Z"/><path d="M39.1 23.9L39.1 20.1L37.3 13.1Z"/><path d="M29.7 5.7L29.7 9.5L37.3 13.1Z"/><path d="M9.6 16.2L4.9 23.9L11.4 27Z"/><path d="M12.5 7.6L9.6 16.2L19.1 10.7Z"/><path d="M17.3 35.9L11.4 27L4.9 23.9L6.7 30.9L14.3 38.3Z"/><path d="M22 28.2L17.3 35.9L24.9 39.5L34.4 34L32.6 27Z"/><path d="M37.3 13.1L29.7 9.5L26.7 18.1L32.6 27L39.1 23.9Z"/><path d="M29.7 9.5L29.7 5.7L19.1 4.5L12.5 7.6L19.1 10.7Z"/><path d="M11.4 27L22 28.2L26.7 18.1L19.1 10.7L9.6 16.2Z"/><path d="M9.6 10L4.9 20.1L4.9 23.9L9.6 16.2L12.5 7.6Z"/></g></svg><span>십이이십면체</span></a></td></tr><tr><th scope="row">모서리 깎기</th><td><a class="it dup" href="sim.html#tetra-c"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M15.5 27.7L27.2 14L10.4 11.8Z" fill="#deba7a"/>
+<path d="M10.4 35.7L27.2 37.9L15.5 27.7Z" fill="#a0875d"/>
+<path d="M27.2 37.9L33.6 32.2L38.8 24.2Z" fill="#a0875d"/>
+<path d="M27.2 14L38.8 24.2L33.6 8.3Z" fill="#ad9263"/>
+<path d="M15.5 27.7L27.2 37.9L38.8 24.2L27.2 14Z" fill="#62748b"/>
+<path d="M5.2 19.8L10.4 35.7L15.5 27.7L10.4 11.8Z" fill="#6e859f"/>
+<path d="M10.4 11.8L27.2 14L33.6 8.3L16.8 6.1Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M15.5 27.7L27.2 14L10.4 11.8Z"/><path d="M10.4 35.7L27.2 37.9L15.5 27.7Z"/><path d="M27.2 37.9L33.6 32.2L38.8 24.2Z"/><path d="M27.2 14L38.8 24.2L33.6 8.3Z"/><path d="M15.5 27.7L27.2 37.9L38.8 24.2L27.2 14Z"/><path d="M5.2 19.8L10.4 35.7L15.5 27.7L10.4 11.8Z"/><path d="M10.4 11.8L27.2 14L33.6 8.3L16.8 6.1Z"/></g></svg><span>육팔면체<sup>*</sup></span></a></td><td><a class="it" href="sim.html#cube-c"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M28.3 35.4L18.7 39.5L30.5 37.7Z" fill="#a0875d"/>
+<path d="M38.8 15.8L36.6 25.6L38.8 27.9Z" fill="#a0875d"/>
+<path d="M10.4 20.1L10.4 32.2L20 28.1Z" fill="#c4a56e"/>
+<path d="M30.5 8.5L18.7 10.3L28.3 18.3Z" fill="#d3b075"/>
+<path d="M38.8 27.9L36.6 25.6L28.3 35.4L30.5 37.7Z" fill="#5d6e83"/>
+<path d="M5.2 28.2L13.5 35.5L18.7 39.5L10.4 32.2Z" fill="#5d6e83"/>
+<path d="M20 28.1L28.3 35.4L36.6 25.6L28.3 18.3Z" fill="#62748b"/>
+<path d="M20 28.1L28.3 18.3L18.7 10.3L10.4 20.1Z" fill="#7790ae"/>
+<path d="M10.4 32.2L18.7 39.5L28.3 35.4L20 28.1Z" fill="#5d6f83"/>
+<path d="M10.4 20.1L18.7 10.3L13.5 6.3L5.2 16.1Z" fill="#7d98b8"/>
+<path d="M5.2 28.2L10.4 32.2L10.4 20.1L5.2 16.1Z" fill="#6e859f"/>
+<path d="M28.3 18.3L36.6 25.6L38.8 15.8L30.5 8.5Z" fill="#63778e"/>
+<path d="M13.5 6.3L18.7 10.3L30.5 8.5L25.3 4.5Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M28.3 35.4L18.7 39.5L30.5 37.7Z"/><path d="M38.8 15.8L36.6 25.6L38.8 27.9Z"/><path d="M10.4 20.1L10.4 32.2L20 28.1Z"/><path d="M30.5 8.5L18.7 10.3L28.3 18.3Z"/><path d="M38.8 27.9L36.6 25.6L28.3 35.4L30.5 37.7Z"/><path d="M5.2 28.2L13.5 35.5L18.7 39.5L10.4 32.2Z"/><path d="M20 28.1L28.3 35.4L36.6 25.6L28.3 18.3Z"/><path d="M20 28.1L28.3 18.3L18.7 10.3L10.4 20.1Z"/><path d="M10.4 32.2L18.7 39.5L28.3 35.4L20 28.1Z"/><path d="M10.4 20.1L18.7 10.3L13.5 6.3L5.2 16.1Z"/><path d="M5.2 28.2L10.4 32.2L10.4 20.1L5.2 16.1Z"/><path d="M28.3 18.3L36.6 25.6L38.8 15.8L30.5 8.5Z"/><path d="M13.5 6.3L18.7 10.3L30.5 8.5L25.3 4.5Z"/></g></svg><span>마름모육팔면체</span></a></td><td><a class="it" href="sim.html#dodeca-c"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M17.6 8.2L25.6 8.4L28.7 5.8L22.5 4L15.7 5.5Z" fill="#91a286"/>
+<path d="M15.7 5.5L9 10L10.9 12.7L17.6 8.2Z" fill="#7d98b8"/>
+<path d="M9 10L15.7 5.5L12 7.5Z" fill="#d6b376"/>
+<path d="M17.1 37.8L21.5 40L25.1 38Z" fill="#a0875d"/>
+<path d="M25.1 38L32 36.5L35.9 30.6L31.4 28.5L24.8 33Z" fill="#707b68"/>
+<path d="M25.1 38L21.5 40L28.3 38.5L32 36.5Z" fill="#5d6e83"/>
+<path d="M9 33.3L10.9 36L6.8 29.9L4.9 27.2Z" fill="#5e6f84"/>
+<path d="M6.8 29.9L10.9 36L17.1 37.8L16.7 32.8L10.4 27.9Z" fill="#76826d"/>
+<path d="M5.1 15.9L4.6 22.2L8.2 20.2L10.9 12.7L9 10Z" fill="#93a487"/>
+<path d="M25.1 14.7L17.1 14.5L14.3 22L20.7 26.9L27.3 22.4Z" fill="#8e9f83"/>
+<path d="M10.9 12.7L17.1 14.5L17.6 8.2Z" fill="#e7c17e"/>
+<path d="M20.7 26.9L24.8 33L31.4 28.5L27.3 22.4Z" fill="#64788f"/>
+<path d="M10.4 27.9L14.3 22L8.2 20.2Z" fill="#d0af74"/>
+<path d="M35 10.7L33.1 8L28.7 5.8Z" fill="#b29766"/>
+<path d="M35 10.7L28.7 5.8L25.6 8.4L32 13.2Z" fill="#6d839e"/>
+<path d="M27.3 22.4L31.4 28.5L34.2 20.9Z" fill="#ae9364"/>
+<path d="M27.3 22.4L34.2 20.9L32 13.2L25.1 14.7Z" fill="#6c829b"/>
+<path d="M32 13.2L34.2 20.9L38.6 23.1L39.1 16.8L35 10.7Z" fill="#74806b"/>
+<path d="M16.7 32.8L20.7 26.9L14.3 22L10.4 27.9Z" fill="#6d839d"/>
+<path d="M4.6 22.2L4.9 27.2L6.8 29.9Z" fill="#b69967"/>
+<path d="M10.4 27.9L8.2 20.2L4.6 22.2L6.8 29.9Z" fill="#6f85a0"/>
+<path d="M25.6 8.4L25.1 14.7L32 13.2Z" fill="#cead72"/>
+<path d="M17.6 8.2L17.1 14.5L25.1 14.7L25.6 8.4Z" fill="#7b95b4"/>
+<path d="M24.8 33L20.7 26.9L16.7 32.8Z" fill="#af9464"/>
+<path d="M24.8 33L16.7 32.8L17.1 37.8L25.1 38Z" fill="#5d6e83"/>
+<path d="M38.6 23.1L35.9 30.6L38.9 28.1Z" fill="#a0875d"/>
+<path d="M38.9 28.1L35.9 30.6L32 36.5L35 34Z" fill="#5d6e83"/>
+<path d="M39.4 21.8L39.1 16.8L38.6 23.1L38.9 28.1Z" fill="#5d6e83"/>
+<path d="M15.3 38.2L21.5 40L17.1 37.8L10.9 36Z" fill="#5d6e83"/>
+<path d="M10.9 12.7L8.2 20.2L14.3 22L17.1 14.5Z" fill="#7b96b5"/>
+<path d="M34.2 20.9L31.4 28.5L35.9 30.6L38.6 23.1Z" fill="#5d6e83"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M17.6 8.2L25.6 8.4L28.7 5.8L22.5 4L15.7 5.5Z"/><path d="M15.7 5.5L9 10L10.9 12.7L17.6 8.2Z"/><path d="M9 10L15.7 5.5L12 7.5Z"/><path d="M17.1 37.8L21.5 40L25.1 38Z"/><path d="M25.1 38L32 36.5L35.9 30.6L31.4 28.5L24.8 33Z"/><path d="M25.1 38L21.5 40L28.3 38.5L32 36.5Z"/><path d="M9 33.3L10.9 36L6.8 29.9L4.9 27.2Z"/><path d="M6.8 29.9L10.9 36L17.1 37.8L16.7 32.8L10.4 27.9Z"/><path d="M5.1 15.9L4.6 22.2L8.2 20.2L10.9 12.7L9 10Z"/><path d="M25.1 14.7L17.1 14.5L14.3 22L20.7 26.9L27.3 22.4Z"/><path d="M10.9 12.7L17.1 14.5L17.6 8.2Z"/><path d="M20.7 26.9L24.8 33L31.4 28.5L27.3 22.4Z"/><path d="M10.4 27.9L14.3 22L8.2 20.2Z"/><path d="M35 10.7L33.1 8L28.7 5.8Z"/><path d="M35 10.7L28.7 5.8L25.6 8.4L32 13.2Z"/><path d="M27.3 22.4L31.4 28.5L34.2 20.9Z"/><path d="M27.3 22.4L34.2 20.9L32 13.2L25.1 14.7Z"/><path d="M32 13.2L34.2 20.9L38.6 23.1L39.1 16.8L35 10.7Z"/><path d="M16.7 32.8L20.7 26.9L14.3 22L10.4 27.9Z"/><path d="M4.6 22.2L4.9 27.2L6.8 29.9Z"/><path d="M10.4 27.9L8.2 20.2L4.6 22.2L6.8 29.9Z"/><path d="M25.6 8.4L25.1 14.7L32 13.2Z"/><path d="M17.6 8.2L17.1 14.5L25.1 14.7L25.6 8.4Z"/><path d="M24.8 33L20.7 26.9L16.7 32.8Z"/><path d="M24.8 33L16.7 32.8L17.1 37.8L25.1 38Z"/><path d="M38.6 23.1L35.9 30.6L38.9 28.1Z"/><path d="M38.9 28.1L35.9 30.6L32 36.5L35 34Z"/><path d="M39.4 21.8L39.1 16.8L38.6 23.1L38.9 28.1Z"/><path d="M15.3 38.2L21.5 40L17.1 37.8L10.9 36Z"/><path d="M10.9 12.7L8.2 20.2L14.3 22L17.1 14.5Z"/><path d="M34.2 20.9L31.4 28.5L35.9 30.6L38.6 23.1Z"/></g></svg><span>마름모십이이십면체</span></a></td></tr><tr><th scope="row">모두 깎기</th><td><a class="it dup" href="sim.html#tetra-o"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M18.7 4.4L14.6 8L25.3 9.4L29.4 5.8Z" fill="#7790ad"/>
+<path d="M25.3 39.6L29.4 36L36.7 27.3L40 22.3L35.9 25.9L28.5 34.6Z" fill="#786e86"/>
+<path d="M28.5 19.5L35.9 25.9L40 22.3L36.7 12.2L29.4 5.8L25.3 9.4Z" fill="#827791"/>
+<path d="M28.5 19.5L21.2 28.2L28.5 34.6L35.9 25.9Z" fill="#62748b"/>
+<path d="M25.3 9.4L14.6 8L7.3 16.7L10.6 26.8L21.2 28.2L28.5 19.5Z" fill="#a394b8"/>
+<path d="M28.5 34.6L21.2 28.2L10.6 26.8L7.3 31.8L14.6 38.2L25.3 39.6Z" fill="#786e86"/>
+<path d="M7.3 31.8L10.6 26.8L7.3 16.7L4 21.7Z" fill="#6e859f"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M18.7 4.4L14.6 8L25.3 9.4L29.4 5.8Z"/><path d="M25.3 39.6L29.4 36L36.7 27.3L40 22.3L35.9 25.9L28.5 34.6Z"/><path d="M28.5 19.5L35.9 25.9L40 22.3L36.7 12.2L29.4 5.8L25.3 9.4Z"/><path d="M28.5 19.5L21.2 28.2L28.5 34.6L35.9 25.9Z"/><path d="M25.3 9.4L14.6 8L7.3 16.7L10.6 26.8L21.2 28.2L28.5 19.5Z"/><path d="M28.5 34.6L21.2 28.2L10.6 26.8L7.3 31.8L14.6 38.2L25.3 39.6Z"/><path d="M7.3 31.8L10.6 26.8L7.3 16.7L4 21.7Z"/></g></svg><span>깎은 정팔면체<sup>*</sup></span></a></td><td><a class="it" href="sim.html#cube-o"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M39.4 19.2L36.6 21.7L36.6 29L39.4 26.5Z" fill="#5d6e83"/>
+<path d="M12.2 30.6L19.5 31.6L19.5 24.3L12.2 23.3Z" fill="#6c839d"/>
+<path d="M15 38.5L22.3 39.4L24.5 36L19.5 31.6L12.2 30.6L10 34.1Z" fill="#786e86"/>
+<path d="M6.8 31.7L11.9 36.1L15 38.5L10 34.1Z" fill="#5d6e83"/>
+<path d="M32.1 7.9L29.4 10.4L31.6 17.3L36.6 21.7L39.4 19.2L37.2 12.3Z" fill="#827791"/>
+<path d="M37.2 30L39.4 26.5L36.6 29L31.6 34.9L29.4 38.4L32.1 35.9Z" fill="#786e86"/>
+<path d="M24.5 36L31.6 34.9L36.6 29L36.6 21.7L31.6 17.3L24.5 18.4L19.5 24.3L19.5 31.6Z" fill="#93705f"/>
+<path d="M29.4 38.4L31.6 34.9L24.5 36L22.3 39.4Z" fill="#5d6e83"/>
+<path d="M6.8 31.7L10 34.1L12.2 30.6L12.2 23.3L10 16.5L6.8 14L4.6 17.5L4.6 24.8Z" fill="#aa7f6b"/>
+<path d="M10 16.5L12.2 23.3L19.5 24.3L24.5 18.4L22.3 11.5L15 10.5Z" fill="#a394b8"/>
+<path d="M22.3 11.5L24.5 18.4L31.6 17.3L29.4 10.4Z" fill="#728aa6"/>
+<path d="M11.9 8.1L15 10.5L22.3 11.5L29.4 10.4L32.1 7.9L29 5.5L21.7 4.6L14.6 5.6Z" fill="#b98973"/>
+<path d="M10 16.5L15 10.5L11.9 8.1L6.8 14Z" fill="#7d98b8"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M39.4 19.2L36.6 21.7L36.6 29L39.4 26.5Z"/><path d="M12.2 30.6L19.5 31.6L19.5 24.3L12.2 23.3Z"/><path d="M15 38.5L22.3 39.4L24.5 36L19.5 31.6L12.2 30.6L10 34.1Z"/><path d="M6.8 31.7L11.9 36.1L15 38.5L10 34.1Z"/><path d="M32.1 7.9L29.4 10.4L31.6 17.3L36.6 21.7L39.4 19.2L37.2 12.3Z"/><path d="M37.2 30L39.4 26.5L36.6 29L31.6 34.9L29.4 38.4L32.1 35.9Z"/><path d="M24.5 36L31.6 34.9L36.6 29L36.6 21.7L31.6 17.3L24.5 18.4L19.5 24.3L19.5 31.6Z"/><path d="M29.4 38.4L31.6 34.9L24.5 36L22.3 39.4Z"/><path d="M6.8 31.7L10 34.1L12.2 30.6L12.2 23.3L10 16.5L6.8 14L4.6 17.5L4.6 24.8Z"/><path d="M10 16.5L12.2 23.3L19.5 24.3L24.5 18.4L22.3 11.5L15 10.5Z"/><path d="M22.3 11.5L24.5 18.4L31.6 17.3L29.4 10.4Z"/><path d="M11.9 8.1L15 10.5L22.3 11.5L29.4 10.4L32.1 7.9L29 5.5L21.7 4.6L14.6 5.6Z"/><path d="M10 16.5L15 10.5L11.9 8.1L6.8 14Z"/></g></svg><span>깎은 육팔면체</span></a></td><td><a class="it" href="sim.html#dodeca-o"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M4.3 22.4L5.8 23.9L8.1 22.7L10.5 19.2L12 14.7L12 11L10.5 9.5L8.1 10.7L5.8 14.2L4.3 18.7Z" fill="#6ba1a2"/>
+<path d="M30.6 37.6L34.4 34.9L36.8 31.3L36.8 28.4L34.4 27.2L30.6 28.1L26.7 30.9L24.4 34.4L24.4 37.3L26.7 38.6Z" fill="#547879"/>
+<path d="M14.3 20.1L15.8 24.6L19.6 27.4L24.4 27.4L28.2 24.6L29.7 20.1L28.2 15.7L24.4 12.9L19.6 12.9L15.8 15.7Z" fill="#66999a"/>
+<path d="M17.3 30.9L19.6 27.4L15.8 24.6L13.4 28.1Z" fill="#6c829c"/>
+<path d="M13.4 28.1L9.6 27.2L7.2 28.4L7.2 31.3L9.6 34.9L13.4 37.6L17.3 38.6L19.6 37.3L19.6 34.4L17.3 30.9Z" fill="#577f7f"/>
+<path d="M19.6 37.3L24.4 37.3L24.4 34.4L19.6 34.4Z" fill="#5d6e83"/>
+<path d="M19.6 34.4L24.4 34.4L26.7 30.9L24.4 27.4L19.6 27.4L17.3 30.9Z" fill="#827791"/>
+<path d="M33.5 19.2L35.9 22.7L38.2 23.9L39.7 22.4L39.7 18.7L38.2 14.2L35.9 10.7L33.5 9.5L32 11L32 14.7Z" fill="#557c7c"/>
+<path d="M9.6 9.1L8.1 10.7L10.5 9.5L14.3 6.7L15.8 5.2L13.4 6.4Z" fill="#9f91b3"/>
+<path d="M24.4 4.2L19.6 4.2L15.8 5.2L14.3 6.7L15.8 8.2L19.6 9.2L24.4 9.2L28.2 8.2L29.7 6.7L28.2 5.2Z" fill="#699e9f"/>
+<path d="M4.3 22.4L4.3 25.3L5.8 29.8L7.2 31.3L7.2 28.4L5.8 23.9Z" fill="#897d99"/>
+<path d="M15.8 15.7L12 14.7L10.5 19.2L14.3 20.1Z" fill="#7b95b5"/>
+<path d="M34.4 34.9L35.9 33.3L38.2 29.8L36.8 31.3Z" fill="#5d6e83"/>
+<path d="M33.5 19.2L29.7 20.1L28.2 24.6L30.6 28.1L34.4 27.2L35.9 22.7Z" fill="#80758f"/>
+<path d="M35.9 22.7L34.4 27.2L36.8 28.4L38.2 23.9Z" fill="#5d6e83"/>
+<path d="M32 14.7L28.2 15.7L29.7 20.1L33.5 19.2Z" fill="#6a8099"/>
+<path d="M19.6 12.9L19.6 9.2L15.8 8.2L12 11L12 14.7L15.8 15.7Z" fill="#a999be"/>
+<path d="M5.8 23.9L7.2 28.4L9.6 27.2L8.1 22.7Z" fill="#6f86a1"/>
+<path d="M26.7 38.6L24.4 39.8L28.2 38.8L30.6 37.6Z" fill="#5d6e83"/>
+<path d="M19.6 39.8L17.3 38.6L13.4 37.6L15.8 38.8Z" fill="#5d6e83"/>
+<path d="M24.4 12.9L24.4 9.2L19.6 9.2L19.6 12.9Z" fill="#7a94b3"/>
+<path d="M29.7 6.7L33.5 9.5L35.9 10.7L34.4 9.1L30.6 6.4L28.2 5.2Z" fill="#857994"/>
+<path d="M28.2 8.2L32 11L33.5 9.5L29.7 6.7Z" fill="#6c829c"/>
+<path d="M26.7 30.9L30.6 28.1L28.2 24.6L24.4 27.4Z" fill="#63778d"/>
+<path d="M8.1 33.3L9.6 34.9L7.2 31.3L5.8 29.8Z" fill="#5e7085"/>
+<path d="M10.5 9.5L12 11L15.8 8.2L14.3 6.7Z" fill="#7d98b8"/>
+<path d="M39.7 25.3L39.7 22.4L38.2 23.9L36.8 28.4L36.8 31.3L38.2 29.8Z" fill="#786e86"/>
+<path d="M24.4 37.3L19.6 37.3L17.3 38.6L19.6 39.8L24.4 39.8L26.7 38.6Z" fill="#786e86"/>
+<path d="M32 11L28.2 8.2L24.4 9.2L24.4 12.9L28.2 15.7L32 14.7Z" fill="#9789a9"/>
+<path d="M14.3 20.1L10.5 19.2L8.1 22.7L9.6 27.2L13.4 28.1L15.8 24.6Z" fill="#998cac"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M4.3 22.4L5.8 23.9L8.1 22.7L10.5 19.2L12 14.7L12 11L10.5 9.5L8.1 10.7L5.8 14.2L4.3 18.7Z"/><path d="M30.6 37.6L34.4 34.9L36.8 31.3L36.8 28.4L34.4 27.2L30.6 28.1L26.7 30.9L24.4 34.4L24.4 37.3L26.7 38.6Z"/><path d="M14.3 20.1L15.8 24.6L19.6 27.4L24.4 27.4L28.2 24.6L29.7 20.1L28.2 15.7L24.4 12.9L19.6 12.9L15.8 15.7Z"/><path d="M17.3 30.9L19.6 27.4L15.8 24.6L13.4 28.1Z"/><path d="M13.4 28.1L9.6 27.2L7.2 28.4L7.2 31.3L9.6 34.9L13.4 37.6L17.3 38.6L19.6 37.3L19.6 34.4L17.3 30.9Z"/><path d="M19.6 37.3L24.4 37.3L24.4 34.4L19.6 34.4Z"/><path d="M19.6 34.4L24.4 34.4L26.7 30.9L24.4 27.4L19.6 27.4L17.3 30.9Z"/><path d="M33.5 19.2L35.9 22.7L38.2 23.9L39.7 22.4L39.7 18.7L38.2 14.2L35.9 10.7L33.5 9.5L32 11L32 14.7Z"/><path d="M9.6 9.1L8.1 10.7L10.5 9.5L14.3 6.7L15.8 5.2L13.4 6.4Z"/><path d="M24.4 4.2L19.6 4.2L15.8 5.2L14.3 6.7L15.8 8.2L19.6 9.2L24.4 9.2L28.2 8.2L29.7 6.7L28.2 5.2Z"/><path d="M4.3 22.4L4.3 25.3L5.8 29.8L7.2 31.3L7.2 28.4L5.8 23.9Z"/><path d="M15.8 15.7L12 14.7L10.5 19.2L14.3 20.1Z"/><path d="M34.4 34.9L35.9 33.3L38.2 29.8L36.8 31.3Z"/><path d="M33.5 19.2L29.7 20.1L28.2 24.6L30.6 28.1L34.4 27.2L35.9 22.7Z"/><path d="M35.9 22.7L34.4 27.2L36.8 28.4L38.2 23.9Z"/><path d="M32 14.7L28.2 15.7L29.7 20.1L33.5 19.2Z"/><path d="M19.6 12.9L19.6 9.2L15.8 8.2L12 11L12 14.7L15.8 15.7Z"/><path d="M5.8 23.9L7.2 28.4L9.6 27.2L8.1 22.7Z"/><path d="M26.7 38.6L24.4 39.8L28.2 38.8L30.6 37.6Z"/><path d="M19.6 39.8L17.3 38.6L13.4 37.6L15.8 38.8Z"/><path d="M24.4 12.9L24.4 9.2L19.6 9.2L19.6 12.9Z"/><path d="M29.7 6.7L33.5 9.5L35.9 10.7L34.4 9.1L30.6 6.4L28.2 5.2Z"/><path d="M28.2 8.2L32 11L33.5 9.5L29.7 6.7Z"/><path d="M26.7 30.9L30.6 28.1L28.2 24.6L24.4 27.4Z"/><path d="M8.1 33.3L9.6 34.9L7.2 31.3L5.8 29.8Z"/><path d="M10.5 9.5L12 11L15.8 8.2L14.3 6.7Z"/><path d="M39.7 25.3L39.7 22.4L38.2 23.9L36.8 28.4L36.8 31.3L38.2 29.8Z"/><path d="M24.4 37.3L19.6 37.3L17.3 38.6L19.6 39.8L24.4 39.8L26.7 38.6Z"/><path d="M32 11L28.2 8.2L24.4 9.2L24.4 12.9L28.2 15.7L32 14.7Z"/><path d="M14.3 20.1L10.5 19.2L8.1 22.7L9.6 27.2L13.4 28.1L15.8 24.6Z"/></g></svg><span>깎은 십이이십면체</span></a></td></tr><tr><th scope="row">비틀기</th><td><a class="it plat dup" href="sim.html#tetra-s"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M25.6 11.6L39.4 19.8L29.1 5.8Z" fill="#b49867"/>
+<path d="M14.9 38.2L10.5 22.9L4.6 24.2Z" fill="#b19565"/>
+<path d="M39.4 19.8L27.8 30.4L32.7 36.2Z" fill="#a0875d"/>
+<path d="M14.9 38.2L27.8 30.4L10.5 22.9Z" fill="#ae9364"/>
+<path d="M32.7 36.2L27.8 30.4L14.9 38.2Z" fill="#a0875d"/>
+<path d="M25.6 11.6L27.8 30.4L39.4 19.8Z" fill="#b09465"/>
+<path d="M10.5 22.9L27.8 30.4L25.6 11.6Z" fill="#ccab72"/>
+<path d="M25.6 11.6L29.1 5.8L11.3 7.8Z" fill="#d5b376"/>
+<path d="M11.3 7.8L10.5 22.9L25.6 11.6Z" fill="#e7c17e"/>
+<path d="M4.6 24.2L10.5 22.9L11.3 7.8Z" fill="#d3b175"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M25.6 11.6L39.4 19.8L29.1 5.8Z"/><path d="M14.9 38.2L10.5 22.9L4.6 24.2Z"/><path d="M39.4 19.8L27.8 30.4L32.7 36.2Z"/><path d="M14.9 38.2L27.8 30.4L10.5 22.9Z"/><path d="M32.7 36.2L27.8 30.4L14.9 38.2Z"/><path d="M25.6 11.6L27.8 30.4L39.4 19.8Z"/><path d="M10.5 22.9L27.8 30.4L25.6 11.6Z"/><path d="M25.6 11.6L29.1 5.8L11.3 7.8Z"/><path d="M11.3 7.8L10.5 22.9L25.6 11.6Z"/><path d="M4.6 24.2L10.5 22.9L11.3 7.8Z"/></g></svg><span>정이십면체<sup>*</sup></span></a></td><td><a class="it" href="sim.html#cube-s"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M24.1 35.2L29.5 38.4L35.8 29.9Z" fill="#a0875d"/>
+<path d="M29.5 38.4L37.8 29.1L35.8 29.9Z" fill="#a0875d"/>
+<path d="M24.1 35.2L11.4 31L16.2 39Z" fill="#a0875d"/>
+<path d="M16.2 39L11.4 31L6.2 30.5Z" fill="#a1885d"/>
+<path d="M16.2 39L29.5 38.4L24.1 35.2Z" fill="#a0875d"/>
+<path d="M9.9 17.7L11.4 31L20.6 23.7Z" fill="#ceac72"/>
+<path d="M20.6 23.7L11.4 31L24.1 35.2Z" fill="#b39766"/>
+<path d="M39.4 18.2L31.4 7.9L32.4 18.3Z" fill="#ad9263"/>
+<path d="M34.1 10.6L31.4 7.9L39.4 18.2Z" fill="#a2895e"/>
+<path d="M32.4 18.3L35.8 29.9L39.4 18.2Z" fill="#a0875d"/>
+<path d="M35.8 29.9L37.8 29.1L39.4 18.2Z" fill="#a0875d"/>
+<path d="M4.6 17.3L9.9 17.7L12.6 7.4Z" fill="#deb97a"/>
+<path d="M32.4 18.3L21.3 10.8L20.6 23.7Z" fill="#cead73"/>
+<path d="M32.4 18.3L31.4 7.9L21.3 10.8Z" fill="#caa971"/>
+<path d="M20.6 23.7L21.3 10.8L9.9 17.7Z" fill="#deba7a"/>
+<path d="M9.9 17.7L21.3 10.8L12.6 7.4Z" fill="#e7c17e"/>
+<path d="M20.6 23.7L24.1 35.2L35.8 29.9L32.4 18.3Z" fill="#62748b"/>
+<path d="M4.6 17.3L6.2 30.5L11.4 31L9.9 17.7Z" fill="#6e859f"/>
+<path d="M21.3 10.8L31.4 7.9L22.7 4.4L12.6 7.4Z" fill="#7790ad"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M24.1 35.2L29.5 38.4L35.8 29.9Z"/><path d="M29.5 38.4L37.8 29.1L35.8 29.9Z"/><path d="M24.1 35.2L11.4 31L16.2 39Z"/><path d="M16.2 39L11.4 31L6.2 30.5Z"/><path d="M16.2 39L29.5 38.4L24.1 35.2Z"/><path d="M9.9 17.7L11.4 31L20.6 23.7Z"/><path d="M20.6 23.7L11.4 31L24.1 35.2Z"/><path d="M39.4 18.2L31.4 7.9L32.4 18.3Z"/><path d="M34.1 10.6L31.4 7.9L39.4 18.2Z"/><path d="M32.4 18.3L35.8 29.9L39.4 18.2Z"/><path d="M35.8 29.9L37.8 29.1L39.4 18.2Z"/><path d="M4.6 17.3L9.9 17.7L12.6 7.4Z"/><path d="M32.4 18.3L21.3 10.8L20.6 23.7Z"/><path d="M32.4 18.3L31.4 7.9L21.3 10.8Z"/><path d="M20.6 23.7L21.3 10.8L9.9 17.7Z"/><path d="M9.9 17.7L21.3 10.8L12.6 7.4Z"/><path d="M20.6 23.7L24.1 35.2L35.8 29.9L32.4 18.3Z"/><path d="M4.6 17.3L6.2 30.5L11.4 31L9.9 17.7Z"/><path d="M21.3 10.8L31.4 7.9L22.7 4.4L12.6 7.4Z"/></g></svg><span>다듬은 육면체</span></a></td><td><a class="it" href="sim.html#dodeca-s"><svg viewBox="0 0 44 44" aria-hidden="true" focusable="false"><path d="M12.3 30.9L19.9 34.1L18 26.9Z" fill="#b59867"/>
+<path d="M10.1 10.5L13 14.7L17.4 8.3Z" fill="#e7c17e"/>
+<path d="M5.7 29.5L6.6 26.3L4.1 21.4Z" fill="#ba9d69"/>
+<path d="M26.6 39.4L23 38.6L18.3 39.6Z" fill="#a0875d"/>
+<path d="M5.7 29.5L10.8 36.1L14.9 36.9L12.3 30.9L6.6 26.3Z" fill="#76826d"/>
+<path d="M14.9 36.9L19.9 34.1L12.3 30.9Z" fill="#a78e61"/>
+<path d="M23 38.6L19.9 34.1L14.9 36.9Z" fill="#a0875d"/>
+<path d="M18.3 39.6L23 38.6L14.9 36.9Z" fill="#a0875d"/>
+<path d="M19.9 34.1L26 29.1L18 26.9Z" fill="#b19665"/>
+<path d="M23 38.6L31 36.4L32.9 30.6L26 29.1L19.9 34.1Z" fill="#707b68"/>
+<path d="M18 26.9L26 29.1L24.1 21.2Z" fill="#bd9f6b"/>
+<path d="M12.3 30.9L18 26.9L11.1 22.8Z" fill="#c5a56e"/>
+<path d="M6.6 26.3L12.3 30.9L11.1 22.8Z" fill="#c5a56e"/>
+<path d="M13 14.7L11.1 22.8L18 26.9L24.1 21.2L21 13.7Z" fill="#92a386"/>
+<path d="M26.6 39.4L33.9 35.4L31 36.4Z" fill="#a0875d"/>
+<path d="M31 36.4L23 38.6L26.6 39.4Z" fill="#a0875d"/>
+<path d="M13 14.7L21 13.7L17.4 8.3Z" fill="#e5bf7d"/>
+<path d="M17.4 8.3L21 13.7L25.7 8.5Z" fill="#dfbb7b"/>
+<path d="M25.7 8.5L21 13.7L29.1 15.2Z" fill="#d4b276"/>
+<path d="M21 13.7L24.1 21.2L29.1 15.2Z" fill="#d0ae73"/>
+<path d="M15.5 5.5L17.4 8.3L25.7 8.5L28.9 5.9L22.6 4Z" fill="#91a286"/>
+<path d="M28.9 5.9L35.4 10.1L30 6.4Z" fill="#b19565"/>
+<path d="M35.4 10.1L38.3 16.6L38.9 16.5Z" fill="#a0875d"/>
+<path d="M33.2 11.2L29.1 15.2L31.7 23.1L37.4 24L38.3 16.6Z" fill="#78856f"/>
+<path d="M26 29.1L32.9 30.6L31.7 23.1Z" fill="#a68c60"/>
+<path d="M24.1 21.2L31.7 23.1L29.1 15.2Z" fill="#bfa16c"/>
+<path d="M24.1 21.2L26 29.1L31.7 23.1Z" fill="#b79a68"/>
+<path d="M33.2 11.2L38.3 16.6L35.4 10.1Z" fill="#a98f61"/>
+<path d="M28.9 5.9L33.2 11.2L35.4 10.1Z" fill="#b69967"/>
+<path d="M25.7 8.5L33.2 11.2L28.9 5.9Z" fill="#c6a66f"/>
+<path d="M29.1 15.2L33.2 11.2L25.7 8.5Z" fill="#c8a870"/>
+<path d="M37.1 30.9L32.9 30.6L31 36.4Z" fill="#a0875d"/>
+<path d="M33.9 35.4L37.1 30.9L31 36.4Z" fill="#a0875d"/>
+<path d="M5.6 16.1L4.1 21.4L6.9 18L10.1 10.5L9.3 9.3Z" fill="#8fa084"/>
+<path d="M18.3 39.6L14.9 36.9L10.8 36.1Z" fill="#a0875d"/>
+<path d="M6.9 18L13 14.7L10.1 10.5Z" fill="#e3be7c"/>
+<path d="M11.1 22.8L13 14.7L6.9 18Z" fill="#ddb97a"/>
+<path d="M4.1 21.4L6.6 26.3L6.9 18Z" fill="#cbaa71"/>
+<path d="M6.9 18L6.6 26.3L11.1 22.8Z" fill="#d1af74"/>
+<path d="M31.7 23.1L32.9 30.6L37.4 24Z" fill="#a0875d"/>
+<path d="M37.4 24L32.9 30.6L37.1 30.9Z" fill="#a0875d"/>
+<path d="M38.9 16.5L38.3 16.6L39.9 23.7Z" fill="#a0875d"/>
+<path d="M38.3 16.6L37.4 24L39.9 23.7Z" fill="#a0875d"/>
+<path d="M37.4 24L37.1 30.9L39.9 23.7Z" fill="#a0875d"/>
+<path d="M10.1 10.5L17.4 8.3L15.5 5.5Z" fill="#e3be7d"/>
+<path d="M9.3 9.3L10.1 10.5L15.5 5.5Z" fill="#dcb879"/>
+<g fill="none" stroke="#2d3142" stroke-width="0.6" stroke-linejoin="round"><path d="M12.3 30.9L19.9 34.1L18 26.9Z"/><path d="M10.1 10.5L13 14.7L17.4 8.3Z"/><path d="M5.7 29.5L6.6 26.3L4.1 21.4Z"/><path d="M26.6 39.4L23 38.6L18.3 39.6Z"/><path d="M5.7 29.5L10.8 36.1L14.9 36.9L12.3 30.9L6.6 26.3Z"/><path d="M14.9 36.9L19.9 34.1L12.3 30.9Z"/><path d="M23 38.6L19.9 34.1L14.9 36.9Z"/><path d="M18.3 39.6L23 38.6L14.9 36.9Z"/><path d="M19.9 34.1L26 29.1L18 26.9Z"/><path d="M23 38.6L31 36.4L32.9 30.6L26 29.1L19.9 34.1Z"/><path d="M18 26.9L26 29.1L24.1 21.2Z"/><path d="M12.3 30.9L18 26.9L11.1 22.8Z"/><path d="M6.6 26.3L12.3 30.9L11.1 22.8Z"/><path d="M13 14.7L11.1 22.8L18 26.9L24.1 21.2L21 13.7Z"/><path d="M26.6 39.4L33.9 35.4L31 36.4Z"/><path d="M31 36.4L23 38.6L26.6 39.4Z"/><path d="M13 14.7L21 13.7L17.4 8.3Z"/><path d="M17.4 8.3L21 13.7L25.7 8.5Z"/><path d="M25.7 8.5L21 13.7L29.1 15.2Z"/><path d="M21 13.7L24.1 21.2L29.1 15.2Z"/><path d="M15.5 5.5L17.4 8.3L25.7 8.5L28.9 5.9L22.6 4Z"/><path d="M28.9 5.9L35.4 10.1L30 6.4Z"/><path d="M35.4 10.1L38.3 16.6L38.9 16.5Z"/><path d="M33.2 11.2L29.1 15.2L31.7 23.1L37.4 24L38.3 16.6Z"/><path d="M26 29.1L32.9 30.6L31.7 23.1Z"/><path d="M24.1 21.2L31.7 23.1L29.1 15.2Z"/><path d="M24.1 21.2L26 29.1L31.7 23.1Z"/><path d="M33.2 11.2L38.3 16.6L35.4 10.1Z"/><path d="M28.9 5.9L33.2 11.2L35.4 10.1Z"/><path d="M25.7 8.5L33.2 11.2L28.9 5.9Z"/><path d="M29.1 15.2L33.2 11.2L25.7 8.5Z"/><path d="M37.1 30.9L32.9 30.6L31 36.4Z"/><path d="M33.9 35.4L37.1 30.9L31 36.4Z"/><path d="M5.6 16.1L4.1 21.4L6.9 18L10.1 10.5L9.3 9.3Z"/><path d="M18.3 39.6L14.9 36.9L10.8 36.1Z"/><path d="M6.9 18L13 14.7L10.1 10.5Z"/><path d="M11.1 22.8L13 14.7L6.9 18Z"/><path d="M4.1 21.4L6.6 26.3L6.9 18Z"/><path d="M6.9 18L6.6 26.3L11.1 22.8Z"/><path d="M31.7 23.1L32.9 30.6L37.4 24Z"/><path d="M37.4 24L32.9 30.6L37.1 30.9Z"/><path d="M38.9 16.5L38.3 16.6L39.9 23.7Z"/><path d="M38.3 16.6L37.4 24L39.9 23.7Z"/><path d="M37.4 24L37.1 30.9L39.9 23.7Z"/><path d="M10.1 10.5L17.4 8.3L15.5 5.5Z"/><path d="M9.3 9.3L10.1 10.5L15.5 5.5Z"/></g></svg><span>다듬은 십이면체</span></a></td></tr></tbody></table></div><p class="tbl-note">* 다른 계열에도 나오는 도형</p>
+  </section>
+
+  <footer class="footer">
+    <span>분류와 이름은 위키백과 ‘고른 다면체’, ‘아르키메데스의 다면체’를 따랐다. 그림은 꼭짓점 좌표로 직접 계산해 그렸다.</span>
+    <span class="mono">5 + 13 = 18 (+ ∞)</span>
+  </footer>
+</div>
+
+</body></html>
